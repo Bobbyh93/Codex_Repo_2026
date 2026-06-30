@@ -22,7 +22,7 @@ The local pilot runtime has passed the launch gates below:
 - GitHub remote helper: available with `npm run remote:live-launch -- --repo=<owner>/<repo>`; it dry-runs by default and only updates `origin` with `--apply`.
 - GitHub target decision: see `LIVE_GITHUB_TARGET_DECISION.md`; selected target is `Bobbyh93/Codex_Repo_2026`.
 - GitHub push method: completed with a clean deployment snapshot built from the current verified source files, not the old local Git history. This prevents prior local history and deleted artifacts from being exported.
-- GitHub remote commit: `476f108d7028037d7913943c487f0aa8ad5471f1` on `main`.
+- GitHub remote branch: `main` is populated and ready for Render.
 - Launch archive helper: available with `npm run archive:live-launch`; use `-- --create` only when a zip handoff is needed.
 - Live launch gate: available with `npm run gate:live-launch`; runs source manifest, secret scan, archive dry run, preflight, release smoke, and commit plan.
 - Launch archive helper: use `npm run archive:live-launch -- --create` to create a fresh ignored zip handoff after the final launch commit. The `launch-artifacts/` folder is ignored and should not be committed.
@@ -84,7 +84,7 @@ Current GitHub deployment source:
 
 - Repository: `Bobbyh93/Codex_Repo_2026`
 - Branch: `main`
-- Commit: `476f108d7028037d7913943c487f0aa8ad5471f1`
+- Source state: clean deployment snapshot plus launch handoff documentation
 
 Next required action:
 
