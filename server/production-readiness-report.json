@@ -1,0 +1,123 @@
+{
+  "totalTests": 20,
+  "passed": 17,
+  "failed": 3,
+  "critical": [],
+  "results": [
+    {
+      "name": "CRITICAL: Database Connection",
+      "passed": true
+    },
+    {
+      "name": "CRITICAL: Authentication System",
+      "passed": true
+    },
+    {
+      "name": "Email Configuration",
+      "passed": true,
+      "details": {
+        "emailConfigured": true,
+        "fromEmailSet": false,
+        "fromNameSet": false,
+        "jwtSecretSet": true
+      }
+    },
+    {
+      "name": "Storage Access",
+      "passed": true
+    },
+    {
+      "name": "Password Hashing",
+      "passed": true
+    },
+    {
+      "name": "JWT Token Generation",
+      "passed": true
+    },
+    {
+      "name": "User Registration",
+      "passed": true
+    },
+    {
+      "name": "File Size Limit Configured",
+      "passed": true,
+      "details": {
+        "maxSize": "10MB"
+      }
+    },
+    {
+      "name": "PDF Parser Error Handling",
+      "passed": false,
+      "error": "Parser does not handle invalid PDFs gracefully"
+    },
+    {
+      "name": "Connection Pooling",
+      "passed": true
+    },
+    {
+      "name": "Database Indexes",
+      "passed": true,
+      "details": {
+        "indexCount": "45"
+      }
+    },
+    {
+      "name": "Foreign Key Constraints",
+      "passed": true,
+      "details": {
+        "fkCount": "38"
+      }
+    },
+    {
+      "name": "SendGrid API Key",
+      "passed": true
+    },
+    {
+      "name": "From Email Configured",
+      "passed": false,
+      "error": "FROM_EMAIL not set"
+    },
+    {
+      "name": "From Name Configured",
+      "passed": false,
+      "error": "FROM_NAME not set"
+    },
+    {
+      "name": "CRITICAL: JWT Secret Strength",
+      "passed": true,
+      "details": {
+        "secretLength": 36,
+        "isDefault": false
+      }
+    },
+    {
+      "name": "SQL Injection Protection",
+      "passed": true
+    },
+    {
+      "name": "Rate Limiting Configured",
+      "passed": true,
+      "details": {
+        "endpoints": [
+          "auth",
+          "upload",
+          "report"
+        ]
+      }
+    },
+    {
+      "name": "Query Performance",
+      "passed": true,
+      "details": {
+        "duration": "36ms"
+      }
+    },
+    {
+      "name": "Memory Usage",
+      "passed": true,
+      "details": {
+        "heapUsed": "22MB"
+      }
+    }
+  ]
+}

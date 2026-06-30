@@ -1,0 +1,2650 @@
+import { useEffect, useMemo, useState } from "react";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import AdminLayout from "@/components/admin/admin-layout";
+import { queryClient, apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Activity,
+  Archive,
+  AlertTriangle,
+  BookOpenCheck,
+  CheckCircle2,
+  ClipboardCheck,
+  Copy,
+  Download,
+  ExternalLink,
+  FileCheck2,
+  FilePlus2,
+  FileText,
+  FlaskConical,
+  Layers3,
+  MessageSquare,
+  PackageCheck,
+  Pencil,
+  Play,
+  RefreshCw,
+  RotateCcw,
+  Rocket,
+  Save,
+  ShieldCheck,
+  Sparkles,
+  XCircle,
+} from "lucide-react";
+
+type SourceRecord = {
+  id: string;
+  title: string;
+  sourceKind: string;
+  sourceType: string;
+  subject?: string;
+  edition?: string;
+  approvalStatus: string;
+  ingestionStatus: string;
+  sourceUri?: string;
+  documentId?: string;
+  citationPolicy?: string;
+  metadata?: Record<string, any>;
+};
+
+type TaxonomyTerm = {
+  id: string;
+  taxonomy: string;
+  code?: string;
+  label: string;
+};
+
+type LessonPackage = {
+  id: string;
+  title: string;
+  topic: string;
+  audience: string;
+  status: string;
+  qaSummary?: {
+    passCount?: number;
+    warningCount?: number;
+    failCount?: number;
+  };
+  createdAt?: string;
+};
+
+type ArchiveImport = {
+  id: string;
+  title: string;
+  sourceUri: string;
+  role: string;
+  status: string;
+  fileCount?: number;
+  importedSourceIds?: string[];
+  summary?: Record<string, any>;
+  errorMessage?: string;
+  createdAt?: string;
+};
+
+type LessonBuilderHealth = {
+  runtime: string;
+  aiMode?: "workspace_agent" | "openai_chat_completions" | "template_fallback" | "invalid" | string;
+  aiReady?: boolean;
+  pilotReady?: boolean;
+  latestPublishedPackageId?: string | null;
+  database: { configured: boolean; status: string; migrationStatus?: string };
+  previewMode: { enabled: boolean; status: string };
+  sourceRegistry: {
+    status: string;
+    sourceCount: number;
+    readySourceCount: number;
+    archiveImportCount: number;
+    documentBackedSourceCount?: number;
+    requiredArchiveRoles?: Array<{ role: string; status: string; jobs: number }>;
+  };
+  ingestion: { status: string; documentCount: number; documentBackedSourceCount?: number };
+  export: { status: string; profile?: string; requiredFiles?: string[] };
+  pilotReadiness?: {
+    status: string;
+    databaseConfigured: boolean;
+    archiveSetReady: boolean;
+    aiReady?: boolean;
+    aiMode?: string;
+    documentBackedSourceCount: number;
+    packageCount: number;
+    latestPublishedPackageId?: string | null;
+    latestPublishedPackageTitle?: string | null;
+    latestQaFailCount?: number;
+    latestContractFailCount?: number;
+    exportReady?: boolean;
+    reviewCount?: number;
+    learnerEventCount?: number;
+    latestReviewDecision?: string;
+    facultyApproved?: boolean;
+    latestPackageLearnerEventCount?: number;
+    latestPackageFeedbackCount?: number;
+    pilotLaunchReady?: boolean;
+  };
+  agent: {
+    agentId: string;
+    status: "workspace_agent_ready" | "openai_chat_completions_ready" | "agent_ready" | "agent_invalid_key" | "agent_missing" | "fallback_only" | string;
+    aiMode?: string;
+    aiReady?: boolean;
+    credentialStatus?: string;
+    fallbackAvailable?: boolean;
+    fallbackMode?: string;
+    configured: boolean;
+    endpointConfigured: boolean;
+    openAiFallbackConfigured?: boolean;
+    workspaceAgentAuthorizationConfigured?: boolean;
+    authorizationConfigured: boolean;
+    transport?: string;
+  };
+};
+
+type ReleaseReadiness = {
+  pilotReady: boolean;
+  latestPublishedPackageId?: string | null;
+  aiMode?: string;
+  dbReady: boolean;
+  authReady: boolean;
+  registrationReady: boolean;
+  exportReady: boolean;
+  typecheckStatus: string;
+  generatedAt?: string;
+  blockers: Array<{
+    key: string;
+    label: string;
+    status: "pass" | "warn" | "fail" | string;
+    severity: "low" | "medium" | "high" | string;
+    detail: string;
+  }>;
+};
+
+type SourceDetail = {
+  source: SourceRecord;
+  chunkCount: number;
+  generatedPackageCount: number;
+  archiveFiles: Array<{
+    id: string;
+    filePath: string;
+    fileKind?: string;
+    fileRole?: string;
+    sizeBytes?: number;
+  }>;
+  packages: Array<{
+    id: string;
+    title: string;
+    topic: string;
+    status: string;
+    createdAt?: string;
+    publishedAt?: string;
+  }>;
+};
+
+type ExportStatus = {
+  packageId: string;
+  profile: string;
+  status: string;
+  generatedAt: string;
+  fileCount: number;
+  requiredFileCount: number;
+  requiredFiles: string[];
+  generatedFiles: string[];
+  persistedFiles: string[];
+  missingRequiredFiles: string[];
+  includesDeckModel: boolean;
+  latestExportAudit?: {
+    id: string;
+    eventType: string;
+    summary: string;
+    createdAt?: string;
+    payload?: Record<string, any>;
+  } | null;
+};
+
+type PackageDetail = {
+  package: LessonPackage & { manifest?: Record<string, any>; deckModel?: Record<string, any> };
+  sources: SourceRecord[];
+  slides: Array<{
+    id: string;
+    slideNumber: number;
+    slideType: string;
+    title: string;
+    visibleContent: Record<string, any>;
+    speakerNotes?: string;
+    guidedNotes?: string;
+    retrievalPrompt?: string;
+    nclexCategory?: string;
+    cjmStep?: string;
+    nursingProcess?: string;
+    bloomLevel?: string;
+  }>;
+  items: Array<{
+    id: string;
+    itemType?: string;
+    stem: string;
+    options?: Array<{ id: string; text: string }>;
+    correctAnswer: string;
+    rationale: string;
+    tags?: Record<string, any>;
+    difficulty?: string;
+  }>;
+  citations: Array<{
+    id: string;
+    slideId?: string;
+    citationLabel: string;
+    excerpt?: string;
+  }>;
+  qaResults: Array<{
+    id: string;
+    gateKey: string;
+    gateName: string;
+    status: "pass" | "warn" | "fail";
+    details: string;
+    score?: string;
+  }>;
+  generationRuns?: Array<{
+    id: string;
+    status: string;
+    generationMode: string;
+    validationSummary?: Record<string, any>;
+    createdAt?: string;
+    completedAt?: string;
+  }>;
+  artifacts?: Array<{
+    id: string;
+    artifactKey: string;
+    artifactType: string;
+    fileName: string;
+    mimeType: string;
+    contentHash?: string;
+    createdAt?: string;
+  }>;
+  contractValidations?: Array<{
+    id: string;
+    validationKey: string;
+    validationName: string;
+    status: "pass" | "warn" | "fail";
+    details: string;
+  }>;
+  reviews?: Array<{
+    id: string;
+    reviewerName: string;
+    reviewerRole: string;
+    decision: string;
+    focusArea: string;
+    comment: string;
+    createdAt?: string;
+  }>;
+  assignments?: Array<{
+    id: string;
+    title: string;
+    cohortName: string;
+    dueDate?: string;
+    status: string;
+    createdAt?: string;
+    counts?: {
+      total: number;
+      assigned: number;
+      inProgress: number;
+      completed: number;
+      feedback: number;
+      events: number;
+    };
+    learners: Array<{
+      id: string;
+      learnerName: string;
+      learnerEmail?: string;
+      status: string;
+      openedAt?: string;
+      completedAt?: string;
+      lastActivityAt?: string;
+      feedbackRating?: string;
+      feedbackComment?: string;
+      linkPath: string;
+    }>;
+  }>;
+  learnerEvents?: Array<{
+    id: string;
+    eventType: string;
+    sessionId: string;
+    slideId?: string;
+    itemId?: string;
+    payload?: Record<string, any>;
+    createdAt?: string;
+  }>;
+  releaseAuditEvents?: Array<{
+    id: string;
+    eventType: string;
+    summary: string;
+    payload?: Record<string, any>;
+    createdAt?: string;
+  }>;
+};
+
+type PilotOutcomes = {
+  package: {
+    id: string;
+    title: string;
+    topic: string;
+    audience: string;
+    status: string;
+    publishedAt?: string | null;
+  };
+  generatedAt: string;
+  totals: {
+    assignments: number;
+    assigned: number;
+    opened: number;
+    practiceAttempted: number;
+    completed: number;
+    feedbackSubmitted: number;
+    needsReview: number;
+  };
+  assignments: Array<{
+    id: string;
+    title: string;
+    cohortName: string;
+    status: string;
+    dueDate?: string | null;
+    totals: {
+      assigned: number;
+      opened: number;
+      practiceAttempted: number;
+      completed: number;
+      feedbackSubmitted: number;
+      needsReview: number;
+    };
+  }>;
+  learners: Array<{
+    assignmentId: string;
+    assignmentTitle: string;
+    cohortName: string;
+    learnerId: string;
+    learnerName: string;
+    learnerEmail?: string | null;
+    status: string;
+    openedAt?: string | null;
+    completedAt?: string | null;
+    lastActivityAt?: string | null;
+    practice: {
+      attempts: number;
+      correct: number;
+      incorrect: number;
+      latestItemStem?: string | null;
+    };
+    feedback: {
+      rating?: string | null;
+      comment?: string | null;
+      submittedAt?: string | null;
+    };
+    needsReview: boolean;
+    reasons: string[];
+    recommendedAction: string;
+  }>;
+  practiceSummary: {
+    attempts: number;
+    correct: number;
+    incorrect: number;
+    accuracy?: number | null;
+  };
+  feedbackSummary: {
+    ratings: Record<string, number>;
+    comments: Array<{
+      learnerId: string;
+      learnerName: string;
+      cohortName: string;
+      rating?: string | null;
+      comment?: string | null;
+      submittedAt?: string | null;
+    }>;
+  };
+  actionQueue: Array<{
+    assignmentId: string;
+    cohortName: string;
+    learnerId: string;
+    learnerName: string;
+    learnerEmail?: string | null;
+    status: string;
+    reasons: string[];
+    recommendedAction: string;
+    lastActivityAt?: string | null;
+    feedbackRating?: string | null;
+  }>;
+};
+
+const defaultMappingRows = [
+  { taxonomy: "NCLEX", code: "PHYS", label: "Physiological Integrity", confidence: 0.9 },
+  { taxonomy: "CJM", code: "recognize-cues", label: "Recognize Cues", confidence: 0.9 },
+  { taxonomy: "CJM", code: "analyze-cues", label: "Analyze Cues", confidence: 0.9 },
+  { taxonomy: "Nursing Process", code: "assessment", label: "Assessment", confidence: 0.9 },
+  { taxonomy: "Bloom", code: "apply", label: "Apply", confidence: 0.9 },
+];
+
+const statusTone: Record<string, string> = {
+  approved: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  ready: "bg-blue-50 text-blue-700 border-blue-200",
+  draft: "bg-slate-50 text-slate-700 border-slate-200",
+  qa_ready: "bg-teal-50 text-teal-700 border-teal-200",
+  published: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  needs_republish: "bg-amber-50 text-amber-700 border-amber-200",
+  blocked: "bg-red-50 text-red-700 border-red-200",
+  warn: "bg-amber-50 text-amber-700 border-amber-200",
+  fail: "bg-red-50 text-red-700 border-red-200",
+  pass: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  completed: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  running: "bg-blue-50 text-blue-700 border-blue-200",
+  processing: "bg-blue-50 text-blue-700 border-blue-200",
+  duplicate: "bg-amber-50 text-amber-700 border-amber-200",
+  failed: "bg-red-50 text-red-700 border-red-200",
+  configured: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  agent_ready: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  workspace_agent_ready: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  openai_chat_completions_ready: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  fallback_only: "bg-blue-50 text-blue-700 border-blue-200",
+  template_fallback: "bg-blue-50 text-blue-700 border-blue-200",
+  agent_missing: "bg-amber-50 text-amber-700 border-amber-200",
+  agent_invalid_key: "bg-red-50 text-red-700 border-red-200",
+  missing_DATABASE_URL: "bg-amber-50 text-amber-700 border-amber-200",
+  missing_required_files: "bg-red-50 text-red-700 border-red-200",
+  awaiting_documents: "bg-amber-50 text-amber-700 border-amber-200",
+  incomplete: "bg-amber-50 text-amber-700 border-amber-200",
+  missing: "bg-red-50 text-red-700 border-red-200",
+  comment: "bg-slate-50 text-slate-700 border-slate-200",
+  changes_requested: "bg-amber-50 text-amber-700 border-amber-200",
+  approved_for_pilot: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  approved_for_release: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  awaiting_review: "bg-amber-50 text-amber-700 border-amber-200",
+  active: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  assigned: "bg-slate-50 text-slate-700 border-slate-200",
+  in_progress: "bg-blue-50 text-blue-700 border-blue-200",
+  not_started: "bg-amber-50 text-amber-700 border-amber-200",
+  feedback_needs_review: "bg-red-50 text-red-700 border-red-200",
+  practice_missed: "bg-amber-50 text-amber-700 border-amber-200",
+  helpful: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  confusing: "bg-amber-50 text-amber-700 border-amber-200",
+  too_easy: "bg-blue-50 text-blue-700 border-blue-200",
+  too_hard: "bg-amber-50 text-amber-700 border-amber-200",
+  needs_faculty_review: "bg-red-50 text-red-700 border-red-200",
+  package_published: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  harrity_export_downloaded: "bg-blue-50 text-blue-700 border-blue-200",
+  faculty_review_recorded: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  learner_feedback_received: "bg-blue-50 text-blue-700 border-blue-200",
+  pilot_outcomes_exported: "bg-blue-50 text-blue-700 border-blue-200",
+};
+
+function StatusBadge({ value }: { value: string }) {
+  return (
+    <Badge variant="outline" className={statusTone[value] || "bg-slate-50 text-slate-700 border-slate-200"}>
+      {value.replace(/_/g, " ")}
+    </Badge>
+  );
+}
+
+function packageGenerationSummary(detail: PackageDetail) {
+  const latestRun = detail.generationRuns?.[0];
+  const generation = (detail.package.deckModel?.generation || detail.package.manifest?.generation || {}) as Record<string, any>;
+  const requestedMode = String(generation.requestedMode || latestRun?.generationMode || "template");
+  const usedMode = String(generation.usedMode || requestedMode || "template");
+  const fallbackUsed = Boolean(generation.fallbackUsed || generation.fallbackReason || (requestedMode === "agent_assisted" && usedMode === "template"));
+  const label = fallbackUsed ? "fallback used" : usedMode.replace(/_/g, " ");
+  const status = fallbackUsed ? "fallback_only" : usedMode === "agent_assisted" ? "agent_ready" : "draft";
+  const detailText = fallbackUsed
+    ? `Requested ${requestedMode.replace(/_/g, " ")}; deterministic template fallback was used.`
+    : `Generated with ${usedMode.replace(/_/g, " ")} mode.`;
+
+  return {
+    label,
+    status,
+    detailText,
+    fallbackReason: generation.fallbackReason ? String(generation.fallbackReason) : "",
+  };
+}
+
+function parseAssignmentRoster(value: string) {
+  return value
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => {
+      const emailMatch = line.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i);
+      const learnerEmail = emailMatch?.[0] || "";
+      const learnerName = line
+        .replace(learnerEmail, "")
+        .replace(/[<>,()]/g, " ")
+        .replace(/\s+/g, " ")
+        .trim() || (learnerEmail ? learnerEmail.split("@")[0] : line);
+      return { learnerName, learnerEmail };
+    });
+}
+
+function renderVisibleContent(content: Record<string, any>) {
+  return Object.entries(content || {}).map(([key, value]) => {
+    const label = key.replace(/([A-Z])/g, " $1").replace(/^./, (char) => char.toUpperCase());
+    const rendered = Array.isArray(value) ? value.join(" | ") : String(value);
+    return (
+      <div key={key} className="space-y-1">
+        <div className="text-xs font-semibold uppercase text-slate-500">{label}</div>
+        <div className="text-sm text-slate-800">{rendered}</div>
+      </div>
+    );
+  });
+}
+
+export default function LessonBuilder() {
+  const { toast } = useToast();
+  const [activeTab, setActiveTab] = useState("sources");
+  const [selectedSourceIds, setSelectedSourceIds] = useState<string[]>([]);
+  const [selectedMappingSourceId, setSelectedMappingSourceId] = useState<string>("");
+  const [selectedSourceDetailId, setSelectedSourceDetailId] = useState<string>("");
+  const [selectedPackageId, setSelectedPackageId] = useState<string>("");
+  const [mappingRows, setMappingRows] = useState(defaultMappingRows);
+  const [sourceForm, setSourceForm] = useState({
+    title: "",
+    sourceKind: "local_file",
+    sourceType: "manual",
+    subject: "",
+    edition: "",
+    sourceUri: "",
+  });
+  const [archiveForm, setArchiveForm] = useState({
+    archivePath: "C:\\Users\\bobby\\Downloads\\harrity_lesson_builder_pipeline_skill_v2_20260509.zip",
+    role: "harrity_pipeline_contract",
+  });
+  const [documentSourceForm, setDocumentSourceForm] = useState({
+    documentId: "",
+    sourceType: "nursing_content_source",
+    subject: "Nursing source document",
+  });
+  const [lastArchiveImportId, setLastArchiveImportId] = useState<string>("");
+  const [lessonForm, setLessonForm] = useState({
+    title: "Harrity Maternal-Newborn Lesson Package",
+    topic: "Contraception priority cues and patient teaching",
+    audience: "Prelicensure RN",
+    slideCount: 8,
+    difficulty: "application",
+    includeGuidedNotes: true,
+    generationMode: "agent_assisted",
+  });
+  const [generationModeTouched, setGenerationModeTouched] = useState(false);
+  const [editingSlideId, setEditingSlideId] = useState("");
+  const [slideEditForm, setSlideEditForm] = useState({
+    title: "",
+    visibleContentText: "{}",
+    speakerNotes: "",
+    guidedNotes: "",
+    retrievalPrompt: "",
+    nclexCategory: "",
+    cjmStep: "",
+    nursingProcess: "",
+    bloomLevel: "",
+  });
+  const [editingItemId, setEditingItemId] = useState("");
+  const [itemEditForm, setItemEditForm] = useState({
+    stem: "",
+    optionsText: "[]",
+    correctAnswer: "",
+    rationale: "",
+    tagsText: "{}",
+    difficulty: "application",
+  });
+  const [reviewForm, setReviewForm] = useState({
+    reviewerName: "Faculty reviewer",
+    reviewerRole: "faculty_reviewer",
+    decision: "comment",
+    focusArea: "overall",
+    comment: "",
+  });
+  const [assignmentForm, setAssignmentForm] = useState({
+    title: "",
+    cohortName: "Internal pilot cohort",
+    dueDate: "",
+    rosterText: "Pilot learner, pilot.learner@example.com",
+  });
+
+  const healthQuery = useQuery<LessonBuilderHealth>({
+    queryKey: ["/api/admin/lesson-builder/health"],
+  });
+
+  const releaseReadinessQuery = useQuery<ReleaseReadiness>({
+    queryKey: ["/api/admin/lesson-builder/release-readiness"],
+  });
+
+  const sourcesQuery = useQuery<{ sources: SourceRecord[]; taxonomyTerms: TaxonomyTerm[]; documents: any[]; archiveImports?: ArchiveImport[] }>({
+    queryKey: ["/api/admin/lesson-builder/sources"],
+  });
+
+  const sourceDetailQuery = useQuery<SourceDetail>({
+    queryKey: ["/api/admin/lesson-builder/sources", selectedSourceDetailId],
+    enabled: Boolean(selectedSourceDetailId),
+    queryFn: async () => {
+      const response = await fetch(`/api/admin/lesson-builder/sources/${selectedSourceDetailId}`, {
+        credentials: "include",
+      });
+      if (!response.ok) throw new Error("Failed to load source detail");
+      return response.json();
+    },
+  });
+
+  const packagesQuery = useQuery<{ packages: LessonPackage[] }>({
+    queryKey: ["/api/admin/lesson-builder/packages"],
+  });
+
+  const agentStatusQuery = useQuery<{
+    agentId: string;
+    status: "workspace_agent_ready" | "openai_chat_completions_ready" | "agent_ready" | "agent_invalid_key" | "agent_missing" | "fallback_only" | string;
+    aiMode?: string;
+    aiReady?: boolean;
+    credentialStatus?: string;
+    fallbackAvailable?: boolean;
+    fallbackMode?: string;
+    configured: boolean;
+    endpointConfigured: boolean;
+    openAiFallbackConfigured?: boolean;
+    authorizationConfigured: boolean;
+    transport?: string;
+  }>({
+    queryKey: ["/api/admin/lesson-builder/agent-status"],
+  });
+
+  const detailQuery = useQuery<PackageDetail>({
+    queryKey: ["/api/admin/lesson-builder/packages", selectedPackageId],
+    enabled: Boolean(selectedPackageId),
+    queryFn: async () => {
+      const response = await fetch(`/api/admin/lesson-builder/packages/${selectedPackageId}`, {
+        credentials: "include",
+      });
+      if (!response.ok) throw new Error("Failed to load package detail");
+      return response.json();
+    },
+  });
+
+  const exportStatusQuery = useQuery<ExportStatus>({
+    queryKey: ["/api/admin/lesson-builder/packages", selectedPackageId, "export-status"],
+    enabled: Boolean(selectedPackageId),
+    queryFn: async () => {
+      const response = await fetch(`/api/admin/lesson-builder/packages/${selectedPackageId}/export-status?profile=harrity`, {
+        credentials: "include",
+      });
+      if (!response.ok) throw new Error("Failed to inspect export status");
+      return response.json();
+    },
+  });
+
+  const pilotOutcomesQuery = useQuery<PilotOutcomes>({
+    queryKey: ["/api/admin/lesson-builder/packages", selectedPackageId, "pilot-outcomes"],
+    enabled: Boolean(selectedPackageId),
+    queryFn: async () => {
+      const response = await fetch(`/api/admin/lesson-builder/packages/${selectedPackageId}/pilot-outcomes`, {
+        credentials: "include",
+      });
+      if (!response.ok) throw new Error("Failed to load pilot outcomes");
+      return response.json();
+    },
+  });
+
+  const archiveJobQuery = useQuery<{ importJob: ArchiveImport; files: any[]; sources: SourceRecord[] }>({
+    queryKey: ["/api/admin/lesson-builder/source-archives/jobs", lastArchiveImportId],
+    enabled: Boolean(lastArchiveImportId),
+    queryFn: async () => {
+      const response = await fetch(`/api/admin/lesson-builder/source-archives/jobs/${lastArchiveImportId}`, {
+        credentials: "include",
+      });
+      if (!response.ok) throw new Error("Failed to load archive import job");
+      return response.json();
+    },
+  });
+
+  const sources = sourcesQuery.data?.sources || [];
+  const hiddenSmokeSourceCount = sources.filter((source) => source.approvalStatus === "rejected" && /^mvp-/i.test(source.title)).length;
+  const visibleSources = sources.filter((source) => !(source.approvalStatus === "rejected" && /^mvp-/i.test(source.title)));
+  const packages = packagesQuery.data?.packages || [];
+  const archiveImports = sourcesQuery.data?.archiveImports || [];
+  const health = healthQuery.data;
+  const releaseReadiness = releaseReadinessQuery.data;
+  const releaseBlockers = releaseReadiness?.blockers || [];
+  const releaseFailCount = releaseBlockers.filter((blocker) => blocker.status === "fail").length;
+  const releaseWarnCount = releaseBlockers.filter((blocker) => blocker.status === "warn").length;
+  const agentStatus = health?.agent.status;
+  const aiReady = Boolean(health?.aiReady || health?.agent.aiReady || agentStatusQuery.data?.aiReady);
+  const aiMode = health?.aiMode || health?.agent.aiMode || agentStatusQuery.data?.aiMode || health?.agent.transport || "template_fallback";
+  const directOpenAiConfigured = Boolean(health?.agent.openAiFallbackConfigured || agentStatusQuery.data?.openAiFallbackConfigured);
+  const endpointConfigured = Boolean(health?.agent.endpointConfigured || agentStatusQuery.data?.endpointConfigured);
+  const selectedSources = useMemo(
+    () => sources.filter((source) => selectedSourceIds.includes(source.id)),
+    [sources, selectedSourceIds]
+  );
+
+  const stats = {
+    approvedSources: sources.filter((source) => source.approvalStatus === "approved").length,
+    readySources: sources.filter((source) => source.ingestionStatus === "ready").length,
+    packages: packages.length,
+    published: packages.filter((pkg) => pkg.status === "published").length,
+  };
+  const latestArchiveImport = archiveJobQuery.data?.importJob || archiveImports[0];
+  const latestArchiveFileCount = archiveJobQuery.data?.files?.length ?? latestArchiveImport?.fileCount ?? 0;
+  const selectedPackageGeneration = detailQuery.data ? packageGenerationSummary(detailQuery.data) : null;
+  const latestReview = detailQuery.data?.reviews?.[0];
+  const learnerEvents = detailQuery.data?.learnerEvents || [];
+  const learnerEventCounts = learnerEvents.reduce<Record<string, number>>((counts, event) => {
+    counts[event.eventType] = (counts[event.eventType] || 0) + 1;
+    return counts;
+  }, {});
+  const learnerFeedback = learnerEvents.filter((event) => event.eventType === "feedback_submitted");
+  const assignments = detailQuery.data?.assignments || [];
+  const pilotOutcomes = pilotOutcomesQuery.data;
+  const assignmentTotals = assignments.reduce(
+    (totals, assignment) => ({
+      total: totals.total + (assignment.counts?.total || 0),
+      assigned: totals.assigned + (assignment.counts?.assigned || 0),
+      inProgress: totals.inProgress + (assignment.counts?.inProgress || 0),
+      completed: totals.completed + (assignment.counts?.completed || 0),
+      feedback: totals.feedback + (assignment.counts?.feedback || 0),
+    }),
+    { total: 0, assigned: 0, inProgress: 0, completed: 0, feedback: 0 }
+  );
+
+  useEffect(() => {
+    if (!generationModeTouched && agentStatusQuery.data?.configured) {
+      setLessonForm((current) => ({ ...current, generationMode: "agent_assisted" }));
+    }
+  }, [agentStatusQuery.data?.configured, generationModeTouched]);
+
+  useEffect(() => {
+    setEditingSlideId("");
+    setEditingItemId("");
+  }, [selectedPackageId]);
+
+  const importSourceMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest("POST", "/api/admin/lesson-builder/sources/import", {
+        ...sourceForm,
+        approvalStatus: "approved",
+        ingestionStatus: "ready",
+        metadata: { registeredFrom: "lesson-builder-admin" },
+      });
+      return response.json();
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/sources"] });
+      setSelectedSourceIds((ids) => ids.includes(data.source.id) ? ids : [...ids, data.source.id]);
+      setSelectedMappingSourceId(data.source.id);
+      setSourceForm({ title: "", sourceKind: "local_file", sourceType: "manual", subject: "", edition: "", sourceUri: "" });
+      toast({ title: "Source registered", description: "The source is ready for taxonomy review." });
+    },
+  });
+
+  const importArchiveMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest("POST", "/api/admin/lesson-builder/source-archives/import", archiveForm, {
+        timeout: 120000,
+        retries: 0,
+      });
+      return response.json();
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/sources"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/health"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/release-readiness"] });
+      setLastArchiveImportId(data.importJob.id);
+      if (Array.isArray(data.sources) && data.sources[0]?.id) {
+        setSelectedSourceIds((ids) => ids.includes(data.sources[0].id) ? ids : [...ids, data.sources[0].id]);
+        setSelectedMappingSourceId(data.sources[0].id);
+      }
+      toast({
+        title: data.importJob.status === "duplicate" ? "Archive already registered" : "Archive imported",
+        description: `${data.importJob.title} is ${data.importJob.status}.`,
+      });
+    },
+  });
+
+  const importPilotSetMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest("POST", "/api/admin/lesson-builder/source-archives/import-pilot-set", {}, {
+        timeout: 180000,
+        retries: 0,
+      });
+      return response.json();
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/sources"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/health"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/release-readiness"] });
+      const sourceIds = data.summary?.importedSourceIds || [];
+      if (sourceIds.length > 0) {
+        setSelectedSourceIds((ids) => Array.from(new Set([...ids, ...sourceIds])));
+        if (!selectedMappingSourceId) setSelectedMappingSourceId(sourceIds[0]);
+      }
+      toast({
+        title: "Pilot archive set checked",
+        description: `${data.summary?.completed || 0} completed, ${data.summary?.duplicate || 0} duplicate, ${data.summary?.failed || 0} failed.`,
+      });
+    },
+  });
+
+  const attachDocumentMutation = useMutation({
+    mutationFn: async () => {
+      const selectedDocument = sourcesQuery.data?.documents?.find((document) => document.id === documentSourceForm.documentId);
+      const response = await apiRequest("POST", "/api/admin/lesson-builder/sources/attach-document", {
+        ...documentSourceForm,
+        title: selectedDocument?.title,
+        approvalStatus: "approved",
+      });
+      return response.json();
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/sources"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/health"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/release-readiness"] });
+      if (data.source?.id) {
+        setSelectedSourceIds((ids) => ids.includes(data.source.id) ? ids : [...ids, data.source.id]);
+        setSelectedMappingSourceId(data.source.id);
+      }
+      toast({
+        title: data.created ? "Knowledge document attached" : "Knowledge document source refreshed",
+        description: `${data.chunkCount || 0} chunks are available for citation retrieval.`,
+      });
+    },
+  });
+
+  const reviewMappingsMutation = useMutation({
+    mutationFn: async () => {
+      const sourceId = selectedMappingSourceId || selectedSourceIds[0];
+      if (!sourceId) throw new Error("Choose a source first.");
+      const response = await apiRequest("POST", "/api/admin/lesson-builder/mappings/review", {
+        sourceId,
+        mappings: mappingRows,
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/sources"] });
+      toast({ title: "Mappings saved", description: "Taxonomy review is ready for generation." });
+      setActiveTab("generate");
+    },
+  });
+
+  const generateMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest("POST", "/api/admin/lesson-builder/generate", {
+        title: lessonForm.title,
+        topic: lessonForm.topic,
+        audience: lessonForm.audience,
+        sourceIds: selectedSourceIds,
+        settings: {
+          slideCount: Number(lessonForm.slideCount),
+          difficulty: lessonForm.difficulty,
+          includeGuidedNotes: lessonForm.includeGuidedNotes,
+          generationMode: lessonForm.generationMode,
+        },
+      }, { timeout: 120000, retries: 0 });
+      return response.json();
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/packages"] });
+      setSelectedPackageId(data.package.id);
+      setActiveTab("review");
+      if (data.generation?.fallbackReason) {
+        toast({
+          title: "Generated with template fallback",
+          description: data.generation.fallbackReason,
+          variant: "destructive",
+        });
+      } else {
+        toast({ title: "Lesson package generated", description: "QA ran automatically and the package is ready to review." });
+      }
+    },
+  });
+
+  const runQaMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest("POST", `/api/admin/lesson-builder/packages/${selectedPackageId}/run-qa`);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/packages"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/packages", selectedPackageId] });
+      toast({ title: "QA complete", description: "The quality gates have been refreshed." });
+    },
+  });
+
+  const validateContractMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest("POST", `/api/admin/lesson-builder/packages/${selectedPackageId}/validate-contract?profile=harrity`);
+      return response.json();
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/packages"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/packages", selectedPackageId] });
+      toast({
+        title: data.validationSummary?.failCount ? "Contract blocks publish" : "Contract validation passed",
+        description: `${data.validationSummary?.failCount || 0} fail, ${data.validationSummary?.warningCount || 0} warn.`,
+        variant: data.validationSummary?.failCount ? "destructive" : undefined,
+      });
+    },
+  });
+
+  const publishMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest("POST", `/api/admin/lesson-builder/packages/${selectedPackageId}/publish`);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/packages"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/packages", selectedPackageId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/health"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/release-readiness"] });
+      toast({ title: "Package published", description: "The lesson package passed QA and is marked published." });
+    },
+  });
+
+  const duplicatePackageMutation = useMutation({
+    mutationFn: async () => {
+      const currentPackage = detailQuery.data?.package;
+      const response = await apiRequest("POST", `/api/admin/lesson-builder/packages/${selectedPackageId}/duplicate`, {
+        title: currentPackage ? `${currentPackage.title} Regenerated` : undefined,
+      }, { timeout: 120000, retries: 0 });
+      return response.json();
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/packages"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/health"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/release-readiness"] });
+      if (data.package?.id) {
+        setSelectedPackageId(data.package.id);
+      }
+      toast({
+        title: "Package regenerated",
+        description: "A new package was created from the selected package settings and sources.",
+      });
+    },
+    onError: (error: any) => {
+      toast({ title: "Regeneration failed", description: error?.message || "The package could not be regenerated.", variant: "destructive" });
+    },
+  });
+
+  const saveReviewMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest("POST", `/api/admin/lesson-builder/packages/${selectedPackageId}/reviews`, reviewForm);
+      return response.json();
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/packages"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/packages", selectedPackageId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/health"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/release-readiness"] });
+      setReviewForm((current) => ({ ...current, comment: "" }));
+      toast({
+        title: "Faculty review saved",
+        description: `Decision recorded as ${String(data.review?.decision || reviewForm.decision).replace(/_/g, " ")}.`,
+      });
+    },
+    onError: (error: any) => {
+      toast({ title: "Review save failed", description: error?.message || "Add a reviewer note before saving.", variant: "destructive" });
+    },
+  });
+
+  const createAssignmentMutation = useMutation({
+    mutationFn: async () => {
+      const learners = parseAssignmentRoster(assignmentForm.rosterText);
+      if (learners.length === 0) throw new Error("Add at least one learner.");
+      const response = await apiRequest("POST", `/api/admin/lesson-builder/packages/${selectedPackageId}/assignments`, {
+        title: assignmentForm.title || undefined,
+        cohortName: assignmentForm.cohortName,
+        dueDate: assignmentForm.dueDate || undefined,
+        learners,
+      });
+      return response.json();
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/packages", selectedPackageId] });
+      setAssignmentForm((current) => ({ ...current, title: "", rosterText: "" }));
+      toast({
+        title: "Pilot assignment created",
+        description: `${data.learners?.length || 0} learner link${data.learners?.length === 1 ? "" : "s"} ready to share.`,
+      });
+    },
+    onError: (error: any) => {
+      toast({ title: "Assignment failed", description: error?.message || "Check the assignment roster.", variant: "destructive" });
+    },
+  });
+
+  const saveSlideMutation = useMutation({
+    mutationFn: async () => {
+      const visibleContent = JSON.parse(slideEditForm.visibleContentText);
+      const response = await apiRequest("PATCH", `/api/admin/lesson-builder/packages/${selectedPackageId}/slides/${editingSlideId}`, {
+        title: slideEditForm.title,
+        visibleContent,
+        speakerNotes: slideEditForm.speakerNotes,
+        guidedNotes: slideEditForm.guidedNotes,
+        retrievalPrompt: slideEditForm.retrievalPrompt,
+        nclexCategory: slideEditForm.nclexCategory,
+        cjmStep: slideEditForm.cjmStep,
+        nursingProcess: slideEditForm.nursingProcess,
+        bloomLevel: slideEditForm.bloomLevel,
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/packages"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/packages", selectedPackageId] });
+      setEditingSlideId("");
+      toast({ title: "Slide saved", description: "QA and contract artifacts need to be rebuilt before publish." });
+    },
+    onError: (error: any) => {
+      toast({ title: "Slide save failed", description: error?.message || "Check the visible content JSON.", variant: "destructive" });
+    },
+  });
+
+  const saveItemMutation = useMutation({
+    mutationFn: async () => {
+      const options = JSON.parse(itemEditForm.optionsText);
+      const tags = JSON.parse(itemEditForm.tagsText);
+      const response = await apiRequest("PATCH", `/api/admin/lesson-builder/packages/${selectedPackageId}/items/${editingItemId}`, {
+        stem: itemEditForm.stem,
+        options,
+        correctAnswer: itemEditForm.correctAnswer,
+        rationale: itemEditForm.rationale,
+        tags,
+        difficulty: itemEditForm.difficulty,
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/packages"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/packages", selectedPackageId] });
+      setEditingItemId("");
+      toast({ title: "Practice item saved", description: "QA and contract artifacts need to be rebuilt before publish." });
+    },
+    onError: (error: any) => {
+      toast({ title: "Item save failed", description: error?.message || "Check the options/tags JSON.", variant: "destructive" });
+    },
+  });
+
+  const rebuildArtifactsMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest("POST", `/api/admin/lesson-builder/packages/${selectedPackageId}/rebuild-artifacts?profile=harrity`);
+      return response.json();
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/packages"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/packages", selectedPackageId] });
+      toast({
+        title: data.reviewStatus === "ready_to_publish" ? "Artifacts rebuilt" : "Rebuild found blockers",
+        description: `${data.qa?.qaSummary?.failCount || 0} QA fail, ${data.validation?.validationSummary?.failCount || 0} contract fail.`,
+        variant: data.reviewStatus === "ready_to_publish" ? undefined : "destructive",
+      });
+    },
+  });
+
+  const toggleSource = (sourceId: string) => {
+    setSelectedSourceIds((ids) => {
+      const next = ids.includes(sourceId) ? ids.filter((id) => id !== sourceId) : [...ids, sourceId];
+      if (!selectedMappingSourceId && next.length > 0) setSelectedMappingSourceId(next[0]);
+      return next;
+    });
+  };
+
+  const exportPackage = async () => {
+    if (!selectedPackageId) return;
+    await exportStatusQuery.refetch();
+    window.location.href = `/api/admin/lesson-builder/packages/${selectedPackageId}/export?profile=harrity`;
+    window.setTimeout(() => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/packages", selectedPackageId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/packages", selectedPackageId, "export-status"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/health"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/release-readiness"] });
+    }, 1500);
+  };
+
+  const exportPilotOutcomes = (format: "csv" | "json") => {
+    if (!selectedPackageId) return;
+    window.location.href = `/api/admin/lesson-builder/packages/${selectedPackageId}/pilot-outcomes/export?format=${format}`;
+    window.setTimeout(() => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/packages", selectedPackageId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/packages", selectedPackageId, "pilot-outcomes"] });
+    }, 1200);
+  };
+
+  const copyLearnerLink = async () => {
+    if (!selectedPackageId) return;
+    const url = `${window.location.origin}/lessons/${selectedPackageId}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      toast({ title: "Learner link copied", description: url });
+    } catch {
+      toast({ title: "Copy unavailable", description: url });
+    }
+  };
+
+  const copyAssignmentLink = async (linkPath: string) => {
+    const url = `${window.location.origin}${linkPath}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      toast({ title: "Assignment link copied", description: url });
+    } catch {
+      toast({ title: "Copy unavailable", description: url });
+    }
+  };
+
+  const startSlideEdit = (slide: PackageDetail["slides"][number]) => {
+    setEditingSlideId(slide.id);
+    setSlideEditForm({
+      title: slide.title || "",
+      visibleContentText: JSON.stringify(slide.visibleContent || {}, null, 2),
+      speakerNotes: slide.speakerNotes || "",
+      guidedNotes: slide.guidedNotes || "",
+      retrievalPrompt: slide.retrievalPrompt || "",
+      nclexCategory: slide.nclexCategory || "",
+      cjmStep: slide.cjmStep || "",
+      nursingProcess: slide.nursingProcess || "",
+      bloomLevel: slide.bloomLevel || "",
+    });
+  };
+
+  const startItemEdit = (item: PackageDetail["items"][number]) => {
+    setEditingItemId(item.id);
+    setItemEditForm({
+      stem: item.stem || "",
+      optionsText: JSON.stringify(item.options || [], null, 2),
+      correctAnswer: item.correctAnswer || "",
+      rationale: item.rationale || "",
+      tagsText: JSON.stringify(item.tags || {}, null, 2),
+      difficulty: item.difficulty || "application",
+    });
+  };
+
+  return (
+    <AdminLayout>
+      <div className="space-y-6">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <BookOpenCheck className="h-6 w-6 text-teal-700" />
+              <h1 className="text-2xl font-semibold tracking-tight text-slate-950">Lesson Builder</h1>
+            </div>
+            <p className="max-w-3xl text-sm text-slate-600">
+              Build learner-facing active lesson packages from approved source truth, NCLEX/CJM mappings, guided notes, practice items, citations, and QA gates.
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
+            {[
+              ["Approved", stats.approvedSources],
+              ["Ready", stats.readySources],
+              ["Packages", stats.packages],
+              ["Published", stats.published],
+            ].map(([label, value]) => (
+              <div key={label} className="rounded-md border bg-white px-4 py-3">
+                <div className="text-xl font-semibold text-slate-950">{value}</div>
+                <div className="text-xs text-slate-500">{label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-6">
+          <div className="rounded-md border bg-white p-3">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 text-sm font-medium text-slate-900">
+                <Activity className="h-4 w-4 text-slate-500" />
+                Database
+              </div>
+              <StatusBadge value={health?.database.status || (healthQuery.isLoading ? "running" : "failed")} />
+            </div>
+            <div className="mt-2 text-xs text-slate-500">{health?.database.configured ? "DB-backed runtime" : "Preview fallback available"}</div>
+          </div>
+          <div className="rounded-md border bg-white p-3">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 text-sm font-medium text-slate-900">
+                <Layers3 className="h-4 w-4 text-slate-500" />
+                Sources
+              </div>
+              <StatusBadge value={health?.sourceRegistry.status || "running"} />
+            </div>
+            <div className="mt-2 text-xs text-slate-500">{health?.sourceRegistry.sourceCount || 0} registered, {health?.sourceRegistry.archiveImportCount || 0} archives</div>
+          </div>
+          <div className="rounded-md border bg-white p-3">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 text-sm font-medium text-slate-900">
+                <Archive className="h-4 w-4 text-slate-500" />
+                Ingestion
+              </div>
+              <StatusBadge value={health?.ingestion.status || "running"} />
+            </div>
+            <div className="mt-2 text-xs text-slate-500">{health?.ingestion.documentCount || 0} knowledge documents</div>
+          </div>
+          <div className="rounded-md border bg-white p-3">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 text-sm font-medium text-slate-900">
+                <FileCheck2 className="h-4 w-4 text-slate-500" />
+                Export
+              </div>
+              <StatusBadge value={health?.export.status || "running"} />
+            </div>
+            <div className="mt-2 text-xs text-slate-500">{health?.export.requiredFiles?.length || 0} Harrity files tracked</div>
+          </div>
+          <div className="rounded-md border bg-white p-3">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 text-sm font-medium text-slate-900">
+                <Sparkles className="h-4 w-4 text-slate-500" />
+                Agent
+              </div>
+              <StatusBadge value={health?.agent.status || "agent_missing"} />
+            </div>
+            <div className="mt-2 text-xs text-slate-500">
+              {String(aiMode).replace(/_/g, " ")} mode
+              {health?.agent.credentialStatus ? `, credential ${health.agent.credentialStatus.replace(/_/g, " ")}` : ""}
+            </div>
+          </div>
+          <div className="rounded-md border bg-white p-3">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 text-sm font-medium text-slate-900">
+                <ClipboardCheck className="h-4 w-4 text-slate-500" />
+                Pilot
+              </div>
+              <StatusBadge value={health?.pilotReadiness?.status || "running"} />
+            </div>
+            <div className="mt-2 text-xs text-slate-500">
+              {health?.pilotReadiness?.documentBackedSourceCount || 0} document sources, {health?.pilotReadiness?.packageCount || 0} packages
+            </div>
+          </div>
+        </div>
+
+        <div className="rounded-md border bg-white p-4">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <div className="flex flex-wrap items-center gap-2 text-sm font-semibold text-slate-900">
+                <ClipboardCheck className="h-4 w-4 text-slate-500" />
+                Pilot launch readiness
+                <StatusBadge value={health?.pilotReadiness?.status || "running"} />
+                {health?.pilotReadiness?.pilotLaunchReady ? <StatusBadge value="approved_for_pilot" /> : null}
+              </div>
+              <div className="mt-1 text-sm text-slate-600">
+                Latest published package: {health?.pilotReadiness?.latestPublishedPackageTitle || "none"}.
+              </div>
+            </div>
+            <div className="grid gap-2 text-xs text-slate-600 sm:grid-cols-4 lg:grid-cols-7">
+              <div className="rounded-md bg-slate-50 px-3 py-2">AI: {aiReady ? String(aiMode).replace(/_/g, " ") : "not ready"}</div>
+              <div className="rounded-md bg-slate-50 px-3 py-2">QA fails: {health?.pilotReadiness?.latestQaFailCount ?? 0}</div>
+              <div className="rounded-md bg-slate-50 px-3 py-2">Contract fails: {health?.pilotReadiness?.latestContractFailCount ?? 0}</div>
+              <div className="rounded-md bg-slate-50 px-3 py-2">Export: {health?.pilotReadiness?.exportReady ? "ready" : "not verified"}</div>
+              <div className="rounded-md bg-slate-50 px-3 py-2">Review: {(health?.pilotReadiness?.latestReviewDecision || "awaiting_review").replace(/_/g, " ")}</div>
+              <div className="rounded-md bg-slate-50 px-3 py-2">Learner events: {health?.pilotReadiness?.latestPackageLearnerEventCount ?? 0}</div>
+              <div className="rounded-md bg-slate-50 px-3 py-2">Feedback: {health?.pilotReadiness?.latestPackageFeedbackCount ?? 0}</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="rounded-md border bg-white p-4">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+            <div>
+              <div className="flex flex-wrap items-center gap-2 text-sm font-semibold text-slate-900">
+                <ShieldCheck className="h-4 w-4 text-slate-500" />
+                Pilot release readiness
+                <StatusBadge value={releaseReadiness?.pilotReady ? "ready" : releaseReadinessQuery.isLoading ? "running" : "blocked"} />
+              </div>
+              <div className="mt-1 text-sm text-slate-600">
+                {releaseFailCount} blocker{releaseFailCount === 1 ? "" : "s"}, {releaseWarnCount} warning{releaseWarnCount === 1 ? "" : "s"}.
+                TypeScript: {(releaseReadiness?.typecheckStatus || "unknown").replace(/_/g, " ")}.
+              </div>
+            </div>
+            <div className="grid gap-2 text-xs text-slate-600 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="rounded-md bg-slate-50 px-3 py-2">DB: {releaseReadiness?.dbReady ? "ready" : "missing"}</div>
+              <div className="rounded-md bg-slate-50 px-3 py-2">Auth: {releaseReadiness?.authReady ? "ready" : "needs secret"}</div>
+              <div className="rounded-md bg-slate-50 px-3 py-2">Registration: {releaseReadiness?.registrationReady ? "ready" : "blocked"}</div>
+              <div className="rounded-md bg-slate-50 px-3 py-2">Export: {releaseReadiness?.exportReady ? "ready" : "not verified"}</div>
+            </div>
+          </div>
+          <div className="mt-4 grid gap-2 md:grid-cols-2 xl:grid-cols-3">
+            {releaseBlockers.map((blocker) => (
+              <div
+                key={blocker.key}
+                className={`rounded-md border px-3 py-2 text-sm ${
+                  blocker.status === "fail"
+                    ? "border-red-200 bg-red-50 text-red-950"
+                    : blocker.status === "warn"
+                      ? "border-amber-200 bg-amber-50 text-amber-950"
+                      : "border-emerald-200 bg-emerald-50 text-emerald-950"
+                }`}
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <span className="font-medium">{blocker.label}</span>
+                  <StatusBadge value={blocker.status} />
+                </div>
+                <div className="mt-1 text-xs opacity-80">{blocker.detail}</div>
+              </div>
+            ))}
+            {!releaseReadinessQuery.isLoading && releaseBlockers.length === 0 ? (
+              <div className="rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600">
+                Release readiness is unavailable. Refresh after the server finishes loading health data.
+              </div>
+            ) : null}
+          </div>
+        </div>
+
+        {(agentStatus === "fallback_only" || agentStatus === "agent_invalid_key") && (
+          <div className={`rounded-md border p-4 ${agentStatus === "agent_invalid_key" ? "border-red-200 bg-red-50 text-red-900" : "border-amber-200 bg-amber-50 text-amber-900"}`}>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-start">
+              <AlertTriangle className="mt-0.5 h-5 w-5 flex-none" />
+              <div className="space-y-1 text-sm">
+                <div className="font-semibold">
+                  {agentStatus === "agent_invalid_key"
+                    ? "Live AI credential needs attention"
+                    : directOpenAiConfigured && !endpointConfigured
+                      ? "Workspace lesson-agent endpoint is not configured"
+                      : "Generation is currently fallback-only"}
+                </div>
+                <div>
+                  {agentStatus === "agent_invalid_key"
+                    ? "Agent-assisted generation will use deterministic templates until the server-side OpenAI or lesson-agent key is replaced."
+                    : directOpenAiConfigured && !endpointConfigured
+                      ? "Direct OpenAI generation is configured for server-side live drafting; deterministic templates remain the fallback if a run cannot complete."
+                      : "The MVP remains usable, but package generation will use deterministic templates until a valid server-side OpenAI or lesson-agent credential is configured."}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+          <TabsList className="grid w-full grid-cols-4 lg:max-w-3xl">
+            <TabsTrigger value="sources">
+              <Layers3 className="mr-2 h-4 w-4" />
+              Sources
+            </TabsTrigger>
+            <TabsTrigger value="mappings">
+              <ShieldCheck className="mr-2 h-4 w-4" />
+              Taxonomy
+            </TabsTrigger>
+            <TabsTrigger value="generate">
+              <Sparkles className="mr-2 h-4 w-4" />
+              Generate
+            </TabsTrigger>
+            <TabsTrigger value="review">
+              <PackageCheck className="mr-2 h-4 w-4" />
+              QA & Export
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="sources" className="space-y-4">
+            <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0">
+                  <div>
+                    <CardTitle className="text-base">Approved Source Registry</CardTitle>
+                    {hiddenSmokeSourceCount > 0 && (
+                      <div className="mt-1 text-xs text-slate-500">{hiddenSmokeSourceCount} rejected smoke-test source{hiddenSmokeSourceCount === 1 ? "" : "s"} hidden.</div>
+                    )}
+                  </div>
+                  <Button size="sm" variant="outline" onClick={() => sourcesQuery.refetch()}>
+                    <RefreshCw className="mr-2 h-4 w-4" />
+                    Refresh
+                  </Button>
+                </CardHeader>
+                <CardContent>
+                  <div className="overflow-x-auto rounded-md border">
+                    <table className="w-full text-sm">
+                      <thead className="bg-slate-50 text-left text-xs uppercase text-slate-500">
+                        <tr>
+                          <th className="w-12 px-3 py-2">Use</th>
+                          <th className="px-3 py-2">Source</th>
+                          <th className="px-3 py-2">Type</th>
+                          <th className="px-3 py-2">Subject</th>
+                          <th className="px-3 py-2">Status</th>
+                          <th className="px-3 py-2">Detail</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {sourcesQuery.isLoading ? (
+                          <tr>
+                            <td colSpan={6} className="px-3 py-8 text-center text-slate-500">Loading sources...</td>
+                          </tr>
+                        ) : visibleSources.length === 0 ? (
+                          <tr>
+                            <td colSpan={6} className="px-3 py-8 text-center text-slate-500">No approved sources yet.</td>
+                          </tr>
+                        ) : visibleSources.map((source) => (
+                          <tr key={source.id} className="border-t">
+                            <td className="px-3 py-3 align-top">
+                              <Checkbox
+                                checked={selectedSourceIds.includes(source.id)}
+                                onCheckedChange={() => toggleSource(source.id)}
+                                aria-label={`Select ${source.title}`}
+                              />
+                            </td>
+                            <td className="px-3 py-3 align-top">
+                              <div className="font-medium text-slate-900">{source.title}</div>
+                              <div className="mt-1 text-xs text-slate-500">{source.edition || source.sourceKind}</div>
+                              <div className="mt-1 flex flex-wrap gap-1 text-xs text-slate-500">
+                                {source.documentId && <Badge variant="outline">document chunks: {source.metadata?.chunkCount || "ready"}</Badge>}
+                                {source.metadata?.archiveRole && <Badge variant="outline">{String(source.metadata.archiveRole).replace(/_/g, " ")}</Badge>}
+                                {source.metadata?.archiveRole && <Badge variant="outline">read-only contract</Badge>}
+                                {Boolean(source.metadata?.archiveSummary?.importantFiles?.length) && (
+                                  <Badge variant="outline">manifest files: {source.metadata?.archiveSummary?.importantFiles?.length}</Badge>
+                                )}
+                              </div>
+                            </td>
+                            <td className="px-3 py-3 align-top">
+                              <Badge variant="secondary">{source.sourceType}</Badge>
+                            </td>
+                            <td className="px-3 py-3 align-top text-slate-600">{source.subject || "General nursing"}</td>
+                            <td className="px-3 py-3 align-top">
+                              <div className="flex flex-wrap gap-1">
+                                <StatusBadge value={source.approvalStatus} />
+                                <StatusBadge value={source.ingestionStatus} />
+                              </div>
+                            </td>
+                            <td className="px-3 py-3 align-top">
+                              <Button
+                                size="sm"
+                                variant={selectedSourceDetailId === source.id ? "default" : "outline"}
+                                onClick={() => setSelectedSourceDetailId(source.id)}
+                              >
+                                Details
+                              </Button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <div className="space-y-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-base">
+                      <FileText className="h-4 w-4" />
+                      Source Detail
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    {!selectedSourceDetailId ? (
+                      <div className="rounded-md bg-slate-50 p-3 text-sm text-slate-600">
+                        Select Details on a source to inspect provenance, chunks, and generated packages.
+                      </div>
+                    ) : sourceDetailQuery.isLoading ? (
+                      <div className="rounded-md bg-slate-50 p-3 text-sm text-slate-600">Loading source detail...</div>
+                    ) : sourceDetailQuery.data ? (
+                      <>
+                        <div>
+                          <div className="font-medium text-slate-950">{sourceDetailQuery.data.source.title}</div>
+                          <div className="mt-1 text-xs text-slate-500 break-all">{sourceDetailQuery.data.source.documentId || sourceDetailQuery.data.source.sourceUri || "No document/source URI"}</div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2 text-xs">
+                          <div className="rounded-md bg-slate-50 p-2">
+                            <div className="text-slate-500">Chunks</div>
+                            <div className="font-medium text-slate-900">{sourceDetailQuery.data.chunkCount}</div>
+                          </div>
+                          <div className="rounded-md bg-slate-50 p-2">
+                            <div className="text-slate-500">Packages</div>
+                            <div className="font-medium text-slate-900">{sourceDetailQuery.data.generatedPackageCount}</div>
+                          </div>
+                          <div className="rounded-md bg-slate-50 p-2">
+                            <div className="text-slate-500">Approval</div>
+                            <StatusBadge value={sourceDetailQuery.data.source.approvalStatus} />
+                          </div>
+                          <div className="rounded-md bg-slate-50 p-2">
+                            <div className="text-slate-500">Citation</div>
+                            <div className="font-medium text-slate-900">{sourceDetailQuery.data.source.metadata?.citationPolicy || sourceDetailQuery.data.source.citationPolicy || "cite paraphrase"}</div>
+                          </div>
+                        </div>
+                        {sourceDetailQuery.data.archiveFiles.length > 0 && (
+                          <div className="rounded-md border p-3">
+                            <div className="mb-2 text-sm font-medium text-slate-900">Archive manifest</div>
+                            <div className="max-h-40 space-y-1 overflow-auto text-xs text-slate-600">
+                              {sourceDetailQuery.data.archiveFiles.slice(0, 12).map((file) => (
+                                <div key={file.id} className="break-all">{file.filePath}</div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        {sourceDetailQuery.data.packages.length > 0 && (
+                          <div className="rounded-md border p-3">
+                            <div className="mb-2 text-sm font-medium text-slate-900">Generated packages</div>
+                            <div className="space-y-2">
+                              {sourceDetailQuery.data.packages.slice(0, 5).map((pkg) => (
+                                <div key={pkg.id} className="flex items-start justify-between gap-2 text-xs">
+                                  <div>
+                                    <div className="font-medium text-slate-900">{pkg.title}</div>
+                                    <div className="text-slate-500">{pkg.topic}</div>
+                                  </div>
+                                  <StatusBadge value={pkg.status} />
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </>
+                    ) : (
+                      <div className="rounded-md bg-red-50 p-3 text-sm text-red-700">Source detail could not be loaded.</div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-base">
+                      <Archive className="h-4 w-4" />
+                      Import Source Archive
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="archive-path">Local zip path</Label>
+                      <Textarea
+                        id="archive-path"
+                        value={archiveForm.archivePath}
+                        onChange={(event) => setArchiveForm({ ...archiveForm, archivePath: event.target.value })}
+                        rows={2}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Archive role</Label>
+                      <Select value={archiveForm.role} onValueChange={(value) => setArchiveForm({ ...archiveForm, role: value })}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="harrity_pipeline_contract">Harrity pipeline contract</SelectItem>
+                          <SelectItem value="chapter_deck_schema">Chapter deck schema</SelectItem>
+                          <SelectItem value="pilot_preflight_package">Pilot preflight package</SelectItem>
+                          <SelectItem value="chunking_search_pattern">Chunking/search pattern</SelectItem>
+                          <SelectItem value="base_app">Base app</SelectItem>
+                          <SelectItem value="pattern_reference">Pattern reference</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="grid grid-cols-3 gap-2">
+                      {[
+                        ["Harrity", "C:\\Users\\bobby\\Downloads\\harrity_lesson_builder_pipeline_skill_v2_20260509.zip", "harrity_pipeline_contract"],
+                        ["Deck", "C:\\Users\\bobby\\Downloads\\nursing-chapter-deck-builder.zip", "chapter_deck_schema"],
+                        ["Pilot", "C:\\Users\\bobby\\Downloads\\20260528_NCC_AMS_preflight_package.zip", "pilot_preflight_package"],
+                      ].map(([label, archivePath, role]) => (
+                        <Button key={label} type="button" variant="outline" size="sm" onClick={() => setArchiveForm({ archivePath, role })}>
+                          {label}
+                        </Button>
+                      ))}
+                    </div>
+                    <Button
+                      className="w-full"
+                      disabled={!archiveForm.archivePath || importArchiveMutation.isPending}
+                      onClick={() => importArchiveMutation.mutate()}
+                    >
+                      <Archive className="mr-2 h-4 w-4" />
+                      Import Archive
+                    </Button>
+                    <Button
+                      className="w-full"
+                      variant="outline"
+                      disabled={importPilotSetMutation.isPending}
+                      onClick={() => importPilotSetMutation.mutate()}
+                    >
+                      <PackageCheck className="mr-2 h-4 w-4" />
+                      Import Pilot Set
+                    </Button>
+
+                    {latestArchiveImport && (
+                      <div className="rounded-md border bg-slate-50 p-3 text-sm">
+                        <div className="flex items-start justify-between gap-2">
+                          <div>
+                            <div className="font-medium text-slate-900">{latestArchiveImport.title}</div>
+                            <div className="mt-1 text-xs text-slate-500">
+                              {latestArchiveImport.role} | {latestArchiveFileCount} files
+                            </div>
+                          </div>
+                          <StatusBadge value={latestArchiveImport.status} />
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-base">
+                      <FileCheck2 className="h-4 w-4" />
+                      Attach Knowledge Document
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                      <Label>Ingested document</Label>
+                      <Select
+                        value={documentSourceForm.documentId}
+                        onValueChange={(value) => setDocumentSourceForm({ ...documentSourceForm, documentId: value })}
+                      >
+                        <SelectTrigger><SelectValue placeholder="Choose knowledge-base document" /></SelectTrigger>
+                        <SelectContent>
+                          {(sourcesQuery.data?.documents || []).map((document) => (
+                            <SelectItem key={document.id} value={document.id}>
+                              {document.title}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-2">
+                        <Label>Source type</Label>
+                        <Select
+                          value={documentSourceForm.sourceType}
+                          onValueChange={(value) => setDocumentSourceForm({ ...documentSourceForm, sourceType: value })}
+                        >
+                          <SelectTrigger><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="nursing_content_source">Nursing content</SelectItem>
+                            <SelectItem value="manual">Manual</SelectItem>
+                            <SelectItem value="textbook">Textbook</SelectItem>
+                            <SelectItem value="review_topic_source">Review topic</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="document-subject">Subject</Label>
+                        <Input
+                          id="document-subject"
+                          value={documentSourceForm.subject}
+                          onChange={(event) => setDocumentSourceForm({ ...documentSourceForm, subject: event.target.value })}
+                        />
+                      </div>
+                    </div>
+                    <div className="rounded-md border bg-slate-50 p-3 text-xs text-slate-600">
+                      Generation uses attached document chunks first; archive metadata is only fallback provenance.
+                    </div>
+                    <Button
+                      className="w-full"
+                      disabled={!documentSourceForm.documentId || attachDocumentMutation.isPending}
+                      onClick={() => attachDocumentMutation.mutate()}
+                    >
+                      <FileCheck2 className="mr-2 h-4 w-4" />
+                      Attach as Approved Source
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-base">
+                      <FilePlus2 className="h-4 w-4" />
+                      Register Source
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="source-title">Title</Label>
+                    <Input
+                      id="source-title"
+                      value={sourceForm.title}
+                      onChange={(event) => setSourceForm({ ...sourceForm, title: event.target.value })}
+                      placeholder="ATI Pharmacology Review Manual"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-2">
+                      <Label>Kind</Label>
+                      <Select value={sourceForm.sourceKind} onValueChange={(value) => setSourceForm({ ...sourceForm, sourceKind: value })}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="local_file">Local file</SelectItem>
+                          <SelectItem value="drive_sheet">Drive sheet</SelectItem>
+                          <SelectItem value="document">Knowledge document</SelectItem>
+                          <SelectItem value="taxonomy">Taxonomy</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Type</Label>
+                      <Select value={sourceForm.sourceType} onValueChange={(value) => setSourceForm({ ...sourceForm, sourceType: value })}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="manual">Manual</SelectItem>
+                          <SelectItem value="textbook">Textbook</SelectItem>
+                          <SelectItem value="blueprint">Blueprint</SelectItem>
+                          <SelectItem value="crosswalk">Crosswalk</SelectItem>
+                          <SelectItem value="reference">Reference</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="source-subject">Subject</Label>
+                    <Input
+                      id="source-subject"
+                      value={sourceForm.subject}
+                      onChange={(event) => setSourceForm({ ...sourceForm, subject: event.target.value })}
+                      placeholder="Pharmacology, Med-Surg, Fundamentals"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="source-uri">Source URL or local note</Label>
+                    <Textarea
+                      id="source-uri"
+                      value={sourceForm.sourceUri}
+                      onChange={(event) => setSourceForm({ ...sourceForm, sourceUri: event.target.value })}
+                      placeholder="Drive URL, local path note, or source handling note"
+                      rows={3}
+                    />
+                  </div>
+                  <Button
+                    className="w-full"
+                    disabled={!sourceForm.title || importSourceMutation.isPending}
+                    onClick={() => importSourceMutation.mutate()}
+                  >
+                    <FilePlus2 className="mr-2 h-4 w-4" />
+                    Register Approved Source
+                  </Button>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="mappings" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Taxonomy Review</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid gap-4 lg:grid-cols-[360px_minmax(0,1fr)]">
+                  <div className="space-y-2">
+                    <Label>Source to map</Label>
+                    <Select value={selectedMappingSourceId || selectedSourceIds[0] || ""} onValueChange={setSelectedMappingSourceId}>
+                      <SelectTrigger><SelectValue placeholder="Choose selected source" /></SelectTrigger>
+                      <SelectContent>
+                        {selectedSources.map((source) => (
+                          <SelectItem key={source.id} value={source.id}>{source.title}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <div className="rounded-md border bg-slate-50 p-3 text-sm text-slate-600">
+                      {selectedSources.length} selected source{selectedSources.length === 1 ? "" : "s"} will be used for generation.
+                    </div>
+                  </div>
+
+                  <div className="overflow-x-auto rounded-md border">
+                    <table className="w-full text-sm">
+                      <thead className="bg-slate-50 text-left text-xs uppercase text-slate-500">
+                        <tr>
+                          <th className="px-3 py-2">Taxonomy</th>
+                          <th className="px-3 py-2">Code</th>
+                          <th className="px-3 py-2">Label</th>
+                          <th className="px-3 py-2">Confidence</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {mappingRows.map((row, index) => (
+                          <tr key={`${row.taxonomy}-${row.code}-${index}`} className="border-t">
+                            <td className="px-3 py-2">
+                              <Input value={row.taxonomy} onChange={(event) => {
+                                const next = [...mappingRows];
+                                next[index] = { ...row, taxonomy: event.target.value };
+                                setMappingRows(next);
+                              }} />
+                            </td>
+                            <td className="px-3 py-2">
+                              <Input value={row.code} onChange={(event) => {
+                                const next = [...mappingRows];
+                                next[index] = { ...row, code: event.target.value };
+                                setMappingRows(next);
+                              }} />
+                            </td>
+                            <td className="px-3 py-2">
+                              <Input value={row.label} onChange={(event) => {
+                                const next = [...mappingRows];
+                                next[index] = { ...row, label: event.target.value };
+                                setMappingRows(next);
+                              }} />
+                            </td>
+                            <td className="px-3 py-2">
+                              <Input type="number" min="0" max="1" step="0.05" value={row.confidence} onChange={(event) => {
+                                const next = [...mappingRows];
+                                next[index] = { ...row, confidence: Number(event.target.value) };
+                                setMappingRows(next);
+                              }} />
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  <Button variant="outline" onClick={() => setMappingRows([...mappingRows, { taxonomy: "Review Topic", code: "", label: lessonForm.topic, confidence: 0.85 }])}>
+                    <FilePlus2 className="mr-2 h-4 w-4" />
+                    Add Topic Mapping
+                  </Button>
+                  <Button disabled={selectedSources.length === 0 || reviewMappingsMutation.isPending} onClick={() => reviewMappingsMutation.mutate()}>
+                    <CheckCircle2 className="mr-2 h-4 w-4" />
+                    Save Mapping Review
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="generate" className="space-y-4">
+            <div className="grid gap-4 xl:grid-cols-[420px_minmax(0,1fr)]">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-base">
+                    <Sparkles className="h-4 w-4" />
+                    Generation Settings
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="lesson-title">Package title</Label>
+                    <Input id="lesson-title" value={lessonForm.title} onChange={(event) => setLessonForm({ ...lessonForm, title: event.target.value })} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="lesson-topic">Lesson topic</Label>
+                    <Input id="lesson-topic" value={lessonForm.topic} onChange={(event) => setLessonForm({ ...lessonForm, topic: event.target.value })} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Audience</Label>
+                    <Select value={lessonForm.audience} onValueChange={(value) => setLessonForm({ ...lessonForm, audience: value })}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Prelicensure RN">Prelicensure RN</SelectItem>
+                        <SelectItem value="PN/VN">PN/VN</SelectItem>
+                        <SelectItem value="RN remediation">RN remediation</SelectItem>
+                        <SelectItem value="Faculty preview">Faculty preview</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <Label>Generation mode</Label>
+                      <StatusBadge value={agentStatusQuery.data?.status || "agent_missing"} />
+                    </div>
+                    <Select
+                      value={lessonForm.generationMode}
+                      onValueChange={(value) => {
+                        setGenerationModeTouched(true);
+                        setLessonForm({ ...lessonForm, generationMode: value });
+                      }}
+                    >
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="template">Template</SelectItem>
+                        <SelectItem value="agent_assisted">Agent-assisted</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    {!aiReady && (
+                      <p className="text-xs text-slate-500">
+                        Agent-assisted is the product default. The server will use deterministic fallback when live AI is missing or the credential is invalid.
+                      </p>
+                    )}
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-2">
+                      <Label htmlFor="slide-count">Slides</Label>
+                      <Input id="slide-count" type="number" min="6" max="12" value={lessonForm.slideCount} onChange={(event) => setLessonForm({ ...lessonForm, slideCount: Number(event.target.value) })} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Difficulty</Label>
+                      <Select value={lessonForm.difficulty} onValueChange={(value) => setLessonForm({ ...lessonForm, difficulty: value })}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="recognition">Recognition</SelectItem>
+                          <SelectItem value="application">Application</SelectItem>
+                          <SelectItem value="analysis">Analysis</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 rounded-md border p-3">
+                    <Checkbox
+                      checked={lessonForm.includeGuidedNotes}
+                      onCheckedChange={(checked) => setLessonForm({ ...lessonForm, includeGuidedNotes: Boolean(checked) })}
+                    />
+                    <Label>Include guided notes in the package model</Label>
+                  </div>
+                  <Button
+                    className="w-full"
+                    disabled={selectedSourceIds.length === 0 || generateMutation.isPending}
+                    onClick={() => generateMutation.mutate()}
+                  >
+                    <Play className="mr-2 h-4 w-4" />
+                    Generate Lesson Package
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <div className="rounded-md border bg-white p-4">
+                <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-900">
+                  <Layers3 className="h-4 w-4" />
+                  Selected Sources
+                </div>
+                {selectedSources.length === 0 ? (
+                  <div className="rounded-md bg-slate-50 p-4 text-sm text-slate-600">
+                    Select approved source truth before generating.
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {selectedSources.map((source) => (
+                      <div key={source.id} className="rounded-md border p-3">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <div className="font-medium text-slate-900">{source.title}</div>
+                          <StatusBadge value={source.approvalStatus} />
+                        </div>
+                        <div className="mt-1 text-sm text-slate-600">{source.subject || source.sourceType}</div>
+                        {source.metadata?.archiveRole && (
+                          <div className="mt-2 text-xs text-slate-500">
+                            Archive role: {String(source.metadata.archiveRole).replace(/_/g, " ")}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="review" className="space-y-4">
+            <div className="grid gap-4 xl:grid-cols-[360px_minmax(0,1fr)]">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Packages</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {packages.length === 0 ? (
+                    <div className="rounded-md bg-slate-50 p-4 text-sm text-slate-600">No generated packages yet.</div>
+                  ) : packages.map((pkg) => (
+                    <button
+                      key={pkg.id}
+                      type="button"
+                      onClick={() => setSelectedPackageId(pkg.id)}
+                      className={`w-full rounded-md border p-3 text-left transition hover:bg-slate-50 ${selectedPackageId === pkg.id ? "border-teal-500 bg-teal-50/60" : "bg-white"}`}
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <div className="font-medium text-slate-900">{pkg.title}</div>
+                          <div className="text-xs text-slate-500">{pkg.topic}</div>
+                        </div>
+                        <StatusBadge value={pkg.status} />
+                      </div>
+                      <div className="mt-2 text-xs text-slate-500">
+                        QA: {pkg.qaSummary?.failCount || 0} fail, {pkg.qaSummary?.warningCount || 0} warn
+                      </div>
+                    </button>
+                  ))}
+                </CardContent>
+              </Card>
+
+              <div className="space-y-4">
+                {!selectedPackageId ? (
+                  <div className="rounded-md border bg-white p-8 text-center text-sm text-slate-600">
+                    Select a generated package to preview slides, QA, citations, and export files.
+                  </div>
+                ) : detailQuery.isLoading ? (
+                  <div className="rounded-md border bg-white p-8 text-center text-sm text-slate-600">Loading package...</div>
+                ) : detailQuery.data ? (
+                  <>
+                    <div className="rounded-md border bg-white p-4">
+                      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <h2 className="text-lg font-semibold text-slate-950">{detailQuery.data.package.title}</h2>
+                            <StatusBadge value={detailQuery.data.package.status} />
+                          </div>
+                          <div className="mt-1 text-sm text-slate-600">{detailQuery.data.package.topic} | {detailQuery.data.package.audience}</div>
+                          {selectedPackageGeneration && (
+                            <div className="mt-3 flex flex-col gap-2 rounded-md border bg-slate-50 p-3 text-sm text-slate-700 sm:flex-row sm:items-center sm:justify-between">
+                              <div>
+                                <div className="flex flex-wrap items-center gap-2">
+                                  <span className="font-medium text-slate-900">Generation</span>
+                                  <StatusBadge value={selectedPackageGeneration.status} />
+                                  <span>{selectedPackageGeneration.label}</span>
+                                </div>
+                                <div className="mt-1 text-xs text-slate-500">
+                                  {selectedPackageGeneration.detailText}
+                                  {selectedPackageGeneration.fallbackReason ? ` Reason: ${selectedPackageGeneration.fallbackReason}` : ""}
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {detailQuery.data.package.status === "published" && (
+                            <>
+                              <Button
+                                variant="outline"
+                                onClick={() => window.open(`/lessons/${detailQuery.data?.package.id}`, "_blank", "noopener,noreferrer")}
+                              >
+                                <ExternalLink className="mr-2 h-4 w-4" />
+                                Open Learner Lesson
+                              </Button>
+                              <Button variant="outline" onClick={copyLearnerLink}>
+                                <Copy className="mr-2 h-4 w-4" />
+                                Copy Link
+                              </Button>
+                            </>
+                          )}
+                          <Button variant="outline" onClick={() => runQaMutation.mutate()} disabled={runQaMutation.isPending}>
+                            <FlaskConical className="mr-2 h-4 w-4" />
+                            Run QA
+                          </Button>
+                          <Button variant="outline" onClick={() => validateContractMutation.mutate()} disabled={validateContractMutation.isPending}>
+                            <ClipboardCheck className="mr-2 h-4 w-4" />
+                            Validate Contract
+                          </Button>
+                          <Button variant="outline" onClick={() => rebuildArtifactsMutation.mutate()} disabled={rebuildArtifactsMutation.isPending}>
+                            <Save className="mr-2 h-4 w-4" />
+                            Rebuild Artifacts
+                          </Button>
+                          <Button variant="outline" onClick={() => duplicatePackageMutation.mutate()} disabled={duplicatePackageMutation.isPending}>
+                            <RotateCcw className="mr-2 h-4 w-4" />
+                            Regenerate
+                          </Button>
+                          <Button variant="outline" onClick={exportPackage}>
+                            <Download className="mr-2 h-4 w-4" />
+                            Export Harrity
+                          </Button>
+                          <Button onClick={() => publishMutation.mutate()} disabled={publishMutation.isPending}>
+                            <Rocket className="mr-2 h-4 w-4" />
+                            Publish
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="grid gap-4 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
+                      <div className="rounded-md border bg-white p-4">
+                        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                          <div className="flex items-center gap-2 font-semibold text-slate-900">
+                            <MessageSquare className="h-4 w-4 text-slate-500" />
+                            Faculty Review
+                          </div>
+                          <StatusBadge value={latestReview?.decision || "awaiting_review"} />
+                        </div>
+                        {latestReview ? (
+                          <div className="mb-4 rounded-md bg-slate-50 p-3 text-sm text-slate-700">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span className="font-medium text-slate-900">{latestReview.reviewerName}</span>
+                              <span>{latestReview.reviewerRole.replace(/_/g, " ")}</span>
+                              {latestReview.createdAt ? <span>{new Date(latestReview.createdAt).toLocaleString()}</span> : null}
+                            </div>
+                            <p className="mt-2 leading-6">{latestReview.comment}</p>
+                          </div>
+                        ) : (
+                          <div className="mb-4 rounded-md bg-amber-50 p-3 text-sm text-amber-900">
+                            No faculty review has been recorded for this package yet.
+                          </div>
+                        )}
+                        <div className="grid gap-3 md:grid-cols-2">
+                          <div className="space-y-2">
+                            <Label>Reviewer</Label>
+                            <Input value={reviewForm.reviewerName} onChange={(event) => setReviewForm({ ...reviewForm, reviewerName: event.target.value })} />
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Role</Label>
+                            <Input value={reviewForm.reviewerRole} onChange={(event) => setReviewForm({ ...reviewForm, reviewerRole: event.target.value })} />
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Decision</Label>
+                            <Select value={reviewForm.decision} onValueChange={(value) => setReviewForm({ ...reviewForm, decision: value })}>
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="comment">Comment only</SelectItem>
+                                <SelectItem value="changes_requested">Changes requested</SelectItem>
+                                <SelectItem value="approved_for_pilot">Approved for pilot</SelectItem>
+                                <SelectItem value="approved_for_release">Approved for release</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Focus</Label>
+                            <Select value={reviewForm.focusArea} onValueChange={(value) => setReviewForm({ ...reviewForm, focusArea: value })}>
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="overall">Overall</SelectItem>
+                                <SelectItem value="accuracy">Accuracy</SelectItem>
+                                <SelectItem value="learner_experience">Learner experience</SelectItem>
+                                <SelectItem value="assessment">Assessment</SelectItem>
+                                <SelectItem value="accessibility">Accessibility</SelectItem>
+                                <SelectItem value="source_traceability">Source traceability</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                        <div className="mt-3 space-y-2">
+                          <Label>Review note</Label>
+                          <Textarea value={reviewForm.comment} onChange={(event) => setReviewForm({ ...reviewForm, comment: event.target.value })} rows={3} />
+                        </div>
+                        <div className="mt-3 flex justify-end">
+                          <Button onClick={() => saveReviewMutation.mutate()} disabled={saveReviewMutation.isPending || reviewForm.comment.trim().length < 3}>
+                            <ClipboardCheck className="mr-2 h-4 w-4" />
+                            Save Review
+                          </Button>
+                        </div>
+                      </div>
+
+                      <div className="rounded-md border bg-white p-4">
+                        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                          <div className="font-semibold text-slate-900">Pilot Assignment Loop</div>
+                          <StatusBadge value={detailQuery.data.package.status === "published" ? "published" : "blocked"} />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2 text-xs text-slate-600">
+                          <div className="rounded-md bg-slate-50 px-3 py-2">Assigned: {assignmentTotals.total}</div>
+                          <div className="rounded-md bg-slate-50 px-3 py-2">In progress: {assignmentTotals.inProgress}</div>
+                          <div className="rounded-md bg-slate-50 px-3 py-2">Complete: {assignmentTotals.completed}</div>
+                          <div className="rounded-md bg-slate-50 px-3 py-2">Feedback: {assignmentTotals.feedback}</div>
+                          <div className="rounded-md bg-slate-50 px-3 py-2">Opened: {learnerEventCounts.lesson_opened || 0}</div>
+                          <div className="rounded-md bg-slate-50 px-3 py-2">Practice attempts: {learnerEventCounts.practice_attempted || 0}</div>
+                        </div>
+
+                        {detailQuery.data.package.status === "published" ? (
+                          <div className="mt-4 rounded-md border bg-slate-50 p-3">
+                            <div className="grid gap-3 md:grid-cols-2">
+                              <div className="space-y-2">
+                                <Label>Assignment title</Label>
+                                <Input
+                                  value={assignmentForm.title}
+                                  onChange={(event) => setAssignmentForm({ ...assignmentForm, title: event.target.value })}
+                                  placeholder={`${detailQuery.data.package.title} Pilot Assignment`}
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <Label>Cohort</Label>
+                                <Input value={assignmentForm.cohortName} onChange={(event) => setAssignmentForm({ ...assignmentForm, cohortName: event.target.value })} />
+                              </div>
+                              <div className="space-y-2">
+                                <Label>Due date</Label>
+                                <Input type="date" value={assignmentForm.dueDate} onChange={(event) => setAssignmentForm({ ...assignmentForm, dueDate: event.target.value })} />
+                              </div>
+                            </div>
+                            <div className="mt-3 space-y-2">
+                              <Label>Learners</Label>
+                              <Textarea
+                                value={assignmentForm.rosterText}
+                                onChange={(event) => setAssignmentForm({ ...assignmentForm, rosterText: event.target.value })}
+                                rows={4}
+                                placeholder="One learner per line: Name, email@example.com"
+                              />
+                            </div>
+                            <div className="mt-3 flex justify-end">
+                              <Button onClick={() => createAssignmentMutation.mutate()} disabled={createAssignmentMutation.isPending || parseAssignmentRoster(assignmentForm.rosterText).length === 0}>
+                                <PackageCheck className="mr-2 h-4 w-4" />
+                                Create Assignment
+                              </Button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="mt-4 rounded-md bg-amber-50 p-3 text-sm text-amber-900">
+                            Publish this package before assigning it to learners.
+                          </div>
+                        )}
+
+                        <div className="mt-4 space-y-3">
+                          <div className="text-xs font-semibold uppercase text-slate-500">Assignments</div>
+                          {assignments.length === 0 ? (
+                            <div className="rounded-md bg-slate-50 p-3 text-sm text-slate-600">No pilot assignments yet.</div>
+                          ) : assignments.map((assignment) => (
+                            <div key={assignment.id} className="rounded-md border p-3 text-sm text-slate-700">
+                              <div className="flex flex-wrap items-center justify-between gap-2">
+                                <div>
+                                  <div className="font-medium text-slate-900">{assignment.title}</div>
+                                  <div className="text-xs text-slate-500">
+                                    {assignment.cohortName}
+                                    {assignment.dueDate ? ` | Due ${new Date(assignment.dueDate).toLocaleDateString()}` : ""}
+                                  </div>
+                                </div>
+                                <StatusBadge value={assignment.status} />
+                              </div>
+                              <div className="mt-2 grid grid-cols-4 gap-2 text-xs text-slate-600">
+                                <div className="rounded-md bg-slate-50 px-2 py-1">Total {assignment.counts?.total || 0}</div>
+                                <div className="rounded-md bg-slate-50 px-2 py-1">Started {assignment.counts?.inProgress || 0}</div>
+                                <div className="rounded-md bg-slate-50 px-2 py-1">Done {assignment.counts?.completed || 0}</div>
+                                <div className="rounded-md bg-slate-50 px-2 py-1">Notes {assignment.counts?.feedback || 0}</div>
+                              </div>
+                              <div className="mt-3 space-y-2">
+                                {assignment.learners.slice(0, 8).map((learner) => (
+                                  <div key={learner.id} className="flex flex-wrap items-center justify-between gap-2 rounded-md bg-slate-50 px-3 py-2">
+                                    <div className="min-w-0">
+                                      <div className="font-medium text-slate-900">{learner.learnerName}</div>
+                                      <div className="text-xs text-slate-500">
+                                        {learner.learnerEmail || "No email"}
+                                        {learner.completedAt ? ` | Completed ${new Date(learner.completedAt).toLocaleDateString()}` : ""}
+                                      </div>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      <StatusBadge value={learner.status} />
+                                      <Button variant="outline" size="sm" onClick={() => copyAssignmentLink(learner.linkPath)}>
+                                        <Copy className="mr-2 h-3.5 w-3.5" />
+                                        Link
+                                      </Button>
+                                      <Button variant="outline" size="sm" onClick={() => window.open(learner.linkPath, "_blank", "noopener,noreferrer")}>
+                                        <ExternalLink className="mr-2 h-3.5 w-3.5" />
+                                        Open
+                                      </Button>
+                                    </div>
+                                    {learner.feedbackComment ? (
+                                      <p className="basis-full text-xs leading-5 text-slate-600">{learner.feedbackComment}</p>
+                                    ) : null}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+
+                        <div className="mt-4 space-y-2">
+                          <div className="text-xs font-semibold uppercase text-slate-500">Recent feedback</div>
+                          {learnerFeedback.length === 0 ? (
+                            <div className="rounded-md bg-slate-50 p-3 text-sm text-slate-600">No learner feedback yet.</div>
+                          ) : learnerFeedback.slice(0, 3).map((event) => (
+                            <div key={event.id} className="rounded-md border p-3 text-sm text-slate-700">
+                              <div className="flex flex-wrap items-center gap-2">
+                                <StatusBadge value={String(event.payload?.rating || "comment")} />
+                                {event.createdAt ? <span className="text-xs text-slate-500">{new Date(event.createdAt).toLocaleString()}</span> : null}
+                              </div>
+                              {event.payload?.comment ? <p className="mt-2 leading-6">{String(event.payload.comment)}</p> : null}
+                            </div>
+                          ))}
+                        </div>
+                        <div className="mt-4 space-y-2">
+                          <div className="text-xs font-semibold uppercase text-slate-500">Release audit</div>
+                          {(detailQuery.data.releaseAuditEvents || []).length === 0 ? (
+                            <div className="rounded-md bg-slate-50 p-3 text-sm text-slate-600">No release audit events yet.</div>
+                          ) : (detailQuery.data.releaseAuditEvents || []).slice(0, 4).map((event) => (
+                            <div key={event.id} className="rounded-md border p-3 text-sm text-slate-700">
+                              <div className="flex flex-wrap items-center gap-2">
+                                <StatusBadge value={event.eventType} />
+                                {event.createdAt ? <span className="text-xs text-slate-500">{new Date(event.createdAt).toLocaleString()}</span> : null}
+                              </div>
+                              <p className="mt-1 leading-6">{event.summary}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="rounded-md border bg-white p-4">
+                      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                        <div>
+                          <div className="font-semibold text-slate-900">Pilot Outcomes</div>
+                          <div className="text-xs text-slate-500">Completion, practice attempts, feedback, and follow-up needs for assigned learners.</div>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          <Button variant="outline" size="sm" onClick={() => pilotOutcomesQuery.refetch()} disabled={pilotOutcomesQuery.isFetching}>
+                            <RefreshCw className="mr-2 h-3.5 w-3.5" />
+                            Refresh
+                          </Button>
+                          <Button variant="outline" size="sm" onClick={() => exportPilotOutcomes("csv")} disabled={!pilotOutcomes}>
+                            <Download className="mr-2 h-3.5 w-3.5" />
+                            CSV
+                          </Button>
+                          <Button variant="outline" size="sm" onClick={() => exportPilotOutcomes("json")} disabled={!pilotOutcomes}>
+                            <Download className="mr-2 h-3.5 w-3.5" />
+                            JSON
+                          </Button>
+                        </div>
+                      </div>
+
+                      {pilotOutcomesQuery.isLoading ? (
+                        <div className="rounded-md bg-slate-50 p-3 text-sm text-slate-600">Loading pilot outcomes...</div>
+                      ) : !pilotOutcomes ? (
+                        <div className="rounded-md bg-slate-50 p-3 text-sm text-slate-600">Pilot outcomes are not available for this package yet.</div>
+                      ) : (
+                        <div className="space-y-4">
+                          <div className="grid gap-2 text-xs text-slate-600 sm:grid-cols-2 lg:grid-cols-6">
+                            <div className="rounded-md bg-slate-50 px-3 py-2">Assigned: {pilotOutcomes.totals.assigned}</div>
+                            <div className="rounded-md bg-slate-50 px-3 py-2">Opened: {pilotOutcomes.totals.opened}</div>
+                            <div className="rounded-md bg-slate-50 px-3 py-2">Practice: {pilotOutcomes.totals.practiceAttempted}</div>
+                            <div className="rounded-md bg-slate-50 px-3 py-2">Complete: {pilotOutcomes.totals.completed}</div>
+                            <div className="rounded-md bg-slate-50 px-3 py-2">Feedback: {pilotOutcomes.totals.feedbackSubmitted}</div>
+                            <div className="rounded-md bg-slate-50 px-3 py-2">Needs review: {pilotOutcomes.totals.needsReview}</div>
+                          </div>
+
+                          <div className="grid gap-4 lg:grid-cols-3">
+                            <div className="rounded-md border p-3">
+                              <div className="text-xs font-semibold uppercase text-slate-500">Practice</div>
+                              <div className="mt-2 text-sm text-slate-700">
+                                {pilotOutcomes.practiceSummary.attempts} attempts, {pilotOutcomes.practiceSummary.correct} correct
+                                {pilotOutcomes.practiceSummary.accuracy !== null && pilotOutcomes.practiceSummary.accuracy !== undefined
+                                  ? ` (${pilotOutcomes.practiceSummary.accuracy}% accuracy)`
+                                  : ""}
+                              </div>
+                            </div>
+                            <div className="rounded-md border p-3">
+                              <div className="text-xs font-semibold uppercase text-slate-500">Feedback ratings</div>
+                              <div className="mt-2 flex flex-wrap gap-2">
+                                {Object.entries(pilotOutcomes.feedbackSummary.ratings || {}).map(([rating, count]) => (
+                                  <span key={rating} className="rounded-md bg-slate-50 px-2 py-1 text-xs text-slate-700">{rating}: {count}</span>
+                                ))}
+                              </div>
+                            </div>
+                            <div className="rounded-md border p-3">
+                              <div className="text-xs font-semibold uppercase text-slate-500">Cohorts</div>
+                              <div className="mt-2 space-y-1 text-sm text-slate-700">
+                                {pilotOutcomes.assignments.length === 0 ? "No cohorts assigned." : pilotOutcomes.assignments.map((assignment) => (
+                                  <div key={assignment.id} className="flex justify-between gap-3">
+                                    <span className="truncate">{assignment.cohortName}</span>
+                                    <span>{assignment.totals.completed}/{assignment.totals.assigned} complete</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="grid gap-4 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+                            <div className="rounded-md border p-3">
+                              <div className="mb-2 text-xs font-semibold uppercase text-slate-500">Action queue</div>
+                              {pilotOutcomes.actionQueue.length === 0 ? (
+                                <div className="rounded-md bg-emerald-50 p-3 text-sm text-emerald-800">No learner follow-up needed right now.</div>
+                              ) : (
+                                <div className="space-y-2">
+                                  {pilotOutcomes.actionQueue.slice(0, 6).map((item) => (
+                                    <div key={`${item.assignmentId}-${item.learnerId}`} className="rounded-md bg-slate-50 p-3 text-sm text-slate-700">
+                                      <div className="flex flex-wrap items-center gap-2">
+                                        <span className="font-medium text-slate-900">{item.learnerName}</span>
+                                        <StatusBadge value={item.status} />
+                                      </div>
+                                      <div className="mt-1 flex flex-wrap gap-1">
+                                        {item.reasons.map((reason) => <StatusBadge key={reason} value={reason} />)}
+                                      </div>
+                                      <p className="mt-2 leading-6">{item.recommendedAction}</p>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+
+                            <div className="overflow-x-auto rounded-md border">
+                              <table className="min-w-full divide-y divide-slate-200 text-sm">
+                                <thead className="bg-slate-50 text-xs uppercase text-slate-500">
+                                  <tr>
+                                    <th className="px-3 py-2 text-left font-semibold">Learner</th>
+                                    <th className="px-3 py-2 text-left font-semibold">Status</th>
+                                    <th className="px-3 py-2 text-left font-semibold">Practice</th>
+                                    <th className="px-3 py-2 text-left font-semibold">Feedback</th>
+                                    <th className="px-3 py-2 text-left font-semibold">Last activity</th>
+                                  </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-100 bg-white">
+                                  {pilotOutcomes.learners.length === 0 ? (
+                                    <tr>
+                                      <td colSpan={5} className="px-3 py-4 text-center text-slate-500">No assigned learners yet.</td>
+                                    </tr>
+                                  ) : pilotOutcomes.learners.slice(0, 12).map((learner) => (
+                                    <tr key={learner.learnerId}>
+                                      <td className="px-3 py-2">
+                                        <div className="font-medium text-slate-900">{learner.learnerName}</div>
+                                        <div className="text-xs text-slate-500">{learner.cohortName}</div>
+                                      </td>
+                                      <td className="px-3 py-2"><StatusBadge value={learner.status} /></td>
+                                      <td className="px-3 py-2 text-slate-700">{learner.practice.attempts} attempts, {learner.practice.correct} correct</td>
+                                      <td className="px-3 py-2 text-slate-700">
+                                        {learner.feedback.rating ? (
+                                          <div>
+                                            <StatusBadge value={String(learner.feedback.rating)} />
+                                            {learner.feedback.comment ? <div className="mt-1 max-w-xs truncate text-xs text-slate-500">{learner.feedback.comment}</div> : null}
+                                          </div>
+                                        ) : "None"}
+                                      </td>
+                                      <td className="px-3 py-2 text-slate-700">
+                                        {learner.lastActivityAt ? new Date(learner.lastActivityAt).toLocaleString() : "No activity"}
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="grid gap-4 lg:grid-cols-2">
+                      <div className="rounded-md border bg-white p-4">
+                        <div className="mb-3 font-semibold text-slate-900">QA Gates</div>
+                        <div className="space-y-2">
+                          {detailQuery.data.qaResults.map((result) => (
+                            <div key={result.id} className="rounded-md border p-3">
+                              <div className="flex items-center justify-between gap-2">
+                                <div className="font-medium text-slate-900">{result.gateName}</div>
+                                <StatusBadge value={result.status} />
+                              </div>
+                              <div className="mt-1 text-sm text-slate-600">{result.details}</div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="rounded-md border bg-white p-4">
+                        <div className="mb-3 font-semibold text-slate-900">Practice Items</div>
+                        <div className="space-y-3">
+                          {detailQuery.data.items.map((item) => (
+                            <div key={item.id} className="rounded-md border p-3">
+                              {editingItemId === item.id ? (
+                                <div className="space-y-3">
+                                  <div className="space-y-2">
+                                    <Label>Stem</Label>
+                                    <Textarea value={itemEditForm.stem} onChange={(event) => setItemEditForm({ ...itemEditForm, stem: event.target.value })} rows={3} />
+                                  </div>
+                                  <div className="space-y-2">
+                                    <Label>Options JSON</Label>
+                                    <Textarea value={itemEditForm.optionsText} onChange={(event) => setItemEditForm({ ...itemEditForm, optionsText: event.target.value })} rows={5} className="font-mono text-xs" />
+                                  </div>
+                                  <div className="grid grid-cols-2 gap-3">
+                                    <div className="space-y-2">
+                                      <Label>Correct answer</Label>
+                                      <Input value={itemEditForm.correctAnswer} onChange={(event) => setItemEditForm({ ...itemEditForm, correctAnswer: event.target.value })} />
+                                    </div>
+                                    <div className="space-y-2">
+                                      <Label>Difficulty</Label>
+                                      <Input value={itemEditForm.difficulty} onChange={(event) => setItemEditForm({ ...itemEditForm, difficulty: event.target.value })} />
+                                    </div>
+                                  </div>
+                                  <div className="space-y-2">
+                                    <Label>Rationale</Label>
+                                    <Textarea value={itemEditForm.rationale} onChange={(event) => setItemEditForm({ ...itemEditForm, rationale: event.target.value })} rows={3} />
+                                  </div>
+                                  <div className="space-y-2">
+                                    <Label>Tags JSON</Label>
+                                    <Textarea value={itemEditForm.tagsText} onChange={(event) => setItemEditForm({ ...itemEditForm, tagsText: event.target.value })} rows={4} className="font-mono text-xs" />
+                                  </div>
+                                  <div className="flex flex-wrap gap-2">
+                                    <Button size="sm" onClick={() => saveItemMutation.mutate()} disabled={saveItemMutation.isPending}>
+                                      <Save className="mr-2 h-4 w-4" />
+                                      Save Item
+                                    </Button>
+                                    <Button size="sm" variant="outline" onClick={() => setEditingItemId("")}>
+                                      <XCircle className="mr-2 h-4 w-4" />
+                                      Cancel
+                                    </Button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <>
+                                  <div className="flex items-start justify-between gap-2">
+                                    <div className="text-sm font-medium text-slate-900">{item.stem}</div>
+                                    <Button size="sm" variant="outline" onClick={() => startItemEdit(item)}>
+                                      <Pencil className="mr-2 h-4 w-4" />
+                                      Edit
+                                    </Button>
+                                  </div>
+                                  <Separator className="my-2" />
+                                  <div className="text-sm text-slate-700">Answer: {item.correctAnswer}</div>
+                                  <div className="mt-1 text-sm text-slate-600">{item.rationale}</div>
+                                  <div className="mt-2 flex flex-wrap gap-1">
+                                    {Object.entries(item.tags || {}).map(([key, value]) => (
+                                      <Badge key={key} variant="secondary">{key}: {String(value)}</Badge>
+                                    ))}
+                                  </div>
+                                </>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="grid gap-4 lg:grid-cols-2">
+                      <div className="rounded-md border bg-white p-4">
+                        <div className="mb-3 font-semibold text-slate-900">Contract Validation</div>
+                        <div className="space-y-2">
+                          {(detailQuery.data.contractValidations || []).length === 0 ? (
+                            <div className="rounded-md bg-slate-50 p-3 text-sm text-slate-600">Run contract validation to refresh Harrity package gates.</div>
+                          ) : (detailQuery.data.contractValidations || []).map((result) => (
+                            <div key={result.id} className="rounded-md border p-3">
+                              <div className="flex items-center justify-between gap-2">
+                                <div className="font-medium text-slate-900">{result.validationName}</div>
+                                <StatusBadge value={result.status} />
+                              </div>
+                              <div className="mt-1 text-sm text-slate-600">{result.details}</div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="rounded-md border bg-white p-4">
+                        <div className="mb-3 font-semibold text-slate-900">Runs & Artifacts</div>
+                        <div className="space-y-3">
+                          {(detailQuery.data.generationRuns || []).slice(0, 2).map((run) => (
+                            <div key={run.id} className="rounded-md border p-3">
+                              <div className="flex items-center justify-between gap-2">
+                                <div className="text-sm font-medium text-slate-900">{run.generationMode.replace(/_/g, " ")}</div>
+                                <StatusBadge value={run.status} />
+                              </div>
+                              <div className="mt-1 text-xs text-slate-500">
+                                Contract: {String(run.validationSummary?.contract?.status || "not validated")}
+                              </div>
+                            </div>
+                          ))}
+                          <div className="rounded-md border p-3">
+                            <div className="text-sm font-medium text-slate-900">Export artifacts</div>
+                            {exportStatusQuery.data && (
+                              <div className="mt-2 rounded-md bg-slate-50 p-2 text-xs text-slate-600">
+                                <div className="flex flex-wrap items-center gap-2">
+                                  <StatusBadge value={exportStatusQuery.data.status} />
+                                  <span>{exportStatusQuery.data.fileCount} files</span>
+                                  <span>{exportStatusQuery.data.includesDeckModel ? "deck model included" : "deck model missing"}</span>
+                                </div>
+                                <div className="mt-1">
+                                  Required missing: {exportStatusQuery.data.missingRequiredFiles.length ? exportStatusQuery.data.missingRequiredFiles.join(", ") : "none"}
+                                </div>
+                                <div className="mt-1">Checked {new Date(exportStatusQuery.data.generatedAt).toLocaleString()}</div>
+                                {exportStatusQuery.data.latestExportAudit?.createdAt ? (
+                                  <div className="mt-1">Last export {new Date(exportStatusQuery.data.latestExportAudit.createdAt).toLocaleString()}</div>
+                                ) : null}
+                              </div>
+                            )}
+                            <div className="mt-2 flex flex-wrap gap-1">
+                              {(detailQuery.data.artifacts || []).length === 0 ? (
+                                <span className="text-xs text-slate-500">No artifacts persisted yet.</span>
+                              ) : (detailQuery.data.artifacts || []).map((artifact) => (
+                                <Badge key={artifact.id} variant="secondary">{artifact.fileName}</Badge>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="rounded-md border bg-white p-4">
+                      <div className="mb-3 font-semibold text-slate-900">Learner Deck Preview</div>
+                      <div className="grid gap-3 lg:grid-cols-2">
+                        {detailQuery.data.slides.map((slide) => (
+                          <div key={slide.id} className="rounded-md border p-4">
+                            <div className="mb-3 flex items-start justify-between gap-3">
+                              <div>
+                                <div className="text-xs font-semibold uppercase text-slate-500">Slide {slide.slideNumber} | {slide.slideType.replace(/_/g, " ")}</div>
+                                <div className="font-semibold text-slate-950">{slide.title}</div>
+                              </div>
+                              <div className="flex flex-wrap items-center justify-end gap-2">
+                                <Badge variant="secondary">{slide.cjmStep || "CJM"}</Badge>
+                                {editingSlideId !== slide.id && (
+                                  <Button size="sm" variant="outline" onClick={() => startSlideEdit(slide)}>
+                                    <Pencil className="mr-2 h-4 w-4" />
+                                    Edit
+                                  </Button>
+                                )}
+                              </div>
+                            </div>
+                            {editingSlideId === slide.id ? (
+                              <div className="space-y-3">
+                                <div className="space-y-2">
+                                  <Label>Title</Label>
+                                  <Input value={slideEditForm.title} onChange={(event) => setSlideEditForm({ ...slideEditForm, title: event.target.value })} />
+                                </div>
+                                <div className="space-y-2">
+                                  <Label>Visible content JSON</Label>
+                                  <Textarea value={slideEditForm.visibleContentText} onChange={(event) => setSlideEditForm({ ...slideEditForm, visibleContentText: event.target.value })} rows={8} className="font-mono text-xs" />
+                                </div>
+                                <div className="space-y-2">
+                                  <Label>Retrieval prompt</Label>
+                                  <Textarea value={slideEditForm.retrievalPrompt} onChange={(event) => setSlideEditForm({ ...slideEditForm, retrievalPrompt: event.target.value })} rows={2} />
+                                </div>
+                                <div className="grid gap-3 md:grid-cols-2">
+                                  <div className="space-y-2">
+                                    <Label>Speaker notes</Label>
+                                    <Textarea value={slideEditForm.speakerNotes} onChange={(event) => setSlideEditForm({ ...slideEditForm, speakerNotes: event.target.value })} rows={4} />
+                                  </div>
+                                  <div className="space-y-2">
+                                    <Label>Guided notes</Label>
+                                    <Textarea value={slideEditForm.guidedNotes} onChange={(event) => setSlideEditForm({ ...slideEditForm, guidedNotes: event.target.value })} rows={4} />
+                                  </div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-3">
+                                  <Input placeholder="NCLEX category" value={slideEditForm.nclexCategory} onChange={(event) => setSlideEditForm({ ...slideEditForm, nclexCategory: event.target.value })} />
+                                  <Input placeholder="CJM step" value={slideEditForm.cjmStep} onChange={(event) => setSlideEditForm({ ...slideEditForm, cjmStep: event.target.value })} />
+                                  <Input placeholder="Nursing process" value={slideEditForm.nursingProcess} onChange={(event) => setSlideEditForm({ ...slideEditForm, nursingProcess: event.target.value })} />
+                                  <Input placeholder="Bloom level" value={slideEditForm.bloomLevel} onChange={(event) => setSlideEditForm({ ...slideEditForm, bloomLevel: event.target.value })} />
+                                </div>
+                                <div className="flex flex-wrap gap-2">
+                                  <Button size="sm" onClick={() => saveSlideMutation.mutate()} disabled={saveSlideMutation.isPending}>
+                                    <Save className="mr-2 h-4 w-4" />
+                                    Save Slide
+                                  </Button>
+                                  <Button size="sm" variant="outline" onClick={() => setEditingSlideId("")}>
+                                    <XCircle className="mr-2 h-4 w-4" />
+                                    Cancel
+                                  </Button>
+                                </div>
+                              </div>
+                            ) : (
+                              <>
+                                <div className="space-y-3">{renderVisibleContent(slide.visibleContent)}</div>
+                                {slide.retrievalPrompt && (
+                                  <div className="mt-3 rounded-md bg-teal-50 p-3 text-sm text-teal-900">
+                                    {slide.retrievalPrompt}
+                                  </div>
+                                )}
+                                {(slide.speakerNotes || slide.guidedNotes) && (
+                                  <div className="mt-3 grid gap-2 text-xs text-slate-600">
+                                    {slide.guidedNotes && <div className="rounded-md bg-slate-50 p-2">Guided notes: {slide.guidedNotes}</div>}
+                                    {slide.speakerNotes && <div className="rounded-md bg-slate-50 p-2">Speaker notes: {slide.speakerNotes}</div>}
+                                  </div>
+                                )}
+                              </>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="rounded-md border bg-white p-8 text-center text-sm text-red-600">Package could not be loaded.</div>
+                )}
+              </div>
+            </div>
+          </TabsContent>
+        </Tabs>
+      </div>
+    </AdminLayout>
+  );
+}

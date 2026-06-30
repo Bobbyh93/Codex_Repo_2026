@@ -1,0 +1,49 @@
+## Final cut-and-build list — so you can ship and sell now
+
+You asked “And?” Here’s the rest: what to cut, what to keep, and the 72‑hour build to go live and get sales.
+
+### Remove now (anything not increasing outcome/likelihood or cutting time/effort)
+- Syllabus upload door, 6‑week plans, daily 2‑hour schedules
+- Progress dashboard, gamification, quizzes/Quick Checks
+- B2B/admin portal, cohort analytics
+- Subscriptions/continuity
+- Account creation before value, long intake (>5 Qs)
+Cutting time delay and effort makes value go up. Period [$100M Offers, Page 59; $100M Offers, Page 65].
+
+### Keep and finish (only what prints wins)
+- Free lead magnet: “1‑Hour Exam Recovery Blueprint” (on‑page + PDF + email)
+- Paid upsell: “Complete Study Blueprint + Sprint Pack” ($19–39) with a simple 7‑day refund (risk reversal raises perceived likelihood) [$100M Offers, Page 59]
+- High‑contrast upsell card on the free result (locked vs unlocked)
+- SLA: free result <5 minutes; paid same‑day (shorter perceived delay = more value) [$100M Offers, Page 61]
+
+### 72‑hour dev checklist (Replit)
+- Day 1
+  - Trim intake to 3–5 Qs; remove login wall (collect email on result page)
+  - Routes: /upload, /generate‑quick, /checkout, /webhook/stripe, /admin/review
+  - Seed taxonomy/resources for top 30–50 concepts
+- Day 2
+  - Quick Blueprint template (top 1–2 gaps, 3×20‑min tasks, 5 links) → render on‑page + PDF + email
+  - Stripe checkout → webhook generates Complete Blueprint (3–5 Sprints, 20–30 links) → email
+  - Admin queue for low‑confidence extractions
+- Day 3
+  - Add upsell card with guarantee copy
+  - Fire analytics events: landing_view, upload_complete, mini_view, checkout_open, purchase, full_sent
+  - Smoke test end‑to‑end under 5 minutes for free result
+
+Packaging your free step in multiple formats boosts consumption and conversion [$100M Leads, Page 43]. Lead magnets lower CAC by giving value first—use them [$100M Leads, Page 46].
+
+### Ads to flip sales on (write and run these)
+Spend 80% of prep on hooks; 20% on meat. That’s how ads win [$100M Playbook: GOATed Ads, Page 9].
+- “Just finished an exam? Upload your report → get a 1‑Hour Recovery Blueprint (free).”
+- “Staring at your test report? We turn it into your next 60 minutes—do this, not that.”
+- “ADN/BSN/LVN: Stop guessing after exams. Your 1‑hour plan is ready—free.”
+Write 50 hooks; test 3–5 meats (demo/testimonial/explainer) [$100M Playbook: GOATed Ads, Page 29].
+
+### KPIs that define “viable” (first 2–4 weeks)
+- Opt‑in ≥30%
+- Intake completion ≥50%
+- Upsell 5–10%
+- Free result delivered <5 minutes
+If weak: fix hooks first, then make the free output clearer—don’t add features [$100M Leads, Page 46].
+
+> Simple scales, fancy fails. One door. One fast win. One upsell. I built everything by doing more reps—ship this in 3 days and start buying data.

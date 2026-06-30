@@ -1,0 +1,42 @@
+ATI Nursing Education
+RN Fundamentals Proctored Assessment
+Performance Profile Report
+
+Individual Name: ALEX JOHNSON  Individual Score: 74.5%
+Student Number: 345678
+Institution: Regional Nursing Institute
+Assessment Date: 02/20/2024
+
+Overall Performance
+Your score: 74.5%
+National Mean: 71.8%
+
+Group Scores
+Medical-Surgical 22 61.8%
+Fundamentals 18 74.2%
+Mental Health 7 68.6%
+Pharmacology 12 58.3%
+Maternal and Newborn 5 80.0%
+
+Topics to Review
+
+Medical-Surgical > Cardiovascular: Heart Failure Management
+Medical-Surgical > Cardiovascular: Hypertensive Crisis
+Medical-Surgical > Respiratory: Pneumothorax Care
+Medical-Surgical > Respiratory: Acute Respiratory Distress Syndrome
+Medical-Surgical > Gastrointestinal: Bowel Obstruction
+Medical-Surgical > Neurological: Increased Intracranial Pressure
+
+Fundamentals > Safety: Fall Prevention Strategies
+Fundamentals > Infection Control: Central Line Associated Bloodstream Infection
+
+Mental Health > Mood Disorders: Bipolar Disorder Management
+Mental Health > Crisis Intervention: Suicide Risk Assessment
+
+Pharmacology > Cardiovascular: Digoxin Toxicity
+Pharmacology > Renal: Diuretic Therapy
+Pharmacology > Endocrine: Insulin Types and Administration
+Pharmacology > Respiratory: Bronchodilator Medications
+
+Outcomes
+End of report.

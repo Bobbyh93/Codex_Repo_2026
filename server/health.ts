@@ -1,0 +1,221 @@
+import { db } from './db';
+import { sql } from 'drizzle-orm';
+import { AppLogger } from './logger';
+import type { Express } from 'express';
+
+interface HealthCheckResult {
+  status: 'healthy' | 'degraded' | 'unhealthy';
+  timestamp: string;
+  uptime: number;
+  checks: {
+    database: HealthCheck;
+    memory: HealthCheck;
+    disk?: HealthCheck;
+    email?: HealthCheck;
+  };
+  version: string;
+  environment: string;
+}
+
+interface HealthCheck {
+  status: 'ok' | 'warning' | 'error';
+  message?: string;
+  responseTime?: number;
+  details?: any;
+}
+
+export class HealthCheckService {
+  private static startTime = Date.now();
+
+  // Check database connectivity
+  static async checkDatabase(): Promise<HealthCheck> {
+    const start = Date.now();
+    try {
+      // Run a simple query to test connectivity
+      await db.execute(sql`SELECT 1`);
+      const responseTime = Date.now() - start;
+      
+      return {
+        status: responseTime < 100 ? 'ok' : 'warning',
+        responseTime,
+        message: responseTime < 100 ? 'Database responding normally' : 'Database response slow',
+      };
+    } catch (error) {
+      AppLogger.error('Database health check failed', error as Error);
+      return {
+        status: 'error',
+        message: 'Database connection failed',
+        details: (error as Error).message,
+      };
+    }
+  }
+
+  // Check memory usage
+  static checkMemory(): HealthCheck {
+    const usage = process.memoryUsage();
+    const heapUsedPercent = (usage.heapUsed / usage.heapTotal) * 100;
+    
+    let status: 'ok' | 'warning' | 'error' = 'ok';
+    let message = 'Memory usage normal';
+    
+    if (heapUsedPercent > 90) {
+      status = 'error';
+      message = 'Critical memory usage';
+    } else if (heapUsedPercent > 75) {
+      status = 'warning';
+      message = 'High memory usage';
+    }
+
+    return {
+      status,
+      message,
+      details: {
+        heapUsed: Math.round(usage.heapUsed / 1024 / 1024),
+        heapTotal: Math.round(usage.heapTotal / 1024 / 1024),
+        rss: Math.round(usage.rss / 1024 / 1024),
+        heapUsedPercent: heapUsedPercent.toFixed(2),
+      },
+    };
+  }
+
+  // Check email service
+  static async checkEmailService(): Promise<HealthCheck> {
+    try {
+      const { EmailService } = await import('./email-service');
+      const isConnected = await EmailService.testConnection();
+      
+      return {
+        status: isConnected ? 'ok' : 'warning',
+        message: isConnected ? 'Email service configured' : 'Email service not configured',
+      };
+    } catch (error) {
+      return {
+        status: 'warning',
+        message: 'Email service check failed',
+        details: (error as Error).message,
+      };
+    }
+  }
+
+  // Comprehensive health check
+  static async performHealthCheck(): Promise<HealthCheckResult> {
+    const [database, email] = await Promise.all([
+      this.checkDatabase(),
+      this.checkEmailService(),
+    ]);
+
+    const memory = this.checkMemory();
+    
+    // Determine overall status
+    const checks = { database, memory, email };
+    let overallStatus: 'healthy' | 'degraded' | 'unhealthy' = 'healthy';
+    
+    if (database.status === 'error' || memory.status === 'error') {
+      overallStatus = 'unhealthy';
+    } else if (database.status === 'warning' || memory.status === 'warning' || email?.status === 'warning') {
+      overallStatus = 'degraded';
+    }
+
+    const result: HealthCheckResult = {
+      status: overallStatus,
+      timestamp: new Date().toISOString(),
+      uptime: Math.floor((Date.now() - this.startTime) / 1000),
+      checks,
+      version: process.env.APP_VERSION || '1.0.0',
+      environment: process.env.NODE_ENV || 'development',
+    };
+
+    // Log health status changes
+    if (overallStatus !== 'healthy') {
+      AppLogger.warn('Health check detected issues', result);
+    }
+
+    return result;
+  }
+
+  // Simple liveness check (for k8s liveness probe)
+  static liveness(): { status: 'ok'; timestamp: string } {
+    return {
+      status: 'ok',
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  // Readiness check (for k8s readiness probe)
+  static async readiness(): Promise<{ ready: boolean; checks: any }> {
+    const database = await this.checkDatabase();
+    const memory = this.checkMemory();
+    
+    const ready = database.status !== 'error' && memory.status !== 'error';
+    
+    return {
+      ready,
+      checks: {
+        database: database.status,
+        memory: memory.status,
+      },
+    };
+  }
+}
+
+// Register health check endpoints
+export function registerHealthEndpoints(app: Express) {
+  // Comprehensive health check
+  app.get('/health', async (req, res) => {
+    try {
+      const health = await HealthCheckService.performHealthCheck();
+      const statusCode = health.status === 'healthy' ? 200 : health.status === 'degraded' ? 200 : 503;
+      res.status(statusCode).json(health);
+    } catch (error) {
+      AppLogger.error('Health check endpoint error', error as Error);
+      res.status(503).json({
+        status: 'unhealthy',
+        error: 'Health check failed',
+      });
+    }
+  });
+
+  // Simple liveness probe
+  app.get('/health/live', (req, res) => {
+    res.json(HealthCheckService.liveness());
+  });
+
+  // Readiness probe
+  app.get('/health/ready', async (req, res) => {
+    try {
+      const readiness = await HealthCheckService.readiness();
+      res.status(readiness.ready ? 200 : 503).json(readiness);
+    } catch (error) {
+      res.status(503).json({ ready: false, error: 'Readiness check failed' });
+    }
+  });
+
+  // Metrics endpoint
+  app.get('/metrics', (req, res) => {
+    const usage = process.memoryUsage();
+    const cpuUsage = process.cpuUsage();
+    
+    res.json({
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+      memory: {
+        heapUsed: usage.heapUsed,
+        heapTotal: usage.heapTotal,
+        rss: usage.rss,
+        external: usage.external,
+      },
+      cpu: {
+        user: cpuUsage.user,
+        system: cpuUsage.system,
+      },
+      pid: process.pid,
+      version: process.version,
+      platform: process.platform,
+      arch: process.arch,
+    });
+  });
+
+  AppLogger.info('Health check endpoints registered', {
+    endpoints: ['/health', '/health/live', '/health/ready', '/metrics'],
+  });
+}

@@ -1,0 +1,41 @@
+## Cut list — remove these now so the MVP prints wins
+
+If a feature doesn’t raise outcome/likelihood or cut time/effort, kill it. That’s the value equation—maximize dream outcome and perceived likelihood; minimize time delay and effort [$100M Offers, Page 59; $100M Offers, Page 65].
+
+### Product scope (features to remove/disable)
+- Syllabus upload door (one door only = test report upload).
+- 6‑week plans and daily 2‑hour schedules (replace with paid “Sprint Pack” later).
+- Progress dashboard/analytics UI (use on‑page checklist + follow‑up email).
+- Quick Checks/quiz engine, adaptive anything, gamification.
+- Community, comments, social sharing in‑app.
+- Subscription/continuity toggles (do after upsell works) [$100M Money Models, Page 147; Page 155].
+
+### B2B/Admin (cut for now)
+- Program coordinator portal, cohort analytics, CSV imports, multi‑tenant school views.
+- Any enterprise roles/permissions. Sequence offers one stage at a time; don’t build the full model up front [$100M Money Models, Page 150; Page 155].
+
+### UX friction (strip it)
+- Account creation before value. Show result first; capture email on the result page.
+- Long intake (>5 Qs). Cap at 3–5. Fewer steps = faster perceived result [$100M Offers, Page 61].
+- Multi‑page onboarding, settings, dark mode, notifications.
+
+### AI/content overbuild (defer)
+- Full auto‑curation for every topic; long auto‑generated PDFs by default. Seed 30–50 concepts; human‑in‑the‑loop for low confidence (“wizard‑of‑oz”).
+- Reel/video generators, content engines. Later.
+
+## Keep (the only things that matter)
+- Freemium: Instant “1‑Hour Exam Recovery Blueprint” on‑page + PDF + email (multi‑format boosts engagement) [$100M Leads, Page 43].
+- Paid: “Complete Study Blueprint + Sprint Pack” ($19–39) + simple 7‑day refund (risk reversal lifts conversion) [$100M Offers, Page 124].
+- High‑contrast upsell on the free result (locked vs unlocked) to drive upgrades.
+- SLA: free result <5 minutes; paid same day (shorter time‑to‑value = more perceived value) [$100M Offers, Page 65].
+- Lead magnet first → upsell second. Deliver value before asking for money to cut CAC [$100M Leads, Page 46].
+
+## Dev cleanup checklist (Replit)
+- Remove routes/UI tied to: syllabus door, dashboard, quizzes, B2B admin, subscriptions.
+- Trim intake form to 3–5 Qs; move email capture to result page.
+- Implement single flow: Landing → Upload → Quick Blueprint (1‑hour) → Upsell → Stripe → Complete Blueprint email.
+- Seed taxonomy/resources and add manual review for low‑confidence parses.
+- Fire events: landing_view, upload_complete, mini_view, checkout_open, purchase, full_sent.
+
+## Call to action
+Ship one funnel: test report upload → 1‑Hour Blueprint (free, multi‑format) → high‑contrast upsell with a simple guarantee. Track opt‑in, completion, upsell, and time‑to‑value. If weak, tighten the promise/output—don’t add features. Simple scales, fancy fails [$100M Money Models, Page 154].

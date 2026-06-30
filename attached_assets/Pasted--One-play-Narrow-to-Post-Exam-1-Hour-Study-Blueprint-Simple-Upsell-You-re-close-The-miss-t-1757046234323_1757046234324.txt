@@ -1,0 +1,39 @@
+## One play: Narrow to Post‑Exam “1‑Hour Study Blueprint” + Simple Upsell
+
+You’re close. The miss: too heavy, two avatars. Cut to one path (failed exam student) and make the first win stupid‑fast: upload → instant 1‑hour plan → optional upsell. That maximizes value by raising outcome/likelihood and slashing time/effort [$100M Offers, Page 59]. Keep time‑to‑value under 5 minutes—speed sells [$100M Offers, Page 65].
+
+### What to cut or delay (simplify to scale)
+- 6‑week guide and daily 2‑hour blocks → replace with 3–5 “Sprints” (3–5 hours total) as the paid upgrade. Simple beats broad [$100M Offers, Page 59].
+- Progress dashboard → replace with on‑page checklist + “48‑hour nudge” email. Fancy fails; speed wins [$100M Offers, Page 65].
+- Program admin portal (Dr. Martinez) → second ICP. Validate students first; add B2B later [$100M Money Models, Page 155].
+
+### What to add now (to make it viable)
+- Rename the deliverables
+  - Free: “1‑Hour Exam Recovery Blueprint” (on‑page + PDF + email to boost usage) [$100M Leads, Page 43].
+  - Paid: “Complete Study Blueprint + Sprint Pack” ($19–39) with a light 7‑day refund (risk reversal increases perceived likelihood) [$100M Offers, Page 59].
+- High‑contrast upsell
+  - Free shows: top 1–2 gaps + 3 × 20‑min tasks + 5 links.
+  - Paid unlocks: full ranked list + 3–5 Sprints + 20–30 best resources + printable checklist. Show locked vs unlocked side‑by‑side [$100M Money Models, Page 49].
+- Proof engine
+  - Collect before/after deltas and raw student quotes; plaster screenshots in product and ads to raise believability [$100M Playbook: Proof Checklist, Page 31].
+- Ads that capture pain in 24–72 hours post‑exam
+  - Spend 80% of prep on hooks; write 50. Test 3–5 meats (demo/testimonial/explainer) [$100M Playbook: GOATed Ads, Page 9]. Use awareness‑matched hooks [$100M Playbook: GOATed Ads, Page 11; Page 29].
+- Analytics + KPIs
+  - Track: landing_view, upload_complete, mini_view, checkout_open, purchase, full_sent. Lead magnet first lowers CAC when it’s darn good [$100M Leads, Page 46].
+
+### Gaps in your current build (fix these)
+- Time‑to‑value: ensure the free plan renders in under 5 minutes (pre‑curate resources per concept) [$100M Offers, Page 65].
+- Offer design: add the refund guarantee to the upsell page (reduces fear) [$100M Offers, Page 59].
+- Packaging: deliver the free result on‑page + PDF + email to increase consumption [$100M Leads, Page 43].
+
+### 7‑day pivot plan
+- Day 1: Rename outputs to “1‑Hour Exam Recovery Blueprint” (free) and “Complete Study Blueprint + Sprint Pack” (paid).
+- Day 2–3: Template the free result (top 1–2 gaps, 3 × 20‑min tasks, 5 links) and the paid result (3–5 Sprints, 20–30 links).
+- Day 4: Build upsell page with side‑by‑side contrast + 7‑day refund.
+- Day 5: Wire analytics events; set SLA banners (Quick <5 min, Complete same day).
+- Day 6–7: Write 50 post‑exam hooks; record a 30‑sec demo meat; launch $50–$100/day to the free Blueprint. Hooks drive results—volume wins [$100M Playbook: GOATed Ads, Page 9].
+
+### Success criteria (prove it works)
+- Opt‑in ≥30%, Intake completion ≥50%, Upsell 5–10%, 100 WAUs by Day 90. If weak: fix hooks, then clarify the free output—don’t add features [$100M Leads, Page 46].
+
+> Simple scales, fancy fails. One door. One fast win. One clear upsell. Then pour gas.

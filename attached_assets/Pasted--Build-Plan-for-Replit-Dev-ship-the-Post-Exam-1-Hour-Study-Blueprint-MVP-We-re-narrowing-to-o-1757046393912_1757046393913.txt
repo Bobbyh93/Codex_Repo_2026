@@ -1,0 +1,67 @@
+## Build Plan for Replit Dev — ship the Post‑Exam “1‑Hour Study Blueprint” MVP
+
+We’re narrowing to one funnel: upload test report → instant 1‑Hour Blueprint (free) → upsell Complete Blueprint. Only build what raises outcome/likelihood and slashes time/effort—the value equation [$100M Offers, Page 59; $100M Offers, Page 65]. Lead magnet first to lower CAC, then upsell [$100M Leads, Page 46]. Package results in multiple formats to boost usage [$100M Leads, Page 43]. Hooks drive traffic—prep matters more than production [$100M Playbook: $100M Playbook   GOATed Ads, Page 9; $100M Playbook: $100M Playbook   GOATed Ads, Page 29; $100M Playbook: $100M Playbook   GOATed Ads, Page 11].
+
+## Remove/Delay (cut the fat)
+- 6‑week guides and daily 2‑hour blocks (replace with Sprints in paid).
+- Progress dashboard (use on‑page checklist + email).
+- Program admin portal (B2B later).
+- Syllabus upload door (add after traction).
+- Quizzing/Quick Checks (roadmap).
+
+## Build Now (MVP features)
+- Freemium: “1‑Hour Exam Recovery Blueprint”
+  - Upload (PDF/JPG) + 3–5 intake Qs.
+  - Output: top 1–2 weak concepts, 3×20‑min tasks, 5 curated links.
+  - Delivery: on‑page + PDF + email (fast TTV = higher value) [$100M Offers, Page 65]; multi‑format boosts engagement [$100M Leads, Page 43].
+- Paid: “Complete Study Blueprint + Sprint Pack” ($19–39)
+  - Full ranked priorities, 3–5 Sprints (total 3–5 hrs), 20–30 links, printable checklist.
+  - Light guarantee on checkout: “If it doesn’t reveal 3 high‑yield fixes you didn’t know, 7‑day refund.” Increases perceived likelihood of success [$100M Offers, Page 59].
+- High‑contrast upsell card on the free result page.
+
+## Tech tasks (Replit-friendly)
+- Routes
+  - POST /api/upload (store file, intake; return uploadId)
+  - POST /api/generate-mini (build Quick Blueprint; return HTML + PDF URL)
+  - POST /api/checkout (create Stripe session for Complete Blueprint)
+  - POST /api/webhook/stripe (on success: generate Complete Blueprint, email)
+  - GET /api/admin/review (list low‑confidence), POST /api/admin/approve
+- Services
+  - Extractor: basic PDF text parse + concept match (confidence score). If low → review queue (Wizard‑of‑Oz).
+  - Renderer: HTML templates → PDF (e.g., Puppeteer/Playwright).
+  - Mailer: send Quick + Complete with links.
+- Data model (simple)
+  - users, uploads{fileRef,intake,status,confidence}, plans{kind:'quick'|'complete',concepts[],sprints[],links[],pdfUrl,deliveredAt}, resources{concept,url,type,quality}, orders{amount,status}.
+
+## Freemium limits (drive upgrades)
+- 1 upload/week, 1–2 gaps only, only first 1‑Hour Sprint, 5 links max.
+
+## Copy to implement
+- Hero: “Upload your test report → get your 1‑Hour Study Blueprint (free).”
+- Result header: “{FirstName}’s {Subject} Quick Study Blueprint (1‑Hour Sprint)”
+- Upsell: “Unlock your Complete Study Blueprint + Sprint Pack: full ranked gaps • 3–5 Sprints • 20–30 best resources. Delivered today.”
+
+## Analytics events
+- landing_view, upload_start, upload_complete, mini_view, checkout_open, purchase, complete_sent. Lead magnet first cuts CAC when it’s darn good [$100M Leads, Page 46].
+
+## Acceptance criteria (Definition of Done)
+- Quick Blueprint delivered in under 5 minutes (on‑page + PDF + email) [$100M Offers, Page 65].
+- One‑click upsell live; Stripe webhook generates and emails Complete Blueprint same‑day.
+- Admin review queue functional.
+- KPIs ready to track.
+
+## 7‑Day dev sprint
+1) Routes + storage + extractor stub.
+2) Quick Blueprint template + renderer (HTML→PDF) + email.
+3) Stripe checkout + webhook → Complete Blueprint generator.
+4) Review queue + moderation UI.
+5) Landing + result pages with upsell card + analytics events.
+6) Seed taxonomy/resources for top 30–50 concepts.
+7) Smoke test end‑to‑end; ship.
+
+## Ads handoff (so sales start)
+- Record 30‑sec demo (upload → Quick → upsell).
+- Write 50 post‑exam hooks; test 3–5 meats (demo/testimonial/explainer). Spend 80% prep on hooks [$100M Playbook: $100M Playbook   GOATed Ads, Page 9; $100M Playbook: $100M Playbook   GOATed Ads, Page 29].
+
+## Sequence next (after signal)
+- Add continuity (“Plan Refill”) once upsell converts; build stages one at a time [$100M Money Models, Page 159].

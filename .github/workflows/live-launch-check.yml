@@ -1,0 +1,37 @@
+name: Live Launch Check
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  launch-check:
+    name: NurseStudy launch readiness
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify deployment source
+        run: npm run manifest:live-launch-source
+
+      - name: Scan for deploy-blocking secrets
+        run: npm run scan:live-launch-secrets
+
+      - name: Build production app
+        run: npm run build
+
+      - name: Run live launch preflight
+        run: npm run preflight:live-launch
+
