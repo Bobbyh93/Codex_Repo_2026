@@ -1,6 +1,6 @@
 # NurseStudy GitHub Target Decision
 
-The local launch package is ready for a GitHub/Render handoff. The repository target has been selected and explicitly approved.
+The local launch package is ready for a GitHub/Render handoff. The repository target has been selected, explicitly approved, and populated with a clean deployment source snapshot.
 
 ## Repository Candidates Checked
 
@@ -30,9 +30,15 @@ Bobbyh93/Codex_Repo_2026
 
 Use this private repository for the internal pilot deployment source.
 
+Current pushed source:
+
+```text
+main @ 476f108d7028037d7913943c487f0aa8ad5471f1
+```
+
 ## Push Safety
 
-Push a clean one-commit deployment snapshot made from the verified current source files. Do not push the old local Git history to the live repository, because that history is unrelated to the Render deployment source and may contain deleted local artifacts.
+The source was pushed through a clean deployment staging repository made from the verified current source files. The old local Git history was not pushed to the live repository, because that history is unrelated to the Render deployment source and may contain deleted local artifacts.
 
 ## Remote Setup
 

@@ -2,7 +2,7 @@
 
 ## Current State
 
-NurseStudy is ready for a live host handoff, but it is not live on a public Node host yet. The GitHub deployment target is confirmed as `Bobbyh93/Codex_Repo_2026`; the app still needs the clean deployment snapshot pushed and a Render Web Service connected to that repository.
+NurseStudy is ready for a live host handoff, but it is not live on a public Node host yet. The GitHub deployment source has been pushed to `Bobbyh93/Codex_Repo_2026`; the app still needs a Render Web Service connected to that repository and production environment secrets configured.
 
 The local pilot runtime has passed the launch gates below:
 
@@ -21,7 +21,8 @@ The local pilot runtime has passed the launch gates below:
 - GitHub connector: authenticated repository access is available; `Bobbyh93/Codex_Repo_2026` is private, empty, and writable.
 - GitHub remote helper: available with `npm run remote:live-launch -- --repo=<owner>/<repo>`; it dry-runs by default and only updates `origin` with `--apply`.
 - GitHub target decision: see `LIVE_GITHUB_TARGET_DECISION.md`; selected target is `Bobbyh93/Codex_Repo_2026`.
-- GitHub push method: use a clean one-commit deployment snapshot built from the current verified source files, not the old local Git history. This prevents prior local history and deleted artifacts from being exported.
+- GitHub push method: completed with a clean deployment snapshot built from the current verified source files, not the old local Git history. This prevents prior local history and deleted artifacts from being exported.
+- GitHub remote commit: `476f108d7028037d7913943c487f0aa8ad5471f1` on `main`.
 - Launch archive helper: available with `npm run archive:live-launch`; use `-- --create` only when a zip handoff is needed.
 - Live launch gate: available with `npm run gate:live-launch`; runs source manifest, secret scan, archive dry run, preflight, release smoke, and commit plan.
 - Launch archive helper: use `npm run archive:live-launch -- --create` to create a fresh ignored zip handoff after the final launch commit. The `launch-artifacts/` folder is ignored and should not be committed.
@@ -79,10 +80,16 @@ The local `origin` remote is configured to `Bobbyh93/Codex_Repo_2026`. Existing 
 
 GitHub CLI is not available on this machine. The GitHub connector can see repositories, and `Bobbyh93/Codex_Repo_2026` has been explicitly approved as the deployment target.
 
+Current GitHub deployment source:
+
+- Repository: `Bobbyh93/Codex_Repo_2026`
+- Branch: `main`
+- Commit: `476f108d7028037d7913943c487f0aa8ad5471f1`
+
 Next required action:
 
-- Push a clean one-commit deployment snapshot to `Bobbyh93/Codex_Repo_2026`.
-- Connect Render to that repository.
+- Connect Render to `Bobbyh93/Codex_Repo_2026`.
+- Set the required production environment variables.
 
 ## Render Target
 
@@ -157,9 +164,8 @@ After Render deploys:
 
 ## Stop Point
 
-The remaining blocker is external deployment setup, not local product readiness:
+The remaining blocker is Render/production environment setup, not local product readiness:
 
-- A clean deployment snapshot must be pushed to the confirmed GitHub repository.
 - Render must be connected to that repository.
 - Production secrets must be entered in Render.
 - Neon schema push must run against the direct connection string.
