@@ -229,6 +229,30 @@ type ExportStatus = {
   } | null;
 };
 
+type PilotEvidenceReport = {
+  generatedAt?: string;
+  reportType?: string;
+  package?: {
+    id?: string;
+    title?: string;
+    status?: string;
+  };
+  readiness?: {
+    exportReady?: boolean;
+    missingRequiredFiles?: string[];
+  };
+  lessonAssets?: {
+    slideCount?: number;
+    itemCount?: number;
+    citationCount?: number;
+    artifactCount?: number;
+    generatedFiles?: string[];
+  };
+  cohortOutcomes?: {
+    totals?: Record<string, number>;
+  } | null;
+};
+
 type PackageDetail = {
   package: LessonPackage & { manifest?: Record<string, any>; deckModel?: Record<string, any>; taxonomySnapshot?: Record<string, any> };
   sources: SourceRecord[];
@@ -725,6 +749,18 @@ export default function LessonBuilder() {
     dueDate: "",
     rosterText: "Pilot learner, pilot.learner@example.com",
   });
+  const [evidenceExportingPackageId, setEvidenceExportingPackageId] = useState("");
+  const [latestEvidenceExport, setLatestEvidenceExport] = useState<{
+    packageId: string;
+    packageTitle: string;
+    fileName: string;
+    generatedAt: string;
+    artifactCount: number;
+    generatedFileCount: number;
+    assignedCount: number;
+    completedCount: number;
+    exportReady: boolean;
+  } | null>(null);
   const [normalizationForm, setNormalizationForm] = useState({
     officialPilot: true,
     weakTopicsText: "Therapeutic communication",
@@ -1369,14 +1405,62 @@ export default function LessonBuilder() {
     }, 1200);
   };
 
-  const exportPilotEvidence = (packageId?: string) => {
+  const exportPilotEvidence = async (packageId?: string) => {
     const targetPackageId = packageId || selectedPackageId;
     if (!targetPackageId) return;
-    window.location.href = `/api/admin/lesson-builder/packages/${targetPackageId}/pilot-evidence-export`;
-    window.setTimeout(() => {
+
+    setEvidenceExportingPackageId(targetPackageId);
+    try {
+      const response = await fetch(`/api/admin/lesson-builder/packages/${targetPackageId}/pilot-evidence-export`, {
+        credentials: "include",
+      });
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || "Failed to export pilot evidence");
+      }
+
+      const report = (await response.json()) as PilotEvidenceReport;
+      const disposition = response.headers.get("content-disposition") || "";
+      const fileName = disposition.match(/filename="?([^"]+)"?/i)?.[1] || `${targetPackageId}-pilot-evidence.json`;
+      const blob = new Blob([JSON.stringify(report, null, 2)], { type: "application/json;charset=utf-8" });
+      const objectUrl = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = objectUrl;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(objectUrl);
+
+      const totals = report.cohortOutcomes?.totals || {};
+      const generatedFiles = report.lessonAssets?.generatedFiles || [];
+      const exportSummary = {
+        packageId: targetPackageId,
+        packageTitle: report.package?.title || "Pilot lesson package",
+        fileName,
+        generatedAt: report.generatedAt || new Date().toISOString(),
+        artifactCount: report.lessonAssets?.artifactCount || generatedFiles.length || 0,
+        generatedFileCount: generatedFiles.length,
+        assignedCount: totals.assigned || 0,
+        completedCount: totals.completed || 0,
+        exportReady: Boolean(report.readiness?.exportReady),
+      };
+      setLatestEvidenceExport(exportSummary);
+      toast({
+        title: "Pilot evidence exported",
+        description: `${exportSummary.generatedFileCount} files referenced, ${exportSummary.completedCount}/${exportSummary.assignedCount} learners complete.`,
+      });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/packages", targetPackageId] });
       refreshLaunchQueries();
-    }, 1200);
+    } catch (error: any) {
+      toast({
+        title: "Evidence export failed",
+        description: error?.message || "The pilot evidence report could not be downloaded.",
+        variant: "destructive",
+      });
+    } finally {
+      setEvidenceExportingPackageId("");
+    }
   };
 
   const copyLearnerLink = async () => {
@@ -1499,9 +1583,14 @@ export default function LessonBuilder() {
                       <ExternalLink className="mr-2 h-4 w-4" />
                       Open Learner
                     </Button>
-                    <Button size="sm" variant="outline" onClick={() => exportPilotEvidence(pilotLaunch.package!.id)}>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => exportPilotEvidence(pilotLaunch.package!.id)}
+                      disabled={evidenceExportingPackageId === pilotLaunch.package!.id}
+                    >
                       <Download className="mr-2 h-4 w-4" />
-                      Export Evidence
+                      {evidenceExportingPackageId === pilotLaunch.package!.id ? "Exporting..." : "Export Evidence"}
                     </Button>
                   </>
                 ) : null}
@@ -1512,6 +1601,18 @@ export default function LessonBuilder() {
                   </Button>
                 ) : null}
               </div>
+              {latestEvidenceExport ? (
+                <div className="max-w-3xl rounded-md border border-teal-200 bg-teal-50 p-3 text-sm text-teal-950">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <FileText className="h-4 w-4" />
+                    <span className="font-medium">Latest pilot evidence report</span>
+                    <StatusBadge value={latestEvidenceExport.exportReady ? "export_ready" : "needs_export_check"} />
+                  </div>
+                  <div className="mt-1 text-xs leading-5 text-teal-900">
+                    {latestEvidenceExport.fileName} downloaded for {latestEvidenceExport.packageTitle}. It references {latestEvidenceExport.generatedFileCount} generated file(s), {latestEvidenceExport.artifactCount} artifact(s), and {latestEvidenceExport.completedCount}/{latestEvidenceExport.assignedCount} completed learner(s).
+                  </div>
+                </div>
+              ) : null}
             </div>
 
             <div className="grid gap-2 text-xs text-slate-600 sm:grid-cols-2 xl:min-w-[440px] xl:grid-cols-3">
@@ -2519,9 +2620,13 @@ export default function LessonBuilder() {
                             <Download className="mr-2 h-4 w-4" />
                             Export Harrity
                           </Button>
-                          <Button variant="outline" onClick={() => exportPilotEvidence(selectedPackageId)}>
+                          <Button
+                            variant="outline"
+                            onClick={() => exportPilotEvidence(selectedPackageId)}
+                            disabled={evidenceExportingPackageId === selectedPackageId}
+                          >
                             <FileText className="mr-2 h-4 w-4" />
-                            Export Evidence
+                            {evidenceExportingPackageId === selectedPackageId ? "Exporting..." : "Export Evidence"}
                           </Button>
                           <Button onClick={() => publishMutation.mutate()} disabled={publishMutation.isPending}>
                             <Rocket className="mr-2 h-4 w-4" />
