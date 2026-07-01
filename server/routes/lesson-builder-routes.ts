@@ -484,6 +484,138 @@ const defaultSourceSeeds = [
     },
   },
   {
+    title: "Drive Slides: CH18 Asthma Learner-Facing Lesson Package",
+    sourceKind: "drive_presentation",
+    sourceType: "golden_lesson_example",
+    sourceUri: "https://docs.google.com/presentation/d/1lVdeu8QhFOBLVuIyTBQ3ZnpjOaIDbE24hpuWuhF9ZQo",
+    driveFileId: "1lVdeu8QhFOBLVuIyTBQ3ZnpjOaIDbE24hpuWuhF9ZQo",
+    subject: "Pediatric asthma / learner-facing Google Slides demo",
+    edition: "2026-05-10 native Google Slides",
+    metadata: {
+      driveMimeType: "application/vnd.google-apps.presentation",
+      driveSourceRole: "learner_facing_gold_deck",
+      discoveredFrom: "google_drive_search",
+      slideCount: 16,
+      cjmSteps: [
+        "Recognize Cues",
+        "Analyze Cues",
+        "Prioritize Hypotheses",
+        "Generate Solutions",
+        "Take Action",
+        "Evaluate Outcomes",
+      ],
+      outlineSummary: "Native Google Slides version of the CH18 asthma Harrity learner-facing deck; usable as a pattern source for visible learner slide grammar, student tasks, exam anchors, rationales, and takeaways.",
+      evidenceSnippets: harrityEvidenceSnippets.asthmaDemo,
+    },
+  },
+  {
+    title: "Drive PPTX: Harrity Lesson Builder Skill Overview",
+    sourceKind: "drive_presentation",
+    sourceType: "pipeline_architecture",
+    sourceUri: "https://drive.google.com/file/d/1pat39IAYGdyaGP96vP9aG9HZDpvBMzew",
+    driveFileId: "1pat39IAYGdyaGP96vP9aG9HZDpvBMzew",
+    subject: "Harrity lesson builder / production pipeline",
+    edition: "2026-05-10 repaired PPTX",
+    metadata: {
+      driveMimeType: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+      driveSourceRole: "pipeline_contract_deck",
+      discoveredFrom: "google_drive_search",
+      evidenceSnippets: harrityEvidenceSnippets.skillOverview,
+    },
+  },
+  {
+    title: "Drive PPTX: California CNS Harrity Lesson Deck",
+    sourceKind: "drive_presentation",
+    sourceType: "harrity_lesson_deck_pattern",
+    sourceUri: "https://drive.google.com/file/d/1Gaa6NJmO1zdTeh6GnurpgUqqkFSbS_Lf",
+    driveFileId: "1Gaa6NJmO1zdTeh6GnurpgUqqkFSbS_Lf",
+    subject: "California CNS / Harrity deck pattern",
+    edition: "2026-05-10 PPTX",
+    metadata: {
+      driveMimeType: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+      driveSourceRole: "deck_pattern_reference",
+      discoveredFrom: "google_drive_search",
+    },
+  },
+  {
+    title: "Drive Slides: NCC RN2019 NCOC Cardiovascular Disorders Ch 020",
+    sourceKind: "drive_presentation",
+    sourceType: "nursing_chapter_deck_source",
+    sourceUri: "https://docs.google.com/presentation/d/19nOrE48zyOZkX14DeQKbdQ7u0K7B_fGzyEiCA5gKR-Y",
+    driveFileId: "19nOrE48zyOZkX14DeQKbdQ7u0K7B_fGzyEiCA5gKR-Y",
+    subject: "NCC RN2019 NCOC / Cardiovascular Disorders",
+    edition: "2026-05-28 native Google Slides",
+    metadata: {
+      driveMimeType: "application/vnd.google-apps.presentation",
+      driveSourceRole: "chapter_deck_source",
+      discoveredFrom: "google_drive_search",
+      unit: "Unit 2 System Disorders",
+      chapter: "Ch 020 Cardiovascular Disorders",
+    },
+  },
+  {
+    title: "Drive Slides: NCC RN2019 NCOC Psychosocial Issues Ch 044",
+    sourceKind: "drive_presentation",
+    sourceType: "nursing_chapter_deck_source",
+    sourceUri: "https://docs.google.com/presentation/d/13_5y59NraPjM6YKuaMa2sLGHowlj1S0GHvxo07kVGQQ",
+    driveFileId: "13_5y59NraPjM6YKuaMa2sLGHowlj1S0GHvxo07kVGQQ",
+    subject: "NCC RN2019 NCOC / Psychosocial Issues of Infants, Children, and Adolescents",
+    edition: "2026-05-28 native Google Slides",
+    metadata: {
+      driveMimeType: "application/vnd.google-apps.presentation",
+      driveSourceRole: "chapter_deck_source",
+      discoveredFrom: "google_drive_search",
+      unit: "Unit 3 Other Specific Needs",
+      chapter: "Ch 044 Psychosocial Issues of Infants, Children, and Adolescents",
+    },
+  },
+  {
+    title: "Pearson Course Audit Workflow Dashboard",
+    sourceKind: "sites_project",
+    sourceType: "course_concept_audit_workflow_pattern",
+    sourceUri: "https://pearson-course-audit-workflow-20260626.harrity-9048.chatgpt-team.site",
+    driveFileId: "sites-appgprj_6a3e14fcc60c8191b4bde452056a01c5",
+    subject: "Pearson course concept coverage review / reviewer workflow",
+    edition: "Sites version 2 / 2026-06-26",
+    metadata: {
+      sitesProjectId: "appgprj_6a3e14fcc60c8191b4bde452056a01c5",
+      sitesTitle: "Pearson Course Audit Workflow Dashboard",
+      sitesRole: "reviewer_workflow_pattern",
+      accessMode: "custom",
+      patternUse: [
+        "course concept coverage review",
+        "reviewer state tracking",
+        "premium faculty review workflow",
+        "content-ops launch readiness",
+      ],
+      learnerFacing: false,
+      premiumWorkflowPattern: true,
+    },
+  },
+  {
+    title: "Pearson Concept Audit Dashboard",
+    sourceKind: "sites_project",
+    sourceType: "concept_course_audit_pattern",
+    sourceUri: "https://pearson-course-audit-20260624.harrity-9048.chatgpt-team.site",
+    driveFileId: "sites-appgprj_6a3c9b51d30081919f30c4d0df9d16ab",
+    subject: "Pearson concept/course package audit",
+    edition: "Sites version 7 / 2026-06-26",
+    metadata: {
+      sitesProjectId: "appgprj_6a3c9b51d30081919f30c4d0df9d16ab",
+      sitesTitle: "Pearson Concept Audit Dashboard",
+      sitesRole: "concept_audit_pattern",
+      accessMode: "custom",
+      patternUse: [
+        "concept coverage audit",
+        "course package audit",
+        "program director evidence reporting",
+        "source-to-concept review",
+      ],
+      learnerFacing: false,
+      premiumWorkflowPattern: true,
+    },
+  },
+  {
     title: "Maternal-Newborn In-Depth Lesson Guide",
     sourceKind: "local_file",
     sourceType: "course_lesson_guide",
@@ -3835,6 +3967,354 @@ async function generateLessonPackageFromData(data: z.infer<typeof generateSchema
   }
 }
 
+async function recordPackageReview(
+  packageId: string,
+  data: z.infer<typeof packageReviewSchema>,
+  actorId?: string,
+  reviewKind: "ai" | "faculty" | "general" = "general"
+) {
+  await ensureLessonBuilderTables();
+  const bundle = await findPackageBundle(packageId);
+  if (!bundle) return null;
+
+  const [review] = await db.insert(lessonPackageReviews).values({
+    packageId,
+    reviewerName: data.reviewerName,
+    reviewerRole: data.reviewerRole,
+    decision: data.decision,
+    focusArea: data.focusArea,
+    comment: data.comment,
+    metadata: {
+      ...data.metadata,
+      reviewKind,
+      premiumFeature: reviewKind === "faculty",
+      packageStatusAtReview: bundle.package.status,
+      qaFailCount: Number(bundle.package.qaSummary?.failCount || 0),
+      contractFailCount: Number(bundle.package.manifest?.contractValidation?.failCount || 0),
+    },
+    createdBy: actorId,
+  }).returning();
+
+  const reviewSummary = {
+    latestDecision: review.decision,
+    latestReviewerName: review.reviewerName,
+    latestReviewerRole: review.reviewerRole,
+    latestFocusArea: review.focusArea,
+    latestComment: review.comment,
+    reviewedAt: review.createdAt,
+    approvedForPilot: review.decision === "approved_for_pilot" || review.decision === "approved_for_release",
+    approvedForRelease: review.decision === "approved_for_release",
+    changesRequested: review.decision === "changes_requested",
+    premiumFeature: reviewKind === "faculty",
+    reviewKind,
+  };
+
+  await db.update(lessonPackages).set({
+    manifest: {
+      ...(bundle.package.manifest || {}),
+      [reviewKind === "ai" ? "aiReview" : "facultyReview"]: reviewSummary,
+    },
+    updatedAt: new Date(),
+  }).where(eq(lessonPackages.id, packageId));
+
+  await recordReleaseAuditEvent(
+    packageId,
+    reviewKind === "ai" ? "ai_review_recorded" : "faculty_review_recorded",
+    `${reviewKind === "ai" ? "AI" : "Faculty"} review recorded: ${review.decision.replace(/_/g, " ")}`,
+    {
+      reviewId: review.id,
+      decision: review.decision,
+      focusArea: review.focusArea,
+      reviewerRole: review.reviewerRole,
+      premiumFeature: reviewKind === "faculty",
+    },
+    actorId
+  );
+
+  const updatedBundle = await findPackageBundle(packageId);
+  return { review, package: updatedBundle?.package, reviews: updatedBundle?.reviews || [] };
+}
+
+function pilotReadinessSteps({
+  bundle,
+  sourceDetails,
+  outcomes,
+  exportStatus,
+  health,
+}: {
+  bundle: LessonBundle | null;
+  sourceDetails: any[];
+  outcomes: Awaited<ReturnType<typeof buildPilotOutcomes>> | null;
+  exportStatus: Record<string, any> | null;
+  health: Awaited<ReturnType<typeof lessonBuilderHealth>>;
+}) {
+  const latestReview = bundle?.reviews?.[0];
+  const aiReview = bundle?.reviews?.find((review) => review.reviewerRole === "ai_reviewer")
+    || bundle?.package?.manifest?.aiReview
+    || null;
+  const humanReview = bundle?.reviews?.find((review) => review.reviewerRole !== "ai_reviewer")
+    || bundle?.package?.manifest?.facultyReview
+    || null;
+
+  return [
+    {
+      key: "source_approved",
+      label: "Source approved",
+      status: sourceDetails.some((detail) => detail?.source?.approvalStatus === "approved") ? "pass" : "missing",
+      detail: sourceDetails.some((detail) => detail?.source?.approvalStatus === "approved")
+        ? `${sourceDetails.filter((detail) => detail?.source?.approvalStatus === "approved").length} approved source(s)`
+        : "Approve one nursing source before launch.",
+    },
+    {
+      key: "chunks_ready",
+      label: "Chunks ready",
+      status: sourceDetails.some((detail) => Number(detail?.chunkCount || 0) > 0) ? "pass" : "warn",
+      detail: `${sourceDetails.reduce((total, detail) => total + Number(detail?.chunkCount || 0), 0)} source chunk(s) available`,
+    },
+    {
+      key: "package_generated",
+      label: "Package generated",
+      status: bundle ? "pass" : "missing",
+      detail: bundle ? bundle.package.title : "Generate the pilot web lesson package.",
+    },
+    {
+      key: "ai_reviewed",
+      label: "AI reviewed",
+      status: aiReview ? "pass" : "warn",
+      detail: aiReview ? `Latest AI review: ${String(aiReview.decision || aiReview.latestDecision || "recorded").replace(/_/g, " ")}` : "Run AI review for MVP approval.",
+    },
+    {
+      key: "faculty_review",
+      label: "Faculty review",
+      status: humanReview ? "pass" : "premium_feature",
+      detail: humanReview
+        ? `Faculty review: ${String(humanReview.decision || humanReview.latestDecision || "recorded").replace(/_/g, " ")}`
+        : "Premium gate. Optional for MVP; required for paid faculty review workflows.",
+    },
+    {
+      key: "published",
+      label: "Published",
+      status: bundle?.package?.status === "published" ? "pass" : "warn",
+      detail: bundle?.package?.status === "published" ? "Learner route is available." : "Publish after QA and contract gates pass.",
+    },
+    {
+      key: "assignment_active",
+      label: "Assignment active",
+      status: (outcomes?.totals.assignments || 0) > 0 ? "pass" : "warn",
+      detail: `${outcomes?.totals.assignments || 0} active pilot assignment(s)`,
+    },
+    {
+      key: "learner_activity",
+      label: "Learner activity",
+      status: (outcomes?.totals.opened || 0) > 0 ? "pass" : "warn",
+      detail: `${outcomes?.totals.opened || 0} opened, ${outcomes?.totals.completed || 0} completed`,
+    },
+    {
+      key: "export_ready",
+      label: "Export ready",
+      status: exportStatus?.status === "ready" ? "pass" : "warn",
+      detail: exportStatus ? `${exportStatus.fileCount} generated file(s)` : "No export check available yet.",
+    },
+    {
+      key: "ai_mode",
+      label: "AI mode",
+      status: health.aiReady ? "pass" : "warn",
+      detail: `${health.aiMode || health.agent?.aiMode || "template_fallback"}`,
+    },
+  ];
+}
+
+async function buildPilotLaunchSummary() {
+  await ensureLessonBuilderTables();
+  const [health, releaseReadiness] = await Promise.all([
+    lessonBuilderHealth(),
+    lessonBuilderReleaseReadiness(),
+  ]);
+
+  const packageId = health.latestPublishedPackageId || releaseReadiness.latestPublishedPackageId || null;
+  const bundle = packageId ? await findPackageBundle(packageId) : null;
+  const sourceDetails = bundle?.sources?.length
+    ? await Promise.all(bundle.sources.map((source) => getSourceDetail(source.id)))
+    : [];
+  const outcomes = packageId ? await buildPilotOutcomes(packageId) : null;
+  const exportStatus = bundle ? (() => {
+    const artifacts = buildPackageArtifactPayloads(bundle, "harrity");
+    const generatedFiles = artifacts.map((artifact) => artifact.fileName).sort();
+    const missingRequiredFiles = harrityRequiredExportFiles.filter((fileName) => !generatedFiles.includes(fileName));
+    return {
+      status: missingRequiredFiles.length === 0 ? "ready" : "missing_required_files",
+      fileCount: generatedFiles.length,
+      requiredFileCount: harrityRequiredExportFiles.length,
+      generatedFiles,
+      missingRequiredFiles,
+      includesDeckModel: generatedFiles.includes("deck_model.json"),
+    };
+  })() : null;
+  const readinessSteps = pilotReadinessSteps({ bundle, sourceDetails, outcomes, exportStatus, health });
+  const blockingSteps = readinessSteps.filter((step) => !["pass", "premium_feature"].includes(step.status));
+  const latestAssignment = bundle?.assignments?.[0] || null;
+  const latestLearner = latestAssignment?.learners?.[0] || null;
+
+  return {
+    generatedAt: new Date().toISOString(),
+    pilotReady: Boolean(releaseReadiness.pilotReady && bundle?.package?.status === "published" && exportStatus?.status === "ready"),
+    latestPublishedPackageId: packageId,
+    package: bundle ? {
+      id: bundle.package.id,
+      title: bundle.package.title,
+      topic: bundle.package.topic,
+      audience: bundle.package.audience,
+      status: bundle.package.status,
+      publishedAt: bundle.package.publishedAt,
+      learnerUrl: `/lessons/${bundle.package.id}`,
+      aiReview: bundle.package.manifest?.aiReview || null,
+      facultyReview: bundle.package.manifest?.facultyReview || null,
+      assessmentBridge: bundle.package.manifest?.assessmentBridge || bundle.package.taxonomySnapshot?.assessmentBridge || null,
+    } : null,
+    health: {
+      aiMode: health.aiMode,
+      aiReady: health.aiReady,
+      dbReady: health.database.configured && health.database.status !== "unhealthy",
+      sourceRegistryStatus: health.sourceRegistry.status,
+      exportStatus: health.export.status,
+    },
+    readinessSteps,
+    nextActions: blockingSteps.slice(0, 4).map((step) => ({
+      key: step.key,
+      label: step.label,
+      detail: step.detail,
+    })),
+    avatars: [
+      {
+        key: "program_admin",
+        label: "Program Admin",
+        solution: "Launch Console",
+        status: bundle ? "available" : "needs_package",
+        nextAction: bundle ? "Monitor readiness ladder and assignment links." : "Generate and publish the pilot package.",
+      },
+      {
+        key: "faculty_reviewer",
+        label: "Faculty Reviewer",
+        solution: "Premium Faculty Review Workspace",
+        status: bundle?.package?.manifest?.facultyReview ? "review_recorded" : "premium_available",
+        nextAction: "Record human review when the premium faculty gate is enabled.",
+      },
+      {
+        key: "learner",
+        label: "Nursing Student",
+        solution: "Learner Assignment View",
+        status: latestLearner ? "assignment_link_ready" : "needs_assignment",
+        nextAction: latestLearner ? "Share the copied learner link." : "Create a pilot cohort assignment.",
+      },
+      {
+        key: "remediation_coach",
+        label: "Remediation Coach",
+        solution: "Cohort Outcomes",
+        status: outcomes?.totals.assigned ? "available" : "needs_assignment_data",
+        nextAction: "Use action queue for not-started, incomplete, confused, or missed-practice learners.",
+      },
+      {
+        key: "content_ops",
+        label: "Content Ops",
+        solution: "Source Studio",
+        status: sourceDetails.some((detail) => detail?.normalization) ? "normalized" : "needs_normalization",
+        nextAction: "Normalize official source metadata and taxonomy hints.",
+      },
+      {
+        key: "program_director",
+        label: "Program Director",
+        solution: "Pilot Evidence Report",
+        status: exportStatus?.status === "ready" ? "export_ready" : "needs_export_check",
+        nextAction: "Export pilot evidence after cohort activity is present.",
+      },
+    ],
+    sourceSummary: sourceDetails.map((detail) => ({
+      id: detail?.source?.id,
+      title: detail?.source?.title,
+      approvalStatus: detail?.source?.approvalStatus,
+      ingestionStatus: detail?.source?.ingestionStatus,
+      chunkCount: detail?.chunkCount || 0,
+      citationPolicy: detail?.source?.citationPolicy,
+      normalized: Boolean(detail?.normalization),
+      weakTopics: detail?.normalization?.weakTopics || [],
+    })),
+    assignment: latestAssignment ? {
+      id: latestAssignment.id,
+      title: latestAssignment.title,
+      cohortName: latestAssignment.cohortName,
+      status: latestAssignment.status,
+      counts: latestAssignment.counts,
+      firstLearnerLink: latestLearner?.linkPath || null,
+    } : null,
+    outcomes: outcomes ? {
+      totals: outcomes.totals,
+      practiceSummary: outcomes.practiceSummary,
+      feedbackSummary: outcomes.feedbackSummary,
+      actionQueue: outcomes.actionQueue.slice(0, 8),
+    } : null,
+    exportStatus,
+  };
+}
+
+function buildPilotEvidenceReport(bundle: LessonBundle, outcomes: Awaited<ReturnType<typeof buildPilotOutcomes>> | null) {
+  const artifacts = buildPackageArtifactPayloads(bundle, "harrity");
+  const generatedFiles = artifacts.map((artifact) => artifact.fileName).sort();
+  const missingRequiredFiles = harrityRequiredExportFiles.filter((fileName) => !generatedFiles.includes(fileName));
+  const sourceTraceability = bundle.sources.map((source) => ({
+    id: source.id,
+    title: source.title,
+    sourceType: source.sourceType,
+    approvalStatus: source.approvalStatus,
+    ingestionStatus: source.ingestionStatus,
+    citationPolicy: source.citationPolicy,
+  }));
+
+  return {
+    generatedAt: new Date().toISOString(),
+    reportType: "pilot_evidence",
+    package: {
+      id: bundle.package.id,
+      title: bundle.package.title,
+      topic: bundle.package.topic,
+      audience: bundle.package.audience,
+      status: bundle.package.status,
+      publishedAt: bundle.package.publishedAt,
+      learnerUrl: `/lessons/${bundle.package.id}`,
+    },
+    readiness: {
+      qaSummary: bundle.package.qaSummary || {},
+      contractValidation: bundle.package.manifest?.contractValidation || null,
+      aiReview: bundle.package.manifest?.aiReview || null,
+      facultyReview: bundle.package.manifest?.facultyReview || null,
+      facultyReviewPremium: true,
+      exportReady: missingRequiredFiles.length === 0,
+      missingRequiredFiles,
+    },
+    sourceTraceability,
+    lessonAssets: {
+      slideCount: bundle.slides.length,
+      itemCount: bundle.items.length,
+      citationCount: bundle.citations.length,
+      artifactCount: artifacts.length,
+      generatedFiles,
+    },
+    cohortOutcomes: outcomes ? {
+      totals: outcomes.totals,
+      practiceSummary: outcomes.practiceSummary,
+      feedbackSummary: outcomes.feedbackSummary,
+      actionQueue: outcomes.actionQueue,
+    } : null,
+    avatarSolutions: [
+      "Program Admin: Pilot Launch Console",
+      "Faculty Reviewer: Premium Faculty Review Workspace",
+      "Nursing Student: Learner Assignment View",
+      "Remediation Coach: Cohort Outcomes",
+      "Content Ops: Source Studio",
+      "Program Director: Pilot Evidence Report",
+    ],
+  };
+}
+
 export function registerLessonBuilderRoutes(app: Express) {
   app.get("/api/lessons/:id", async (req: Request, res: Response) => {
     try {
@@ -3864,6 +4344,63 @@ export function registerLessonBuilderRoutes(app: Express) {
     } catch (error) {
       console.error("Learner lesson load error:", error);
       res.status(500).json({ error: "Failed to load lesson" });
+    }
+  });
+
+  app.get("/api/lesson-assignments/:assignmentId/learner/:learnerId", async (req: Request, res: Response) => {
+    try {
+      await ensureLessonBuilderTables();
+      const learnerKey = typeof req.query.learnerKey === "string" ? req.query.learnerKey : "";
+      if (!learnerKey || learnerKey.length < 8) {
+        return res.status(400).json({ error: "Learner key is required" });
+      }
+
+      const [assignment] = await db
+        .select()
+        .from(lessonAssignments)
+        .where(eq(lessonAssignments.id, req.params.assignmentId))
+        .limit(1);
+      if (!assignment || assignment.status !== "active") {
+        return res.status(404).json({ error: "Assignment not found" });
+      }
+
+      const assignmentContext = await findAssignmentLearner(
+        assignment.packageId,
+        assignment.id,
+        req.params.learnerId,
+        learnerKey
+      );
+      if (!assignmentContext) {
+        return res.status(404).json({ error: "Assignment link not found" });
+      }
+
+      const bundle = await findPackageBundle(assignment.packageId);
+      if (!bundle || bundle.package.status !== "published") {
+        return res.status(404).json({ error: "Lesson not found" });
+      }
+
+      res.json({
+        assignment: {
+          id: assignment.id,
+          title: assignment.title,
+          cohortName: assignment.cohortName,
+          dueDate: assignment.dueDate,
+          status: assignment.status,
+        },
+        learner: {
+          id: assignmentContext.learner.id,
+          learnerName: assignmentContext.learner.learnerName,
+          status: assignmentContext.learner.status,
+          openedAt: assignmentContext.learner.openedAt,
+          completedAt: assignmentContext.learner.completedAt,
+          lastActivityAt: assignmentContext.learner.lastActivityAt,
+          feedbackRating: assignmentContext.learner.feedbackRating,
+        },
+        lesson: learnerLessonPayload(bundle, assignmentContext),
+      });
+    } catch (error) {
+      console.error("Learner assignment load error:", error);
+      res.status(500).json({ error: "Failed to load learner assignment" });
     }
   });
 
@@ -4002,6 +4539,15 @@ export function registerLessonBuilderRoutes(app: Express) {
         agent: lessonBuilderAgentStatus(),
         error: error instanceof Error ? error.message : "Health check failed",
       });
+    }
+  });
+
+  app.get("/api/admin/pilot-launch/summary", requireAdminSession, async (_req: AdminAuthRequest, res: Response) => {
+    try {
+      res.json(await buildPilotLaunchSummary());
+    } catch (error) {
+      console.error("Pilot launch summary error:", error);
+      res.status(500).json({ error: "Failed to load pilot launch summary" });
     }
   });
 
@@ -4429,6 +4975,31 @@ export function registerLessonBuilderRoutes(app: Express) {
     }
   });
 
+  app.get("/api/admin/lesson-builder/packages/:id/cohort-report", requireAdminSession, async (req: AdminAuthRequest, res: Response) => {
+    try {
+      await ensureLessonBuilderTables();
+      const [bundle, outcomes] = await Promise.all([
+        findPackageBundle(req.params.id),
+        buildPilotOutcomes(req.params.id),
+      ]);
+      if (!bundle || !outcomes) return res.status(404).json({ error: "Lesson package not found" });
+
+      res.json({
+        package: outcomes.package,
+        assessmentBridge: bundle.package.manifest?.assessmentBridge || bundle.package.taxonomySnapshot?.assessmentBridge || null,
+        weakTopic: bundle.package.manifest?.assessmentBridge?.weakTopic || bundle.package.topic,
+        totals: outcomes.totals,
+        practiceSummary: outcomes.practiceSummary,
+        feedbackSummary: outcomes.feedbackSummary,
+        actionQueue: outcomes.actionQueue,
+        learners: outcomes.learners,
+      });
+    } catch (error) {
+      console.error("Lesson builder cohort report error:", error);
+      res.status(500).json({ error: "Failed to load cohort report" });
+    }
+  });
+
   app.get("/api/admin/lesson-builder/packages/:id/pilot-outcomes/export", requireAdminSession, async (req: AdminAuthRequest, res: Response) => {
     try {
       await ensureLessonBuilderTables();
@@ -4475,6 +5046,41 @@ export function registerLessonBuilderRoutes(app: Express) {
       }
       console.error("Lesson builder assessment bridge error:", error);
       res.status(500).json({ error: "Failed to attach assessment bridge" });
+    }
+  });
+
+  app.post("/api/admin/lesson-builder/packages/:id/ai-review", requireAdminSession, async (req: AdminAuthRequest, res: Response) => {
+    try {
+      await ensureLessonBuilderTables();
+      const [qa, validation] = await Promise.all([
+        runQaForPackage(req.params.id),
+        validateLessonContract(req.params.id, "harrity"),
+      ]);
+      const failing = Number(qa.qaSummary.failCount || 0) > 0 || Number(validation.validationSummary.failCount || 0) > 0;
+      const data = packageReviewSchema.parse({
+        reviewerName: "NurseStudy AI Review",
+        reviewerRole: "ai_reviewer",
+        decision: failing ? "changes_requested" : "approved_for_pilot",
+        focusArea: "overall",
+        comment: failing
+          ? "AI review found unresolved QA or contract gates. Resolve failed items before pilot launch."
+          : "AI review confirms the package is ready for internal MVP pilot use. Human faculty review remains a premium release gate.",
+        metadata: {
+          ...(req.body?.metadata || {}),
+          qaSummary: qa.qaSummary,
+          validationSummary: validation.validationSummary,
+          humanFacultyReviewPremium: true,
+        },
+      });
+      const result = await recordPackageReview(req.params.id, data, req.session.adminUser?.userId, "ai");
+      if (!result) return res.status(404).json({ error: "Lesson package not found" });
+      res.json({ ...result, qa, validation });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid AI review request", details: error.errors });
+      }
+      console.error("Lesson builder AI review error:", error);
+      res.status(500).json({ error: "Failed to run AI review" });
     }
   });
 
@@ -4547,6 +5153,52 @@ export function registerLessonBuilderRoutes(app: Express) {
       }
       console.error("Lesson builder assignment create error:", error);
       res.status(500).json({ error: "Failed to create lesson assignment" });
+    }
+  });
+
+  app.get("/api/admin/lesson-builder/packages/:id/faculty-review", requireAdminSession, async (req: AdminAuthRequest, res: Response) => {
+    try {
+      await ensureLessonBuilderTables();
+      const bundle = await findPackageBundle(req.params.id);
+      if (!bundle) return res.status(404).json({ error: "Lesson package not found" });
+      const facultyReviews = bundle.reviews.filter((review) => review.reviewerRole !== "ai_reviewer");
+      res.json({
+        packageId: req.params.id,
+        premiumFeature: true,
+        status: facultyReviews[0] ? "review_recorded" : "premium_available",
+        latestReview: facultyReviews[0] || null,
+        reviews: facultyReviews,
+      });
+    } catch (error) {
+      console.error("Lesson builder faculty review load error:", error);
+      res.status(500).json({ error: "Failed to load faculty review" });
+    }
+  });
+
+  app.post("/api/admin/lesson-builder/packages/:id/faculty-review", requireAdminSession, async (req: AdminAuthRequest, res: Response) => {
+    try {
+      await ensureLessonBuilderTables();
+      const data = packageReviewSchema.parse({
+        reviewerName: req.body?.reviewerName || "Faculty reviewer",
+        reviewerRole: req.body?.reviewerRole || "faculty_reviewer",
+        decision: req.body?.decision || "comment",
+        focusArea: req.body?.focusArea || "overall",
+        comment: req.body?.comment || "Faculty review note recorded.",
+        metadata: {
+          ...(req.body?.metadata || {}),
+          premiumFeature: true,
+          humanFacultyReview: true,
+        },
+      });
+      const result = await recordPackageReview(req.params.id, data, req.session.adminUser?.userId, "faculty");
+      if (!result) return res.status(404).json({ error: "Lesson package not found" });
+      res.json({ ...result, premiumFeature: true });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid faculty review", details: error.errors });
+      }
+      console.error("Lesson builder faculty review save error:", error);
+      res.status(500).json({ error: "Failed to save faculty review" });
     }
   });
 
@@ -4849,6 +5501,33 @@ export function registerLessonBuilderRoutes(app: Express) {
     } catch (error) {
       console.error("Lesson builder export status error:", error);
       res.status(500).json({ error: "Failed to inspect lesson package export status" });
+    }
+  });
+
+  app.get("/api/admin/lesson-builder/packages/:id/pilot-evidence-export", requireAdminSession, async (req: AdminAuthRequest, res: Response) => {
+    try {
+      await ensureLessonBuilderTables();
+      const [bundle, outcomes] = await Promise.all([
+        findPackageBundle(req.params.id),
+        buildPilotOutcomes(req.params.id),
+      ]);
+      if (!bundle) return res.status(404).json({ error: "Lesson package not found" });
+
+      const report = buildPilotEvidenceReport(bundle, outcomes);
+      await recordReleaseAuditEvent(req.params.id, "pilot_evidence_exported", "Pilot evidence report exported for program review.", {
+        learnerCount: outcomes?.totals.assigned || 0,
+        completedCount: outcomes?.totals.completed || 0,
+        sourceCount: bundle.sources.length,
+        exportReady: report.readiness.exportReady,
+      }, req.session.adminUser?.userId);
+
+      const safeTitle = bundle.package.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || "lesson";
+      res.setHeader("Content-Type", "application/json; charset=utf-8");
+      res.setHeader("Content-Disposition", `attachment; filename="${safeTitle}-pilot-evidence.json"`);
+      res.send(JSON.stringify(report, null, 2));
+    } catch (error) {
+      console.error("Lesson builder pilot evidence export error:", error);
+      res.status(500).json({ error: "Failed to export pilot evidence report" });
     }
   });
 

@@ -440,6 +440,80 @@ type PilotOutcomes = {
   }>;
 };
 
+type PilotLaunchSummary = {
+  generatedAt: string;
+  pilotReady: boolean;
+  latestPublishedPackageId?: string | null;
+  package?: {
+    id: string;
+    title: string;
+    topic: string;
+    audience: string;
+    status: string;
+    learnerUrl: string;
+    aiReview?: Record<string, any> | null;
+    facultyReview?: Record<string, any> | null;
+    assessmentBridge?: Record<string, any> | null;
+  } | null;
+  health: {
+    aiMode?: string;
+    aiReady?: boolean;
+    dbReady?: boolean;
+    sourceRegistryStatus?: string;
+    exportStatus?: string;
+  };
+  readinessSteps: Array<{
+    key: string;
+    label: string;
+    status: string;
+    detail: string;
+  }>;
+  nextActions: Array<{
+    key: string;
+    label: string;
+    detail: string;
+  }>;
+  avatars: Array<{
+    key: string;
+    label: string;
+    solution: string;
+    status: string;
+    nextAction: string;
+  }>;
+  sourceSummary: Array<{
+    id?: string;
+    title?: string;
+    approvalStatus?: string;
+    ingestionStatus?: string;
+    chunkCount?: number;
+    citationPolicy?: string;
+    normalized?: boolean;
+    weakTopics?: string[];
+  }>;
+  assignment?: {
+    id: string;
+    title: string;
+    cohortName: string;
+    status: string;
+    counts?: Record<string, number>;
+    firstLearnerLink?: string | null;
+  } | null;
+  outcomes?: {
+    totals: PilotOutcomes["totals"];
+    practiceSummary: PilotOutcomes["practiceSummary"];
+    feedbackSummary: PilotOutcomes["feedbackSummary"];
+    actionQueue: PilotOutcomes["actionQueue"];
+  } | null;
+  exportStatus?: {
+    status: string;
+    fileCount: number;
+    requiredFileCount: number;
+    generatedFiles: string[];
+    missingRequiredFiles: string[];
+    includesDeckModel: boolean;
+  } | null;
+};
+
 const defaultMappingRows = [
   { taxonomy: "NCLEX", code: "PHYS", label: "Physiological Integrity", confidence: 0.9 },
   { taxonomy: "CJM", code: "recognize-cues", label: "Recognize Cues", confidence: 0.9 },
@@ -503,6 +577,17 @@ const statusTone: Record<string, string> = {
   faculty_review_recorded: "bg-emerald-50 text-emerald-700 border-emerald-200",
   learner_feedback_received: "bg-blue-50 text-blue-700 border-blue-200",
   pilot_outcomes_exported: "bg-blue-50 text-blue-700 border-blue-200",
+  pilot_evidence_exported: "bg-blue-50 text-blue-700 border-blue-200",
+  available: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  assignment_link_ready: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  review_recorded: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  premium_available: "bg-violet-50 text-violet-700 border-violet-200",
+  export_ready: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  needs_package: "bg-amber-50 text-amber-700 border-amber-200",
+  needs_assignment: "bg-amber-50 text-amber-700 border-amber-200",
+  needs_assignment_data: "bg-amber-50 text-amber-700 border-amber-200",
+  needs_normalization: "bg-amber-50 text-amber-700 border-amber-200",
+  needs_export_check: "bg-amber-50 text-amber-700 border-amber-200",
 };
 
 function StatusBadge({ value }: { value: string }) {
@@ -664,6 +749,10 @@ export default function LessonBuilder() {
     queryKey: ["/api/admin/lesson-builder/release-readiness"],
   });
 
+  const pilotLaunchQuery = useQuery<PilotLaunchSummary>({
+    queryKey: ["/api/admin/pilot-launch/summary"],
+  });
+
   const sourcesQuery = useQuery<{ sources: SourceRecord[]; taxonomyTerms: TaxonomyTerm[]; documents: any[]; archiveImports?: ArchiveImport[] }>({
     queryKey: ["/api/admin/lesson-builder/sources"],
   });
@@ -756,6 +845,7 @@ export default function LessonBuilder() {
   const archiveImports = sourcesQuery.data?.archiveImports || [];
   const health = healthQuery.data;
   const releaseReadiness = releaseReadinessQuery.data;
+  const pilotLaunch = pilotLaunchQuery.data;
   const releaseBlockers = releaseReadiness?.blockers || [];
   const releaseFailCount = releaseBlockers.filter((blocker) => blocker.status === "fail").length;
   const releaseWarnCount = releaseBlockers.filter((blocker) => blocker.status === "warn").length;
@@ -772,6 +862,8 @@ export default function LessonBuilder() {
   const stats = {
     approvedSources: sources.filter((source) => source.approvalStatus === "approved").length,
     readySources: sources.filter((source) => source.ingestionStatus === "ready").length,
+    driveDecks: sources.filter((source) => source.sourceKind === "drive_presentation").length,
+    auditPatterns: sources.filter((source) => source.sourceKind === "sites_project").length,
     packages: packages.length,
     published: packages.filter((pkg) => pkg.status === "published").length,
   };
@@ -840,6 +932,12 @@ export default function LessonBuilder() {
     }));
   }, [selectedPackageId, currentAssessmentBridge?.attachedAt]);
 
+  const refreshLaunchQueries = () => {
+    queryClient.invalidateQueries({ queryKey: ["/api/admin/pilot-launch/summary"] });
+    queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/health"] });
+    queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/release-readiness"] });
+  };
+
   const importSourceMutation = useMutation({
     mutationFn: async () => {
       const response = await apiRequest("POST", "/api/admin/lesson-builder/sources/import", {
@@ -852,6 +950,7 @@ export default function LessonBuilder() {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/sources"] });
+      refreshLaunchQueries();
       setSelectedSourceIds((ids) => ids.includes(data.source.id) ? ids : [...ids, data.source.id]);
       setSelectedMappingSourceId(data.source.id);
       setSourceForm({ title: "", sourceKind: "local_file", sourceType: "manual", subject: "", edition: "", sourceUri: "" });
@@ -871,6 +970,7 @@ export default function LessonBuilder() {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/sources"] });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/health"] });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/release-readiness"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/pilot-launch/summary"] });
       setLastArchiveImportId(data.importJob.id);
       if (Array.isArray(data.sources) && data.sources[0]?.id) {
         setSelectedSourceIds((ids) => ids.includes(data.sources[0].id) ? ids : [...ids, data.sources[0].id]);
@@ -895,6 +995,7 @@ export default function LessonBuilder() {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/sources"] });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/health"] });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/release-readiness"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/pilot-launch/summary"] });
       const sourceIds = data.summary?.importedSourceIds || [];
       if (sourceIds.length > 0) {
         setSelectedSourceIds((ids) => Array.from(new Set([...ids, ...sourceIds])));
@@ -921,6 +1022,7 @@ export default function LessonBuilder() {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/sources"] });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/health"] });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/release-readiness"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/pilot-launch/summary"] });
       if (data.source?.id) {
         setSelectedSourceIds((ids) => ids.includes(data.source.id) ? ids : [...ids, data.source.id]);
         setSelectedMappingSourceId(data.source.id);
@@ -949,6 +1051,7 @@ export default function LessonBuilder() {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/sources", selectedSourceDetailId] });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/health"] });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/release-readiness"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/pilot-launch/summary"] });
       toast({
         title: "Source normalized",
         description: `${data.normalization?.detected?.tableCount || 0} table/crosswalk signal${data.normalization?.detected?.tableCount === 1 ? "" : "s"} recorded.`,
@@ -994,6 +1097,7 @@ export default function LessonBuilder() {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/packages"] });
+      refreshLaunchQueries();
       setSelectedPackageId(data.package.id);
       setActiveTab("review");
       if (data.generation?.fallbackReason) {
@@ -1016,6 +1120,7 @@ export default function LessonBuilder() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/packages"] });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/packages", selectedPackageId] });
+      refreshLaunchQueries();
       toast({ title: "QA complete", description: "The quality gates have been refreshed." });
     },
   });
@@ -1031,6 +1136,7 @@ export default function LessonBuilder() {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/packages", selectedPackageId] });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/health"] });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/release-readiness"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/pilot-launch/summary"] });
       toast({
         title: "Assessment bridge saved",
         description: `Weak topic linked: ${data.assessmentBridge?.weakTopic || assessmentBridgeForm.weakTopic}.`,
@@ -1049,11 +1155,33 @@ export default function LessonBuilder() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/packages"] });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/packages", selectedPackageId] });
+      refreshLaunchQueries();
       toast({
         title: data.validationSummary?.failCount ? "Contract blocks publish" : "Contract validation passed",
         description: `${data.validationSummary?.failCount || 0} fail, ${data.validationSummary?.warningCount || 0} warn.`,
         variant: data.validationSummary?.failCount ? "destructive" : undefined,
       });
+    },
+  });
+
+  const runAiReviewMutation = useMutation({
+    mutationFn: async (packageId?: string) => {
+      const targetPackageId = packageId || selectedPackageId;
+      if (!targetPackageId) throw new Error("Select a package first.");
+      const response = await apiRequest("POST", `/api/admin/lesson-builder/packages/${targetPackageId}/ai-review`);
+      return response.json();
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/packages"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/packages", selectedPackageId] });
+      refreshLaunchQueries();
+      toast({
+        title: "AI review recorded",
+        description: `Decision: ${String(data.review?.decision || "approved_for_pilot").replace(/_/g, " ")}.`,
+      });
+    },
+    onError: (error: any) => {
+      toast({ title: "AI review failed", description: error?.message || "Run QA and contract validation first.", variant: "destructive" });
     },
   });
 
@@ -1065,8 +1193,7 @@ export default function LessonBuilder() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/packages"] });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/packages", selectedPackageId] });
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/health"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/release-readiness"] });
+      refreshLaunchQueries();
       toast({ title: "Package published", description: "The lesson package passed QA and is marked published." });
     },
   });
@@ -1083,6 +1210,7 @@ export default function LessonBuilder() {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/packages"] });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/health"] });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/release-readiness"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/pilot-launch/summary"] });
       if (data.package?.id) {
         setSelectedPackageId(data.package.id);
       }
@@ -1098,17 +1226,16 @@ export default function LessonBuilder() {
 
   const saveReviewMutation = useMutation({
     mutationFn: async () => {
-      const response = await apiRequest("POST", `/api/admin/lesson-builder/packages/${selectedPackageId}/reviews`, reviewForm);
+      const response = await apiRequest("POST", `/api/admin/lesson-builder/packages/${selectedPackageId}/faculty-review`, reviewForm);
       return response.json();
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/packages"] });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/packages", selectedPackageId] });
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/health"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/release-readiness"] });
+      refreshLaunchQueries();
       setReviewForm((current) => ({ ...current, comment: "" }));
       toast({
-        title: "Faculty review saved",
+        title: "Premium faculty review saved",
         description: `Decision recorded as ${String(data.review?.decision || reviewForm.decision).replace(/_/g, " ")}.`,
       });
     },
@@ -1131,6 +1258,7 @@ export default function LessonBuilder() {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/packages", selectedPackageId] });
+      refreshLaunchQueries();
       setAssignmentForm((current) => ({ ...current, title: "", rosterText: "" }));
       toast({
         title: "Pilot assignment created",
@@ -1202,6 +1330,7 @@ export default function LessonBuilder() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/packages"] });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/packages", selectedPackageId] });
+      refreshLaunchQueries();
       toast({
         title: data.reviewStatus === "ready_to_publish" ? "Artifacts rebuilt" : "Rebuild found blockers",
         description: `${data.qa?.qaSummary?.failCount || 0} QA fail, ${data.validation?.validationSummary?.failCount || 0} contract fail.`,
@@ -1236,6 +1365,17 @@ export default function LessonBuilder() {
     window.setTimeout(() => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/packages", selectedPackageId] });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/packages", selectedPackageId, "pilot-outcomes"] });
+      refreshLaunchQueries();
+    }, 1200);
+  };
+
+  const exportPilotEvidence = (packageId?: string) => {
+    const targetPackageId = packageId || selectedPackageId;
+    if (!targetPackageId) return;
+    window.location.href = `/api/admin/lesson-builder/packages/${targetPackageId}/pilot-evidence-export`;
+    window.setTimeout(() => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/packages", targetPackageId] });
+      refreshLaunchQueries();
     }, 1200);
   };
 
@@ -1300,10 +1440,12 @@ export default function LessonBuilder() {
               Build learner-facing active lesson packages from approved source truth, NCLEX/CJM mappings, guided notes, practice items, citations, and QA gates.
             </p>
           </div>
-          <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
+          <div className="grid grid-cols-2 gap-2 md:grid-cols-3 xl:grid-cols-6">
             {[
               ["Approved", stats.approvedSources],
               ["Ready", stats.readySources],
+              ["Drive Decks", stats.driveDecks],
+              ["Audit Patterns", stats.auditPatterns],
               ["Packages", stats.packages],
               ["Published", stats.published],
             ].map(([label, value]) => (
@@ -1313,6 +1455,125 @@ export default function LessonBuilder() {
               </div>
             ))}
           </div>
+        </div>
+
+        <div className="rounded-md border bg-white p-4">
+          <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+            <div className="space-y-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <Rocket className="h-5 w-5 text-teal-700" />
+                <h2 className="text-base font-semibold text-slate-950">Pilot Launch Console</h2>
+                <StatusBadge value={pilotLaunch?.pilotReady ? "approved_for_pilot" : pilotLaunchQuery.isLoading ? "running" : "incomplete"} />
+              </div>
+              <div className="max-w-3xl text-sm text-slate-600">
+                {pilotLaunch?.package
+                  ? `${pilotLaunch.package.title} is the active launch package for the internal pilot.`
+                  : "Publish a package to activate the cohort launch view."}
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {pilotLaunch?.package?.id ? (
+                  <>
+                    <Button
+                      size="sm"
+                      onClick={() => {
+                        setSelectedPackageId(pilotLaunch.package!.id);
+                        setActiveTab("review");
+                      }}
+                    >
+                      <PackageCheck className="mr-2 h-4 w-4" />
+                      Open Package
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setSelectedPackageId(pilotLaunch.package!.id);
+                        runAiReviewMutation.mutate(pilotLaunch.package!.id);
+                      }}
+                      disabled={runAiReviewMutation.isPending}
+                    >
+                      <Sparkles className="mr-2 h-4 w-4" />
+                      AI Review
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={() => window.open(pilotLaunch.package!.learnerUrl, "_blank")}>
+                      <ExternalLink className="mr-2 h-4 w-4" />
+                      Open Learner
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={() => exportPilotEvidence(pilotLaunch.package!.id)}>
+                      <Download className="mr-2 h-4 w-4" />
+                      Export Evidence
+                    </Button>
+                  </>
+                ) : null}
+                {pilotLaunch?.assignment?.firstLearnerLink ? (
+                  <Button size="sm" variant="outline" onClick={() => copyAssignmentLink(pilotLaunch.assignment!.firstLearnerLink!)}>
+                    <Copy className="mr-2 h-4 w-4" />
+                    Copy Learner Link
+                  </Button>
+                ) : null}
+              </div>
+            </div>
+
+            <div className="grid gap-2 text-xs text-slate-600 sm:grid-cols-2 xl:min-w-[440px] xl:grid-cols-3">
+              <div className="rounded-md bg-slate-50 px-3 py-2">AI: {pilotLaunch?.health.aiReady ? String(pilotLaunch.health.aiMode || aiMode).replace(/_/g, " ") : "not ready"}</div>
+              <div className="rounded-md bg-slate-50 px-3 py-2">Drive decks: {stats.driveDecks}</div>
+              <div className="rounded-md bg-slate-50 px-3 py-2">Audit patterns: {stats.auditPatterns}</div>
+              <div className="rounded-md bg-slate-50 px-3 py-2">Assigned: {pilotLaunch?.outcomes?.totals.assigned ?? 0}</div>
+              <div className="rounded-md bg-slate-50 px-3 py-2">Completed: {pilotLaunch?.outcomes?.totals.completed ?? 0}</div>
+              <div className="rounded-md bg-slate-50 px-3 py-2">Export: {pilotLaunch?.exportStatus?.status?.replace(/_/g, " ") || "not checked"}</div>
+            </div>
+          </div>
+
+          <div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1.1fr)_minmax(320px,0.9fr)]">
+            <div className="space-y-3">
+              <div className="text-sm font-semibold text-slate-900">Readiness ladder</div>
+              <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
+                {(pilotLaunch?.readinessSteps || []).map((step) => (
+                  <div key={step.key} className="rounded-md border bg-slate-50 p-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="text-sm font-medium text-slate-900">{step.label}</div>
+                      <StatusBadge value={step.status} />
+                    </div>
+                    <div className="mt-1 text-xs text-slate-600">{step.detail}</div>
+                  </div>
+                ))}
+                {!pilotLaunchQuery.isLoading && !pilotLaunch?.readinessSteps?.length ? (
+                  <div className="rounded-md border bg-slate-50 p-3 text-sm text-slate-600">No launch package is ready yet.</div>
+                ) : null}
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <div className="text-sm font-semibold text-slate-900">Avatar solutions</div>
+              <div className="grid gap-2">
+                {(pilotLaunch?.avatars || []).map((avatar) => (
+                  <div key={avatar.key} className="rounded-md border bg-white p-3">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div>
+                        <div className="text-sm font-medium text-slate-900">{avatar.label}</div>
+                        <div className="text-xs text-slate-500">{avatar.solution}</div>
+                      </div>
+                      <StatusBadge value={avatar.status} />
+                    </div>
+                    <div className="mt-2 text-xs text-slate-600">{avatar.nextAction}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {pilotLaunch?.nextActions?.length ? (
+            <div className="mt-4 rounded-md border border-amber-200 bg-amber-50 p-3">
+              <div className="text-sm font-semibold text-amber-950">Next actions</div>
+              <div className="mt-2 grid gap-2 md:grid-cols-2">
+                {pilotLaunch.nextActions.map((action) => (
+                  <div key={action.key} className="text-sm text-amber-900">
+                    <span className="font-medium">{action.label}:</span> {action.detail}
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : null}
         </div>
 
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-6">
@@ -1562,6 +1823,9 @@ export default function LessonBuilder() {
                               <div className="mt-1 text-xs text-slate-500">{source.edition || source.sourceKind}</div>
                               <div className="mt-1 flex flex-wrap gap-1 text-xs text-slate-500">
                                 {source.documentId && <Badge variant="outline">document chunks: {source.metadata?.chunkCount || "ready"}</Badge>}
+                                {source.sourceKind === "drive_presentation" && <Badge variant="outline">Drive slides/PPT</Badge>}
+                                {source.sourceKind === "sites_project" && <Badge variant="outline">Sites audit pattern</Badge>}
+                                {source.metadata?.premiumWorkflowPattern && <Badge variant="outline">premium review pattern</Badge>}
                                 {source.metadata?.archiveRole && <Badge variant="outline">{String(source.metadata.archiveRole).replace(/_/g, " ")}</Badge>}
                                 {source.metadata?.archiveRole && <Badge variant="outline">read-only contract</Badge>}
                                 {Boolean(source.metadata?.archiveSummary?.importantFiles?.length) && (
@@ -1890,6 +2154,8 @@ export default function LessonBuilder() {
                         <SelectContent>
                           <SelectItem value="local_file">Local file</SelectItem>
                           <SelectItem value="drive_sheet">Drive sheet</SelectItem>
+                          <SelectItem value="drive_presentation">Drive slides/PPT</SelectItem>
+                          <SelectItem value="sites_project">Sites audit dashboard</SelectItem>
                           <SelectItem value="document">Knowledge document</SelectItem>
                           <SelectItem value="taxonomy">Taxonomy</SelectItem>
                         </SelectContent>
@@ -1904,6 +2170,9 @@ export default function LessonBuilder() {
                           <SelectItem value="textbook">Textbook</SelectItem>
                           <SelectItem value="blueprint">Blueprint</SelectItem>
                           <SelectItem value="crosswalk">Crosswalk</SelectItem>
+                          <SelectItem value="golden_lesson_example">Golden lesson example</SelectItem>
+                          <SelectItem value="course_concept_audit_workflow_pattern">Course audit workflow pattern</SelectItem>
+                          <SelectItem value="concept_course_audit_pattern">Concept audit pattern</SelectItem>
                           <SelectItem value="reference">Reference</SelectItem>
                         </SelectContent>
                       </Select>
@@ -2234,6 +2503,10 @@ export default function LessonBuilder() {
                             <ClipboardCheck className="mr-2 h-4 w-4" />
                             Validate Contract
                           </Button>
+                          <Button variant="outline" onClick={() => runAiReviewMutation.mutate(selectedPackageId)} disabled={runAiReviewMutation.isPending}>
+                            <Sparkles className="mr-2 h-4 w-4" />
+                            AI Review
+                          </Button>
                           <Button variant="outline" onClick={() => rebuildArtifactsMutation.mutate()} disabled={rebuildArtifactsMutation.isPending}>
                             <Save className="mr-2 h-4 w-4" />
                             Rebuild Artifacts
@@ -2245,6 +2518,10 @@ export default function LessonBuilder() {
                           <Button variant="outline" onClick={exportPackage}>
                             <Download className="mr-2 h-4 w-4" />
                             Export Harrity
+                          </Button>
+                          <Button variant="outline" onClick={() => exportPilotEvidence(selectedPackageId)}>
+                            <FileText className="mr-2 h-4 w-4" />
+                            Export Evidence
                           </Button>
                           <Button onClick={() => publishMutation.mutate()} disabled={publishMutation.isPending}>
                             <Rocket className="mr-2 h-4 w-4" />
@@ -2366,7 +2643,7 @@ export default function LessonBuilder() {
                           </div>
                         ) : (
                           <div className="mb-4 rounded-md bg-amber-50 p-3 text-sm text-amber-900">
-                            No faculty review has been recorded for this package yet.
+                            No human faculty review has been recorded for this package yet. AI review can approve MVP pilot use; faculty review is the premium release gate.
                           </div>
                         )}
                         <div className="grid gap-3 md:grid-cols-2">
@@ -2416,7 +2693,7 @@ export default function LessonBuilder() {
                         <div className="mt-3 flex justify-end">
                           <Button onClick={() => saveReviewMutation.mutate()} disabled={saveReviewMutation.isPending || reviewForm.comment.trim().length < 3}>
                             <ClipboardCheck className="mr-2 h-4 w-4" />
-                            Save Review
+                            Save Premium Faculty Review
                           </Button>
                         </div>
                       </div>
