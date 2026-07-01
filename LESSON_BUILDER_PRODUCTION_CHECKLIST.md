@@ -33,7 +33,8 @@ Use a direct Neon URL only for migration/admin commands. Use the pooled URL for 
 - Password registration accepts first/last name fields and rejects weak passwords with JSON validation errors.
 - Missing `/api/*` routes return JSON 404 responses.
 - Harrity export status reports all required files plus `deck_model.json`.
-- Faculty review has at least one explicit decision for the pilot package; `approved_for_pilot` or `approved_for_release` is required before expanding beyond internal review.
+- AI-reviewed pilot approval has at least one explicit decision for the pilot package; `approved_for_pilot` or `approved_for_release` is required before expanding beyond internal review.
+- Human faculty review is a premium workflow and should be labeled separately from MVP readiness.
 - A pilot assignment is active before inviting learners.
 - One live learner completion and feedback smoke should be recorded before marking live verification complete.
 - Learner pilot signals are recording anonymous lesson opens, slide views, practice views, completions, and feedback.
@@ -45,5 +46,6 @@ Use a direct Neon URL only for migration/admin commands. Use the pooled URL for 
 - Direct OpenAI Chat Completions is an accepted live drafting path for the pilot.
 - Workspace Agent endpoint support remains optional until an API channel can be created and published.
 - Deterministic template fallback remains available for demos and resilience, but fallback-created packages must be clearly labeled in package detail.
-- Faculty review approval is a human release gate; QA/contract pass alone means the package is technically ready, not necessarily approved for pilot expansion.
+- AI-reviewed approval is the MVP release gate; QA/contract pass alone means the package is technically ready, not necessarily approved for pilot expansion.
+- Human faculty review approval is a premium release-support gate for formal faculty review customers.
 - Replit `NurseStudy` assessment uploads and `NursesBrain` canonical extraction are post-pilot integrations unless they directly support the verified Lesson Builder loop.

@@ -135,6 +135,12 @@ type LessonBuilderHealth = {
     learnerEventCount?: number;
     latestReviewDecision?: string;
     facultyApproved?: boolean;
+    launchReviewApproved?: boolean;
+    aiReviewedPilotApproved?: boolean;
+    humanFacultyApproved?: boolean;
+    facultyReviewPremium?: boolean;
+    latestReviewRole?: string | null;
+    latestReviewIsAi?: boolean;
     latestPackageLearnerEventCount?: number;
     latestPackageFeedbackCount?: number;
     latestPackageActiveAssignmentCount?: number;
@@ -475,6 +481,8 @@ const statusTone: Record<string, string> = {
   changes_requested: "bg-amber-50 text-amber-700 border-amber-200",
   approved_for_pilot: "bg-emerald-50 text-emerald-700 border-emerald-200",
   approved_for_release: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  ai_reviewed: "bg-blue-50 text-blue-700 border-blue-200",
+  premium_feature: "bg-violet-50 text-violet-700 border-violet-200",
   awaiting_review: "bg-amber-50 text-amber-700 border-amber-200",
   active: "bg-emerald-50 text-emerald-700 border-emerald-200",
   assigned: "bg-slate-50 text-slate-700 border-slate-200",
@@ -1396,7 +1404,14 @@ export default function LessonBuilder() {
               <div className="rounded-md bg-slate-50 px-3 py-2">QA fails: {health?.pilotReadiness?.latestQaFailCount ?? 0}</div>
               <div className="rounded-md bg-slate-50 px-3 py-2">Contract fails: {health?.pilotReadiness?.latestContractFailCount ?? 0}</div>
               <div className="rounded-md bg-slate-50 px-3 py-2">Export: {health?.pilotReadiness?.exportReady ? "ready" : "not verified"}</div>
-              <div className="rounded-md bg-slate-50 px-3 py-2">Review: {(health?.pilotReadiness?.latestReviewDecision || "awaiting_review").replace(/_/g, " ")}</div>
+              <div className="rounded-md bg-slate-50 px-3 py-2">
+                Review: {health?.pilotReadiness?.aiReviewedPilotApproved
+                  ? "AI reviewed"
+                  : health?.pilotReadiness?.humanFacultyApproved
+                    ? "faculty approved"
+                    : (health?.pilotReadiness?.latestReviewDecision || "awaiting_review").replace(/_/g, " ")}
+              </div>
+              <div className="rounded-md bg-slate-50 px-3 py-2">Faculty: {health?.pilotReadiness?.humanFacultyApproved ? "approved" : "premium"}</div>
               <div className="rounded-md bg-slate-50 px-3 py-2">Assignment: {health?.pilotReadiness?.assignmentActive ? "active" : "needed"}</div>
               <div className="rounded-md bg-slate-50 px-3 py-2">Completion: {health?.pilotReadiness?.learnerCompletionPresent ? "recorded" : "not yet"}</div>
               <div className="rounded-md bg-slate-50 px-3 py-2">Learner events: {health?.pilotReadiness?.latestPackageLearnerEventCount ?? 0}</div>
@@ -2329,9 +2344,16 @@ export default function LessonBuilder() {
                         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
                           <div className="flex items-center gap-2 font-semibold text-slate-900">
                             <MessageSquare className="h-4 w-4 text-slate-500" />
-                            Faculty Review
+                            AI / Faculty Review
                           </div>
-                          <StatusBadge value={latestReview?.decision || "awaiting_review"} />
+                          <div className="flex flex-wrap gap-2">
+                            {health?.pilotReadiness?.aiReviewedPilotApproved ? <StatusBadge value="ai_reviewed" /> : null}
+                            {!health?.pilotReadiness?.humanFacultyApproved ? <StatusBadge value="premium_feature" /> : null}
+                            <StatusBadge value={latestReview?.decision || "awaiting_review"} />
+                          </div>
+                        </div>
+                        <div className="mb-4 rounded-md bg-blue-50 p-3 text-sm text-blue-950">
+                          AI-reviewed `approved_for_pilot` satisfies internal launch readiness. Human faculty review remains a premium feature for formal release support.
                         </div>
                         {latestReview ? (
                           <div className="mb-4 rounded-md bg-slate-50 p-3 text-sm text-slate-700">

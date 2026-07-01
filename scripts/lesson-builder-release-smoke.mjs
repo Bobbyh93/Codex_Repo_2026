@@ -200,7 +200,7 @@ async function run() {
   );
   record(
     "documented warnings only",
-    warningBlockers.every((blocker) => ["typescript", "assignment_loop", "live_completion"].includes(blocker.key)),
+    warningBlockers.every((blocker) => ["typescript", "assignment_loop", "live_completion", "faculty_review"].includes(blocker.key)),
     `${warningBlockers.length} warning(s): ${warningBlockers.map((blocker) => blocker.key).join(", ") || "none"}`,
     "warn"
   );

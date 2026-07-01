@@ -3264,7 +3264,18 @@ async function lessonBuilderHealth() {
   const latestPackageFeedbackCount = latestPackageFeedbackCountRow[0]?.count || 0;
   const latestPackageActiveAssignmentCount = latestActiveAssignmentCountRow[0]?.count || 0;
   const latestPackageCompletionCount = latestPackageCompletionCountRow[0]?.count || 0;
-  const facultyApproved = latestReviewDecision === "approved_for_pilot" || latestReviewDecision === "approved_for_release";
+  const reviewApproved = latestReviewDecision === "approved_for_pilot" || latestReviewDecision === "approved_for_release";
+  const latestReviewMetadata = (latestReview?.metadata || {}) as Record<string, any>;
+  const latestReviewIdentity = `${latestReview?.reviewerName || ""} ${latestReview?.reviewerRole || ""}`;
+  const latestReviewIsAi = Boolean(latestReview && (
+    /(^|[\s_-])(ai|automated|simulated|simulation)([\s_-]|$)/i.test(latestReviewIdentity)
+    || latestReviewMetadata.aiReviewed === true
+    || latestReviewMetadata.simulatedApproval === true
+  ));
+  const aiReviewedPilotApproved = reviewApproved && latestReviewIsAi;
+  const humanFacultyApproved = reviewApproved && !latestReviewIsAi;
+  const facultyApproved = reviewApproved;
+  const facultyReviewPremium = true;
   const pilotReady = Boolean(
     process.env.DATABASE_URL
     && archiveSetReady
@@ -3338,14 +3349,20 @@ async function lessonBuilderHealth() {
       learnerEventCount: learnerEventCountRow[0]?.count || 0,
       latestReviewDecision,
       facultyApproved,
+      launchReviewApproved: reviewApproved,
+      aiReviewedPilotApproved,
+      humanFacultyApproved,
+      facultyReviewPremium,
+      latestReviewRole: latestReview?.reviewerRole || null,
+      latestReviewIsAi,
       latestPackageLearnerEventCount,
       latestPackageFeedbackCount,
       latestPackageActiveAssignmentCount,
       latestPackageCompletionCount,
       assignmentActive: latestPackageActiveAssignmentCount > 0,
       learnerCompletionPresent: latestPackageCompletionCount > 0,
-      pilotLaunchReady: pilotReady && facultyApproved && latestPackageActiveAssignmentCount > 0,
-      liveVerificationComplete: pilotReady && facultyApproved && latestPackageActiveAssignmentCount > 0 && latestPackageCompletionCount > 0,
+      pilotLaunchReady: pilotReady && reviewApproved && latestPackageActiveAssignmentCount > 0,
+      liveVerificationComplete: pilotReady && reviewApproved && latestPackageActiveAssignmentCount > 0 && latestPackageCompletionCount > 0,
     },
     agent,
   };
@@ -3451,10 +3468,14 @@ async function lessonBuilderReleaseReadiness() {
     ),
     releaseBlocker(
       "faculty_review",
-      "Faculty pilot approval",
-      pilotReadiness?.facultyApproved ? "pass" : "warn",
+      "AI review / premium faculty approval",
+      pilotReadiness?.launchReviewApproved ? "pass" : "warn",
       "medium",
-      pilotReadiness?.facultyApproved ? "Pilot package has faculty approval." : "Pilot package is technically ready only after a faculty review decision."
+      pilotReadiness?.aiReviewedPilotApproved
+        ? "Pilot package has AI-reviewed approval for internal launch; human faculty review remains a premium upgrade."
+        : pilotReadiness?.humanFacultyApproved
+          ? "Pilot package has human faculty approval."
+          : "Internal MVP can launch after AI-reviewed pilot approval; human faculty review is a premium feature."
     ),
     releaseBlocker(
       "learner_signals",

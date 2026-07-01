@@ -4,7 +4,7 @@
 
 NurseStudy is live on Render at `https://nursestudy-lesson-builder.onrender.com/` and is backed by the GitHub deployment source `Bobbyh93/Codex_Repo_2026`. Render and GitHub are connected; production environment secrets must stay server-side only.
 
-The current pilot release path is Lesson Builder-first: normalized official source -> generated package -> Assessment Bridge -> QA/contract/faculty approval -> publish -> assignment -> learner completion/feedback -> Pilot Outcomes -> Harrity export.
+The current pilot release path is Lesson Builder-first: normalized official source -> generated package -> Assessment Bridge -> QA/contract -> AI-reviewed pilot approval -> publish -> assignment -> learner completion/feedback -> Pilot Outcomes -> Harrity export. Human faculty review is a premium layer, not the MVP launch blocker.
 
 The local and live pilot runtimes have passed or support the launch gates below:
 
@@ -12,7 +12,7 @@ The local and live pilot runtimes have passed or support the launch gates below:
 - Server bundle: passed.
 - Live launch preflight: 25 passed, 0 warnings, 0 failures.
 - Lesson Builder release smoke: 13 passed, 0 warnings, 0 failures.
-- Pilot readiness endpoint: reports DB, AI mode, source readiness, official source normalization, Assessment Bridge, faculty approval, assignment activity, learner completion, and export state.
+- Pilot readiness endpoint: reports DB, AI mode, source readiness, official source normalization, Assessment Bridge, AI-reviewed approval, premium faculty review state, assignment activity, learner completion, and export state.
 - Launch secret scan: passed.
 - Deployment source manifest: passed; 466 Git-visible deploy candidate files.
 - GitHub launch workflow: added at `.github/workflows/live-launch-check.yml`.
@@ -41,13 +41,13 @@ Live signed-in smoke on Render has been run against package `bf472933-fdb6-4e67-
 - Internal smoke assignment created and completed by `Live Pilot Learner`.
 - Learner feedback submitted and visible through Pilot Outcomes.
 - Harrity export status reports ready with required files plus `deck_model.json`.
-- Focused live smoke result: 16 passed, 1 documented warning, 0 failures. The remaining warning record covers human faculty review and known full-app TypeScript debt.
+- Focused live smoke result: 16 passed, 1 documented warning, 0 failures. After AI-reviewed approval is recorded, the remaining expected warning should be known full-app TypeScript debt.
 
 Remaining before inviting a real cohort:
 
-1. Record a real faculty review decision, preferably `approved_for_pilot`.
+1. Record an AI-reviewed `approved_for_pilot` decision for internal launch.
 2. Replace or supplement the smoke learner with the actual pilot learner/cohort.
-3. Export the final Harrity bundle after faculty review and archive it for the pilot handoff.
+3. Export the final Harrity bundle after AI-reviewed approval and archive it for the pilot handoff.
 
 ## Launch-Critical Files
 

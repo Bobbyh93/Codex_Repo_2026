@@ -28,7 +28,7 @@ Smoke-test uploads named `mvp-*` are development artifacts, not official pilot s
 
 For the live pilot, normalize the official source in Source Detail, keep it approved and ready, and attach its weak topic to the published pilot package through the Assessment Bridge panel.
 
-Live Render pilot smoke has completed for package `bf472933-fdb6-4e67-b893-491c00c7bcd4`: official source normalized, Assessment Bridge attached, internal smoke assignment completed, learner feedback recorded, Pilot Outcomes updated, and Harrity export verified. The remaining human release gate is a real faculty review decision before inviting the actual cohort.
+Live Render pilot smoke has completed for package `bf472933-fdb6-4e67-b893-491c00c7bcd4`: official source normalized, Assessment Bridge attached, internal smoke assignment completed, learner feedback recorded, Pilot Outcomes updated, and Harrity export verified. Internal launch can use an AI-reviewed `approved_for_pilot` record; human faculty review remains premium.
 
 ## Production Environment
 
@@ -48,7 +48,7 @@ Use a direct Neon connection string only for migration/admin commands, not app r
 
 - If health shows `openai_chat_completions_ready` or `workspace_agent_ready`, package generation may use live agent-assisted drafting.
 - If health shows `fallback_only` or `agent_invalid_key`, the MVP is still functional but generation uses deterministic template fallback.
-- Pilot launch readiness now separates technical readiness from faculty approval. A package can be technically ready while still awaiting faculty review.
+- Pilot launch readiness now separates AI-reviewed pilot approval from human faculty review. AI-reviewed `approved_for_pilot` satisfies internal MVP launch; human faculty review is a premium feature for formal release support.
 - Pilot readiness now also reports official source readiness, source normalization, assessment bridge status, active assignment status, learner completion, and live verification completion.
 - The admin Lesson Builder now includes a Pilot Release Readiness panel and `/api/admin/lesson-builder/release-readiness` blocker summary.
 - Replit `NurseStudy` assessment workflows and `NursesBrain` autonomous extraction remain source patterns for future work. The MVP stays Lesson Builder-first until the live pilot loop is verified end to end.
@@ -71,7 +71,7 @@ Use a direct Neon connection string only for migration/admin commands, not app r
 - Normalize the official pilot source and confirm table/crosswalk/taxonomy hints are visible.
 - Generate, edit, rebuild, QA, validate, publish, and open learner lesson.
 - Attach one weak topic or ATI category to the package through Assessment Bridge.
-- Record one faculty review decision and confirm it appears in package detail plus pilot readiness.
+- Record one AI-reviewed `approved_for_pilot` decision for internal launch; add human faculty review only for the premium release workflow.
 - Open the learner lesson, mark complete, submit feedback, and confirm learner signals appear in admin package detail.
 - Export Harrity bundle and verify required files are present.
 - Run `npm run preflight:live-launch` before host connection or deployment.
