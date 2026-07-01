@@ -24,13 +24,18 @@ Use a direct Neon URL only for migration/admin commands. Use the pooled URL for 
 - `/api/admin/lesson-builder/release-readiness` reports no high-severity release blockers.
 - `aiMode` is `openai_chat_completions` or `workspace_agent`.
 - Pilot source is approved, ready, and has document chunks.
+- One official pilot source is normalized with table/crosswalk signal counts and taxonomy hints.
+- The latest pilot package has an Assessment Bridge with weak topic plus ATI/NCLEX/CJM metadata.
 - Latest published package has zero QA failures and zero contract failures.
 - Learner route `/lessons/:id` loads without admin-only QA or source-management controls.
+- Learner route shows the assessment anchor and source labels, but not admin QA/source-management controls.
 - Learner dashboard routes redirect unauthenticated users to login.
 - Password registration accepts first/last name fields and rejects weak passwords with JSON validation errors.
 - Missing `/api/*` routes return JSON 404 responses.
 - Harrity export status reports all required files plus `deck_model.json`.
 - Faculty review has at least one explicit decision for the pilot package; `approved_for_pilot` or `approved_for_release` is required before expanding beyond internal review.
+- A pilot assignment is active before inviting learners.
+- One live learner completion and feedback smoke should be recorded before marking live verification complete.
 - Learner pilot signals are recording anonymous lesson opens, slide views, practice views, completions, and feedback.
 - Package detail shows release audit events for publish, faculty review, learner feedback, and Harrity export download.
 - `npm run smoke:lesson-builder` passes against the target `APP_URL`; the only allowed warning is the documented app-wide TypeScript debt.
@@ -41,3 +46,4 @@ Use a direct Neon URL only for migration/admin commands. Use the pooled URL for 
 - Workspace Agent endpoint support remains optional until an API channel can be created and published.
 - Deterministic template fallback remains available for demos and resilience, but fallback-created packages must be clearly labeled in package detail.
 - Faculty review approval is a human release gate; QA/contract pass alone means the package is technically ready, not necessarily approved for pilot expansion.
+- Replit `NurseStudy` assessment uploads and `NursesBrain` canonical extraction are post-pilot integrations unless they directly support the verified Lesson Builder loop.

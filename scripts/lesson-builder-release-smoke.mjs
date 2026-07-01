@@ -173,9 +173,34 @@ async function run() {
     readiness.payload?.pilotReady === true,
     `pilotReady=${String(readiness.payload?.pilotReady)}`
   );
+  const pilotReadiness = readiness.payload?.health?.pilotReadiness || {};
+  record(
+    "official source normalized",
+    pilotReadiness.normalizedSourceReady === true && pilotReadiness.officialPilotSourceReady === true,
+    `normalized=${String(pilotReadiness.normalizedSourceReady)}, officialSource=${String(pilotReadiness.officialPilotSourceReady)}`
+  );
+  record(
+    "assessment bridge attached",
+    pilotReadiness.assessmentBridgeReady === true,
+    pilotReadiness.assessmentBridge?.weakTopic
+      ? `weak topic ${pilotReadiness.assessmentBridge.weakTopic}`
+      : "missing weak topic bridge"
+  );
+  record(
+    "active pilot assignment",
+    pilotReadiness.assignmentActive === true,
+    `${pilotReadiness.latestPackageActiveAssignmentCount || 0} active assignment(s)`,
+    "warn"
+  );
+  record(
+    "learner completion smoke",
+    pilotReadiness.learnerCompletionPresent === true,
+    `${pilotReadiness.latestPackageCompletionCount || 0} completion event(s)`,
+    "warn"
+  );
   record(
     "documented warnings only",
-    warningBlockers.length <= 1 && warningBlockers.every((blocker) => blocker.key === "typescript"),
+    warningBlockers.every((blocker) => ["typescript", "assignment_loop", "live_completion"].includes(blocker.key)),
     `${warningBlockers.length} warning(s): ${warningBlockers.map((blocker) => blocker.key).join(", ") || "none"}`,
     "warn"
   );
@@ -191,7 +216,10 @@ async function run() {
     const learnerApi = await request(`/api/lessons/${latestPackageId}`);
     record(
       "published learner API",
-      learnerApi.status === 200 && isJson(learnerApi) && learnerPayloadLooksComplete(learnerApi.payload),
+      learnerApi.status === 200
+        && isJson(learnerApi)
+        && learnerPayloadLooksComplete(learnerApi.payload)
+        && Boolean(learnerApi.payload?.package?.assessmentBridge?.weakTopic),
       `status ${learnerApi.status}, slides ${(learnerApi.payload?.slides || learnerApi.payload?.deck?.slides || []).length || 0}, items ${(learnerApi.payload?.items || learnerApi.payload?.practiceItems || []).length || 0}`
     );
 

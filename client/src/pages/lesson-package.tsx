@@ -57,6 +57,15 @@ type LearnerLesson = {
     audience: string;
     status: string;
     publishedAt?: string | null;
+    assessmentBridge?: {
+      status?: string;
+      weakTopic?: string;
+      atiCategory?: string | null;
+      nclexCategory?: string | null;
+      cjmStep?: string | null;
+      sourceTitle?: string | null;
+      note?: string | null;
+    } | null;
     manifestSummary?: {
       requiredFileCount?: number;
       counts?: Record<string, number>;
@@ -73,6 +82,8 @@ type LearnerLesson = {
     subject?: string;
     edition?: string;
     citationPolicy?: string;
+    normalizationStatus?: string | null;
+    officialPilotSource?: boolean;
   }>;
   slides: LearnerSlide[];
   practiceItems: PracticeItem[];
@@ -406,6 +417,29 @@ export default function LessonPackage() {
         </div>
       ) : null}
 
+      {lesson.package.assessmentBridge?.weakTopic ? (
+        <div className="border-b bg-emerald-50">
+          <div className="mx-auto flex max-w-7xl flex-col gap-2 px-4 py-3 text-sm text-emerald-950 sm:px-6 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <span className="font-semibold">Assessment anchor</span>
+              <span className="ml-2 text-emerald-800">{lesson.package.assessmentBridge.weakTopic}</span>
+              {lesson.package.assessmentBridge.sourceTitle ? (
+                <span className="ml-2 text-emerald-700">Source: {lesson.package.assessmentBridge.sourceTitle}</span>
+              ) : null}
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              {[
+                lesson.package.assessmentBridge.atiCategory,
+                lesson.package.assessmentBridge.nclexCategory,
+                lesson.package.assessmentBridge.cjmStep,
+              ].filter(Boolean).map((tag) => (
+                <Badge key={String(tag)} variant="outline" className="border-emerald-200 bg-white text-emerald-800">{String(tag)}</Badge>
+              ))}
+            </div>
+          </div>
+        </div>
+      ) : null}
+
       <div className="mx-auto grid w-full max-w-7xl grid-cols-1 gap-4 px-4 py-4 sm:px-6 lg:grid-cols-[240px_minmax(0,1fr)_320px]">
         <aside className="min-w-0 rounded-md border bg-white p-3 lg:sticky lg:top-4 lg:self-start">
           <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-900">
@@ -604,6 +638,10 @@ export default function LessonPackage() {
                 <div key={`${source.title}-${index}`} className="rounded-md bg-slate-50 p-2 text-xs text-slate-700">
                   <div className="font-medium text-slate-900">{source.title}</div>
                   <div>{source.subject || source.sourceType || "Nursing source"}</div>
+                  <div className="mt-1 flex flex-wrap gap-1">
+                    {source.officialPilotSource ? <Badge variant="outline" className="border-emerald-200 bg-white text-emerald-700">pilot source</Badge> : null}
+                    {source.normalizationStatus ? <Badge variant="outline" className="border-blue-200 bg-white text-blue-700">{source.normalizationStatus}</Badge> : null}
+                  </div>
                 </div>
               ))}
             </div>

@@ -2,11 +2,13 @@
 
 ## Current MVP Status
 
-The DB-backed Lesson Builder path is functional locally:
+The DB-backed Lesson Builder path is functional locally and is the live Render product path for the internal pilot:
 
 - Admin Knowledge Base upload creates persisted document chunks.
 - Approved sources can generate a Harrity web lesson package.
+- Source detail now includes a NursesBrain-style normalization step for table/crosswalk signals, taxonomy hints, official pilot source status, and weak-topic metadata.
 - Packages support edit, rebuild artifacts, QA, contract validation, publish, learner view, and Harrity zip export.
+- Packages can carry an assessment bridge: weak topic, ATI category, NCLEX category, CJM step, and evidence source.
 - Published learner lessons are available at `/lessons/:id`.
 - Faculty reviewers can record package decisions: comment, changes requested, approved for pilot, or approved for release.
 - Published learner lessons record anonymous open, slide, practice, completion, and feedback signals for pilot review.
@@ -23,6 +25,8 @@ Use `Therapeutic Communication Pilot Nursing Source` as the current MVP pilot so
 - NCC AMS Pilot Preflight Package
 
 Smoke-test uploads named `mvp-*` are development artifacts, not official pilot sources.
+
+For the live pilot, normalize the official source in Source Detail, keep it approved and ready, and attach its weak topic to the published pilot package through the Assessment Bridge panel.
 
 ## Production Environment
 
@@ -43,7 +47,9 @@ Use a direct Neon connection string only for migration/admin commands, not app r
 - If health shows `openai_chat_completions_ready` or `workspace_agent_ready`, package generation may use live agent-assisted drafting.
 - If health shows `fallback_only` or `agent_invalid_key`, the MVP is still functional but generation uses deterministic template fallback.
 - Pilot launch readiness now separates technical readiness from faculty approval. A package can be technically ready while still awaiting faculty review.
+- Pilot readiness now also reports official source readiness, source normalization, assessment bridge status, active assignment status, learner completion, and live verification completion.
 - The admin Lesson Builder now includes a Pilot Release Readiness panel and `/api/admin/lesson-builder/release-readiness` blocker summary.
+- Replit `NurseStudy` assessment workflows and `NursesBrain` autonomous extraction remain source patterns for future work. The MVP stays Lesson Builder-first until the live pilot loop is verified end to end.
 - Learner dashboard routes are token-gated; published `/lessons/:id` remains the learner-facing share route for published lessons.
 - Password registration accepts current first-name/last-name payloads, derives username from email when needed, and keeps password-strength validation.
 - Professional Study Guide is quarantined as post-MVP by default with a controlled JSON response unless `ENABLE_PROFESSIONAL_STUDY_GUIDE=true`.
@@ -60,7 +66,9 @@ Use a direct Neon connection string only for migration/admin commands, not app r
 - Run frontend build and server bundle.
 - Verify `/admin/lesson-builder` health cards.
 - Upload one approved pilot source and confirm document/source readiness.
+- Normalize the official pilot source and confirm table/crosswalk/taxonomy hints are visible.
 - Generate, edit, rebuild, QA, validate, publish, and open learner lesson.
+- Attach one weak topic or ATI category to the package through Assessment Bridge.
 - Record one faculty review decision and confirm it appears in package detail plus pilot readiness.
 - Open the learner lesson, mark complete, submit feedback, and confirm learner signals appear in admin package detail.
 - Export Harrity bundle and verify required files are present.

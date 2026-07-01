@@ -104,6 +104,9 @@ type LessonBuilderHealth = {
     readySourceCount: number;
     archiveImportCount: number;
     documentBackedSourceCount?: number;
+    normalizedSourceCount?: number;
+    officialPilotSourceId?: string | null;
+    officialPilotSourceTitle?: string | null;
     requiredArchiveRoles?: Array<{ role: string; status: string; jobs: number }>;
   };
   ingestion: { status: string; documentCount: number; documentBackedSourceCount?: number };
@@ -115,6 +118,13 @@ type LessonBuilderHealth = {
     aiReady?: boolean;
     aiMode?: string;
     documentBackedSourceCount: number;
+    normalizedSourceCount?: number;
+    normalizedSourceReady?: boolean;
+    officialPilotSourceReady?: boolean;
+    officialPilotSourceId?: string | null;
+    officialPilotSourceTitle?: string | null;
+    assessmentBridgeReady?: boolean;
+    assessmentBridge?: Record<string, any> | null;
     packageCount: number;
     latestPublishedPackageId?: string | null;
     latestPublishedPackageTitle?: string | null;
@@ -127,7 +137,12 @@ type LessonBuilderHealth = {
     facultyApproved?: boolean;
     latestPackageLearnerEventCount?: number;
     latestPackageFeedbackCount?: number;
+    latestPackageActiveAssignmentCount?: number;
+    latestPackageCompletionCount?: number;
+    assignmentActive?: boolean;
+    learnerCompletionPresent?: boolean;
     pilotLaunchReady?: boolean;
+    liveVerificationComplete?: boolean;
   };
   agent: {
     agentId: string;
@@ -169,6 +184,7 @@ type SourceDetail = {
   source: SourceRecord;
   chunkCount: number;
   generatedPackageCount: number;
+  normalization?: Record<string, any> | null;
   archiveFiles: Array<{
     id: string;
     filePath: string;
@@ -208,7 +224,7 @@ type ExportStatus = {
 };
 
 type PackageDetail = {
-  package: LessonPackage & { manifest?: Record<string, any>; deckModel?: Record<string, any> };
+  package: LessonPackage & { manifest?: Record<string, any>; deckModel?: Record<string, any>; taxonomySnapshot?: Record<string, any> };
   sources: SourceRecord[];
   slides: Array<{
     id: string;
@@ -464,6 +480,9 @@ const statusTone: Record<string, string> = {
   assigned: "bg-slate-50 text-slate-700 border-slate-200",
   in_progress: "bg-blue-50 text-blue-700 border-blue-200",
   not_started: "bg-amber-50 text-amber-700 border-amber-200",
+  normalized: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  source_normalized: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  assessment_bridge_attached: "bg-blue-50 text-blue-700 border-blue-200",
   feedback_needs_review: "bg-red-50 text-red-700 border-red-200",
   practice_missed: "bg-amber-50 text-amber-700 border-amber-200",
   helpful: "bg-emerald-50 text-emerald-700 border-emerald-200",
@@ -521,6 +540,13 @@ function parseAssignmentRoster(value: string) {
         .trim() || (learnerEmail ? learnerEmail.split("@")[0] : line);
       return { learnerName, learnerEmail };
     });
+}
+
+function parseListText(value: string) {
+  return value
+    .split(/\r?\n|,/)
+    .map((item) => item.trim())
+    .filter(Boolean);
 }
 
 function renderVisibleContent(content: Record<string, any>) {
@@ -605,6 +631,21 @@ export default function LessonBuilder() {
     cohortName: "Internal pilot cohort",
     dueDate: "",
     rosterText: "Pilot learner, pilot.learner@example.com",
+  });
+  const [normalizationForm, setNormalizationForm] = useState({
+    officialPilot: true,
+    weakTopicsText: "Therapeutic communication",
+    atiCategoriesText: "Psychosocial Integrity",
+    notes: "Pilot normalization using NursesBrain-style source metadata review.",
+  });
+  const [assessmentBridgeForm, setAssessmentBridgeForm] = useState({
+    weakTopic: "Therapeutic communication",
+    atiCategory: "Psychosocial Integrity",
+    nclexCategory: "Psychosocial Integrity",
+    cjmStep: "Analyze Cues",
+    sourceId: "",
+    note: "Manual pilot bridge from assessment gap to learner lesson package.",
+    officialPilotPackage: true,
   });
 
   const healthQuery = useQuery<LessonBuilderHealth>({
@@ -729,6 +770,12 @@ export default function LessonBuilder() {
   const latestArchiveImport = archiveJobQuery.data?.importJob || archiveImports[0];
   const latestArchiveFileCount = archiveJobQuery.data?.files?.length ?? latestArchiveImport?.fileCount ?? 0;
   const selectedPackageGeneration = detailQuery.data ? packageGenerationSummary(detailQuery.data) : null;
+  const currentAssessmentBridge = detailQuery.data
+    ? detailQuery.data.package.manifest?.assessmentBridge
+      || detailQuery.data.package.taxonomySnapshot?.assessmentBridge
+      || detailQuery.data.package.deckModel?.assessmentBridge
+      || null
+    : null;
   const latestReview = detailQuery.data?.reviews?.[0];
   const learnerEvents = detailQuery.data?.learnerEvents || [];
   const learnerEventCounts = learnerEvents.reduce<Record<string, number>>((counts, event) => {
@@ -759,6 +806,31 @@ export default function LessonBuilder() {
     setEditingSlideId("");
     setEditingItemId("");
   }, [selectedPackageId]);
+
+  useEffect(() => {
+    const normalization = sourceDetailQuery.data?.normalization || sourceDetailQuery.data?.source.metadata?.normalization;
+    if (!normalization) return;
+    setNormalizationForm({
+      officialPilot: Boolean(normalization.officialPilot),
+      weakTopicsText: Array.isArray(normalization.weakTopics) ? normalization.weakTopics.join("\n") : "",
+      atiCategoriesText: Array.isArray(normalization.taxonomyHints?.ati) ? normalization.taxonomyHints.ati.join("\n") : "",
+      notes: normalization.notes || "",
+    });
+  }, [sourceDetailQuery.data?.source.id]);
+
+  useEffect(() => {
+    if (!currentAssessmentBridge) return;
+    setAssessmentBridgeForm((current) => ({
+      ...current,
+      weakTopic: currentAssessmentBridge.weakTopic || current.weakTopic,
+      atiCategory: currentAssessmentBridge.atiCategory || "",
+      nclexCategory: currentAssessmentBridge.nclexCategory || "",
+      cjmStep: currentAssessmentBridge.cjmStep || "",
+      sourceId: currentAssessmentBridge.sourceId || "",
+      note: currentAssessmentBridge.note || "",
+      officialPilotPackage: Boolean(detailQuery.data?.package.manifest?.pilot?.officialPackage ?? current.officialPilotPackage),
+    }));
+  }, [selectedPackageId, currentAssessmentBridge?.attachedAt]);
 
   const importSourceMutation = useMutation({
     mutationFn: async () => {
@@ -852,6 +924,33 @@ export default function LessonBuilder() {
     },
   });
 
+  const normalizeSourceMutation = useMutation({
+    mutationFn: async () => {
+      if (!selectedSourceDetailId) throw new Error("Select a source first.");
+      const response = await apiRequest("POST", `/api/admin/lesson-builder/sources/${selectedSourceDetailId}/normalize`, {
+        method: "nursesbrain_pattern",
+        officialPilot: normalizationForm.officialPilot,
+        weakTopics: parseListText(normalizationForm.weakTopicsText),
+        atiCategories: parseListText(normalizationForm.atiCategoriesText),
+        notes: normalizationForm.notes,
+      });
+      return response.json();
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/sources"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/sources", selectedSourceDetailId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/health"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/release-readiness"] });
+      toast({
+        title: "Source normalized",
+        description: `${data.normalization?.detected?.tableCount || 0} table/crosswalk signal${data.normalization?.detected?.tableCount === 1 ? "" : "s"} recorded.`,
+      });
+    },
+    onError: (error: any) => {
+      toast({ title: "Normalization failed", description: error?.message || "The selected source could not be normalized.", variant: "destructive" });
+    },
+  });
+
   const reviewMappingsMutation = useMutation({
     mutationFn: async () => {
       const sourceId = selectedMappingSourceId || selectedSourceIds[0];
@@ -910,6 +1009,27 @@ export default function LessonBuilder() {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/packages"] });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/packages", selectedPackageId] });
       toast({ title: "QA complete", description: "The quality gates have been refreshed." });
+    },
+  });
+
+  const assessmentBridgeMutation = useMutation({
+    mutationFn: async () => {
+      if (!selectedPackageId) throw new Error("Select a package first.");
+      const response = await apiRequest("POST", `/api/admin/lesson-builder/packages/${selectedPackageId}/assessment-bridge`, assessmentBridgeForm);
+      return response.json();
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/packages"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/packages", selectedPackageId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/health"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/release-readiness"] });
+      toast({
+        title: "Assessment bridge saved",
+        description: `Weak topic linked: ${data.assessmentBridge?.weakTopic || assessmentBridgeForm.weakTopic}.`,
+      });
+    },
+    onError: (error: any) => {
+      toast({ title: "Bridge save failed", description: error?.message || "Check the weak topic fields.", variant: "destructive" });
     },
   });
 
@@ -1270,10 +1390,15 @@ export default function LessonBuilder() {
             </div>
             <div className="grid gap-2 text-xs text-slate-600 sm:grid-cols-4 lg:grid-cols-7">
               <div className="rounded-md bg-slate-50 px-3 py-2">AI: {aiReady ? String(aiMode).replace(/_/g, " ") : "not ready"}</div>
+              <div className="rounded-md bg-slate-50 px-3 py-2">Official source: {health?.pilotReadiness?.officialPilotSourceReady ? "ready" : "needed"}</div>
+              <div className="rounded-md bg-slate-50 px-3 py-2">Normalized: {health?.pilotReadiness?.normalizedSourceCount ?? 0}</div>
+              <div className="rounded-md bg-slate-50 px-3 py-2">Weak topic: {health?.pilotReadiness?.assessmentBridgeReady ? "attached" : "needed"}</div>
               <div className="rounded-md bg-slate-50 px-3 py-2">QA fails: {health?.pilotReadiness?.latestQaFailCount ?? 0}</div>
               <div className="rounded-md bg-slate-50 px-3 py-2">Contract fails: {health?.pilotReadiness?.latestContractFailCount ?? 0}</div>
               <div className="rounded-md bg-slate-50 px-3 py-2">Export: {health?.pilotReadiness?.exportReady ? "ready" : "not verified"}</div>
               <div className="rounded-md bg-slate-50 px-3 py-2">Review: {(health?.pilotReadiness?.latestReviewDecision || "awaiting_review").replace(/_/g, " ")}</div>
+              <div className="rounded-md bg-slate-50 px-3 py-2">Assignment: {health?.pilotReadiness?.assignmentActive ? "active" : "needed"}</div>
+              <div className="rounded-md bg-slate-50 px-3 py-2">Completion: {health?.pilotReadiness?.learnerCompletionPresent ? "recorded" : "not yet"}</div>
               <div className="rounded-md bg-slate-50 px-3 py-2">Learner events: {health?.pilotReadiness?.latestPackageLearnerEventCount ?? 0}</div>
               <div className="rounded-md bg-slate-50 px-3 py-2">Feedback: {health?.pilotReadiness?.latestPackageFeedbackCount ?? 0}</div>
             </div>
@@ -1493,6 +1618,64 @@ export default function LessonBuilder() {
                           <div className="rounded-md bg-slate-50 p-2">
                             <div className="text-slate-500">Citation</div>
                             <div className="font-medium text-slate-900">{sourceDetailQuery.data.source.metadata?.citationPolicy || sourceDetailQuery.data.source.citationPolicy || "cite paraphrase"}</div>
+                          </div>
+                        </div>
+                        <div className="rounded-md border p-3">
+                          <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                            <div>
+                              <div className="text-sm font-medium text-slate-900">Source normalization</div>
+                              <div className="text-xs text-slate-500">NursesBrain-style metadata review for tables, crosswalks, taxonomy hints, and pilot source status.</div>
+                            </div>
+                            <StatusBadge value={sourceDetailQuery.data.normalization?.status || "needs_review"} />
+                          </div>
+                          {sourceDetailQuery.data.normalization ? (
+                            <div className="mb-3 grid grid-cols-2 gap-2 text-xs text-slate-600">
+                              <div className="rounded-md bg-slate-50 px-2 py-1">Tables: {sourceDetailQuery.data.normalization.detected?.tableCount || 0}</div>
+                              <div className="rounded-md bg-slate-50 px-2 py-1">Crosswalks: {sourceDetailQuery.data.normalization.detected?.crosswalkSignalCount || 0}</div>
+                              <div className="rounded-md bg-slate-50 px-2 py-1">Official: {sourceDetailQuery.data.normalization.officialPilot ? "yes" : "no"}</div>
+                              <div className="rounded-md bg-slate-50 px-2 py-1">Weak topics: {sourceDetailQuery.data.normalization.weakTopics?.length || 0}</div>
+                            </div>
+                          ) : null}
+                          <div className="grid gap-3">
+                            <label className="flex items-center gap-2 text-sm text-slate-700">
+                              <Checkbox
+                                checked={normalizationForm.officialPilot}
+                                onCheckedChange={(checked) => setNormalizationForm({ ...normalizationForm, officialPilot: Boolean(checked) })}
+                              />
+                              Mark as official pilot source
+                            </label>
+                            <div className="grid gap-3 md:grid-cols-2">
+                              <div className="space-y-2">
+                                <Label>Weak topics</Label>
+                                <Textarea
+                                  value={normalizationForm.weakTopicsText}
+                                  onChange={(event) => setNormalizationForm({ ...normalizationForm, weakTopicsText: event.target.value })}
+                                  rows={3}
+                                  placeholder="One topic per line"
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <Label>ATI / category hints</Label>
+                                <Textarea
+                                  value={normalizationForm.atiCategoriesText}
+                                  onChange={(event) => setNormalizationForm({ ...normalizationForm, atiCategoriesText: event.target.value })}
+                                  rows={3}
+                                  placeholder="One category per line"
+                                />
+                              </div>
+                            </div>
+                            <div className="space-y-2">
+                              <Label>Normalization note</Label>
+                              <Textarea
+                                value={normalizationForm.notes}
+                                onChange={(event) => setNormalizationForm({ ...normalizationForm, notes: event.target.value })}
+                                rows={2}
+                              />
+                            </div>
+                            <Button onClick={() => normalizeSourceMutation.mutate()} disabled={!selectedSourceDetailId || normalizeSourceMutation.isPending}>
+                              <FileCheck2 className="mr-2 h-4 w-4" />
+                              Normalize Source
+                            </Button>
                           </div>
                         </div>
                         {sourceDetailQuery.data.archiveFiles.length > 0 && (
@@ -2053,6 +2236,91 @@ export default function LessonBuilder() {
                             Publish
                           </Button>
                         </div>
+                      </div>
+                    </div>
+
+                    <div className="rounded-md border bg-white p-4">
+                      <div className="mb-3 flex flex-col gap-2 lg:flex-row lg:items-start lg:justify-between">
+                        <div>
+                          <div className="flex flex-wrap items-center gap-2 font-semibold text-slate-900">
+                            <Layers3 className="h-4 w-4 text-slate-500" />
+                            Assessment Bridge
+                            <StatusBadge value={currentAssessmentBridge?.status || "needs_review"} />
+                          </div>
+                          <div className="mt-1 text-sm text-slate-600">
+                            Attach a weak topic or ATI category to this package so assessment gaps can lead to the right lesson.
+                          </div>
+                          {currentAssessmentBridge ? (
+                            <div className="mt-2 text-xs text-slate-500">
+                              Current weak topic: {currentAssessmentBridge.weakTopic || "none"}
+                              {currentAssessmentBridge.sourceTitle ? ` | Source: ${currentAssessmentBridge.sourceTitle}` : ""}
+                            </div>
+                          ) : null}
+                        </div>
+                        <label className="flex items-center gap-2 text-sm text-slate-700">
+                          <Checkbox
+                            checked={assessmentBridgeForm.officialPilotPackage}
+                            onCheckedChange={(checked) => setAssessmentBridgeForm({ ...assessmentBridgeForm, officialPilotPackage: Boolean(checked) })}
+                          />
+                          Official pilot package
+                        </label>
+                      </div>
+                      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
+                        <div className="space-y-2 xl:col-span-2">
+                          <Label>Weak topic</Label>
+                          <Input
+                            value={assessmentBridgeForm.weakTopic}
+                            onChange={(event) => setAssessmentBridgeForm({ ...assessmentBridgeForm, weakTopic: event.target.value })}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>ATI category</Label>
+                          <Input
+                            value={assessmentBridgeForm.atiCategory}
+                            onChange={(event) => setAssessmentBridgeForm({ ...assessmentBridgeForm, atiCategory: event.target.value })}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>NCLEX category</Label>
+                          <Input
+                            value={assessmentBridgeForm.nclexCategory}
+                            onChange={(event) => setAssessmentBridgeForm({ ...assessmentBridgeForm, nclexCategory: event.target.value })}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>CJM step</Label>
+                          <Input
+                            value={assessmentBridgeForm.cjmStep}
+                            onChange={(event) => setAssessmentBridgeForm({ ...assessmentBridgeForm, cjmStep: event.target.value })}
+                          />
+                        </div>
+                      </div>
+                      <div className="mt-3 grid gap-3 lg:grid-cols-[minmax(0,0.75fr)_minmax(0,1.25fr)_auto] lg:items-end">
+                        <div className="space-y-2">
+                          <Label>Evidence source</Label>
+                          <Select value={assessmentBridgeForm.sourceId || "none"} onValueChange={(value) => setAssessmentBridgeForm({ ...assessmentBridgeForm, sourceId: value === "none" ? "" : value })}>
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="none">No specific source</SelectItem>
+                              {detailQuery.data.sources.map((source) => (
+                                <SelectItem key={source.id} value={source.id}>{source.title}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Bridge note</Label>
+                          <Input
+                            value={assessmentBridgeForm.note}
+                            onChange={(event) => setAssessmentBridgeForm({ ...assessmentBridgeForm, note: event.target.value })}
+                          />
+                        </div>
+                        <Button onClick={() => assessmentBridgeMutation.mutate()} disabled={assessmentBridgeMutation.isPending || assessmentBridgeForm.weakTopic.trim().length < 2}>
+                          <Save className="mr-2 h-4 w-4" />
+                          Save Bridge
+                        </Button>
                       </div>
                     </div>
 

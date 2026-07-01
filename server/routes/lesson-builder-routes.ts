@@ -110,6 +110,14 @@ const attachDocumentSourceSchema = z.object({
   approvalStatus: z.enum(["pending", "approved", "rejected"]).default("approved"),
 });
 
+const sourceNormalizationSchema = z.object({
+  method: z.enum(["nursesbrain_pattern", "manual_review"]).default("nursesbrain_pattern"),
+  officialPilot: z.boolean().default(true),
+  weakTopics: z.array(z.string().trim().min(1).max(160)).max(20).default([]),
+  atiCategories: z.array(z.string().trim().min(1).max(160)).max(20).default([]),
+  notes: z.string().trim().max(2000).optional().default(""),
+});
+
 const mappingReviewSchema = z.object({
   sourceId: z.string().min(1),
   mappings: z.array(z.object({
@@ -122,6 +130,16 @@ const mappingReviewSchema = z.object({
     notes: z.string().optional(),
     metadata: z.record(z.any()).default({}),
   })).default([]),
+});
+
+const assessmentBridgeSchema = z.object({
+  weakTopic: z.string().trim().min(2).max(200),
+  atiCategory: z.string().trim().max(200).optional().default(""),
+  nclexCategory: z.string().trim().max(200).optional().default(""),
+  cjmStep: z.string().trim().max(200).optional().default(""),
+  sourceId: z.string().trim().optional().default(""),
+  note: z.string().trim().max(2000).optional().default(""),
+  officialPilotPackage: z.boolean().default(true),
 });
 
 const generateSchema = z.object({
@@ -1287,9 +1305,162 @@ async function getSourceDetail(sourceId: string) {
   return {
     source,
     chunkCount: chunkCountRow[0]?.count || 0,
+    normalization: (source.metadata as any)?.normalization || null,
     archiveFiles,
     packages,
     generatedPackageCount: packages.length,
+  };
+}
+
+function uniqueText(values: Array<string | null | undefined>) {
+  return Array.from(new Set(values
+    .map((value) => String(value || "").trim())
+    .filter(Boolean)));
+}
+
+function detectTermsFromText(text: string, candidates: string[]) {
+  const lowerText = text.toLowerCase();
+  return candidates.filter((candidate) => lowerText.includes(candidate.toLowerCase()));
+}
+
+async function normalizeSourceForPilot(sourceId: string, data: z.infer<typeof sourceNormalizationSchema>, actorId?: string) {
+  await ensureLessonBuilderTables();
+  const detail = await getSourceDetail(sourceId);
+  if (!detail) return null;
+
+  const source = detail.source;
+  const chunks = source.documentId
+    ? await db.select({
+      id: documentChunks.id,
+      cleanText: documentChunks.cleanText,
+      pageStart: documentChunks.pageStart,
+      pageEnd: documentChunks.pageEnd,
+      metadata: documentChunks.metadata,
+    })
+      .from(documentChunks)
+      .where(eq(documentChunks.documentId, source.documentId))
+      .orderBy(asc(documentChunks.chunkIndex))
+      .limit(80)
+    : [];
+
+  const archiveRows = await db.select({
+    id: sourceArchiveFiles.id,
+    filePath: sourceArchiveFiles.filePath,
+    fileKind: sourceArchiveFiles.fileKind,
+    fileRole: sourceArchiveFiles.fileRole,
+    extractedText: sourceArchiveFiles.extractedText,
+    metadata: sourceArchiveFiles.metadata,
+  })
+    .from(sourceArchiveFiles)
+    .where(eq(sourceArchiveFiles.sourceId, sourceId))
+    .orderBy(asc(sourceArchiveFiles.filePath))
+    .limit(120);
+
+  const chunkText = chunks.map((chunk) => chunk.cleanText).join("\n").slice(0, 80000);
+  const archiveText = archiveRows
+    .map((file) => [file.filePath, file.fileKind, file.fileRole, file.extractedText || ""].join(" "))
+    .join("\n")
+    .slice(0, 80000);
+  const combinedText = [source.title, source.subject, source.sourceType, chunkText, archiveText].filter(Boolean).join("\n");
+  const lowerText = combinedText.toLowerCase();
+
+  const metadataTableCount = chunks.reduce((count, chunk) => {
+    const tables = (chunk.metadata as any)?.tables;
+    return count + (Array.isArray(tables) ? tables.length : 0);
+  }, 0);
+  const tableSignalFiles = archiveRows
+    .filter((file) => /table|schema|csv|xlsx|matrix|blueprint/i.test(`${file.filePath} ${file.fileKind} ${file.fileRole}`))
+    .map((file) => file.filePath)
+    .slice(0, 12);
+  const crosswalkSignalFiles = archiveRows
+    .filter((file) => /crosswalk|mapping|map|alignment|taxonomy|nclex|ati|cjm|bloom/i.test(`${file.filePath} ${file.fileKind} ${file.fileRole}`))
+    .map((file) => file.filePath)
+    .slice(0, 12);
+
+  const nclexHints = detectTermsFromText(combinedText, [
+    "Safe and Effective Care Environment",
+    "Health Promotion and Maintenance",
+    "Psychosocial Integrity",
+    "Physiological Integrity",
+    "Reduction of Risk Potential",
+    "Pharmacological and Parenteral Therapies",
+  ]);
+  const cjmHints = detectTermsFromText(combinedText, [
+    "Recognize Cues",
+    "Analyze Cues",
+    "Prioritize Hypotheses",
+    "Generate Solutions",
+    "Take Action",
+    "Evaluate Outcomes",
+  ]);
+  const atiHints = detectTermsFromText(combinedText, [
+    "Fundamentals",
+    "Pharmacology",
+    "Maternal Newborn",
+    "Mental Health",
+    "Medical Surgical",
+    "Leadership",
+    "Community Health",
+    "Nursing Care of Children",
+  ]);
+  const weakTopicHints = uniqueText([
+    ...data.weakTopics,
+    source.subject,
+    lowerText.includes("therapeutic communication") ? "Therapeutic communication" : "",
+    lowerText.includes("priority") ? "Priority cues" : "",
+    lowerText.includes("patient teaching") ? "Patient teaching" : "",
+  ]).slice(0, 12);
+
+  const normalization = {
+    status: chunks.length > 0 || archiveRows.length > 0 ? "ready" : "needs_review",
+    method: data.method,
+    officialPilot: data.officialPilot,
+    normalizedAt: new Date().toISOString(),
+    normalizedBy: actorId || null,
+    sourceEvidence: {
+      documentId: source.documentId || null,
+      chunkCount: detail.chunkCount,
+      inspectedChunkCount: chunks.length,
+      archiveFileCount: archiveRows.length,
+    },
+    detected: {
+      tableCount: metadataTableCount + tableSignalFiles.length,
+      metadataTableCount,
+      tableSignalFiles,
+      crosswalkSignalFiles,
+      crosswalkSignalCount: crosswalkSignalFiles.length + (/\bcrosswalk\b|\balignment\b|\bmapping\b/i.test(combinedText) ? 1 : 0),
+      hasChunkEvidence: chunks.length > 0,
+      hasArchiveEvidence: archiveRows.length > 0,
+    },
+    taxonomyHints: {
+      nclex: nclexHints,
+      cjm: cjmHints,
+      ati: uniqueText([...data.atiCategories, ...atiHints]),
+      bloom: detectTermsFromText(combinedText, ["Remember", "Understand", "Apply", "Analyze", "Evaluate", "Create"]),
+    },
+    weakTopics: weakTopicHints,
+    notes: data.notes,
+  };
+
+  const currentMetadata = (source.metadata || {}) as Record<string, any>;
+  const [updated] = await db.update(sourceRegistry).set({
+    metadata: {
+      ...currentMetadata,
+      normalization,
+      pilot: {
+        ...(currentMetadata.pilot || {}),
+        officialSource: data.officialPilot,
+        normalizedAt: normalization.normalizedAt,
+      },
+    },
+    ingestionStatus: source.documentId && detail.chunkCount > 0 ? "ready" : source.ingestionStatus,
+    updatedAt: new Date(),
+  }).where(eq(sourceRegistry.id, sourceId)).returning();
+
+  return {
+    source: updated,
+    normalization,
+    detail: await getSourceDetail(sourceId),
   };
 }
 
@@ -2432,6 +2603,71 @@ async function recordReleaseAuditEvent(
   return event;
 }
 
+async function attachAssessmentBridge(packageId: string, data: z.infer<typeof assessmentBridgeSchema>, actorId?: string) {
+  const bundle = await findPackageBundle(packageId);
+  if (!bundle) return null;
+
+  const selectedSource = data.sourceId
+    ? bundle.sources.find((source) => source.id === data.sourceId)
+      || (await db.select().from(sourceRegistry).where(eq(sourceRegistry.id, data.sourceId)).limit(1))[0]
+    : null;
+  const attachedAt = new Date().toISOString();
+  const assessmentBridge = {
+    status: "ready",
+    weakTopic: data.weakTopic,
+    atiCategory: data.atiCategory || null,
+    nclexCategory: data.nclexCategory || null,
+    cjmStep: data.cjmStep || null,
+    sourceId: selectedSource?.id || null,
+    sourceTitle: selectedSource?.title || null,
+    note: data.note || "",
+    attachedAt,
+    attachedBy: actorId || null,
+  };
+
+  const nextManifest = {
+    ...(bundle.package.manifest || {}),
+    assessmentBridge,
+    pilot: {
+      ...((bundle.package.manifest || {}).pilot || {}),
+      officialPackage: data.officialPilotPackage,
+      officialPackageSetAt: attachedAt,
+    },
+  };
+  const nextTaxonomySnapshot = {
+    ...(bundle.package.taxonomySnapshot || {}),
+    assessmentBridge,
+  };
+  const nextDeckModel = {
+    ...(bundle.package.deckModel || {}),
+    assessmentBridge,
+  };
+
+  await db.update(lessonPackages).set({
+    manifest: nextManifest,
+    taxonomySnapshot: nextTaxonomySnapshot,
+    deckModel: nextDeckModel,
+    updatedAt: new Date(),
+  }).where(eq(lessonPackages.id, packageId));
+
+  await recordReleaseAuditEvent(
+    packageId,
+    "assessment_bridge_attached",
+    `Assessment bridge attached for ${data.weakTopic}.`,
+    {
+      weakTopic: assessmentBridge.weakTopic,
+      atiCategory: assessmentBridge.atiCategory,
+      nclexCategory: assessmentBridge.nclexCategory,
+      cjmStep: assessmentBridge.cjmStep,
+      sourceId: assessmentBridge.sourceId,
+      officialPilotPackage: data.officialPilotPackage,
+    },
+    actorId
+  );
+
+  return findPackageBundle(packageId);
+}
+
 function cleanedUpdateValues<T extends Record<string, any>>(values: T) {
   return Object.fromEntries(Object.entries(values).filter(([, value]) => value !== undefined)) as Partial<T>;
 }
@@ -2949,6 +3185,7 @@ async function lessonBuilderHealth() {
       publishedAt: lessonPackages.publishedAt,
       qaSummary: lessonPackages.qaSummary,
       manifest: lessonPackages.manifest,
+      taxonomySnapshot: lessonPackages.taxonomySnapshot,
     })
       .from(lessonPackages)
       .where(eq(lessonPackages.status, "published"))
@@ -2956,6 +3193,23 @@ async function lessonBuilderHealth() {
       .limit(10),
     db.select({ count: sql<number>`count(*)::int` }).from(lessonPackageReviews),
     db.select({ count: sql<number>`count(*)::int` }).from(lessonLearnerEvents),
+  ]);
+  const [normalizedSourceCountRow, officialPilotSourceRows] = await Promise.all([
+    db.select({ count: sql<number>`count(*)::int` })
+      .from(sourceRegistry)
+      .where(sql`${sourceRegistry.metadata}->'normalization'->>'status' = 'ready'`),
+    db.select({
+      id: sourceRegistry.id,
+      title: sourceRegistry.title,
+      approvalStatus: sourceRegistry.approvalStatus,
+      ingestionStatus: sourceRegistry.ingestionStatus,
+      documentId: sourceRegistry.documentId,
+      metadata: sourceRegistry.metadata,
+    })
+      .from(sourceRegistry)
+      .where(sql`${sourceRegistry.metadata}->'pilot'->>'officialSource' = 'true' OR ${sourceRegistry.metadata}->'normalization'->>'officialPilot' = 'true'`)
+      .orderBy(desc(sourceRegistry.updatedAt))
+      .limit(1),
   ]);
   const requiredArchiveRoles = ["harrity_pipeline_contract", "chapter_deck_schema", "pilot_preflight_package"];
   const archiveRoles = requiredArchiveRoles.map((role) => {
@@ -2969,12 +3223,26 @@ async function lessonBuilderHealth() {
   const archiveSetReady = archiveRoles.every((role) => role.status === "ready");
   const documentBackedSourceCount = documentSourceCountRow[0]?.count || 0;
   const packageCount = packageCountRow[0]?.count || 0;
-  const latestPublishedPackage = latestPublishedRows.find((row) => Boolean((row.manifest as any)?.facultyReview?.approvedForPilot))
+  const normalizedSourceCount = normalizedSourceCountRow[0]?.count || 0;
+  const normalizedSourceReady = normalizedSourceCount > 0;
+  const officialPilotSource = officialPilotSourceRows[0] || null;
+  const officialPilotSourceReady = Boolean(
+    officialPilotSource
+    && officialPilotSource.approvalStatus === "approved"
+    && officialPilotSource.ingestionStatus === "ready"
+  );
+  const latestPublishedPackage = latestPublishedRows.find((row) => Boolean((row.manifest as any)?.pilot?.officialPackage))
+    || latestPublishedRows.find((row) => /therapeutic communication live ai mvp/i.test(row.title || ""))
+    || latestPublishedRows.find((row) => Boolean((row.manifest as any)?.facultyReview?.approvedForPilot))
     || latestPublishedRows[0];
   const latestQaFailCount = Number((latestPublishedPackage?.qaSummary as any)?.failCount || 0);
   const latestContractFailCount = Number((latestPublishedPackage?.manifest as any)?.contractValidation?.failCount || 0);
   const latestExportReady = Boolean(latestPublishedPackage && latestContractFailCount === 0);
-  const [latestReview, latestPackageEventCountRow, latestPackageFeedbackCountRow] = latestPublishedPackage
+  const latestAssessmentBridge = (latestPublishedPackage?.manifest as any)?.assessmentBridge
+    || (latestPublishedPackage?.taxonomySnapshot as any)?.assessmentBridge
+    || null;
+  const assessmentBridgeReady = Boolean(latestAssessmentBridge?.weakTopic);
+  const [latestReview, latestPackageEventCountRow, latestPackageFeedbackCountRow, latestActiveAssignmentCountRow, latestPackageCompletionCountRow] = latestPublishedPackage
     ? await Promise.all([
       db.select().from(lessonPackageReviews)
         .where(eq(lessonPackageReviews.packageId, latestPublishedPackage.id))
@@ -2985,16 +3253,25 @@ async function lessonBuilderHealth() {
         .where(eq(lessonLearnerEvents.packageId, latestPublishedPackage.id)),
       db.select({ count: sql<number>`count(*)::int` }).from(lessonLearnerEvents)
         .where(and(eq(lessonLearnerEvents.packageId, latestPublishedPackage.id), eq(lessonLearnerEvents.eventType, "feedback_submitted"))),
+      db.select({ count: sql<number>`count(*)::int` }).from(lessonAssignments)
+        .where(and(eq(lessonAssignments.packageId, latestPublishedPackage.id), eq(lessonAssignments.status, "active"))),
+      db.select({ count: sql<number>`count(*)::int` }).from(lessonLearnerEvents)
+        .where(and(eq(lessonLearnerEvents.packageId, latestPublishedPackage.id), eq(lessonLearnerEvents.eventType, "lesson_completed"))),
     ])
-    : [null, [{ count: 0 }], [{ count: 0 }]];
+    : [null, [{ count: 0 }], [{ count: 0 }], [{ count: 0 }], [{ count: 0 }]];
   const latestReviewDecision = latestReview?.decision || "awaiting_review";
   const latestPackageLearnerEventCount = latestPackageEventCountRow[0]?.count || 0;
   const latestPackageFeedbackCount = latestPackageFeedbackCountRow[0]?.count || 0;
+  const latestPackageActiveAssignmentCount = latestActiveAssignmentCountRow[0]?.count || 0;
+  const latestPackageCompletionCount = latestPackageCompletionCountRow[0]?.count || 0;
   const facultyApproved = latestReviewDecision === "approved_for_pilot" || latestReviewDecision === "approved_for_release";
   const pilotReady = Boolean(
     process.env.DATABASE_URL
     && archiveSetReady
     && documentBackedSourceCount > 0
+    && normalizedSourceReady
+    && officialPilotSourceReady
+    && assessmentBridgeReady
     && latestPublishedPackage
     && latestQaFailCount === 0
     && latestContractFailCount === 0
@@ -3022,6 +3299,9 @@ async function lessonBuilderHealth() {
       readySourceCount: readySourceCountRow[0]?.count || 0,
       archiveImportCount: archiveCountRow[0]?.count || 0,
       documentBackedSourceCount,
+      normalizedSourceCount,
+      officialPilotSourceId: officialPilotSource?.id || null,
+      officialPilotSourceTitle: officialPilotSource?.title || null,
       requiredArchiveRoles: archiveRoles,
     },
     ingestion: {
@@ -3041,6 +3321,13 @@ async function lessonBuilderHealth() {
       aiReady: agent.aiReady,
       aiMode: agent.aiMode,
       documentBackedSourceCount,
+      normalizedSourceCount,
+      normalizedSourceReady,
+      officialPilotSourceReady,
+      officialPilotSourceId: officialPilotSource?.id || null,
+      officialPilotSourceTitle: officialPilotSource?.title || null,
+      assessmentBridgeReady,
+      assessmentBridge: latestAssessmentBridge,
       packageCount,
       latestPublishedPackageId: latestPublishedPackage?.id || null,
       latestPublishedPackageTitle: latestPublishedPackage?.title || null,
@@ -3053,7 +3340,12 @@ async function lessonBuilderHealth() {
       facultyApproved,
       latestPackageLearnerEventCount,
       latestPackageFeedbackCount,
-      pilotLaunchReady: pilotReady && facultyApproved,
+      latestPackageActiveAssignmentCount,
+      latestPackageCompletionCount,
+      assignmentActive: latestPackageActiveAssignmentCount > 0,
+      learnerCompletionPresent: latestPackageCompletionCount > 0,
+      pilotLaunchReady: pilotReady && facultyApproved && latestPackageActiveAssignmentCount > 0,
+      liveVerificationComplete: pilotReady && facultyApproved && latestPackageActiveAssignmentCount > 0 && latestPackageCompletionCount > 0,
     },
     agent,
   };
@@ -3105,11 +3397,29 @@ async function lessonBuilderReleaseReadiness() {
       `${health.sourceRegistry.readySourceCount} ready source(s), ${health.sourceRegistry.documentBackedSourceCount || 0} document-backed source(s).`
     ),
     releaseBlocker(
+      "source_normalization",
+      "Source normalization",
+      pilotReadiness?.normalizedSourceReady && pilotReadiness?.officialPilotSourceReady ? "pass" : "fail",
+      "high",
+      pilotReadiness?.officialPilotSourceReady
+        ? `Official pilot source is ${pilotReadiness.officialPilotSourceTitle || pilotReadiness.officialPilotSourceId}; ${pilotReadiness.normalizedSourceCount || 0} normalized source(s).`
+        : "Normalize and mark one approved, ready source as the official pilot source."
+    ),
+    releaseBlocker(
       "published_package",
       "Published pilot package",
       health.latestPublishedPackageId ? "pass" : "fail",
       "high",
       health.latestPublishedPackageId ? `Latest published package: ${health.latestPublishedPackageId}.` : "No published pilot package is available."
+    ),
+    releaseBlocker(
+      "assessment_bridge",
+      "Assessment-to-lesson bridge",
+      pilotReadiness?.assessmentBridgeReady ? "pass" : "warn",
+      "medium",
+      pilotReadiness?.assessmentBridgeReady
+        ? `Weak topic: ${pilotReadiness.assessmentBridge?.weakTopic}.`
+        : "Attach one weak topic or ATI category to the pilot package before live pilot review."
     ),
     releaseBlocker(
       "qa_contract_export",
@@ -3154,6 +3464,24 @@ async function lessonBuilderReleaseReadiness() {
       `${pilotReadiness?.latestPackageLearnerEventCount || 0} learner event(s), ${pilotReadiness?.latestPackageFeedbackCount || 0} feedback event(s).`
     ),
     releaseBlocker(
+      "assignment_loop",
+      "Assignment loop",
+      pilotReadiness?.assignmentActive ? "pass" : "warn",
+      "medium",
+      pilotReadiness?.assignmentActive
+        ? `${pilotReadiness.latestPackageActiveAssignmentCount || 0} active assignment(s) for the pilot package.`
+        : "Create an active pilot assignment before live cohort use."
+    ),
+    releaseBlocker(
+      "live_completion",
+      "Live learner completion",
+      pilotReadiness?.learnerCompletionPresent ? "pass" : "warn",
+      "low",
+      pilotReadiness?.learnerCompletionPresent
+        ? `${pilotReadiness.latestPackageCompletionCount || 0} completion event(s) recorded.`
+        : "Run one learner completion smoke test after publishing and assignment."
+    ),
+    releaseBlocker(
       "typescript",
       "TypeScript release check",
       "warn",
@@ -3189,6 +3517,10 @@ async function lessonBuilderReleaseReadiness() {
 function learnerLessonPayload(bundle: LessonBundle, assignmentContext?: { assignment: any; learner: any } | null) {
   const citationsBySlide = new Map<string, any[]>();
   const citationsByItem = new Map<string, any[]>();
+  const assessmentBridge = bundle.package.manifest?.assessmentBridge
+    || bundle.package.taxonomySnapshot?.assessmentBridge
+    || bundle.package.deckModel?.assessmentBridge
+    || null;
 
   for (const citation of bundle.citations) {
     if (citation.slideId) {
@@ -3206,6 +3538,8 @@ function learnerLessonPayload(bundle: LessonBundle, assignmentContext?: { assign
     subject: source.subject,
     edition: source.edition,
     citationPolicy: source.citationPolicy,
+    normalizationStatus: source.metadata?.normalization?.status || null,
+    officialPilotSource: Boolean(source.metadata?.pilot?.officialSource || source.metadata?.normalization?.officialPilot),
   }));
 
   const serializeCitation = (citation: any) => ({
@@ -3224,6 +3558,7 @@ function learnerLessonPayload(bundle: LessonBundle, assignmentContext?: { assign
       audience: bundle.package.audience,
       status: bundle.package.status,
       publishedAt: bundle.package.publishedAt,
+      assessmentBridge,
       manifestSummary: {
         packageId: bundle.package.manifest?.packageId || bundle.package.id,
         exportProfile: bundle.package.manifest?.exportProfile || "harrity",
@@ -3696,6 +4031,21 @@ export function registerLessonBuilderRoutes(app: Express) {
     }
   });
 
+  app.post("/api/admin/lesson-builder/sources/:id/normalize", requireAdminSession, async (req: AdminAuthRequest, res: Response) => {
+    try {
+      const data = sourceNormalizationSchema.parse(req.body || {});
+      const result = await normalizeSourceForPilot(req.params.id, data, req.session.adminUser?.userId);
+      if (!result) return res.status(404).json({ error: "Source not found" });
+      res.json(result);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid source normalization request", details: error.errors });
+      }
+      console.error("Lesson builder source normalization error:", error);
+      res.status(500).json({ error: "Failed to normalize source" });
+    }
+  });
+
   app.post("/api/admin/lesson-builder/sources/import", requireAdminSession, async (req: AdminAuthRequest, res: Response) => {
     try {
       await ensureLessonBuilderTables();
@@ -4088,6 +4438,22 @@ export function registerLessonBuilderRoutes(app: Express) {
       }
       console.error("Lesson builder pilot outcomes export error:", error);
       res.status(500).json({ error: "Failed to export pilot outcomes" });
+    }
+  });
+
+  app.post("/api/admin/lesson-builder/packages/:id/assessment-bridge", requireAdminSession, async (req: AdminAuthRequest, res: Response) => {
+    try {
+      await ensureLessonBuilderTables();
+      const data = assessmentBridgeSchema.parse(req.body || {});
+      const bundle = await attachAssessmentBridge(req.params.id, data, req.session.adminUser?.userId);
+      if (!bundle) return res.status(404).json({ error: "Lesson package not found" });
+      res.json({ package: bundle.package, assessmentBridge: bundle.package.manifest?.assessmentBridge, bundle });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid assessment bridge", details: error.errors });
+      }
+      console.error("Lesson builder assessment bridge error:", error);
+      res.status(500).json({ error: "Failed to attach assessment bridge" });
     }
   });
 
