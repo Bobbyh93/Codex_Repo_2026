@@ -35,7 +35,7 @@ Live Render pilot smoke has completed for package `bf472933-fdb6-4e67-b893-491c0
 
 ## Live Pilot Launch Console
 
-The live Render app is deployed from `Bobbyh93/Codex_Repo_2026` on `main`. The Pilot Launch Console update was pushed in commit `0fda120` (`Add pilot launch console`) and verified on `https://nursestudy-lesson-builder.onrender.com/admin/lesson-builder`.
+The live Render app is deployed from `Bobbyh93/Codex_Repo_2026` on `main`. The Pilot Launch Console update was pushed in commit `0fda120` (`Add pilot launch console`) and verified on `https://nursestudy-lesson-builder.onrender.com/admin/lesson-builder`. The Pilot Evidence Export UI polish was pushed in commit `061586e` (`Polish pilot evidence export`).
 
 Verified live on Render:
 
@@ -46,6 +46,9 @@ Verified live on Render:
 - Live AI Review was run for the active pilot package and the readiness ladder now reports `Latest AI review: approved for pilot`.
 - Authenticated API smoke passed for `/api/admin/pilot-launch/summary`.
 - Authenticated API smoke passed for `/api/admin/lesson-builder/packages/:id/pilot-evidence-export`.
+- Pilot Evidence Export now fetches through the admin app, downloads a named JSON report, shows an `Exporting...` state, and displays a `Latest pilot evidence report` confirmation after export.
+- Post-polish authenticated live API smoke passed for package `bf472933-fdb6-4e67-b893-491c00c7bcd4`: evidence export returned `200`, referenced 12 generated files, showed 1 assigned learner, 1 completed learner, and `exportReady=true`.
+- Browser verification reached the updated console after Render wake. A later export-click pass hit Render's cold-start/loading interstitial, so API smoke is the authoritative verification for the export response while the UI code is verified on GitHub `main`.
 
 Use the Pearson Sites projects as workflow models, not as nursing source truth:
 
