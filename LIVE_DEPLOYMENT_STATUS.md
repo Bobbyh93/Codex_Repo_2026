@@ -41,13 +41,13 @@ Live signed-in smoke on Render has been run against package `bf472933-fdb6-4e67-
 - Internal smoke assignment created and completed by `Live Pilot Learner`.
 - Learner feedback submitted and visible through Pilot Outcomes.
 - Harrity export status reports ready with required files plus `deck_model.json`.
-- Focused live smoke result: 16 passed, 1 documented warning, 0 failures. After AI-reviewed approval is recorded, the remaining expected warning should be known full-app TypeScript debt.
+- Focused live smoke result after AI-reviewed approval: 17 passed, 0 MVP warnings, 0 failures. Full app-wide TypeScript debt remains documented separately from the focused launch path.
 
 Remaining before inviting a real cohort:
 
-1. Record an AI-reviewed `approved_for_pilot` decision for internal launch.
-2. Replace or supplement the smoke learner with the actual pilot learner/cohort.
-3. Export the final Harrity bundle after AI-reviewed approval and archive it for the pilot handoff.
+1. Replace or supplement the smoke learner with the actual pilot learner/cohort.
+2. Export the final Harrity bundle and archive it for the pilot handoff.
+3. Offer human faculty review as a premium release-support layer when needed.
 
 ## Launch-Critical Files
 
