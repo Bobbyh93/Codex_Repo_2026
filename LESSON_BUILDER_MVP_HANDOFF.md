@@ -28,6 +28,8 @@ Smoke-test uploads named `mvp-*` are development artifacts, not official pilot s
 
 For the live pilot, normalize the official source in Source Detail, keep it approved and ready, and attach its weak topic to the published pilot package through the Assessment Bridge panel.
 
+Live Render pilot smoke has completed for package `bf472933-fdb6-4e67-b893-491c00c7bcd4`: official source normalized, Assessment Bridge attached, internal smoke assignment completed, learner feedback recorded, Pilot Outcomes updated, and Harrity export verified. The remaining human release gate is a real faculty review decision before inviting the actual cohort.
+
 ## Production Environment
 
 Set these as server-side secrets in the production host. Do not place real values in tracked files.

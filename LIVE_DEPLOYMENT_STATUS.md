@@ -34,13 +34,20 @@ The local and live pilot runtimes have passed or support the launch gates below:
 
 ## Live Pilot Completion Gap
 
-Before inviting a real cohort, run one signed-in live smoke on Render:
+Live signed-in smoke on Render has been run against package `bf472933-fdb6-4e67-b893-491c00c7bcd4`:
 
-1. Normalize the official pilot source and confirm chunks or archive evidence are present.
-2. Generate or select the official pilot package and attach a weak topic through Assessment Bridge.
-3. Record faculty approval, publish, and create one pilot assignment.
-4. Open the learner link, complete the lesson, submit feedback, and confirm Pilot Outcomes updates.
-5. Export the Harrity bundle and confirm required files plus `deck_model.json`.
+- Official source normalized: `Therapeutic Communication Pilot Nursing Source`.
+- Assessment Bridge attached: weak topic `Therapeutic communication`, ATI/NCLEX category `Psychosocial Integrity`, CJM step `Analyze Cues`.
+- Internal smoke assignment created and completed by `Live Pilot Learner`.
+- Learner feedback submitted and visible through Pilot Outcomes.
+- Harrity export status reports ready with required files plus `deck_model.json`.
+- Focused live smoke result: 16 passed, 1 documented warning, 0 failures. The remaining warning record covers human faculty review and known full-app TypeScript debt.
+
+Remaining before inviting a real cohort:
+
+1. Record a real faculty review decision, preferably `approved_for_pilot`.
+2. Replace or supplement the smoke learner with the actual pilot learner/cohort.
+3. Export the final Harrity bundle after faculty review and archive it for the pilot handoff.
 
 ## Launch-Critical Files
 
