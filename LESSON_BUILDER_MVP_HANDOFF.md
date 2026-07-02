@@ -49,6 +49,7 @@ Verified live on Render:
 - Pilot Evidence Export now fetches through the admin app, downloads a named JSON report, shows an `Exporting...` state, and displays a `Latest pilot evidence report` confirmation after export.
 - Pilot Evidence Export also supports a director-ready Markdown brief through `?format=markdown` and the admin `Export Brief` action.
 - Post-polish authenticated live API smoke passed for package `bf472933-fdb6-4e67-b893-491c00c7bcd4`: evidence export returned `200`, referenced 12 generated files, showed 1 assigned learner, 1 completed learner, and `exportReady=true`.
+- Post-brief authenticated live API smoke passed for the same package: `?format=markdown` returned `200`, `text/markdown`, and filename `therapeutic-communication-live-ai-mvp-release-smoke-pilot-evidence-brief.md`.
 - Browser verification reached the updated console after Render wake. A later export-click pass hit Render's cold-start/loading interstitial, so API smoke is the authoritative verification for the export response while the UI code is verified on GitHub `main`.
 
 Use the Pearson Sites projects as workflow models, not as nursing source truth:
