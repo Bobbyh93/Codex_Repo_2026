@@ -908,6 +908,10 @@ export default function LessonBuilder() {
     () => sources.filter((source) => source.sourceKind === "sites_project"),
     [sources]
   );
+  const driveDeckSources = useMemo(
+    () => sources.filter((source) => source.sourceKind === "drive_presentation"),
+    [sources]
+  );
   const latestArchiveImport = archiveJobQuery.data?.importJob || archiveImports[0];
   const latestArchiveFileCount = archiveJobQuery.data?.files?.length ?? latestArchiveImport?.fileCount ?? 0;
   const selectedPackageGeneration = detailQuery.data ? packageGenerationSummary(detailQuery.data) : null;
@@ -1748,6 +1752,57 @@ export default function LessonBuilder() {
                         <div className="mt-3 grid gap-1 text-xs text-slate-600 sm:grid-cols-2">
                           {patternUse.map((use: string) => (
                             <div key={use} className="rounded bg-slate-50 px-2 py-1">{use}</div>
+                          ))}
+                        </div>
+                      ) : null}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ) : null}
+
+          {driveDeckSources.length ? (
+            <div className="mt-4 rounded-md border bg-white p-3">
+              <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <div className="text-sm font-semibold text-slate-900">Related deck exemplars</div>
+                  <div className="text-xs text-slate-500">Google Drive PPT/Slides references for lesson grammar, pipeline framing, and chapter-deck structure.</div>
+                </div>
+                <Badge variant="outline">{driveDeckSources.length} deck{driveDeckSources.length === 1 ? "" : "s"}</Badge>
+              </div>
+              <div className="mt-3 grid gap-3 lg:grid-cols-2">
+                {driveDeckSources.slice(0, 6).map((source) => {
+                  const role = source.metadata?.driveSourceRole ? String(source.metadata.driveSourceRole).replace(/_/g, " ") : source.sourceType.replace(/_/g, " ");
+                  const deckFacts = [
+                    source.metadata?.chapter,
+                    source.metadata?.unit,
+                    source.metadata?.slideCount ? `${source.metadata.slideCount} slides` : "",
+                    source.metadata?.outlineSummary,
+                  ].filter(Boolean).slice(0, 3);
+                  return (
+                    <div key={source.id} className="rounded-md border bg-slate-50 p-3">
+                      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                        <div>
+                          <div className="text-sm font-medium text-slate-950">{source.title}</div>
+                          <div className="mt-1 text-xs text-slate-500">{source.subject || source.sourceType}</div>
+                        </div>
+                        {source.sourceUri ? (
+                          <Button size="sm" variant="outline" onClick={() => window.open(source.sourceUri, "_blank", "noopener,noreferrer")}>
+                            <ExternalLink className="mr-2 h-4 w-4" />
+                            Open
+                          </Button>
+                        ) : null}
+                      </div>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        <Badge variant="outline">Drive deck</Badge>
+                        <Badge variant="outline">{role}</Badge>
+                        {source.metadata?.driveMimeType ? <Badge variant="outline">{String(source.metadata.driveMimeType).includes("presentation") ? "slides" : "pptx"}</Badge> : null}
+                      </div>
+                      {deckFacts.length ? (
+                        <div className="mt-3 grid gap-1 text-xs text-slate-600">
+                          {deckFacts.map((fact: string) => (
+                            <div key={fact} className="rounded bg-white px-2 py-1">{fact}</div>
                           ))}
                         </div>
                       ) : null}

@@ -44,11 +44,13 @@ Verified live on Render:
 - `/admin/lesson-builder` renders the Pilot Launch Console.
 - The console shows Drive deck count, Pearson audit-pattern count, active pilot package, learner link action, AI Review, Open Learner, Export Evidence, assignment counts, learner completion, and export readiness.
 - The console now surfaces the related Pearson audit-pattern dashboards by name with their workflow roles and open links, so admins can connect them to faculty review, traceability, and evidence-reporting workflows.
+- The console also surfaces related Google Drive PPT/Slides deck exemplars by name with their deck roles, chapter/slide details, and open links for lesson-grammar and chapter-structure reference.
 - Live AI Review was run for the active pilot package and the readiness ladder now reports `Latest AI review: approved for pilot`.
 - Authenticated API smoke passed for `/api/admin/pilot-launch/summary`.
 - Authenticated API smoke passed for `/api/admin/lesson-builder/packages/:id/pilot-evidence-export`.
 - Pilot Evidence Export now fetches through the admin app, downloads a named JSON report, shows an `Exporting...` state, and displays a `Latest pilot evidence report` confirmation after export.
 - Pilot Evidence Export includes related Pearson audit-pattern references in JSON, Markdown, and printable HTML reports.
+- Pilot Evidence Export includes related Google Drive deck exemplars in JSON, Markdown, and printable HTML reports.
 - Pilot Evidence Export also supports a director-ready Markdown brief through `?format=markdown` and the admin `Export Brief` action.
 - Pilot Evidence Export also supports a printable HTML report through `?format=html` and the admin `Open Report` action for faculty/program-director review.
 - Post-polish authenticated live API smoke passed for package `bf472933-fdb6-4e67-b893-491c00c7bcd4`: evidence export returned `200`, referenced 12 generated files, showed 1 assigned learner, 1 completed learner, and `exportReady=true`.

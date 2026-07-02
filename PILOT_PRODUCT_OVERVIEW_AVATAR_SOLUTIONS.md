@@ -19,7 +19,7 @@ The current MVP is not the full ATI remediation engine or the full NursesBrain a
 
 - DB-backed Render deployment with Neon persistence.
 - Admin Lesson Builder with source registry, package generation, QA, validation, publish, assignment, outcomes, and export actions.
-- Pilot Launch Console with readiness ladder, Drive deck count, visible Pearson audit-pattern references, active package, AI review, learner link, export readiness, and avatar next actions.
+- Pilot Launch Console with readiness ladder, visible Drive deck exemplars, visible Pearson audit-pattern references, active package, AI review, learner link, export readiness, and avatar next actions.
 - Direct server-side OpenAI Chat Completions for live agent-assisted generation.
 - Premium faculty review status model, kept optional for MVP launch.
 - Learner lesson route for published packages.
@@ -129,7 +129,7 @@ Next improvement:
 - Google Drive nursing PPT/Slides: use as deck grammar, lesson-shape, and chapter/source exemplars.
 - Pearson Course Audit Workflow Dashboard: use as the model for premium review workflow, reviewer state, and coverage evidence.
 - Pearson Concept Audit Dashboard: use as the model for source-to-concept traceability and program-director reporting.
-- Pilot Evidence Export: use JSON for audit data, Markdown for director briefs, and printable HTML for faculty/program-director review packets; each export carries related audit-pattern references for premium review and traceability.
+- Pilot Evidence Export: use JSON for audit data, Markdown for director briefs, and printable HTML for faculty/program-director review packets; each export carries related Drive deck exemplars plus audit-pattern references for premium review and traceability.
 - Replit NurseStudy: use later for ATI report upload, weak-topic study plans, and progress tracking.
 - NursesBrain: use later for robust document/table extraction, canonical schema normalization, processing status, and CSV/JSON exports.
 

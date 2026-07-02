@@ -4259,7 +4259,8 @@ async function buildPilotLaunchSummary() {
 function buildPilotEvidenceReport(
   bundle: LessonBundle,
   outcomes: Awaited<ReturnType<typeof buildPilotOutcomes>> | null,
-  auditPatterns: Array<typeof sourceRegistry.$inferSelect> = []
+  auditPatterns: Array<typeof sourceRegistry.$inferSelect> = [],
+  deckExemplars: Array<typeof sourceRegistry.$inferSelect> = []
 ) {
   const artifacts = buildPackageArtifactPayloads(bundle, "harrity");
   const generatedFiles = artifacts.map((artifact) => artifact.fileName).sort();
@@ -4283,6 +4284,23 @@ function buildPilotEvidenceReport(
       role: metadata.sitesRole || source.sourceType,
       patternUse: Array.isArray(metadata.patternUse) ? metadata.patternUse.slice(0, 6) : [],
       premiumWorkflowPattern: Boolean(metadata.premiumWorkflowPattern),
+    };
+  });
+  const relatedDeckExemplars = deckExemplars.map((source) => {
+    const metadata = (source.metadata || {}) as Record<string, any>;
+    return {
+      id: source.id,
+      title: source.title,
+      sourceType: source.sourceType,
+      sourceUri: source.sourceUri,
+      subject: source.subject,
+      edition: source.edition,
+      role: metadata.driveSourceRole || source.sourceType,
+      driveFileId: source.driveFileId,
+      slideCount: metadata.slideCount || null,
+      unit: metadata.unit || null,
+      chapter: metadata.chapter || null,
+      outlineSummary: metadata.outlineSummary || null,
     };
   });
 
@@ -4309,6 +4327,7 @@ function buildPilotEvidenceReport(
     },
     sourceTraceability,
     relatedAuditPatterns,
+    relatedDeckExemplars,
     lessonAssets: {
       slideCount: bundle.slides.length,
       itemCount: bundle.items.length,
@@ -4400,6 +4419,23 @@ function renderPilotEvidenceMarkdown(report: ReturnType<typeof buildPilotEvidenc
             return `- ${pattern.title} (${pattern.role}; ${pattern.premiumWorkflowPattern ? "premium review pattern" : "reference pattern"}).${uses}${uri}`;
           })
         : ["- No related audit patterns registered."]
+    ),
+    "",
+    "## Related Deck Exemplars",
+    "",
+    ...(
+      report.relatedDeckExemplars.length
+        ? report.relatedDeckExemplars.map((deck) => {
+            const facts = [
+              deck.role,
+              deck.slideCount ? `${deck.slideCount} slides` : "",
+              deck.chapter,
+              deck.unit,
+            ].filter(Boolean).join("; ");
+            const uri = deck.sourceUri ? ` ${deck.sourceUri}` : "";
+            return `- ${deck.title} (${facts || deck.sourceType}).${deck.outlineSummary ? ` ${deck.outlineSummary}` : ""}${uri}`;
+          })
+        : ["- No related Drive deck exemplars registered."]
     ),
     "",
     "## Practice And Feedback Summary",
@@ -4560,6 +4596,16 @@ function renderPilotEvidenceHtml(report: ReturnType<typeof buildPilotEvidenceRep
       <h2>Related Audit Patterns</h2>
       <ul>
         ${list(report.relatedAuditPatterns.map((pattern) => `${pattern.title} (${pattern.role}; ${pattern.premiumWorkflowPattern ? "premium review pattern" : "reference pattern"}). ${pattern.patternUse.length ? `Use for: ${pattern.patternUse.join(", ")}.` : ""} ${pattern.sourceUri || ""}`), "No related audit patterns registered.")}
+      </ul>
+    </section>
+
+    <section>
+      <h2>Related Deck Exemplars</h2>
+      <ul>
+        ${list(report.relatedDeckExemplars.map((deck) => {
+          const facts = [deck.role, deck.slideCount ? `${deck.slideCount} slides` : "", deck.chapter, deck.unit].filter(Boolean).join("; ");
+          return `${deck.title} (${facts || deck.sourceType}). ${deck.outlineSummary || ""} ${deck.sourceUri || ""}`;
+        }), "No related Drive deck exemplars registered.")}
       </ul>
     </section>
 
@@ -5777,19 +5823,21 @@ export function registerLessonBuilderRoutes(app: Express) {
   app.get("/api/admin/lesson-builder/packages/:id/pilot-evidence-export", requireAdminSession, async (req: AdminAuthRequest, res: Response) => {
     try {
       await ensureLessonBuilderTables();
-      const [bundle, outcomes, auditPatterns] = await Promise.all([
+      const [bundle, outcomes, auditPatterns, deckExemplars] = await Promise.all([
         findPackageBundle(req.params.id),
         buildPilotOutcomes(req.params.id),
         db.select().from(sourceRegistry).where(eq(sourceRegistry.sourceKind, "sites_project")),
+        db.select().from(sourceRegistry).where(eq(sourceRegistry.sourceKind, "drive_presentation")),
       ]);
       if (!bundle) return res.status(404).json({ error: "Lesson package not found" });
 
-      const report = buildPilotEvidenceReport(bundle, outcomes, auditPatterns);
+      const report = buildPilotEvidenceReport(bundle, outcomes, auditPatterns, deckExemplars);
       await recordReleaseAuditEvent(req.params.id, "pilot_evidence_exported", "Pilot evidence report exported for program review.", {
         learnerCount: outcomes?.totals.assigned || 0,
         completedCount: outcomes?.totals.completed || 0,
         sourceCount: bundle.sources.length,
         auditPatternCount: report.relatedAuditPatterns.length,
+        deckExemplarCount: report.relatedDeckExemplars.length,
         exportReady: report.readiness.exportReady,
       }, req.session.adminUser?.userId);
 
