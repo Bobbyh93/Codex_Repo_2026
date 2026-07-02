@@ -4315,6 +4315,96 @@ function buildPilotEvidenceReport(bundle: LessonBundle, outcomes: Awaited<Return
   };
 }
 
+function renderPilotEvidenceMarkdown(report: ReturnType<typeof buildPilotEvidenceReport>) {
+  const totals = (report.cohortOutcomes?.totals || {}) as Record<string, number>;
+  const qaSummary = report.readiness.qaSummary || {};
+  const aiReview = report.readiness.aiReview as Record<string, any> | null;
+  const facultyReview = report.readiness.facultyReview as Record<string, any> | null;
+  const missingFiles = report.readiness.missingRequiredFiles || [];
+  const generatedFiles = report.lessonAssets.generatedFiles || [];
+  const actionQueue = report.cohortOutcomes?.actionQueue || [];
+  const practiceSummary = (report.cohortOutcomes?.practiceSummary || {}) as Record<string, number>;
+  const feedbackSummary = (report.cohortOutcomes?.feedbackSummary || {}) as Record<string, number>;
+
+  const lines = [
+    `# Pilot Evidence Report: ${report.package.title}`,
+    "",
+    `Generated: ${report.generatedAt}`,
+    "",
+    "## Executive Summary",
+    "",
+    `- Package status: ${report.package.status}`,
+    `- Topic: ${report.package.topic || "Not specified"}`,
+    `- Audience: ${report.package.audience || "Not specified"}`,
+    `- Learner route: ${report.package.learnerUrl}`,
+    `- Export ready: ${report.readiness.exportReady ? "Yes" : "No"}`,
+    `- AI review: ${aiReview?.decision || aiReview?.status || "Not recorded"}`,
+    `- Faculty review: ${facultyReview?.decision || facultyReview?.status || "Premium / optional"}`,
+    "",
+    "## Cohort Outcomes",
+    "",
+    `- Assigned: ${totals.assigned || 0}`,
+    `- Opened: ${totals.opened || 0}`,
+    `- Practice attempted: ${totals.practiceAttempted || 0}`,
+    `- Completed: ${totals.completed || 0}`,
+    `- Feedback submitted: ${totals.feedbackSubmitted || 0}`,
+    `- Needs review: ${totals.needsReview || 0}`,
+    "",
+    "## Lesson Assets",
+    "",
+    `- Slides: ${report.lessonAssets.slideCount}`,
+    `- Practice items: ${report.lessonAssets.itemCount}`,
+    `- Citations: ${report.lessonAssets.citationCount}`,
+    `- Export artifacts: ${report.lessonAssets.artifactCount}`,
+    "",
+    "## QA And Review",
+    "",
+    `- QA pass: ${qaSummary.passCount || 0}`,
+    `- QA warnings: ${qaSummary.warningCount || 0}`,
+    `- QA failures: ${qaSummary.failCount || 0}`,
+    `- Required export files missing: ${missingFiles.length ? missingFiles.join(", ") : "None"}`,
+    "",
+    "## Source Traceability",
+    "",
+    ...(
+      report.sourceTraceability.length
+        ? report.sourceTraceability.map((source) => `- ${source.title} (${source.sourceType}; ${source.approvalStatus}; ${source.ingestionStatus}; ${source.citationPolicy})`)
+        : ["- No sources attached."]
+    ),
+    "",
+    "## Practice And Feedback Summary",
+    "",
+    `- Practice correct: ${practiceSummary.correct || 0}`,
+    `- Practice incorrect: ${practiceSummary.incorrect || 0}`,
+    `- Helpful feedback: ${feedbackSummary.helpful || 0}`,
+    `- Confusing feedback: ${feedbackSummary.confusing || 0}`,
+    `- Too hard feedback: ${feedbackSummary.tooHard || 0}`,
+    "",
+    "## Follow-Up Queue",
+    "",
+    ...(
+      actionQueue.length
+        ? actionQueue.slice(0, 12).map((item: any) => `- ${item.learnerName || "Learner"}: ${item.reason || item.status || "Needs review"}`)
+        : ["- No follow-up actions currently flagged."]
+    ),
+    "",
+    "## Generated Files",
+    "",
+    ...(
+      generatedFiles.length
+        ? generatedFiles.map((fileName) => `- ${fileName}`)
+        : ["- No generated files reported."]
+    ),
+    "",
+    "## Avatar Coverage",
+    "",
+    ...report.avatarSolutions.map((solution) => `- ${solution}`),
+    "",
+  ];
+
+  return lines.join("\n");
+}
+
 export function registerLessonBuilderRoutes(app: Express) {
   app.get("/api/lessons/:id", async (req: Request, res: Response) => {
     try {
@@ -5522,6 +5612,14 @@ export function registerLessonBuilderRoutes(app: Express) {
       }, req.session.adminUser?.userId);
 
       const safeTitle = bundle.package.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || "lesson";
+      const format = typeof req.query.format === "string" ? req.query.format.toLowerCase() : "json";
+      if (format === "markdown" || format === "md" || format === "brief") {
+        res.setHeader("Content-Type", "text/markdown; charset=utf-8");
+        res.setHeader("Content-Disposition", `attachment; filename="${safeTitle}-pilot-evidence-brief.md"`);
+        res.send(renderPilotEvidenceMarkdown(report));
+        return;
+      }
+
       res.setHeader("Content-Type", "application/json; charset=utf-8");
       res.setHeader("Content-Disposition", `attachment; filename="${safeTitle}-pilot-evidence.json"`);
       res.send(JSON.stringify(report, null, 2));

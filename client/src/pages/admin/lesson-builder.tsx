@@ -754,6 +754,7 @@ export default function LessonBuilder() {
     packageId: string;
     packageTitle: string;
     fileName: string;
+    reportKind: "json" | "markdown";
     generatedAt: string;
     artifactCount: number;
     generatedFileCount: number;
@@ -1405,13 +1406,13 @@ export default function LessonBuilder() {
     }, 1200);
   };
 
-  const exportPilotEvidence = async (packageId?: string) => {
+  const exportPilotEvidence = async (packageId?: string, format: "json" | "markdown" = "json") => {
     const targetPackageId = packageId || selectedPackageId;
     if (!targetPackageId) return;
 
     setEvidenceExportingPackageId(targetPackageId);
     try {
-      const response = await fetch(`/api/admin/lesson-builder/packages/${targetPackageId}/pilot-evidence-export`, {
+      const response = await fetch(`/api/admin/lesson-builder/packages/${targetPackageId}/pilot-evidence-export${format === "markdown" ? "?format=markdown" : ""}`, {
         credentials: "include",
       });
       if (!response.ok) {
@@ -1419,10 +1420,16 @@ export default function LessonBuilder() {
         throw new Error(errorText || "Failed to export pilot evidence");
       }
 
-      const report = (await response.json()) as PilotEvidenceReport;
       const disposition = response.headers.get("content-disposition") || "";
-      const fileName = disposition.match(/filename="?([^"]+)"?/i)?.[1] || `${targetPackageId}-pilot-evidence.json`;
-      const blob = new Blob([JSON.stringify(report, null, 2)], { type: "application/json;charset=utf-8" });
+      const fileName = disposition.match(/filename="?([^"]+)"?/i)?.[1] || `${targetPackageId}-pilot-evidence${format === "markdown" ? "-brief.md" : ".json"}`;
+      let report: PilotEvidenceReport | null = null;
+      let blob: Blob;
+      if (format === "markdown") {
+        blob = new Blob([await response.text()], { type: "text/markdown;charset=utf-8" });
+      } else {
+        report = (await response.json()) as PilotEvidenceReport;
+        blob = new Blob([JSON.stringify(report, null, 2)], { type: "application/json;charset=utf-8" });
+      }
       const objectUrl = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = objectUrl;
@@ -1432,22 +1439,25 @@ export default function LessonBuilder() {
       link.remove();
       URL.revokeObjectURL(objectUrl);
 
-      const totals = report.cohortOutcomes?.totals || {};
-      const generatedFiles = report.lessonAssets?.generatedFiles || [];
+      const activeLaunch = pilotLaunch?.package?.id === targetPackageId ? pilotLaunch : null;
+      const activeDetail = detailQuery.data?.package.id === targetPackageId ? detailQuery.data : null;
+      const totals = report?.cohortOutcomes?.totals || activeLaunch?.outcomes?.totals || {};
+      const generatedFiles = report?.lessonAssets?.generatedFiles || [];
       const exportSummary = {
         packageId: targetPackageId,
-        packageTitle: report.package?.title || "Pilot lesson package",
+        packageTitle: report?.package?.title || activeLaunch?.package?.title || activeDetail?.package.title || "Pilot lesson package",
         fileName,
-        generatedAt: report.generatedAt || new Date().toISOString(),
-        artifactCount: report.lessonAssets?.artifactCount || generatedFiles.length || 0,
-        generatedFileCount: generatedFiles.length,
+        reportKind: format,
+        generatedAt: report?.generatedAt || new Date().toISOString(),
+        artifactCount: report?.lessonAssets?.artifactCount || activeLaunch?.exportStatus?.fileCount || generatedFiles.length || 0,
+        generatedFileCount: generatedFiles.length || activeLaunch?.exportStatus?.fileCount || 0,
         assignedCount: totals.assigned || 0,
         completedCount: totals.completed || 0,
-        exportReady: Boolean(report.readiness?.exportReady),
+        exportReady: report ? Boolean(report.readiness?.exportReady) : activeLaunch?.exportStatus?.status === "ready",
       };
       setLatestEvidenceExport(exportSummary);
       toast({
-        title: "Pilot evidence exported",
+        title: format === "markdown" ? "Pilot evidence brief exported" : "Pilot evidence exported",
         description: `${exportSummary.generatedFileCount} files referenced, ${exportSummary.completedCount}/${exportSummary.assignedCount} learners complete.`,
       });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/packages", targetPackageId] });
@@ -1592,6 +1602,15 @@ export default function LessonBuilder() {
                       <Download className="mr-2 h-4 w-4" />
                       {evidenceExportingPackageId === pilotLaunch.package!.id ? "Exporting..." : "Export Evidence"}
                     </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => exportPilotEvidence(pilotLaunch.package!.id, "markdown")}
+                      disabled={evidenceExportingPackageId === pilotLaunch.package!.id}
+                    >
+                      <FileText className="mr-2 h-4 w-4" />
+                      Export Brief
+                    </Button>
                   </>
                 ) : null}
                 {pilotLaunch?.assignment?.firstLearnerLink ? (
@@ -1609,7 +1628,7 @@ export default function LessonBuilder() {
                     <StatusBadge value={latestEvidenceExport.exportReady ? "export_ready" : "needs_export_check"} />
                   </div>
                   <div className="mt-1 text-xs leading-5 text-teal-900">
-                    {latestEvidenceExport.fileName} downloaded for {latestEvidenceExport.packageTitle}. It references {latestEvidenceExport.generatedFileCount} generated file(s), {latestEvidenceExport.artifactCount} artifact(s), and {latestEvidenceExport.completedCount}/{latestEvidenceExport.assignedCount} completed learner(s).
+                    {latestEvidenceExport.fileName} downloaded as a {latestEvidenceExport.reportKind === "markdown" ? "director-ready brief" : "JSON evidence bundle"} for {latestEvidenceExport.packageTitle}. It references {latestEvidenceExport.generatedFileCount} generated file(s), {latestEvidenceExport.artifactCount} artifact(s), and {latestEvidenceExport.completedCount}/{latestEvidenceExport.assignedCount} completed learner(s).
                   </div>
                 </div>
               ) : null}
@@ -2627,6 +2646,14 @@ export default function LessonBuilder() {
                           >
                             <FileText className="mr-2 h-4 w-4" />
                             {evidenceExportingPackageId === selectedPackageId ? "Exporting..." : "Export Evidence"}
+                          </Button>
+                          <Button
+                            variant="outline"
+                            onClick={() => exportPilotEvidence(selectedPackageId, "markdown")}
+                            disabled={evidenceExportingPackageId === selectedPackageId}
+                          >
+                            <FileText className="mr-2 h-4 w-4" />
+                            Export Brief
                           </Button>
                           <Button onClick={() => publishMutation.mutate()} disabled={publishMutation.isPending}>
                             <Rocket className="mr-2 h-4 w-4" />

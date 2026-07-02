@@ -26,7 +26,7 @@ The current MVP is not the full ATI remediation engine or the full NursesBrain a
 - Assignment link flow without requiring student accounts.
 - Learner events for open, practice, completion, and feedback.
 - Pilot Outcomes for completion, feedback, practice results, and follow-up needs.
-- Harrity export and Pilot Evidence export.
+- Harrity export, Pilot Evidence JSON export, and director-ready Pilot Evidence Brief Markdown export.
 - Google Drive PPT/Slides assets registered as deck/source exemplars.
 - Pearson Course Audit and Concept Audit Sites dashboards registered as workflow-pattern references.
 
@@ -112,12 +112,13 @@ Next improvement:
 
 Need: evidence that the pilot is useful, traceable, and ready to scale.
 
-Current solution: Pilot Evidence Export.
+Current solution: Pilot Evidence Export and Pilot Evidence Brief.
 
 Key value:
 
 - Summarizes package, source traceability, readiness, AI/faculty review status, lesson assets, cohort outcomes, generated files, and export readiness.
 - Supports buyer-facing pilot proof without needing raw admin logs.
+- Gives program leaders both a structured JSON evidence bundle and a readable Markdown brief.
 
 Next improvement:
 
@@ -159,4 +160,3 @@ Post-MVP includes:
 3. Add faculty rubric review as the first premium workflow upgrade.
 4. Add learner account dashboard for assigned lessons.
 5. Add manual ATI weak-topic-to-lesson assignment before automating ATI report upload.
-
