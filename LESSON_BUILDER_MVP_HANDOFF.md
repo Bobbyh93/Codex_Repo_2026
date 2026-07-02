@@ -57,6 +57,7 @@ Verified live on Render:
 - Post-brief authenticated live API smoke passed for the same package: `?format=markdown` returned `200`, `text/markdown`, and filename `therapeutic-communication-live-ai-mvp-release-smoke-pilot-evidence-brief.md`.
 - Post-report authenticated live API smoke passed for the same package: `?format=html` returned `200`, `text/html`, and filename `therapeutic-communication-live-ai-mvp-release-smoke-pilot-evidence-report.html`.
 - Post-audit-pattern authenticated live API smoke passed for the same package: JSON evidence export includes `relatedAuditPatterns` with 2 entries, and printable HTML includes the `Related Audit Patterns` Pearson section.
+- Post-deck-exemplar authenticated live API smoke passed for the same package: JSON evidence export includes `relatedDeckExemplars` with 5 entries, and printable HTML includes the `Related Deck Exemplars` Drive section.
 - Browser verification reached the updated console after Render wake. A later export-click pass hit Render's cold-start/loading interstitial, so API smoke is the authoritative verification for the export response while the UI code is verified on GitHub `main`.
 
 Use the Pearson Sites projects as workflow models, not as nursing source truth:
