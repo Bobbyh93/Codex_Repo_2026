@@ -19,7 +19,7 @@ The current MVP is not the full ATI remediation engine or the full NursesBrain a
 
 - DB-backed Render deployment with Neon persistence.
 - Admin Lesson Builder with source registry, package generation, QA, validation, publish, assignment, outcomes, and export actions.
-- Pilot Launch Console with readiness ladder, Drive deck count, Pearson audit-pattern count, active package, AI review, learner link, export readiness, and avatar next actions.
+- Pilot Launch Console with readiness ladder, Drive deck count, visible Pearson audit-pattern references, active package, AI review, learner link, export readiness, and avatar next actions.
 - Direct server-side OpenAI Chat Completions for live agent-assisted generation.
 - Premium faculty review status model, kept optional for MVP launch.
 - Learner lesson route for published packages.

@@ -43,6 +43,7 @@ Verified live on Render:
 - The seeded admin login succeeds for the live smoke environment.
 - `/admin/lesson-builder` renders the Pilot Launch Console.
 - The console shows Drive deck count, Pearson audit-pattern count, active pilot package, learner link action, AI Review, Open Learner, Export Evidence, assignment counts, learner completion, and export readiness.
+- The console now surfaces the related Pearson audit-pattern dashboards by name with their workflow roles and open links, so admins can connect them to faculty review, traceability, and evidence-reporting workflows.
 - Live AI Review was run for the active pilot package and the readiness ladder now reports `Latest AI review: approved for pilot`.
 - Authenticated API smoke passed for `/api/admin/pilot-launch/summary`.
 - Authenticated API smoke passed for `/api/admin/lesson-builder/packages/:id/pilot-evidence-export`.

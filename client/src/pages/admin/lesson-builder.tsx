@@ -904,6 +904,10 @@ export default function LessonBuilder() {
     packages: packages.length,
     published: packages.filter((pkg) => pkg.status === "published").length,
   };
+  const auditPatternSources = useMemo(
+    () => sources.filter((source) => source.sourceKind === "sites_project"),
+    [sources]
+  );
   const latestArchiveImport = archiveJobQuery.data?.importJob || archiveImports[0];
   const latestArchiveFileCount = archiveJobQuery.data?.files?.length ?? latestArchiveImport?.fileCount ?? 0;
   const selectedPackageGeneration = detailQuery.data ? packageGenerationSummary(detailQuery.data) : null;
@@ -1705,6 +1709,51 @@ export default function LessonBuilder() {
                     <span className="font-medium">{action.label}:</span> {action.detail}
                   </div>
                 ))}
+              </div>
+            </div>
+          ) : null}
+
+          {auditPatternSources.length ? (
+            <div className="mt-4 rounded-md border bg-slate-50 p-3">
+              <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <div className="text-sm font-semibold text-slate-900">Related audit patterns</div>
+                  <div className="text-xs text-slate-500">Pearson dashboard references for premium review, traceability, and evidence reporting.</div>
+                </div>
+                <Badge variant="outline">{auditPatternSources.length} pattern{auditPatternSources.length === 1 ? "" : "s"}</Badge>
+              </div>
+              <div className="mt-3 grid gap-3 lg:grid-cols-2">
+                {auditPatternSources.map((source) => {
+                  const patternUse = Array.isArray(source.metadata?.patternUse) ? source.metadata.patternUse.slice(0, 4) : [];
+                  return (
+                    <div key={source.id} className="rounded-md border bg-white p-3">
+                      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                        <div>
+                          <div className="text-sm font-medium text-slate-950">{source.title}</div>
+                          <div className="mt-1 text-xs text-slate-500">{source.subject || source.sourceType}</div>
+                        </div>
+                        {source.sourceUri ? (
+                          <Button size="sm" variant="outline" onClick={() => window.open(source.sourceUri, "_blank", "noopener,noreferrer")}>
+                            <ExternalLink className="mr-2 h-4 w-4" />
+                            Open
+                          </Button>
+                        ) : null}
+                      </div>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        <Badge variant="outline">Sites pattern</Badge>
+                        {source.metadata?.premiumWorkflowPattern ? <Badge variant="outline">premium review</Badge> : null}
+                        {source.metadata?.sitesRole ? <Badge variant="outline">{String(source.metadata.sitesRole).replace(/_/g, " ")}</Badge> : null}
+                      </div>
+                      {patternUse.length ? (
+                        <div className="mt-3 grid gap-1 text-xs text-slate-600 sm:grid-cols-2">
+                          {patternUse.map((use: string) => (
+                            <div key={use} className="rounded bg-slate-50 px-2 py-1">{use}</div>
+                          ))}
+                        </div>
+                      ) : null}
+                    </div>
+                  );
+                })}
               </div>
             </div>
           ) : null}
