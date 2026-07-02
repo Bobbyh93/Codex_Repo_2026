@@ -1473,6 +1473,12 @@ export default function LessonBuilder() {
     }
   };
 
+  const openPilotEvidenceReport = (packageId?: string) => {
+    const targetPackageId = packageId || selectedPackageId;
+    if (!targetPackageId) return;
+    window.open(`/api/admin/lesson-builder/packages/${targetPackageId}/pilot-evidence-export?format=html`, "_blank", "noopener,noreferrer");
+  };
+
   const copyLearnerLink = async () => {
     if (!selectedPackageId) return;
     const url = `${window.location.origin}/lessons/${selectedPackageId}`;
@@ -1610,6 +1616,14 @@ export default function LessonBuilder() {
                     >
                       <FileText className="mr-2 h-4 w-4" />
                       Export Brief
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => openPilotEvidenceReport(pilotLaunch.package!.id)}
+                    >
+                      <ExternalLink className="mr-2 h-4 w-4" />
+                      Open Report
                     </Button>
                   </>
                 ) : null}
@@ -2654,6 +2668,10 @@ export default function LessonBuilder() {
                           >
                             <FileText className="mr-2 h-4 w-4" />
                             Export Brief
+                          </Button>
+                          <Button variant="outline" onClick={() => openPilotEvidenceReport(selectedPackageId)}>
+                            <ExternalLink className="mr-2 h-4 w-4" />
+                            Open Report
                           </Button>
                           <Button onClick={() => publishMutation.mutate()} disabled={publishMutation.isPending}>
                             <Rocket className="mr-2 h-4 w-4" />

@@ -4405,6 +4405,149 @@ function renderPilotEvidenceMarkdown(report: ReturnType<typeof buildPilotEvidenc
   return lines.join("\n");
 }
 
+function escapeHtml(value: unknown) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function renderPilotEvidenceHtml(report: ReturnType<typeof buildPilotEvidenceReport>) {
+  const totals = (report.cohortOutcomes?.totals || {}) as Record<string, number>;
+  const qaSummary = report.readiness.qaSummary || {};
+  const aiReview = report.readiness.aiReview as Record<string, any> | null;
+  const facultyReview = report.readiness.facultyReview as Record<string, any> | null;
+  const missingFiles = report.readiness.missingRequiredFiles || [];
+  const generatedFiles = report.lessonAssets.generatedFiles || [];
+  const actionQueue = report.cohortOutcomes?.actionQueue || [];
+  const practiceSummary = (report.cohortOutcomes?.practiceSummary || {}) as Record<string, number>;
+  const feedbackSummary = (report.cohortOutcomes?.feedbackSummary || {}) as Record<string, number>;
+  const metric = (label: string, value: string | number) => `<div class="metric"><strong>${escapeHtml(value)}</strong><span>${escapeHtml(label)}</span></div>`;
+  const list = (items: string[], empty: string) => (items.length ? items.map((item) => `<li>${escapeHtml(item)}</li>`).join("") : `<li>${escapeHtml(empty)}</li>`);
+
+  return `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Pilot Evidence Report - ${escapeHtml(report.package.title)}</title>
+  <style>
+    :root { color: #0f172a; background: #f8fafc; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    body { margin: 0; padding: 32px; }
+    main { max-width: 1040px; margin: 0 auto; background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08); overflow: hidden; }
+    header { padding: 32px; background: #0f766e; color: #fff; }
+    header p { margin: 8px 0 0; color: #ccfbf1; }
+    section { padding: 24px 32px; border-top: 1px solid #e2e8f0; }
+    h1, h2 { margin: 0; }
+    h1 { font-size: 28px; line-height: 1.2; }
+    h2 { font-size: 18px; margin-bottom: 14px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; }
+    .metric { border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px; background: #f8fafc; }
+    .metric strong { display: block; font-size: 22px; color: #0f172a; }
+    .metric span { display: block; margin-top: 4px; font-size: 12px; color: #475569; text-transform: uppercase; letter-spacing: .05em; }
+    .pill { display: inline-block; padding: 4px 10px; border-radius: 999px; background: #ccfbf1; color: #134e4a; font-size: 12px; font-weight: 700; }
+    ul { margin: 0; padding-left: 20px; }
+    li { margin: 6px 0; }
+    .muted { color: #64748b; }
+    .two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; }
+    @media (max-width: 760px) { body { padding: 12px; } section, header { padding: 20px; } .two { grid-template-columns: 1fr; } }
+    @media print { body { padding: 0; background: #fff; } main { box-shadow: none; border: 0; border-radius: 0; } .no-print { display: none; } }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div class="pill">Pilot Evidence Report</div>
+      <h1>${escapeHtml(report.package.title)}</h1>
+      <p>${escapeHtml(report.package.topic || "Topic not specified")} · ${escapeHtml(report.package.audience || "Audience not specified")}</p>
+      <p>Generated ${escapeHtml(report.generatedAt)}</p>
+    </header>
+
+    <section>
+      <h2>Executive Summary</h2>
+      <div class="grid">
+        ${metric("Package status", report.package.status)}
+        ${metric("Export ready", report.readiness.exportReady ? "Yes" : "No")}
+        ${metric("AI review", aiReview?.decision || aiReview?.status || "Not recorded")}
+        ${metric("Faculty review", facultyReview?.decision || facultyReview?.status || "Premium")}
+      </div>
+    </section>
+
+    <section>
+      <h2>Cohort Outcomes</h2>
+      <div class="grid">
+        ${metric("Assigned", totals.assigned || 0)}
+        ${metric("Opened", totals.opened || 0)}
+        ${metric("Practice attempted", totals.practiceAttempted || 0)}
+        ${metric("Completed", totals.completed || 0)}
+        ${metric("Feedback submitted", totals.feedbackSubmitted || 0)}
+        ${metric("Needs review", totals.needsReview || 0)}
+      </div>
+    </section>
+
+    <section>
+      <h2>Lesson Assets</h2>
+      <div class="grid">
+        ${metric("Slides", report.lessonAssets.slideCount)}
+        ${metric("Practice items", report.lessonAssets.itemCount)}
+        ${metric("Citations", report.lessonAssets.citationCount)}
+        ${metric("Export artifacts", report.lessonAssets.artifactCount)}
+      </div>
+    </section>
+
+    <section class="two">
+      <div>
+        <h2>QA And Review</h2>
+        <ul>
+          <li>QA pass: ${escapeHtml(qaSummary.passCount || 0)}</li>
+          <li>QA warnings: ${escapeHtml(qaSummary.warningCount || 0)}</li>
+          <li>QA failures: ${escapeHtml(qaSummary.failCount || 0)}</li>
+          <li>Missing required files: ${escapeHtml(missingFiles.length ? missingFiles.join(", ") : "None")}</li>
+        </ul>
+      </div>
+      <div>
+        <h2>Practice And Feedback</h2>
+        <ul>
+          <li>Practice correct: ${escapeHtml(practiceSummary.correct || 0)}</li>
+          <li>Practice incorrect: ${escapeHtml(practiceSummary.incorrect || 0)}</li>
+          <li>Helpful feedback: ${escapeHtml(feedbackSummary.helpful || 0)}</li>
+          <li>Confusing feedback: ${escapeHtml(feedbackSummary.confusing || 0)}</li>
+          <li>Too hard feedback: ${escapeHtml(feedbackSummary.tooHard || 0)}</li>
+        </ul>
+      </div>
+    </section>
+
+    <section>
+      <h2>Source Traceability</h2>
+      <ul>
+        ${list(report.sourceTraceability.map((source) => `${source.title} (${source.sourceType}; ${source.approvalStatus}; ${source.ingestionStatus}; ${source.citationPolicy})`), "No sources attached.")}
+      </ul>
+    </section>
+
+    <section class="two">
+      <div>
+        <h2>Follow-Up Queue</h2>
+        <ul>
+          ${list(actionQueue.slice(0, 12).map((item: any) => `${item.learnerName || "Learner"}: ${item.reason || item.status || "Needs review"}`), "No follow-up actions currently flagged.")}
+        </ul>
+      </div>
+      <div>
+        <h2>Avatar Coverage</h2>
+        <ul>${list(report.avatarSolutions, "No avatar coverage listed.")}</ul>
+      </div>
+    </section>
+
+    <section>
+      <h2>Generated Files</h2>
+      <ul>${list(generatedFiles, "No generated files reported.")}</ul>
+    </section>
+  </main>
+</body>
+</html>`;
+}
+
 export function registerLessonBuilderRoutes(app: Express) {
   app.get("/api/lessons/:id", async (req: Request, res: Response) => {
     try {
@@ -5617,6 +5760,12 @@ export function registerLessonBuilderRoutes(app: Express) {
         res.setHeader("Content-Type", "text/markdown; charset=utf-8");
         res.setHeader("Content-Disposition", `attachment; filename="${safeTitle}-pilot-evidence-brief.md"`);
         res.send(renderPilotEvidenceMarkdown(report));
+        return;
+      }
+      if (format === "html" || format === "print") {
+        res.setHeader("Content-Type", "text/html; charset=utf-8");
+        res.setHeader("Content-Disposition", `inline; filename="${safeTitle}-pilot-evidence-report.html"`);
+        res.send(renderPilotEvidenceHtml(report));
         return;
       }
 
