@@ -4256,7 +4256,11 @@ async function buildPilotLaunchSummary() {
   };
 }
 
-function buildPilotEvidenceReport(bundle: LessonBundle, outcomes: Awaited<ReturnType<typeof buildPilotOutcomes>> | null) {
+function buildPilotEvidenceReport(
+  bundle: LessonBundle,
+  outcomes: Awaited<ReturnType<typeof buildPilotOutcomes>> | null,
+  auditPatterns: Array<typeof sourceRegistry.$inferSelect> = []
+) {
   const artifacts = buildPackageArtifactPayloads(bundle, "harrity");
   const generatedFiles = artifacts.map((artifact) => artifact.fileName).sort();
   const missingRequiredFiles = harrityRequiredExportFiles.filter((fileName) => !generatedFiles.includes(fileName));
@@ -4268,6 +4272,19 @@ function buildPilotEvidenceReport(bundle: LessonBundle, outcomes: Awaited<Return
     ingestionStatus: source.ingestionStatus,
     citationPolicy: source.citationPolicy,
   }));
+  const relatedAuditPatterns = auditPatterns.map((source) => {
+    const metadata = (source.metadata || {}) as Record<string, any>;
+    return {
+      id: source.id,
+      title: source.title,
+      sourceType: source.sourceType,
+      sourceUri: source.sourceUri,
+      subject: source.subject,
+      role: metadata.sitesRole || source.sourceType,
+      patternUse: Array.isArray(metadata.patternUse) ? metadata.patternUse.slice(0, 6) : [],
+      premiumWorkflowPattern: Boolean(metadata.premiumWorkflowPattern),
+    };
+  });
 
   return {
     generatedAt: new Date().toISOString(),
@@ -4291,6 +4308,7 @@ function buildPilotEvidenceReport(bundle: LessonBundle, outcomes: Awaited<Return
       missingRequiredFiles,
     },
     sourceTraceability,
+    relatedAuditPatterns,
     lessonAssets: {
       slideCount: bundle.slides.length,
       itemCount: bundle.items.length,
@@ -4370,6 +4388,18 @@ function renderPilotEvidenceMarkdown(report: ReturnType<typeof buildPilotEvidenc
       report.sourceTraceability.length
         ? report.sourceTraceability.map((source) => `- ${source.title} (${source.sourceType}; ${source.approvalStatus}; ${source.ingestionStatus}; ${source.citationPolicy})`)
         : ["- No sources attached."]
+    ),
+    "",
+    "## Related Audit Patterns",
+    "",
+    ...(
+      report.relatedAuditPatterns.length
+        ? report.relatedAuditPatterns.map((pattern) => {
+            const uses = pattern.patternUse.length ? ` Use for: ${pattern.patternUse.join(", ")}.` : "";
+            const uri = pattern.sourceUri ? ` ${pattern.sourceUri}` : "";
+            return `- ${pattern.title} (${pattern.role}; ${pattern.premiumWorkflowPattern ? "premium review pattern" : "reference pattern"}).${uses}${uri}`;
+          })
+        : ["- No related audit patterns registered."]
     ),
     "",
     "## Practice And Feedback Summary",
@@ -4523,6 +4553,13 @@ function renderPilotEvidenceHtml(report: ReturnType<typeof buildPilotEvidenceRep
       <h2>Source Traceability</h2>
       <ul>
         ${list(report.sourceTraceability.map((source) => `${source.title} (${source.sourceType}; ${source.approvalStatus}; ${source.ingestionStatus}; ${source.citationPolicy})`), "No sources attached.")}
+      </ul>
+    </section>
+
+    <section>
+      <h2>Related Audit Patterns</h2>
+      <ul>
+        ${list(report.relatedAuditPatterns.map((pattern) => `${pattern.title} (${pattern.role}; ${pattern.premiumWorkflowPattern ? "premium review pattern" : "reference pattern"}). ${pattern.patternUse.length ? `Use for: ${pattern.patternUse.join(", ")}.` : ""} ${pattern.sourceUri || ""}`), "No related audit patterns registered.")}
       </ul>
     </section>
 
@@ -5740,17 +5777,19 @@ export function registerLessonBuilderRoutes(app: Express) {
   app.get("/api/admin/lesson-builder/packages/:id/pilot-evidence-export", requireAdminSession, async (req: AdminAuthRequest, res: Response) => {
     try {
       await ensureLessonBuilderTables();
-      const [bundle, outcomes] = await Promise.all([
+      const [bundle, outcomes, auditPatterns] = await Promise.all([
         findPackageBundle(req.params.id),
         buildPilotOutcomes(req.params.id),
+        db.select().from(sourceRegistry).where(eq(sourceRegistry.sourceKind, "sites_project")),
       ]);
       if (!bundle) return res.status(404).json({ error: "Lesson package not found" });
 
-      const report = buildPilotEvidenceReport(bundle, outcomes);
+      const report = buildPilotEvidenceReport(bundle, outcomes, auditPatterns);
       await recordReleaseAuditEvent(req.params.id, "pilot_evidence_exported", "Pilot evidence report exported for program review.", {
         learnerCount: outcomes?.totals.assigned || 0,
         completedCount: outcomes?.totals.completed || 0,
         sourceCount: bundle.sources.length,
+        auditPatternCount: report.relatedAuditPatterns.length,
         exportReady: report.readiness.exportReady,
       }, req.session.adminUser?.userId);
 

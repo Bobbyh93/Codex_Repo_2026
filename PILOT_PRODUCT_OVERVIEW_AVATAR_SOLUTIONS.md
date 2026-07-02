@@ -129,7 +129,7 @@ Next improvement:
 - Google Drive nursing PPT/Slides: use as deck grammar, lesson-shape, and chapter/source exemplars.
 - Pearson Course Audit Workflow Dashboard: use as the model for premium review workflow, reviewer state, and coverage evidence.
 - Pearson Concept Audit Dashboard: use as the model for source-to-concept traceability and program-director reporting.
-- Pilot Evidence Export: use JSON for audit data, Markdown for director briefs, and printable HTML for faculty/program-director review packets.
+- Pilot Evidence Export: use JSON for audit data, Markdown for director briefs, and printable HTML for faculty/program-director review packets; each export carries related audit-pattern references for premium review and traceability.
 - Replit NurseStudy: use later for ATI report upload, weak-topic study plans, and progress tracking.
 - NursesBrain: use later for robust document/table extraction, canonical schema normalization, processing status, and CSV/JSON exports.
 
