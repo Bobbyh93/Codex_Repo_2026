@@ -5,7 +5,7 @@ import { db } from "./db";
 import { lookupTextbookReferences, findTextbookRefs, getChapterDetailCache, setChapterDetailCache } from "./focused-report-pdf-generator";
 import { selectFocusedClusters, buildSubjectReports } from "./ati-cluster-analyzer";
 import { parseAssessmentReport as simpleParseAssessment, TOPIC_RESOURCES } from "./simple-parser";
-import { insertAssessmentReportSchema, insertTopicPerformanceSchema, insertUserSchema, chapterTopicMappings, textbookChapters, textbooks, assessmentReports, nursingTopics } from "@shared/schema";
+import { insertAssessmentReportSchema, insertTopicPerformanceSchema, insertUserSchema, insertLeadSchema, chapterTopicMappings, textbookChapters, textbooks, assessmentReports, nursingTopics } from "@shared/schema";
 import multer from "multer";
 import { z } from "zod";
 import { sql, inArray, or, eq } from "drizzle-orm";
@@ -96,7 +96,80 @@ const upload = multer({
   fileFilter: pdfFileFilter
 });
 
+const serverStartedAt = new Date().toISOString();
+
+const publicLaunchInterestSchema = z.object({
+  contactName: z.string().trim().min(2).max(120),
+  contactEmail: z.string().trim().email().max(180),
+  contactPhone: z.string().trim().max(40).optional().or(z.literal("")),
+  companyName: z.string().trim().max(160).optional().or(z.literal("")),
+  jobTitle: z.string().trim().max(120).optional().or(z.literal("")),
+  organizationType: z.string().trim().max(80).optional().or(z.literal("")),
+  pilotGoal: z.string().trim().max(1200).optional().or(z.literal("")),
+  interestedTopics: z.array(z.string().trim().min(1).max(80)).max(8).optional(),
+});
+
 export async function registerRoutes(app: Express): Promise<Server> {
+  app.get("/api/public/deploy-proof", (_req, res) => {
+    res.json({
+      app: "nursestudy-lesson-builder",
+      releaseTrack: "public_launch_mfp",
+      commit: process.env.RENDER_GIT_COMMIT || process.env.COMMIT_SHA || process.env.GIT_COMMIT || "local",
+      branch: process.env.RENDER_GIT_BRANCH || process.env.GIT_BRANCH || "unknown",
+      environment: process.env.NODE_ENV || "development",
+      serviceName: process.env.RENDER_SERVICE_NAME || "local",
+      startedAt: serverStartedAt,
+      internalPilotAccepted: true,
+      internalPilotPackageId: "bf472933-fdb6-4e67-b893-491c00c7bcd4",
+    });
+  });
+
+  app.post("/api/public/launch-interest", authLimiter, async (req, res) => {
+    try {
+      const parsed = publicLaunchInterestSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({
+          error: "Invalid launch interest request",
+          details: parsed.error.errors,
+        });
+      }
+
+      const data = parsed.data;
+      const lead = await storage.createLead(insertLeadSchema.parse({
+        status: "new",
+        score: 45,
+        source: "public_launch_mfp",
+        conversionType: "pilot_demo_request",
+        firstContactDate: new Date(),
+        lastContactDate: new Date(),
+        numberOfContacts: 1,
+        engagementLevel: "medium",
+        interestedTopics: data.interestedTopics?.length ? data.interestedTopics : ["Harrity Lesson Builder pilot"],
+        tags: ["public-launch", "lesson-builder", "pilot-interest"],
+        contactName: data.contactName,
+        contactEmail: data.contactEmail.toLowerCase(),
+        contactPhone: data.contactPhone || undefined,
+        companyName: data.companyName || undefined,
+        jobTitle: data.jobTitle || undefined,
+        industry: data.organizationType || "Nursing education",
+        customFields: {
+          pilotGoal: data.pilotGoal || "",
+          requestedPath: "public_launch_mfp",
+        },
+      }));
+
+      res.status(201).json({
+        success: true,
+        message: "Pilot interest captured",
+        leadId: lead.id,
+        nextStep: "NurseStudy will follow up with a controlled pilot review path.",
+      });
+    } catch (error) {
+      console.error("Public launch interest error:", error);
+      res.status(500).json({ error: "Failed to capture pilot interest" });
+    }
+  });
+
   // Authentication routes
   app.post("/api/auth/register", authLimiter, validateRequest(registerSchema), async (req, res) => {
     try {

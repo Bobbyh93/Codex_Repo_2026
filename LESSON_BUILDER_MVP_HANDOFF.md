@@ -4,6 +4,7 @@
 
 The DB-backed Lesson Builder path is functional locally and is the live Render product path for the internal pilot:
 
+- Public-launch MFP acceptance is now recorded in `PUBLIC_LAUNCH_MFP_ACCEPTANCE.md`: internal pilot is accepted as the baseline, the public scope is a controlled visitor/capture entry plus the protected admin/learner workflow, and Replit/NursesBrain/Data Chunker/Drive assets remain supporting systems unless promoted through source approval.
 - Admin Knowledge Base upload creates persisted document chunks.
 - Approved sources can generate a Harrity web lesson package.
 - Source detail now includes a NursesBrain-style normalization step for table/crosswalk signals, taxonomy hints, official pilot source status, and weak-topic metadata.
