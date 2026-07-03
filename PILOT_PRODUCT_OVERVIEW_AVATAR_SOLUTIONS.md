@@ -31,6 +31,7 @@ The current MVP is not the full ATI remediation engine or the full NursesBrain a
 - MNN Google Drive package hub audited as the strongest next Drive import target: 27 maternal-newborn chapter folders, Harrity decks, manifests, slide blueprint, QA log, notes pass, validation reports, and source/taxonomy JSON.
 - Source Studio Drive Package Hub import supports the MNN preset and creates reference-only package metadata plus 27 pending chapter source candidates.
 - ChatGPT files library is audited and Source Studio now has a reference-pack registration path for visible file inventory; signed-in Chrome exposes recent files and project anchors, while no file contents were downloaded.
+- OpenStax Nursing is audited and Source Studio now has a link-only catalog registration path for 8 public nursing books; OpenStax records are blocked from AI/RAG generation until ingestion permission is documented.
 - Pearson Course Audit and Concept Audit Sites dashboards registered as workflow-pattern references.
 - Data Chunker Pro identified as the workstation preprocessing tool for large textbook/chapter PDFs that need RAG-ready chunk files and folders before NurseStudy registration.
 - OpenAI workspace agents audited as the production-operator bench for source audit, taxonomy, lesson generation, remediation, architecture, planning, SQL/schema review, and knowledge search. No inspected workspace agent currently has a live API channel.
@@ -136,6 +137,7 @@ Next improvement:
 - Google Drive nursing PPT/Slides: use as deck grammar, lesson-shape, and chapter/source exemplars.
 - MNN Google Drive folder: use as a maternal-newborn package hub for the next Source Studio importer. Register the root folder, manifests, slide blueprint, QA log, validation reports, chapter folders, notes pass, and Harrity decks as reference/package metadata first; promote only approved records into lesson-generation source truth.
 - ChatGPT files library: use for project files, prompt packs, handoffs, and reusable source-contract candidates. Register useful files through the ChatGPT Library Pack path, then keep them pending/reference-only until reviewed and exported through an approved path.
+- OpenStax Nursing: use as a public coverage map and learner/faculty link catalog across fundamentals, skills, maternal-newborn, medical-surgical, pharmacology, nutrition, population health, and psychiatric-mental health. Keep book/PDF text out of RAG and AI generation unless OpenStax permission is documented.
 - Pearson Course Audit Workflow Dashboard: use as the model for premium review workflow, reviewer state, and coverage evidence.
 - Pearson Concept Audit Dashboard: use as the model for source-to-concept traceability and program-director reporting.
 - Pilot Evidence Export: use JSON for audit data, Markdown for director briefs, and printable HTML for faculty/program-director review packets; each export confirmation and report carries linked Drive deck exemplars plus audit-pattern references for premium review and traceability, clearly marked as reference-only rather than citation source truth.
@@ -168,7 +170,7 @@ Post-MVP includes:
 ## Next Achievable Goals
 
 1. Complete one browser click-through verification of the polished Pilot Evidence Export confirmation after Render is awake and Browser control is available.
-2. Live-verify ChatGPT Library Pack registration on Render and confirm duplicate imports dedupe cleanly.
+2. Live-verify ChatGPT Library Pack and OpenStax Nursing Catalog registration on Render and confirm duplicate imports dedupe cleanly.
 3. Add an executive PDF/slide Pilot Evidence Report generated from the same evidence export payload.
 4. Add faculty rubric review as the first premium workflow upgrade.
 5. Add learner account dashboard for assigned lessons.

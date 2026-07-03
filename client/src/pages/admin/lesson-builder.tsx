@@ -823,6 +823,11 @@ export default function LessonBuilder() {
     notes: "Visible signed-in Chrome library inventory. Register as reference-only until each file is exported, reviewed, and approved.",
     itemsText: defaultChatgptLibraryItemsText,
   });
+  const [openStaxForm, setOpenStaxForm] = useState({
+    title: "OpenStax Nursing Catalog",
+    subjectUrl: "https://openstax.org/subjects/nursing",
+    notes: "Register catalog/book metadata only. Do not ingest OpenStax book text/PDFs into RAG or AI generation without OpenStax permission.",
+  });
   const [documentSourceForm, setDocumentSourceForm] = useState({
     documentId: "",
     sourceType: "nursing_content_source",
@@ -1238,6 +1243,35 @@ export default function LessonBuilder() {
       toast({
         title: data.importJob?.status === "duplicate" ? "ChatGPT pack already registered" : "ChatGPT pack registered",
         description: `${data.sources?.length || 0} source candidates and ${data.files?.length || 0} visible file records are ${data.importJob?.status || "registered"}.`,
+      });
+    },
+  });
+
+  const importOpenStaxMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest("POST", "/api/admin/lesson-builder/openstax/import", {
+        title: openStaxForm.title,
+        subjectUrl: openStaxForm.subjectUrl,
+        notes: openStaxForm.notes,
+        approvalStatus: "pending",
+      }, {
+        timeout: 120000,
+        retries: 0,
+      });
+      return response.json();
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/sources"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/health"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/release-readiness"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/pilot-launch/summary"] });
+      setLastArchiveImportId(data.importJob?.id || "");
+      if (Array.isArray(data.sources) && data.sources[0]?.id) {
+        setSelectedSourceDetailId(data.sources[0].id);
+      }
+      toast({
+        title: data.importJob?.status === "duplicate" ? "OpenStax catalog already registered" : "OpenStax catalog registered",
+        description: `${data.sources?.length || 0} catalog/book records are ${data.importJob?.status || "registered"} as link-only references.`,
       });
     },
   });
@@ -2280,6 +2314,7 @@ export default function LessonBuilder() {
                               <Checkbox
                                 checked={selectedSourceIds.includes(source.id)}
                                 onCheckedChange={() => toggleSource(source.id)}
+                                disabled={Boolean(source.metadata?.blockedForGeneration || source.metadata?.noLlmIngestionWithoutPermission)}
                                 aria-label={`Select ${source.title}`}
                               />
                             </td>
@@ -2297,6 +2332,10 @@ export default function LessonBuilder() {
                                 {source.sourceKind === "chatgpt_library_reference_pack" && <Badge variant="outline">ChatGPT library pack</Badge>}
                                 {source.metadata?.origin === "chatgpt_library" && <Badge variant="outline">ChatGPT origin</Badge>}
                                 {source.metadata?.requiresExport && <Badge variant="outline">requires export review</Badge>}
+                                {source.sourceKind === "openstax_nursing_catalog" && <Badge variant="outline">OpenStax catalog</Badge>}
+                                {source.sourceKind === "openstax_book_reference" && <Badge variant="outline">OpenStax book link</Badge>}
+                                {source.metadata?.origin === "openstax" && <Badge variant="outline">OpenStax origin</Badge>}
+                                {source.metadata?.noLlmIngestionWithoutPermission && <Badge variant="outline">no AI ingest without permission</Badge>}
                                 {source.metadata?.referenceOnly && <Badge variant="outline">reference-only</Badge>}
                                 {source.sourceKind === "sites_project" && <Badge variant="outline">Sites audit pattern</Badge>}
                                 {source.metadata?.premiumWorkflowPattern && <Badge variant="outline">premium review pattern</Badge>}
@@ -2593,6 +2632,54 @@ export default function LessonBuilder() {
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-base">
+                      <Layers3 className="h-4 w-4" />
+                      Register OpenStax Nursing Catalog
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="openstax-title">Catalog title</Label>
+                      <Input
+                        id="openstax-title"
+                        value={openStaxForm.title}
+                        onChange={(event) => setOpenStaxForm({ ...openStaxForm, title: event.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="openstax-url">OpenStax subject URL</Label>
+                      <Textarea
+                        id="openstax-url"
+                        value={openStaxForm.subjectUrl}
+                        onChange={(event) => setOpenStaxForm({ ...openStaxForm, subjectUrl: event.target.value })}
+                        rows={2}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="openstax-notes">Permission note</Label>
+                      <Textarea
+                        id="openstax-notes"
+                        value={openStaxForm.notes}
+                        onChange={(event) => setOpenStaxForm({ ...openStaxForm, notes: event.target.value })}
+                        rows={3}
+                      />
+                    </div>
+                    <div className="rounded-md border bg-slate-50 p-3 text-xs text-slate-600">
+                      Registers 8 OpenStax nursing books as link-only metadata. These records are blocked from AI generation until OpenStax ingestion permission is confirmed.
+                    </div>
+                    <Button
+                      className="w-full"
+                      disabled={!openStaxForm.title || !openStaxForm.subjectUrl || importOpenStaxMutation.isPending}
+                      onClick={() => importOpenStaxMutation.mutate()}
+                    >
+                      <Layers3 className="mr-2 h-4 w-4" />
+                      Register OpenStax Catalog Links
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-base">
                       <Archive className="h-4 w-4" />
                       Import Source Archive
                     </CardTitle>
@@ -2758,6 +2845,8 @@ export default function LessonBuilder() {
                           <SelectItem value="drive_package_hub">Drive package hub</SelectItem>
                           <SelectItem value="drive_chapter_source_candidate">Drive chapter candidate</SelectItem>
                           <SelectItem value="chatgpt_library_reference_pack">ChatGPT library pack</SelectItem>
+                          <SelectItem value="openstax_nursing_catalog">OpenStax nursing catalog</SelectItem>
+                          <SelectItem value="openstax_book_reference">OpenStax book reference</SelectItem>
                           <SelectItem value="sites_project">Sites audit dashboard</SelectItem>
                           <SelectItem value="document">Knowledge document</SelectItem>
                           <SelectItem value="taxonomy">Taxonomy</SelectItem>

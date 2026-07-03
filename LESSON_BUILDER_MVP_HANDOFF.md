@@ -22,6 +22,7 @@ The DB-backed Lesson Builder path is functional locally and is the live Render p
 - Pearson Course Audit and Pearson Concept Audit Sites dashboards are registered as related audit-pattern references for coverage review, reviewer state, premium faculty review workflow, and program-director evidence reporting.
 - OpenAI workspace assets are audited in `OPENAI_WORKSPACE_ASSET_AUDIT.md`: the Builder, Architecture, Supervisor, Planner, SQL, and Knowledge Search agents are useful production operators, but no inspected agent currently has a live API channel.
 - ChatGPT library and project surfaces are audited in `CHATGPT_LIBRARY_ASSET_AUDIT.md`: signed-in Chrome exposes recent files and project anchors, while the in-app Browser remains signed out. Source Studio now includes `Register ChatGPT Library Pack` and `/api/admin/lesson-builder/chatgpt-library/import` for pending/reference-only visible inventory registration.
+- OpenStax Nursing is audited in `OPENSTAX_NURSING_SOURCE_AUDIT.md`: Source Studio now includes `Register OpenStax Nursing Catalog` and `/api/admin/lesson-builder/openstax/import` for link-only catalog/book metadata. OpenStax records are blocked from AI/RAG generation until OpenStax ingestion permission is documented.
 
 The current local runtime is Neon-backed and usable for pilot validation. Direct server-side OpenAI Chat Completions is a valid live drafting path for the pilot. Workspace Agent endpoint support remains optional until a live API channel can be created and published.
 
@@ -146,6 +147,7 @@ Use a direct Neon connection string only for migration/admin commands, not app r
 - For large PDF textbooks or chapter sets, run Data Chunker Pro first and register the generated RAG-ready chunk files/folders as the source pack.
 - Import the MNN Drive hub metadata and register chapter folders as source candidates before approving any MNN content for generation.
 - Register ChatGPT library reference packs for visible files/prompts when useful; they remain pending/reference-only until each file is exported/downloaded, reviewed, and approved.
+- Register OpenStax Nursing as link-only catalog metadata for curriculum coverage planning; do not ingest or chunk OpenStax book/PDF text for AI generation without documented permission.
 - Normalize the official pilot source and confirm table/crosswalk/taxonomy hints are visible.
 - Generate, edit, rebuild, QA, validate, publish, and open learner lesson.
 - Attach one weak topic or ATI category to the package through Assessment Bridge.

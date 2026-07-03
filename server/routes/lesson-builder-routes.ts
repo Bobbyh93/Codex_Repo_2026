@@ -129,6 +129,13 @@ const chatgptLibraryReferencePackImportSchema = z.object({
   items: z.array(chatgptLibraryItemSchema).min(1).max(80),
 });
 
+const openStaxNursingCatalogImportSchema = z.object({
+  title: z.string().trim().min(2).max(180).default("OpenStax Nursing Catalog"),
+  subjectUrl: z.string().trim().max(500).default("https://openstax.org/subjects/nursing"),
+  approvalStatus: z.enum(["pending", "approved", "rejected"]).default("pending"),
+  notes: z.string().trim().max(2000).optional().default("Register catalog/book metadata only. Do not ingest OpenStax book text/PDFs into RAG or AI generation without OpenStax permission."),
+});
+
 const attachDocumentSourceSchema = z.object({
   documentId: z.string().min(1),
   title: z.string().optional(),
@@ -782,6 +789,65 @@ const mnnSupportingFiles = [
   ["validation_overview.md", "document", "validation_overview"],
   ["chapter_validation", "spreadsheet", "chapter_validation"],
   ["batch_manifest.json", "json", "batch_manifest"],
+] as const;
+
+const openStaxNursingBooks = [
+  {
+    title: "Clinical Nursing Skills",
+    slug: "clinical-nursing-skills",
+    category: "Fundamentals and Skills",
+    onlineUrl: "https://openstax.org/books/clinical-nursing-skills/pages/1-introduction",
+    pdfUrl: "https://assets.openstax.org/oscms-prodcms/media/documents/Clinical-Nursing-Skills-WEB.pdf",
+  },
+  {
+    title: "Fundamentals of Nursing",
+    slug: "fundamentals-nursing",
+    category: "Fundamentals and Skills",
+    onlineUrl: "https://openstax.org/books/fundamentals-nursing/pages/1-introduction",
+    pdfUrl: "https://assets.openstax.org/oscms-prodcms/media/documents/Fundamentals_of_Nursing_-_WEB.pdf",
+  },
+  {
+    title: "Maternal-Newborn Nursing",
+    slug: "maternal-newborn-nursing",
+    category: "Maternal-Newborn Nursing",
+    onlineUrl: "https://openstax.org/books/maternal-newborn-nursing/pages/1-introduction",
+    pdfUrl: "https://assets.openstax.org/oscms-prodcms/media/documents/Maternal-Newborn_Nursing-WEB.pdf",
+  },
+  {
+    title: "Medical-Surgical Nursing",
+    slug: "medical-surgical-nursing",
+    category: "Medical-Surgical Nursing",
+    onlineUrl: "https://openstax.org/books/medical-surgical-nursing/pages/1-introduction",
+    pdfUrl: "https://assets.openstax.org/oscms-prodcms/media/documents/Medical-Surgical_Nursing-WEB.pdf",
+  },
+  {
+    title: "Nutrition for Nurses",
+    slug: "nutrition",
+    category: "Nutrition and Pharmacology",
+    onlineUrl: "https://openstax.org/books/nutrition/pages/1-introduction",
+    pdfUrl: "https://assets.openstax.org/oscms-prodcms/media/documents/Nutrition_for_Nurses-WEB.pdf",
+  },
+  {
+    title: "Pharmacology for Nurses",
+    slug: "pharmacology",
+    category: "Nutrition and Pharmacology",
+    onlineUrl: "https://openstax.org/books/pharmacology/pages/1-introduction",
+    pdfUrl: "https://assets.openstax.org/oscms-prodcms/media/documents/Pharmacology-WEB.pdf",
+  },
+  {
+    title: "Population Health for Nurses",
+    slug: "population-health",
+    category: "Population and Community Health",
+    onlineUrl: "https://openstax.org/books/population-health/pages/1-introduction",
+    pdfUrl: "https://assets.openstax.org/oscms-prodcms/media/documents/Population_Health_for_Nurses_-_WEB.pdf",
+  },
+  {
+    title: "Psychiatric-Mental Health Nursing",
+    slug: "psychiatric-mental-health",
+    category: "Psychiatric-Mental Health Nursing",
+    onlineUrl: "https://openstax.org/books/psychiatric-mental-health/pages/1-introduction",
+    pdfUrl: "https://assets.openstax.org/oscms-prodcms/media/documents/Psychiatric-Mental_Health_Nursing-WEB.pdf",
+  },
 ] as const;
 
 let tablesReady = false;
@@ -1474,6 +1540,187 @@ async function importChatgptLibraryReferencePack(data: z.infer<typeof chatgptLib
     const [failed] = await db.update(sourceArchiveImports).set({
       status: "failed",
       errorMessage: error instanceof Error ? error.message : "Unknown ChatGPT library import failure",
+      updatedAt: new Date(),
+    }).where(eq(sourceArchiveImports.id, importJob.id)).returning();
+    return { importJob: failed, files: [], sources: [], duplicateOf: null };
+  }
+}
+
+function buildOpenStaxNursingCatalogSummary(data: z.infer<typeof openStaxNursingCatalogImportSchema>, contentHash: string) {
+  const categoryCounts = openStaxNursingBooks.reduce<Record<string, number>>((acc, book) => {
+    acc[book.category] = (acc[book.category] || 0) + 1;
+    return acc;
+  }, {});
+  return {
+    title: data.title,
+    role: "openstax_nursing_catalog",
+    origin: "openstax",
+    subjectUrl: data.subjectUrl,
+    contentHash,
+    bookCount: openStaxNursingBooks.length,
+    categoryCounts,
+    license: "Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International",
+    aiIngestionPolicy: "no_llm_or_generative_ai_ingestion_without_openstax_permission",
+    sourceTruthPolicy: "link_and_metadata_only_until_permission_and_admin_approval",
+    recommendedUse: [
+      "Use as a public nursing textbook catalog and course coverage planning reference.",
+      "Link learners/admins to OpenStax online book pages when appropriate.",
+      "Do not download, chunk, embed, or send OpenStax book text/PDF content into AI generation without OpenStax permission.",
+      "If permission is granted later, register a separate approved source pack with citation policy and provenance.",
+    ],
+    notes: data.notes,
+    auditedIn: "OPENSTAX_NURSING_SOURCE_AUDIT.md",
+  };
+}
+
+async function importOpenStaxNursingCatalog(data: z.infer<typeof openStaxNursingCatalogImportSchema>, createdBy?: string) {
+  await ensureLessonBuilderTables();
+  const role = "openstax_nursing_catalog";
+  const normalizedSubjectUrl = data.subjectUrl || "https://openstax.org/subjects/nursing";
+  const contentHash = hashText(`${role}:${normalizedSubjectUrl}:${openStaxNursingBooks.map((book) => book.slug).join("|")}`);
+  const summary = buildOpenStaxNursingCatalogSummary({ ...data, subjectUrl: normalizedSubjectUrl }, contentHash);
+
+  const [duplicate] = await db
+    .select()
+    .from(sourceArchiveImports)
+    .where(and(eq(sourceArchiveImports.contentHash, contentHash), eq(sourceArchiveImports.role, role)))
+    .orderBy(desc(sourceArchiveImports.createdAt))
+    .limit(1);
+
+  if (duplicate && duplicate.status !== "failed") {
+    const [duplicateJob] = await db.insert(sourceArchiveImports).values({
+      title: `${duplicate.title} duplicate`,
+      sourceUri: normalizedSubjectUrl,
+      archiveKind: "openstax_catalog",
+      role,
+      status: "duplicate",
+      contentHash,
+      fileCount: duplicate.fileCount,
+      importedSourceIds: duplicate.importedSourceIds || [],
+      summary: {
+        ...(duplicate.summary || {}),
+        duplicateOf: duplicate.id,
+        dedupedAt: new Date().toISOString(),
+      },
+      createdBy,
+    }).returning();
+
+    return { importJob: duplicateJob, files: [], sources: [], duplicateOf: duplicate.id };
+  }
+
+  const [importJob] = await db.insert(sourceArchiveImports).values({
+    title: data.title,
+    sourceUri: normalizedSubjectUrl,
+    archiveKind: "openstax_catalog",
+    role,
+    status: "processing",
+    contentHash,
+    fileCount: openStaxNursingBooks.length,
+    importedSourceIds: [],
+    summary,
+    createdBy,
+  }).returning();
+
+  try {
+    const commonMetadata = {
+      openStaxImportId: importJob.id,
+      origin: "openstax",
+      subjectUrl: normalizedSubjectUrl,
+      referenceOnly: true,
+      sourceTruthPolicy: "not_authoritative_source_truth_for_ai_until_permission",
+      license: "CC BY-NC-SA 4.0",
+      aiIngestionPolicy: "no_llm_or_generative_ai_ingestion_without_openstax_permission",
+      noLlmIngestionWithoutPermission: true,
+      requiresOpenStaxPermissionBeforeRag: true,
+      blockedForGeneration: true,
+      approvalRequiredBeforeGeneration: true,
+      auditedIn: "OPENSTAX_NURSING_SOURCE_AUDIT.md",
+    };
+
+    const sourceRows = [
+      {
+        title: data.title,
+        sourceKind: "openstax_nursing_catalog",
+        sourceType: "public_textbook_catalog",
+        sourceUri: normalizedSubjectUrl,
+        subject: "OpenStax nursing textbook catalog",
+        edition: "OpenStax live nursing catalog",
+        citationPolicy: "link_only_no_llm_ingestion_without_permission",
+        approvalStatus: data.approvalStatus,
+        ingestionStatus: "ready",
+        metadata: {
+          ...commonMetadata,
+          registryRole: "openstax_nursing_catalog",
+          summary,
+        },
+        createdBy,
+      },
+      ...openStaxNursingBooks.map((book) => ({
+        title: book.title,
+        sourceKind: "openstax_book_reference",
+        sourceType: "public_textbook_reference",
+        sourceUri: book.onlineUrl,
+        subject: book.category,
+        edition: "OpenStax live book",
+        citationPolicy: "link_only_no_llm_ingestion_without_permission",
+        approvalStatus: "pending",
+        ingestionStatus: "ready",
+        metadata: {
+          ...commonMetadata,
+          registryRole: "openstax_book_reference",
+          bookTitle: book.title,
+          slug: book.slug,
+          category: book.category,
+          onlineUrl: book.onlineUrl,
+          pdfUrl: book.pdfUrl,
+          candidateSource: true,
+        },
+        createdBy,
+      })),
+    ];
+
+    const createdSources = await db.insert(sourceRegistry).values(sourceRows).returning();
+    const sourceIds = createdSources.map((source) => source.id);
+    const bookSources = createdSources.slice(1);
+    const fileRows = openStaxNursingBooks.map((book, index) => ({
+      importId: importJob.id,
+      sourceId: bookSources[index]?.id || createdSources[0].id,
+      filePath: `OpenStax Nursing/${book.slug}`,
+      fileKind: "openstax_book_link",
+      fileRole: "book_reference",
+      sizeBytes: 0,
+      contentHash: hashText(`${contentHash}:${book.slug}`),
+      extractedText: `${book.title}. OpenStax nursing book metadata only. Online URL: ${book.onlineUrl}. PDF URL retained for admin reference only; do not ingest/chunk/embed without OpenStax permission.`,
+      metadata: {
+        virtualOpenStaxBook: true,
+        origin: "openstax",
+        referenceOnly: true,
+        blockedForGeneration: true,
+        noLlmIngestionWithoutPermission: true,
+        category: book.category,
+        onlineUrl: book.onlineUrl,
+        pdfUrl: book.pdfUrl,
+      },
+    }));
+
+    const createdFiles = await db.insert(sourceArchiveFiles).values(fileRows).returning();
+    const [completed] = await db.update(sourceArchiveImports).set({
+      status: "completed",
+      importedSourceIds: sourceIds,
+      fileCount: createdFiles.length,
+      summary: {
+        ...summary,
+        sourceRegistryIds: sourceIds,
+        completedAt: new Date().toISOString(),
+      },
+      updatedAt: new Date(),
+    }).where(eq(sourceArchiveImports.id, importJob.id)).returning();
+
+    return { importJob: completed, files: createdFiles, sources: createdSources, duplicateOf: null };
+  } catch (error) {
+    const [failed] = await db.update(sourceArchiveImports).set({
+      status: "failed",
+      errorMessage: error instanceof Error ? error.message : "OpenStax nursing catalog import failed",
       updatedAt: new Date(),
     }).where(eq(sourceArchiveImports.id, importJob.id)).returning();
     return { importJob: failed, files: [], sources: [], duplicateOf: null };
@@ -5655,6 +5902,19 @@ export function registerLessonBuilderRoutes(app: Express) {
       }
       console.error("Lesson builder ChatGPT library import error:", error);
       res.status(500).json({ error: "Failed to import ChatGPT library reference pack", details: error instanceof Error ? error.message : undefined });
+    }
+  });
+
+  app.post("/api/admin/lesson-builder/openstax/import", requireAdminSession, async (req: AdminAuthRequest, res: Response) => {
+    try {
+      const data = openStaxNursingCatalogImportSchema.parse(req.body || {});
+      res.json(await importOpenStaxNursingCatalog(data, req.session.adminUser?.userId));
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid OpenStax nursing catalog import", details: error.errors });
+      }
+      console.error("Lesson builder OpenStax catalog import error:", error);
+      res.status(500).json({ error: "Failed to import OpenStax nursing catalog", details: error instanceof Error ? error.message : undefined });
     }
   });
 
