@@ -552,6 +552,65 @@ const defaultMappingRows = [
   { taxonomy: "Bloom", code: "apply", label: "Apply", confidence: 0.9 },
 ];
 
+const fullMvpBuildRails = [
+  {
+    label: "Lesson Builder Core",
+    source: "Current NurseStudy MVP",
+    value: "Generate, edit, QA, publish, assign, complete, review outcomes, and export a Harrity bundle.",
+    status: "active",
+    next: "Keep as the launch spine for every other feature.",
+  },
+  {
+    label: "Assessment Remediation",
+    source: "Replit NurseStudy",
+    value: "Use ATI report parsing, weak-topic study plans, and progress tracking to decide which lesson a learner needs.",
+    status: "needs_assignment_data",
+    next: "Connect parsed ATI weak topics to published lesson assignments.",
+  },
+  {
+    label: "Source/RAG Studio",
+    source: "NursesBrain + Data Chunker Pro",
+    value: "Turn large PDFs, chapters, tables, and crosswalks into chunked, approved, citation-ready source packs.",
+    status: "available",
+    next: "Import Data Chunker Pro indexes as first-class source packs with chunk counts and taxonomy hints.",
+  },
+  {
+    label: "Maternal-Newborn Package Hub",
+    source: "MNN Google Drive folder",
+    value: "Register the 27 chapter folders, Harrity decks, manifests, slide blueprint, QA log, notes pass, and validation reports as a Drive package collection.",
+    status: "available",
+    next: "Import MNN manifests and deck/package metadata first, then promote only approved source records into generation.",
+  },
+  {
+    label: "Agent Production Bench",
+    source: "OpenAI workspace agents",
+    value: "Use Builder, Architecture, Supervisor, Planner, SQL, and Knowledge Search agents as specialized production operators.",
+    status: "agent_missing",
+    next: "Create a published API channel before using a workspace agent as the live runtime.",
+  },
+  {
+    label: "Premium Faculty Review",
+    source: "Pearson audit dashboards",
+    value: "Use reviewer state, coverage checks, and evidence reporting as the premium approval layer.",
+    status: "premium_available",
+    next: "Add rubric scoring, request-change threads, and approval certificates.",
+  },
+  {
+    label: "Deck Grammar Library",
+    source: "Google Drive PPT/Slides",
+    value: "Reuse Harrity deck exemplars and chapter decks as layout, pacing, and learner-facing grammar references.",
+    status: "available",
+    next: "Convert deck patterns into reusable lesson templates without treating them as citation truth.",
+  },
+  {
+    label: "Buyer Evidence Loop",
+    source: "Pilot Evidence Export",
+    value: "Show source traceability, AI/faculty review, completion, feedback, follow-up queue, and export readiness.",
+    status: "export_ready",
+    next: "Add PDF/slide executive report for pilot handoff.",
+  },
+];
+
 const statusTone: Record<string, string> = {
   approved: "bg-emerald-50 text-emerald-700 border-emerald-200",
   ready: "bg-blue-50 text-blue-700 border-blue-200",
@@ -1834,6 +1893,31 @@ export default function LessonBuilder() {
               </div>
             </div>
           ) : null}
+
+          <div className="mt-4 rounded-md border bg-white p-3">
+            <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <div className="text-sm font-semibold text-slate-900">Full MVP build map</div>
+                <div className="text-xs text-slate-500">How the Replit apps, Data Chunker Pro, OpenAI agents, Drive/MNN packages, and Pearson dashboards feed the launch product.</div>
+              </div>
+              <Badge variant="outline">Lesson Builder first</Badge>
+            </div>
+            <div className="mt-3 grid gap-3 lg:grid-cols-2 xl:grid-cols-3">
+              {fullMvpBuildRails.map((rail) => (
+                <div key={rail.label} className="rounded-md border bg-slate-50 p-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <div className="text-sm font-medium text-slate-950">{rail.label}</div>
+                      <div className="mt-1 text-xs text-slate-500">{rail.source}</div>
+                    </div>
+                    <StatusBadge value={rail.status} />
+                  </div>
+                  <div className="mt-3 text-xs leading-5 text-slate-700">{rail.value}</div>
+                  <div className="mt-3 rounded bg-white px-2 py-1 text-xs text-slate-600">{rail.next}</div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
 
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-6">

@@ -7,6 +7,7 @@ The DB-backed Lesson Builder path is functional locally and is the live Render p
 - Admin Knowledge Base upload creates persisted document chunks.
 - Approved sources can generate a Harrity web lesson package.
 - Source detail now includes a NursesBrain-style normalization step for table/crosswalk signals, taxonomy hints, official pilot source status, and weak-topic metadata.
+- Data Chunker Pro on the local workstation is the designated preprocessing path for large textbook and chapter PDFs: use it to create RAG-ready chunk files/folders, then register those outputs into NurseStudy with source provenance, approval state, and citation policy.
 - Packages support edit, rebuild artifacts, QA, contract validation, publish, learner view, and Harrity zip export.
 - Packages can carry an assessment bridge: weak topic, ATI category, NCLEX category, CJM step, and evidence source.
 - Published learner lessons are available at `/lessons/:id`.
@@ -15,7 +16,9 @@ The DB-backed Lesson Builder path is functional locally and is the live Render p
 - Publish, export, faculty review, and learner feedback events are available as release audit history on package detail.
 - The live admin Lesson Builder includes a Pilot Launch Console with readiness ladder, active pilot package, AI review, premium faculty review status, assignment activity, learner link actions, and pilot evidence export.
 - Google Drive nursing PPT/Slides assets are registered as reusable deck/source-pattern references, including the CH18 Harrity learner-facing deck, Harrity skill overview, California CNS lesson deck, and NCC RN2019/NCOC chapter decks.
+- The MNN Google Drive folder is audited in `DRIVE_MNN_ASSET_AUDIT.md`: it contains a maternal-newborn package hub with 27 chapter folders, Harrity decks, manifests, slide blueprint, QA log, notes pass, validation reports, and source/taxonomy JSON files. Treat it as a Drive package collection first, then promote only approved records into source-truth use.
 - Pearson Course Audit and Pearson Concept Audit Sites dashboards are registered as related audit-pattern references for coverage review, reviewer state, premium faculty review workflow, and program-director evidence reporting.
+- OpenAI workspace assets are audited in `OPENAI_WORKSPACE_ASSET_AUDIT.md`: the Builder, Architecture, Supervisor, Planner, SQL, and Knowledge Search agents are useful production operators, but no inspected agent currently has a live API channel.
 
 The current local runtime is Neon-backed and usable for pilot validation. Direct server-side OpenAI Chat Completions is a valid live drafting path for the pilot. Workspace Agent endpoint support remains optional until a live API channel can be created and published.
 
@@ -64,6 +67,7 @@ Verified live on Render:
 - Post-deck-exemplar authenticated live API smoke passed for the same package: JSON evidence export includes `relatedDeckExemplars` with 5 entries, and printable HTML includes the `Related Deck Exemplars` Drive section.
 - Post-link-polish authenticated live API smoke passed for the same package: Markdown evidence reports include `[Open reference]` links and related asset counts, while printable HTML includes clickable `Open reference` links plus audit/deck summary counts.
 - Post-policy authenticated live API smoke passed for the same package: JSON evidence export includes `relatedAssetPolicy.citationUse=not_authoritative_source_truth`, Markdown includes `Related asset policy`, and printable HTML includes the reference-only citation guardrail.
+- Post-export-confirmation live bundle check passed: Render deploy `c1536d6` serves `assets/index-8jbbh_bu.js`, and the client bundle includes audit-pattern count, deck-exemplar count, and related-asset policy confirmation copy.
 - Browser verification reached the updated console after Render wake. A later export-click pass hit Render's cold-start/loading interstitial, so API smoke is the authoritative verification for the export response while the UI code is verified on GitHub `main`.
 
 Use the Pearson Sites projects as workflow models, not as nursing source truth:
@@ -77,6 +81,20 @@ Use the Drive PPT/Slides assets as source/deck exemplars:
 - Harrity Lesson Builder Skill Overview: package contract and pipeline framing.
 - California CNS Harrity Lesson Deck: alternate Harrity deck pattern.
 - NCC RN2019/NCOC chapter decks: nursing chapter structure and course-source pattern.
+
+Use Data Chunker Pro as the heavy-source RAG preparation tool:
+
+- Run large textbook PDFs, manuals, and chapter sets through Data Chunker Pro on the workstation.
+- Preserve the generated chunk folders/files, source metadata, and any exported indexes as an importable RAG source pack.
+- Register the resulting files in NurseStudy as approved source records before lesson generation.
+- Keep Data Chunker Pro output as provenance-bearing source material, not as an automatic publish approval.
+
+Use the MNN Drive package hub as the first Drive package-import target:
+
+- Register the root `MNN` folder as a `drive_package_hub`.
+- Import manifests, slide blueprints, QA logs, validation reports, and deck metadata before importing clinical content.
+- Treat chapter folders as `drive_chapter_source_candidate` records until citation policy and approval are set.
+- Use Harrity decks as lesson grammar and template references unless a reviewer explicitly approves them as source records.
 
 ## Production Environment
 
@@ -100,6 +118,8 @@ Use a direct Neon connection string only for migration/admin commands, not app r
 - Pilot readiness now also reports official source readiness, source normalization, assessment bridge status, active assignment status, learner completion, and live verification completion.
 - Pilot Launch Console is the preferred admin entry point for the internal cohort launch; use the broader Lesson Builder tabs for source/package debugging and audit drill-down.
 - Google Drive decks and Pearson Sites dashboards are related supporting assets. They are registered for provenance and workflow-pattern reuse, but they should not replace approved nursing source documents.
+- MNN Drive assets are the strongest next package-import candidate because they already carry chapter folders, decks, manifests, QA, validation, source JSON, taxonomy JSON, and notes-pass structure.
+- OpenAI workspace agents are related production operators. Use direct OpenAI Chat Completions for live Render generation until a selected Builder Agent API channel is created, published, and stored server-side.
 - The admin Lesson Builder now includes a Pilot Release Readiness panel and `/api/admin/lesson-builder/release-readiness` blocker summary.
 - Replit `NurseStudy` assessment workflows and `NursesBrain` autonomous extraction remain source patterns for future work. The MVP stays Lesson Builder-first until the live pilot loop is verified end to end.
 - Learner dashboard routes are token-gated; published `/lessons/:id` remains the learner-facing share route for published lessons.
@@ -118,6 +138,8 @@ Use a direct Neon connection string only for migration/admin commands, not app r
 - Run frontend build and server bundle.
 - Verify `/admin/lesson-builder` health cards.
 - Upload one approved pilot source and confirm document/source readiness.
+- For large PDF textbooks or chapter sets, run Data Chunker Pro first and register the generated RAG-ready chunk files/folders as the source pack.
+- Import the MNN Drive hub metadata and register chapter folders as source candidates before approving any MNN content for generation.
 - Normalize the official pilot source and confirm table/crosswalk/taxonomy hints are visible.
 - Generate, edit, rebuild, QA, validate, publish, and open learner lesson.
 - Attach one weak topic or ATI category to the package through Assessment Bridge.
@@ -125,6 +147,7 @@ Use a direct Neon connection string only for migration/admin commands, not app r
 - Open the learner lesson, mark complete, submit feedback, and confirm learner signals appear in admin package detail.
 - Export Harrity bundle and verify required files are present.
 - Open the Pilot Launch Console, confirm all readiness steps pass, and export Pilot Evidence for the program-director handoff.
+- Review `OPENAI_WORKSPACE_ASSET_AUDIT.md` before choosing an agent API runtime or importing attached agent resources as source contracts.
 - Run `npm run preflight:live-launch` before host connection or deployment.
 - Run `npm run smoke:lesson-builder` or `node scripts/lesson-builder-release-smoke.mjs` before handoff.
 - Confirm no secrets are present in tracked files or terminal summaries.
