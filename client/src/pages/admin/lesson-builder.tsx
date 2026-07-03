@@ -1717,6 +1717,15 @@ export default function LessonBuilder() {
             </div>
           ) : null}
 
+          {auditPatternSources.length || driveDeckSources.length ? (
+            <div className="mt-4 flex gap-2 rounded-md border border-sky-200 bg-sky-50 p-3 text-xs leading-5 text-sky-950">
+              <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-sky-700" />
+              <div>
+                <span className="font-semibold">Related assets are reference-only.</span> Drive decks and Pearson dashboards support lesson grammar, workflow review, traceability, and reporting; lesson claims must still cite approved source-truth records.
+              </div>
+            </div>
+          ) : null}
+
           {auditPatternSources.length ? (
             <div className="mt-4 rounded-md border bg-slate-50 p-3">
               <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">

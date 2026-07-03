@@ -4307,6 +4307,11 @@ function buildPilotEvidenceReport(
   return {
     generatedAt: new Date().toISOString(),
     reportType: "pilot_evidence",
+    relatedAssetPolicy: {
+      role: "reference_only",
+      citationUse: "not_authoritative_source_truth",
+      note: "Related Drive/Pearson assets support lesson grammar, workflow review, traceability, and reporting. Lesson claims must cite approved source traceability records.",
+    },
     package: {
       id: bundle.package.id,
       title: bundle.package.title,
@@ -4379,6 +4384,7 @@ function renderPilotEvidenceMarkdown(report: ReturnType<typeof buildPilotEvidenc
     `- Faculty review: ${facultyReview?.decision || facultyReview?.status || "Premium / optional"}`,
     `- Related audit patterns: ${report.relatedAuditPatterns.length}`,
     `- Related deck exemplars: ${report.relatedDeckExemplars.length}`,
+    `- Related asset policy: ${report.relatedAssetPolicy.note}`,
     "",
     "## Cohort Outcomes",
     "",
@@ -4524,6 +4530,7 @@ function renderPilotEvidenceHtml(report: ReturnType<typeof buildPilotEvidenceRep
     .metric strong { display: block; font-size: 22px; color: #0f172a; }
     .metric span { display: block; margin-top: 4px; font-size: 12px; color: #475569; text-transform: uppercase; letter-spacing: .05em; }
     .pill { display: inline-block; padding: 4px 10px; border-radius: 999px; background: #ccfbf1; color: #134e4a; font-size: 12px; font-weight: 700; }
+    .notice { border: 1px solid #bae6fd; background: #f0f9ff; color: #0c4a6e; border-radius: 10px; padding: 12px 14px; }
     a { color: #0f766e; font-weight: 700; }
     ul { margin: 0; padding-left: 20px; }
     li { margin: 6px 0; }
@@ -4600,6 +4607,7 @@ function renderPilotEvidenceHtml(report: ReturnType<typeof buildPilotEvidenceRep
 
     <section>
       <h2>Source Traceability</h2>
+      <div class="notice">Related Drive/Pearson assets are reference-only. Lesson claims must cite approved source traceability records.</div>
       <ul>
         ${list(report.sourceTraceability.map((source) => `${source.title} (${source.sourceType}; ${source.approvalStatus}; ${source.ingestionStatus}; ${source.citationPolicy})`), "No sources attached.")}
       </ul>
