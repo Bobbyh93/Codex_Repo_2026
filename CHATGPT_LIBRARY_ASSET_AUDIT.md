@@ -64,6 +64,15 @@ Source Studio now supports ChatGPT library reference packs:
 - Import jobs use role `chatgpt_library_reference_pack` and dedupe repeated inventories by content hash.
 - These records are still not clinical source truth until exported/downloaded and approved.
 
+## Live Render Verification
+
+- Live app: `https://nursestudy-lesson-builder.onrender.com/`
+- Deployed bundle checked: `assets/index-DXG9_Bvg.js`
+- Bundle contains `Register ChatGPT Library Pack` and `/api/admin/lesson-builder/chatgpt-library/import`.
+- Live authenticated import completed with 5 source records and 4 visible file records for the verification payload.
+- Repeat import returned `duplicate` with zero new source records.
+- Source registry shows 5 `chatgpt_library_reference_pack` records.
+
 ## Known Limits
 
 - The library page was inspected visually/DOM-only through signed-in Chrome; no files were downloaded.

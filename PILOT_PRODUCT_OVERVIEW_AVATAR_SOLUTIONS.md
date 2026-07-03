@@ -170,7 +170,7 @@ Post-MVP includes:
 ## Next Achievable Goals
 
 1. Complete one browser click-through verification of the polished Pilot Evidence Export confirmation after Render is awake and Browser control is available.
-2. Live-verify ChatGPT Library Pack and OpenStax Nursing Catalog registration on Render and confirm duplicate imports dedupe cleanly.
+2. Completed: live-verified ChatGPT Library Pack and OpenStax Nursing Catalog registration on Render; duplicate imports dedupe cleanly and OpenStax no-AI-ingestion guardrails are present.
 3. Add an executive PDF/slide Pilot Evidence Report generated from the same evidence export payload.
 4. Add faculty rubric review as the first premium workflow upgrade.
 5. Add learner account dashboard for assigned lessons.

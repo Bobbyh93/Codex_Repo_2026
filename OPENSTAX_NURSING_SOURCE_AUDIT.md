@@ -50,6 +50,16 @@ Source Studio now supports OpenStax Nursing catalog registration:
   - `requiresOpenStaxPermissionBeforeRag: true`
   - `blockedForGeneration: true`
 
+## Live Render Verification
+
+- Live app: `https://nursestudy-lesson-builder.onrender.com/`
+- Deployed bundle checked: `assets/index-DXG9_Bvg.js`
+- Bundle contains `Register OpenStax Nursing Catalog` and `/api/admin/lesson-builder/openstax/import`.
+- Live authenticated import completed with 9 source records: 1 `openstax_nursing_catalog` and 8 `openstax_book_reference`.
+- Import created 8 virtual book-link file records.
+- Repeat import returned `duplicate` with zero new source records.
+- Source registry shows all 9 OpenStax records with `blockedForGeneration` and `noLlmIngestionWithoutPermission` guardrails.
+
 ## MVP Use
 
 Use OpenStax as a public nursing coverage map and trusted link catalog. It can help define what topics the MVP should support next, especially maternal-newborn, medical-surgical, pharmacology, psychiatric-mental health, population health, fundamentals, and skills. It should not replace approved local/Drive source truth for AI-assisted lesson generation until permission is confirmed.
