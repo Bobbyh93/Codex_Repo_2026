@@ -380,12 +380,14 @@ export default function LearnerAssignment() {
             />
             <ProgressStep
               label="Review slides"
-              complete={progress.slideProgress.total > 0 && progress.slideProgress.viewed >= progress.slideProgress.total}
-              detail={`${progress.slideProgress.viewed} of ${progress.slideProgress.total} slide${progress.slideProgress.total === 1 ? "" : "s"} viewed.`}
+              complete={progress.completed || (progress.slideProgress.total > 0 && progress.slideProgress.viewed >= progress.slideProgress.total)}
+              detail={progress.completed && progress.slideProgress.viewed < progress.slideProgress.total
+                ? "Lesson marked complete; historical slide views may be partial."
+                : `${progress.slideProgress.viewed} of ${progress.slideProgress.total} slide${progress.slideProgress.total === 1 ? "" : "s"} viewed.`}
             />
             <ProgressStep
               label="Try practice"
-              complete={progress.practice.total > 0 && progress.practice.attempted >= progress.practice.total}
+              complete={progress.completed || (progress.practice.total > 0 && progress.practice.attempted >= progress.practice.total)}
               detail={`${progress.practice.attempts} attempt${progress.practice.attempts === 1 ? "" : "s"} recorded. ${practiceStatus}.`}
             />
             <ProgressStep

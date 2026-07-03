@@ -3387,16 +3387,16 @@ function buildLearnerAssignmentProgress(bundle: LessonBundle, learner: any, even
     : Math.round(Math.min(0.95, (slideProgress * 0.55) + (practiceProgress * 0.25) + (feedbackProgress * 0.2)) * 100);
 
   let nextAction = "Start lesson";
-  if (openedAt && viewedSlideIds.size < totalSlides) {
+  if (completed && feedbackRating) {
+    nextAction = "Assignment complete";
+  } else if (completed) {
+    nextAction = "Send feedback";
+  } else if (openedAt && viewedSlideIds.size < totalSlides) {
     nextAction = "Continue slides";
   } else if (totalPracticeItems && attemptedPracticeIds.size < totalPracticeItems) {
     nextAction = "Try the practice item";
-  } else if (!completed) {
-    nextAction = "Mark lesson complete";
-  } else if (!feedbackRating) {
-    nextAction = "Send feedback";
   } else {
-    nextAction = "Assignment complete";
+    nextAction = "Mark lesson complete";
   }
 
   return {

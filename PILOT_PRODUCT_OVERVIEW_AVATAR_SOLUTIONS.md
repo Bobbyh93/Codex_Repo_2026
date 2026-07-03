@@ -23,7 +23,7 @@ The current MVP is not the full ATI remediation engine or the full NursesBrain a
 - Direct server-side OpenAI Chat Completions for live agent-assisted generation.
 - Premium faculty review workspace with scored rubric and printable review certificate/report, kept optional for MVP launch.
 - Learner lesson route for published packages.
-- Assignment link flow without requiring student accounts.
+- Live-verified assignment dashboard flow without requiring student accounts.
 - Learner events for open, practice, completion, and feedback.
 - Pilot Outcomes for completion, feedback, practice results, and follow-up needs.
 - Harrity export, Pilot Evidence JSON export, director-ready Pilot Evidence Brief Markdown export, printable executive report, and slide-deck outline export.
@@ -176,5 +176,5 @@ Post-MVP includes:
 2. Completed: live-verified ChatGPT Library Pack and OpenStax Nursing Catalog registration on Render; duplicate imports dedupe cleanly and OpenStax no-AI-ingestion guardrails are present.
 3. Completed and live-verified: executive print/PDF-ready Pilot Evidence Report and slide-outline export are generated from the same evidence export payload.
 4. Completed and live-verified: faculty rubric review and printable certificate/report are now the first premium workflow upgrade.
-5. Completed locally: add a token-gated learner assignment dashboard for assigned lessons before full learner accounts.
+5. Completed and live-verified: add a token-gated learner assignment dashboard for assigned lessons before full learner accounts.
 6. Add manual ATI weak-topic-to-lesson assignment before automating ATI report upload.
