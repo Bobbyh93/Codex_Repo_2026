@@ -76,6 +76,8 @@ Verified live on Render:
 - Post-policy authenticated live API smoke passed for the same package: JSON evidence export includes `relatedAssetPolicy.citationUse=not_authoritative_source_truth`, Markdown includes `Related asset policy`, and printable HTML includes the reference-only citation guardrail.
 - Post-export-confirmation live bundle check passed: Render deploy `c1536d6` serves `assets/index-8jbbh_bu.js`, and the client bundle includes audit-pattern count, deck-exemplar count, and related-asset policy confirmation copy.
 - Local build verification passed for the executive/slide evidence handoff: frontend production build and server bundle both completed after adding `Exec Report` and `Export Slides`.
+- Live Render verification passed for the executive/slide evidence handoff: deployed bundle `assets/index-Drl8JJaZ.js` contains `Exec Report`, `Export Slides`, and `format=executive`.
+- Live authenticated API smoke passed for package `bf472933-fdb6-4e67-b893-491c00c7bcd4`: `?format=executive` returned `200`, `text/html`, filename `therapeutic-communication-live-ai-mvp-release-smoke-executive-pilot-evidence-report.html`, and the executive report title; `?format=slides` returned `200`, `application/json`, filename `therapeutic-communication-live-ai-mvp-release-smoke-pilot-evidence-slides.json`, report type `pilot_evidence_slide_outline`, and 8 slides.
 - Browser verification reached the updated console after Render wake. A later export-click pass hit Render's cold-start/loading interstitial, so API smoke is the authoritative verification for the export response while the UI code is verified on GitHub `main`.
 
 Use the Pearson Sites projects as workflow models, not as nursing source truth:

@@ -171,7 +171,7 @@ Post-MVP includes:
 
 1. Complete one browser click-through verification of the polished Pilot Evidence Export confirmation after Render is awake and Browser control is available.
 2. Completed: live-verified ChatGPT Library Pack and OpenStax Nursing Catalog registration on Render; duplicate imports dedupe cleanly and OpenStax no-AI-ingestion guardrails are present.
-3. Completed locally: executive print/PDF-ready Pilot Evidence Report and slide-outline export are generated from the same evidence export payload. Next step is live Render smoke after deployment.
+3. Completed and live-verified: executive print/PDF-ready Pilot Evidence Report and slide-outline export are generated from the same evidence export payload.
 4. Add faculty rubric review as the first premium workflow upgrade.
 5. Add learner account dashboard for assigned lessons.
 6. Add manual ATI weak-topic-to-lesson assignment before automating ATI report upload.
