@@ -764,6 +764,11 @@ export default function LessonBuilder() {
     archivePath: "C:\\Users\\bobby\\Downloads\\harrity_lesson_builder_pipeline_skill_v2_20260509.zip",
     role: "harrity_pipeline_contract",
   });
+  const [drivePackageForm, setDrivePackageForm] = useState({
+    folderUrl: "https://drive.google.com/drive/folders/18DNf_F1E9rdHjEDHYlqDeHlSKULZgTmb",
+    title: "MNN Maternal-Newborn Package Hub",
+    packageKind: "mnn_package_hub",
+  });
   const [documentSourceForm, setDocumentSourceForm] = useState({
     documentId: "",
     sourceType: "nursing_content_source",
@@ -1117,6 +1122,34 @@ export default function LessonBuilder() {
       toast({
         title: "Pilot archive set checked",
         description: `${data.summary?.completed || 0} completed, ${data.summary?.duplicate || 0} duplicate, ${data.summary?.failed || 0} failed.`,
+      });
+    },
+  });
+
+  const importDrivePackageMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest("POST", "/api/admin/lesson-builder/drive-packages/import", {
+        ...drivePackageForm,
+        approvalStatus: "pending",
+      }, {
+        timeout: 120000,
+        retries: 0,
+      });
+      return response.json();
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/sources"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/health"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/release-readiness"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/pilot-launch/summary"] });
+      setLastArchiveImportId(data.importJob.id);
+      if (Array.isArray(data.sources) && data.sources[0]?.id) {
+        setSelectedSourceDetailId(data.sources[0].id);
+        setSelectedMappingSourceId(data.sources[0].id);
+      }
+      toast({
+        title: data.importJob.status === "duplicate" ? "Drive hub already registered" : "Drive hub imported",
+        description: `${data.sources?.length || 0} source records and ${data.files?.length || 0} manifest entries are ${data.importJob.status}.`,
       });
     },
   });
@@ -2168,6 +2201,12 @@ export default function LessonBuilder() {
                               <div className="mt-1 flex flex-wrap gap-1 text-xs text-slate-500">
                                 {source.documentId && <Badge variant="outline">document chunks: {source.metadata?.chunkCount || "ready"}</Badge>}
                                 {source.sourceKind === "drive_presentation" && <Badge variant="outline">Drive slides/PPT</Badge>}
+                                {source.sourceKind === "drive_package_hub" && <Badge variant="outline">Drive package hub</Badge>}
+                                {source.sourceKind === "drive_supporting_manifest" && <Badge variant="outline">Drive manifest/QA</Badge>}
+                                {source.sourceKind === "drive_presentation_collection" && <Badge variant="outline">Drive deck collection</Badge>}
+                                {source.sourceKind === "drive_chapter_source_candidate" && <Badge variant="outline">chapter candidate</Badge>}
+                                {source.sourceKind === "drive_notes_pass" && <Badge variant="outline">notes pass candidate</Badge>}
+                                {source.metadata?.referenceOnly && <Badge variant="outline">reference-only</Badge>}
                                 {source.sourceKind === "sites_project" && <Badge variant="outline">Sites audit pattern</Badge>}
                                 {source.metadata?.premiumWorkflowPattern && <Badge variant="outline">premium review pattern</Badge>}
                                 {source.metadata?.archiveRole && <Badge variant="outline">{String(source.metadata.archiveRole).replace(/_/g, " ")}</Badge>}
@@ -2337,6 +2376,59 @@ export default function LessonBuilder() {
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-base">
+                      <Layers3 className="h-4 w-4" />
+                      Import Drive Package Hub
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="drive-package-title">Package title</Label>
+                      <Input
+                        id="drive-package-title"
+                        value={drivePackageForm.title}
+                        onChange={(event) => setDrivePackageForm({ ...drivePackageForm, title: event.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="drive-package-url">Drive folder URL</Label>
+                      <Textarea
+                        id="drive-package-url"
+                        value={drivePackageForm.folderUrl}
+                        onChange={(event) => setDrivePackageForm({ ...drivePackageForm, folderUrl: event.target.value })}
+                        rows={2}
+                      />
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setDrivePackageForm({
+                          folderUrl: "https://drive.google.com/drive/folders/18DNf_F1E9rdHjEDHYlqDeHlSKULZgTmb",
+                          title: "MNN Maternal-Newborn Package Hub",
+                          packageKind: "mnn_package_hub",
+                        })}
+                      >
+                        MNN hub preset
+                      </Button>
+                    </div>
+                    <div className="rounded-md border bg-slate-50 p-3 text-xs text-slate-600">
+                      Imports create reference-only package records, manifest rows, and chapter source candidates. Admin approval is still required before any Drive content becomes lesson source truth.
+                    </div>
+                    <Button
+                      className="w-full"
+                      disabled={!drivePackageForm.folderUrl || importDrivePackageMutation.isPending}
+                      onClick={() => importDrivePackageMutation.mutate()}
+                    >
+                      <Layers3 className="mr-2 h-4 w-4" />
+                      Import Drive Package Metadata
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-base">
                       <Archive className="h-4 w-4" />
                       Import Source Archive
                     </CardTitle>
@@ -2499,6 +2591,8 @@ export default function LessonBuilder() {
                           <SelectItem value="local_file">Local file</SelectItem>
                           <SelectItem value="drive_sheet">Drive sheet</SelectItem>
                           <SelectItem value="drive_presentation">Drive slides/PPT</SelectItem>
+                          <SelectItem value="drive_package_hub">Drive package hub</SelectItem>
+                          <SelectItem value="drive_chapter_source_candidate">Drive chapter candidate</SelectItem>
                           <SelectItem value="sites_project">Sites audit dashboard</SelectItem>
                           <SelectItem value="document">Knowledge document</SelectItem>
                           <SelectItem value="taxonomy">Taxonomy</SelectItem>
@@ -2515,6 +2609,8 @@ export default function LessonBuilder() {
                           <SelectItem value="blueprint">Blueprint</SelectItem>
                           <SelectItem value="crosswalk">Crosswalk</SelectItem>
                           <SelectItem value="golden_lesson_example">Golden lesson example</SelectItem>
+                          <SelectItem value="drive_package_collection">Drive package collection</SelectItem>
+                          <SelectItem value="maternal_newborn_chapter_candidate">MNN chapter candidate</SelectItem>
                           <SelectItem value="course_concept_audit_workflow_pattern">Course audit workflow pattern</SelectItem>
                           <SelectItem value="concept_course_audit_pattern">Concept audit pattern</SelectItem>
                           <SelectItem value="reference">Reference</SelectItem>

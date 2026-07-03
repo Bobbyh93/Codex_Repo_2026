@@ -17,6 +17,7 @@ The DB-backed Lesson Builder path is functional locally and is the live Render p
 - The live admin Lesson Builder includes a Pilot Launch Console with readiness ladder, active pilot package, AI review, premium faculty review status, assignment activity, learner link actions, and pilot evidence export.
 - Google Drive nursing PPT/Slides assets are registered as reusable deck/source-pattern references, including the CH18 Harrity learner-facing deck, Harrity skill overview, California CNS lesson deck, and NCC RN2019/NCOC chapter decks.
 - The MNN Google Drive folder is audited in `DRIVE_MNN_ASSET_AUDIT.md`: it contains a maternal-newborn package hub with 27 chapter folders, Harrity decks, manifests, slide blueprint, QA log, notes pass, validation reports, and source/taxonomy JSON files. Treat it as a Drive package collection first, then promote only approved records into source-truth use.
+- Source Studio now has a Drive Package Hub import action and `/api/admin/lesson-builder/drive-packages/import`. The first supported preset imports the MNN folder as reference-only metadata, a package-hub source, supporting manifest/QA records, deck collection records, notes-pass candidate, and 27 chapter source candidates.
 - Pearson Course Audit and Pearson Concept Audit Sites dashboards are registered as related audit-pattern references for coverage review, reviewer state, premium faculty review workflow, and program-director evidence reporting.
 - OpenAI workspace assets are audited in `OPENAI_WORKSPACE_ASSET_AUDIT.md`: the Builder, Architecture, Supervisor, Planner, SQL, and Knowledge Search agents are useful production operators, but no inspected agent currently has a live API channel.
 
@@ -95,6 +96,7 @@ Use the MNN Drive package hub as the first Drive package-import target:
 - Import manifests, slide blueprints, QA logs, validation reports, and deck metadata before importing clinical content.
 - Treat chapter folders as `drive_chapter_source_candidate` records until citation policy and approval are set.
 - Use Harrity decks as lesson grammar and template references unless a reviewer explicitly approves them as source records.
+- Use the Source Studio `Import Drive Package Hub` panel for the MNN preset. It creates pending/reference-only records by design.
 
 ## Production Environment
 
@@ -120,6 +122,7 @@ Use a direct Neon connection string only for migration/admin commands, not app r
 - Google Drive decks and Pearson Sites dashboards are related supporting assets. They are registered for provenance and workflow-pattern reuse, but they should not replace approved nursing source documents.
 - MNN Drive assets are the strongest next package-import candidate because they already carry chapter folders, decks, manifests, QA, validation, source JSON, taxonomy JSON, and notes-pass structure.
 - OpenAI workspace agents are related production operators. Use direct OpenAI Chat Completions for live Render generation until a selected Builder Agent API channel is created, published, and stored server-side.
+- ChatGPT files library (`https://chatgpt.com/library?tab=files`) is the next workspace source to inspect. Treat any useful files as non-authoritative reference packs until reviewed and registered with citation policy.
 - The admin Lesson Builder now includes a Pilot Release Readiness panel and `/api/admin/lesson-builder/release-readiness` blocker summary.
 - Replit `NurseStudy` assessment workflows and `NursesBrain` autonomous extraction remain source patterns for future work. The MVP stays Lesson Builder-first until the live pilot loop is verified end to end.
 - Learner dashboard routes are token-gated; published `/lessons/:id` remains the learner-facing share route for published lessons.
@@ -140,6 +143,7 @@ Use a direct Neon connection string only for migration/admin commands, not app r
 - Upload one approved pilot source and confirm document/source readiness.
 - For large PDF textbooks or chapter sets, run Data Chunker Pro first and register the generated RAG-ready chunk files/folders as the source pack.
 - Import the MNN Drive hub metadata and register chapter folders as source candidates before approving any MNN content for generation.
+- Inspect ChatGPT files library and import useful files/prompts as reference packs, not automatic nursing source truth.
 - Normalize the official pilot source and confirm table/crosswalk/taxonomy hints are visible.
 - Generate, edit, rebuild, QA, validate, publish, and open learner lesson.
 - Attach one weak topic or ATI category to the package through Assessment Bridge.

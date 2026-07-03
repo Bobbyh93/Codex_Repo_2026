@@ -100,6 +100,13 @@ const pilotArchiveSetImportSchema = z.object({
   archives: z.array(sourceArchiveImportSchema).optional(),
 });
 
+const drivePackageImportSchema = z.object({
+  folderUrl: z.string().min(12),
+  title: z.string().trim().min(2).max(180).optional(),
+  packageKind: z.enum(["mnn_package_hub", "generic_drive_package"]).default("mnn_package_hub"),
+  approvalStatus: z.enum(["pending", "approved", "rejected"]).default("pending"),
+});
+
 const attachDocumentSourceSchema = z.object({
   documentId: z.string().min(1),
   title: z.string().optional(),
@@ -712,6 +719,49 @@ const defaultPilotArchiveSet: Array<z.infer<typeof sourceArchiveImportSchema>> =
   },
 ];
 
+const mnnDriveFolderId = "18DNf_F1E9rdHjEDHYlqDeHlSKULZgTmb";
+const mnnChapterCandidates = [
+  ["ch01", "Contraception"],
+  ["ch02", "Infertility"],
+  ["ch03", "Expected Physiological Changes During Pregnancy"],
+  ["ch04", "Prenatal Care"],
+  ["ch05", "Nutrition During Pregnancy"],
+  ["ch06", "Assessment of Fetal Well-Being"],
+  ["ch07", "Bleeding During Pregnancy"],
+  ["ch08", "Infections"],
+  ["ch09", "Medical Conditions"],
+  ["ch10", "Early Onset of Labor"],
+  ["ch11", "Labor and Delivery Processes"],
+  ["ch12", "Pain Management"],
+  ["ch13", "Fetal Assessment During Labor"],
+  ["ch14", "Nursing Care During Stages of Labor"],
+  ["ch15", "Therapeutic Procedures to Assist with Labor and Delivery"],
+  ["ch16", "Complications Related to the Labor Process"],
+  ["ch17", "Postpartum Physiological Adaptations"],
+  ["ch18", "Baby-Friendly Care"],
+  ["ch19", "Client Education and Discharge Teaching"],
+  ["ch20", "Postpartum Disorders"],
+  ["ch21", "Postpartum Infections"],
+  ["ch22", "Postpartum Depression"],
+  ["ch23", "Newborn Assessment"],
+  ["ch24", "Nursing Care of Newborns"],
+  ["ch25", "Newborn Nutrition"],
+  ["ch26", "Nursing Care and Discharge Teaching"],
+  ["ch27", "Assessment and Management of Newborn Complications"],
+] as const;
+
+const mnnSupportingFiles = [
+  ["20260503_MN_master_manifest", "manifest", "master_manifest"],
+  ["20260503_MN_master_manifest.json", "json", "master_manifest_json"],
+  ["20260503_MN_slide_blueprint_master", "spreadsheet", "slide_blueprint"],
+  ["20260503_MN_QA_log", "spreadsheet", "qa_log"],
+  ["20260503_MN_production_plan.md", "document", "production_plan"],
+  ["20260503_MN_visual_asset_register", "spreadsheet", "visual_asset_register"],
+  ["validation_overview.md", "document", "validation_overview"],
+  ["chapter_validation", "spreadsheet", "chapter_validation"],
+  ["batch_manifest.json", "json", "batch_manifest"],
+] as const;
+
 let tablesReady = false;
 
 async function ensureLessonBuilderTables() {
@@ -1135,6 +1185,327 @@ function summarizeArchiveEntries(archivePath: string, entryNames: string[], role
     containsDataChunkerExport: lowerEntries.some((entry) => entry.includes("chunk") && (entry.endsWith(".json") || entry.endsWith(".csv"))),
     importantFiles: importantFiles.slice(0, 30),
   };
+}
+
+function parseDriveFolderId(folderUrl: string) {
+  const foldersMatch = folderUrl.match(/\/folders\/([a-zA-Z0-9_-]+)/);
+  if (foldersMatch?.[1]) return foldersMatch[1];
+  const queryMatch = folderUrl.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+  if (queryMatch?.[1]) return queryMatch[1];
+  if (/^[a-zA-Z0-9_-]{12,}$/.test(folderUrl.trim())) return folderUrl.trim();
+  return "";
+}
+
+function driveFolderUrl(folderId: string) {
+  return `https://drive.google.com/drive/folders/${folderId}`;
+}
+
+function slugifyDriveLabel(value: string) {
+  return value.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "");
+}
+
+function buildMnnDrivePackageSummary(folderId: string, title: string) {
+  return {
+    title,
+    folderId,
+    folderName: "MNN",
+    role: "drive_package_hub",
+    sourceTruthPolicy: "reference_only_until_admin_approval",
+    contentArea: "Maternal-newborn nursing",
+    observedAssets: {
+      chapterFolderCount: mnnChapterCandidates.length,
+      supportingFileCount: mnnSupportingFiles.length,
+      deckCollectionCount: 2,
+      notesPassPresent: true,
+      validationPresent: true,
+      sourceJsonPresent: true,
+      taxonomyJsonPresent: true,
+    },
+    recommendedUse: [
+      "Register as Drive package metadata first.",
+      "Use Harrity decks as lesson grammar and template references.",
+      "Promote chapter folders to approved source records only after citation policy and ownership review.",
+      "Route large source PDFs through Data Chunker Pro before generation.",
+    ],
+    registryRoles: [
+      "drive_package_hub",
+      "drive_supporting_manifest",
+      "drive_harrity_deck_exemplar",
+      "drive_chapter_source_candidate",
+      "drive_notes_pass_candidate",
+    ],
+  };
+}
+
+async function importDrivePackageHub(data: z.infer<typeof drivePackageImportSchema>, createdBy?: string) {
+  await ensureLessonBuilderTables();
+  const folderId = parseDriveFolderId(data.folderUrl);
+  if (!folderId) throw new Error("Drive folder URL or ID could not be parsed.");
+
+  const normalizedFolderUrl = driveFolderUrl(folderId);
+  const title = data.title || (folderId === mnnDriveFolderId ? "MNN Maternal-Newborn Package Hub" : "Drive Package Hub");
+  const role = folderId === mnnDriveFolderId || data.packageKind === "mnn_package_hub" ? "drive_package_hub" : "generic_drive_package";
+  const summary = folderId === mnnDriveFolderId
+    ? buildMnnDrivePackageSummary(folderId, title)
+    : {
+        title,
+        folderId,
+        role,
+        sourceTruthPolicy: "reference_only_until_admin_approval",
+        observedAssets: {},
+        recommendedUse: ["Register folder metadata, then approve specific source records before generation."],
+      };
+
+  const [duplicate] = await db
+    .select()
+    .from(sourceArchiveImports)
+    .where(and(eq(sourceArchiveImports.sourceUri, normalizedFolderUrl), eq(sourceArchiveImports.role, role)))
+    .orderBy(desc(sourceArchiveImports.createdAt))
+    .limit(1);
+
+  if (duplicate && duplicate.status !== "failed") {
+    const [duplicateJob] = await db.insert(sourceArchiveImports).values({
+      title: `${duplicate.title} duplicate`,
+      sourceUri: normalizedFolderUrl,
+      archiveKind: "drive_folder",
+      role,
+      status: "duplicate",
+      contentHash: hashText(`${role}:${folderId}`),
+      fileCount: duplicate.fileCount,
+      importedSourceIds: duplicate.importedSourceIds || [],
+      summary: {
+        ...(duplicate.summary || {}),
+        duplicateOf: duplicate.id,
+        dedupedAt: new Date().toISOString(),
+      },
+      createdBy,
+    }).returning();
+
+    return { importJob: duplicateJob, files: [], sources: [], duplicateOf: duplicate.id };
+  }
+
+  const [importJob] = await db.insert(sourceArchiveImports).values({
+    title,
+    sourceUri: normalizedFolderUrl,
+    archiveKind: "drive_folder",
+    role,
+    status: "processing",
+    contentHash: hashText(`${role}:${folderId}`),
+    fileCount: folderId === mnnDriveFolderId ? mnnChapterCandidates.length + mnnSupportingFiles.length + 5 : 1,
+    importedSourceIds: [],
+    summary,
+    createdBy,
+  }).returning();
+
+  try {
+    const commonMetadata = {
+      drivePackageImportId: importJob.id,
+      driveFolderId: folderId,
+      packageKind: data.packageKind,
+      referenceOnly: true,
+      sourceTruthPolicy: "not_authoritative_source_truth",
+      approvalRequiredBeforeGeneration: true,
+      auditedIn: "DRIVE_MNN_ASSET_AUDIT.md",
+    };
+
+    const sourceRows = folderId === mnnDriveFolderId ? [
+      {
+        title,
+        sourceKind: "drive_package_hub",
+        sourceType: "drive_package_collection",
+        sourceUri: normalizedFolderUrl,
+        driveFileId: folderId,
+        subject: "Maternal-newborn nursing package hub",
+        edition: "2026-05-03 MNN package",
+        citationPolicy: "reference_only",
+        approvalStatus: data.approvalStatus,
+        ingestionStatus: "ready",
+        metadata: {
+          ...commonMetadata,
+          registryRole: "drive_package_hub",
+          summary,
+        },
+        createdBy,
+      },
+      {
+        title: "MNN Supporting Files And Manifests",
+        sourceKind: "drive_supporting_manifest",
+        sourceType: "production_manifest_qa",
+        sourceUri: `${normalizedFolderUrl}#supporting_files`,
+        subject: "Maternal-newborn manifests, slide blueprint, QA log, production plan, and visual asset register",
+        edition: "2026-05-03 supporting files",
+        citationPolicy: "metadata_only",
+        approvalStatus: "pending",
+        ingestionStatus: "ready",
+        metadata: {
+          ...commonMetadata,
+          registryRole: "drive_supporting_manifest",
+          supportingFiles: mnnSupportingFiles.map(([fileName, fileKind, fileRole]) => ({ fileName, fileKind, fileRole })),
+        },
+        createdBy,
+      },
+      {
+        title: "MNN Harrity Chapter Deck Collection",
+        sourceKind: "drive_presentation_collection",
+        sourceType: "harrity_deck_exemplar_collection",
+        sourceUri: `${normalizedFolderUrl}#harrity_chapter_decks`,
+        subject: "Maternal-newborn Harrity deck grammar and learner-facing chapter deck exemplars",
+        edition: "2026-05-02 chapter decks",
+        citationPolicy: "template_reference_only",
+        approvalStatus: "pending",
+        ingestionStatus: "ready",
+        metadata: {
+          ...commonMetadata,
+          registryRole: "drive_harrity_deck_exemplar",
+          deckCount: mnnChapterCandidates.length,
+          templateUseOnly: true,
+        },
+        createdBy,
+      },
+      {
+        title: "MNN Notes Pass Candidate",
+        sourceKind: "drive_notes_pass",
+        sourceType: "notes_pass_candidate",
+        sourceUri: `${normalizedFolderUrl}#maternal_newborn_notes_pass`,
+        subject: "Maternal-newborn notes pass and guided-notes source-prep candidate",
+        edition: "2026-05-03 notes pass",
+        citationPolicy: "requires_review_before_citation",
+        approvalStatus: "pending",
+        ingestionStatus: "ready",
+        metadata: {
+          ...commonMetadata,
+          registryRole: "drive_notes_pass_candidate",
+          candidateSource: true,
+        },
+        createdBy,
+      },
+      ...mnnChapterCandidates.map(([chapterCode, chapterTitle]) => ({
+        title: `MNN ${chapterCode.toUpperCase()} ${chapterTitle}`,
+        sourceKind: "drive_chapter_source_candidate",
+        sourceType: "maternal_newborn_chapter_candidate",
+        sourceUri: `${normalizedFolderUrl}#chapters/${chapterCode}_${slugifyDriveLabel(chapterTitle)}`,
+        subject: `Maternal-newborn nursing - ${chapterTitle}`,
+        edition: "2026-05-02 chapter package",
+        citationPolicy: "requires_review_before_citation",
+        approvalStatus: "pending",
+        ingestionStatus: "ready",
+        metadata: {
+          ...commonMetadata,
+          registryRole: "drive_chapter_source_candidate",
+          chapterCode,
+          chapterTitle,
+          candidateSource: true,
+          expectedArtifacts: ["README.md", "validation_report", "harrity_deck", "qa_summary.json", "taxonomy.json", "source.json", "deck.json", "outline.json", "script.json"],
+        },
+        createdBy,
+      })),
+    ] : [
+      {
+        title,
+        sourceKind: "drive_package_hub",
+        sourceType: "drive_package_collection",
+        sourceUri: normalizedFolderUrl,
+        driveFileId: folderId,
+        subject: "Drive package hub",
+        edition: "imported Drive folder",
+        citationPolicy: "reference_only",
+        approvalStatus: data.approvalStatus,
+        ingestionStatus: "ready",
+        metadata: {
+          ...commonMetadata,
+          registryRole: "drive_package_hub",
+          summary,
+        },
+        createdBy,
+      },
+    ];
+
+    const createdSources = await db.insert(sourceRegistry).values(sourceRows).returning();
+    const sourceIds = createdSources.map((source) => source.id);
+    const hubSource = createdSources[0];
+    const fileRows = folderId === mnnDriveFolderId
+      ? [
+          ...mnnSupportingFiles.map(([fileName, fileKind, fileRole]) => ({
+            importId: importJob.id,
+            sourceId: hubSource.id,
+            filePath: `MNN/supporting_files/${fileName}`,
+            fileKind,
+            fileRole,
+            sizeBytes: 0,
+            contentHash: hashText(`${folderId}:${fileName}`),
+            extractedText: `Verified Drive metadata for ${fileName}. Reference-only package metadata; not clinical citation truth.`,
+            metadata: { virtualDriveFile: true, sourceTruthPolicy: "not_authoritative_source_truth" },
+          })),
+          ...mnnChapterCandidates.map(([chapterCode, chapterTitle]) => ({
+            importId: importJob.id,
+            sourceId: hubSource.id,
+            filePath: `MNN/chapters/${chapterCode}_${slugifyDriveLabel(chapterTitle)}`,
+            fileKind: "folder",
+            fileRole: "chapter_source_candidate",
+            sizeBytes: 0,
+            contentHash: hashText(`${folderId}:${chapterCode}:${chapterTitle}`),
+            extractedText: `${chapterCode.toUpperCase()} ${chapterTitle}. Chapter package candidate with deck, validation, source JSON, taxonomy JSON, and script/deck artifacts observed in the MNN hub pattern.`,
+            metadata: { virtualDriveFolder: true, chapterCode, chapterTitle, candidateSource: true },
+          })),
+          {
+            importId: importJob.id,
+            sourceId: hubSource.id,
+            filePath: "MNN/maternal_newborn_notes_pass",
+            fileKind: "folder",
+            fileRole: "notes_pass_candidate",
+            sizeBytes: 0,
+            contentHash: hashText(`${folderId}:notes_pass`),
+            extractedText: "Maternal-newborn notes pass folder with narrative plan, validation, and chapter folders. Requires approval before source-truth use.",
+            metadata: { virtualDriveFolder: true, candidateSource: true },
+          },
+          {
+            importId: importJob.id,
+            sourceId: hubSource.id,
+            filePath: "MNN/maternal_newborn_harrity_chapter_decks/decks",
+            fileKind: "google_slides_collection",
+            fileRole: "deck_exemplar_collection",
+            sizeBytes: 0,
+            contentHash: hashText(`${folderId}:harrity_decks`),
+            extractedText: "Maternal-newborn Harrity chapter decks. Use for lesson grammar, pacing, and template reference only unless separately approved.",
+            metadata: { virtualDriveFolder: true, deckCount: mnnChapterCandidates.length, templateUseOnly: true },
+          },
+        ]
+      : [{
+          importId: importJob.id,
+          sourceId: hubSource.id,
+          filePath: `Drive folder ${folderId}`,
+          fileKind: "folder",
+          fileRole: "drive_package_hub",
+          sizeBytes: 0,
+          contentHash: hashText(folderId),
+          extractedText: "Generic Drive package hub metadata. Requires manual inspection before source-truth use.",
+          metadata: { virtualDriveFolder: true },
+        }];
+
+    const createdFiles = await db.insert(sourceArchiveFiles).values(fileRows).returning();
+    const [completed] = await db.update(sourceArchiveImports).set({
+      status: "completed",
+      fileCount: createdFiles.length,
+      importedSourceIds: sourceIds,
+      summary: {
+        ...summary,
+        sourceRegistryIds: sourceIds,
+        sourceCount: sourceIds.length,
+        fileCount: createdFiles.length,
+        completedAt: new Date().toISOString(),
+      },
+      updatedAt: new Date(),
+    }).where(eq(sourceArchiveImports.id, importJob.id)).returning();
+
+    return { importJob: completed, files: createdFiles, sources: createdSources };
+  } catch (error) {
+    const [failed] = await db.update(sourceArchiveImports).set({
+      status: "failed",
+      errorMessage: error instanceof Error ? error.message : "Drive package import failed",
+      updatedAt: new Date(),
+    }).where(eq(sourceArchiveImports.id, importJob.id)).returning();
+    return { importJob: failed, files: [], sources: [] };
+  }
 }
 
 async function importSourceArchive(data: z.infer<typeof sourceArchiveImportSchema>, createdBy?: string) {
@@ -5015,6 +5386,19 @@ export function registerLessonBuilderRoutes(app: Express) {
       }
       console.error("Lesson builder pilot archive set error:", error);
       res.status(500).json({ error: "Failed to import pilot archive set", details: error instanceof Error ? error.message : undefined });
+    }
+  });
+
+  app.post("/api/admin/lesson-builder/drive-packages/import", requireAdminSession, async (req: AdminAuthRequest, res: Response) => {
+    try {
+      const data = drivePackageImportSchema.parse(req.body);
+      res.json(await importDrivePackageHub(data, req.session.adminUser?.userId));
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid Drive package import", details: error.errors });
+      }
+      console.error("Lesson builder Drive package import error:", error);
+      res.status(500).json({ error: "Failed to import Drive package", details: error instanceof Error ? error.message : undefined });
     }
   });
 

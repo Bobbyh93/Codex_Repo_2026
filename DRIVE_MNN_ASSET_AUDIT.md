@@ -53,6 +53,16 @@ Add a Drive package import action to Source Studio:
 - Mark imported records as `reference_only` until an admin approves them.
 - Link approved records to generation with citation policy, chunk count, and package provenance visible.
 
+## Implementation Status
+
+Implemented first pass:
+
+- Admin endpoint: `POST /api/admin/lesson-builder/drive-packages/import`
+- Admin UI: Source Studio `Import Drive Package Hub`
+- MNN preset: `https://drive.google.com/drive/folders/18DNf_F1E9rdHjEDHYlqDeHlSKULZgTmb`
+- Created record types: `drive_package_hub`, `drive_supporting_manifest`, `drive_presentation_collection`, `drive_notes_pass`, and 27 `drive_chapter_source_candidate` records.
+- Safety behavior: imported records are pending/reference-only and require approval before source-truth use.
+
 ## Known Limits
 
 - Drive inspection verified structure and metadata, not clinical accuracy.
