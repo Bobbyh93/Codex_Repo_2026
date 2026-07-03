@@ -11,6 +11,7 @@ The DB-backed Lesson Builder path is functional locally and is the live Render p
 - Packages support edit, rebuild artifacts, QA, contract validation, publish, learner view, and Harrity zip export.
 - Packages can carry an assessment bridge: weak topic, ATI category, NCLEX category, CJM step, and evidence source.
 - Published learner lessons are available at `/lessons/:id`.
+- Assignment links now open a token-gated learner assignment dashboard at `/lesson-assignments/:assignmentId/learner/:learnerId`, with safe progress, next action, lesson preview, completion, feedback, source labels, and a clean handoff into `/lessons/:id`.
 - Faculty reviewers can record package decisions: comment, changes requested, approved for pilot, or approved for release.
 - Premium faculty review now includes a scored 5-criterion rubric for clinical accuracy, source traceability, NCLEX/CJM alignment, learner experience, and assessment quality.
 - Premium faculty review now has a printable faculty review certificate/report at `/api/admin/lesson-builder/packages/:id/faculty-review/certificate`.
@@ -139,6 +140,7 @@ Use a direct Neon connection string only for migration/admin commands, not app r
 - The admin Lesson Builder now includes a Pilot Release Readiness panel and `/api/admin/lesson-builder/release-readiness` blocker summary.
 - Replit `NurseStudy` assessment workflows and `NursesBrain` autonomous extraction remain source patterns for future work. The MVP stays Lesson Builder-first until the live pilot loop is verified end to end.
 - Learner dashboard routes are token-gated; published `/lessons/:id` remains the learner-facing share route for published lessons.
+- Assignment dashboard routes are the preferred learner entry point for cohort pilots because they show assignment status and progress before the deck opens.
 - Password registration accepts current first-name/last-name payloads, derives username from email when needed, and keeps password-strength validation.
 - Professional Study Guide is quarantined as post-MVP by default with a controlled JSON response unless `ENABLE_PROFESSIONAL_STUDY_GUIDE=true`.
 - Unknown `/api/*` routes return JSON 404 responses instead of the frontend HTML shell.
@@ -164,6 +166,7 @@ Use a direct Neon connection string only for migration/admin commands, not app r
 - Record one AI-reviewed `approved_for_pilot` decision for internal launch; add human faculty review only for the premium release workflow.
 - For premium release workflow, complete the faculty rubric, save the faculty decision, and open the faculty review certificate/report for the handoff packet.
 - Open the learner lesson, mark complete, submit feedback, and confirm learner signals appear in admin package detail.
+- Open the learner assignment dashboard from a copied cohort link, confirm progress and next action render, then continue into the learner lesson.
 - Export Harrity bundle and verify required files are present.
 - Open the Pilot Launch Console, confirm all readiness steps pass, and export Pilot Evidence for the program-director handoff.
 - Review `OPENAI_WORKSPACE_ASSET_AUDIT.md` before choosing an agent API runtime or importing attached agent resources as source contracts.

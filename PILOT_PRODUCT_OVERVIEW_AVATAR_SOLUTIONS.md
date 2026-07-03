@@ -75,16 +75,17 @@ Next improvement:
 
 Need: open the lesson, understand what to do, practice, and give feedback without admin clutter.
 
-Current solution: published learner lesson and assignment link.
+Current solution: token-gated learner assignment dashboard plus published learner lesson.
 
 Key value:
 
+- Learner lands on an assignment dashboard with cohort, due date, progress, next action, lesson preview, source labels, completion, and feedback.
 - Learner sees lesson metadata, deck, guided notes, practice item, rationale, citations, and source labels.
 - Completion and feedback are captured without exposing admin QA/source controls.
 
 Next improvement:
 
-- Add learner accounts, assigned lesson dashboard, progress history, and reminder/invite flow.
+- Add learner accounts, durable progress history, and reminder/invite flow.
 
 ### Remediation Coach / Success Faculty
 
@@ -175,5 +176,5 @@ Post-MVP includes:
 2. Completed: live-verified ChatGPT Library Pack and OpenStax Nursing Catalog registration on Render; duplicate imports dedupe cleanly and OpenStax no-AI-ingestion guardrails are present.
 3. Completed and live-verified: executive print/PDF-ready Pilot Evidence Report and slide-outline export are generated from the same evidence export payload.
 4. Completed and live-verified: faculty rubric review and printable certificate/report are now the first premium workflow upgrade.
-5. Add learner account dashboard for assigned lessons.
+5. Completed locally: add a token-gated learner assignment dashboard for assigned lessons before full learner accounts.
 6. Add manual ATI weak-topic-to-lesson assignment before automating ATI report upload.

@@ -3230,8 +3230,12 @@ function createLearnerKey() {
   return randomBytes(12).toString("base64url");
 }
 
-function publicAssignmentPath(packageId: string, assignmentId: string, learnerId: string, learnerKey: string) {
+function publicLessonPath(packageId: string, assignmentId: string, learnerId: string, learnerKey: string) {
   return `/lessons/${packageId}?assignmentId=${encodeURIComponent(assignmentId)}&assignmentLearnerId=${encodeURIComponent(learnerId)}&learnerKey=${encodeURIComponent(learnerKey)}`;
+}
+
+function publicAssignmentPath(packageId: string, assignmentId: string, learnerId: string, learnerKey: string) {
+  return `/lesson-assignments/${encodeURIComponent(assignmentId)}/learner/${encodeURIComponent(learnerId)}?learnerKey=${encodeURIComponent(learnerKey)}`;
 }
 
 async function getPackageAssignments(packageId: string) {
@@ -3349,6 +3353,90 @@ async function updateAssignmentLearnerProgress(
     .update(lessonAssignmentLearners)
     .set(values)
     .where(eq(lessonAssignmentLearners.id, context.learner.id));
+}
+
+function buildLearnerAssignmentProgress(bundle: LessonBundle, learner: any, events: any[]) {
+  const viewedSlideIds = new Set(
+    events
+      .filter((event) => event.eventType === "slide_viewed" && event.slideId)
+      .map((event) => event.slideId)
+  );
+  const viewedPracticeIds = new Set(
+    events
+      .filter((event) => event.eventType === "practice_viewed" && event.itemId)
+      .map((event) => event.itemId)
+  );
+  const practiceAttempts = events.filter((event) => event.eventType === "practice_attempted");
+  const attemptedPracticeIds = new Set(practiceAttempts.filter((event) => event.itemId).map((event) => event.itemId));
+  const latestPracticeAttempt = practiceAttempts[0] || null;
+  const feedbackEvents = events.filter((event) => event.eventType === "feedback_submitted");
+  const latestFeedback = feedbackEvents[0] || null;
+  const openedAt = learner.openedAt || events.find((event) => event.eventType === "lesson_opened")?.createdAt || null;
+  const completedAt = learner.completedAt || events.find((event) => event.eventType === "lesson_completed")?.createdAt || null;
+  const lastActivityAt = learner.lastActivityAt || events[0]?.createdAt || null;
+  const feedbackRating = learner.feedbackRating || latestFeedback?.payload?.rating || null;
+  const feedbackComment = learner.feedbackComment || latestFeedback?.payload?.comment || "";
+  const totalSlides = bundle.slides.length;
+  const totalPracticeItems = bundle.items.length;
+  const slideProgress = totalSlides ? viewedSlideIds.size / totalSlides : 0;
+  const practiceProgress = totalPracticeItems ? attemptedPracticeIds.size / totalPracticeItems : 1;
+  const feedbackProgress = feedbackRating ? 1 : 0;
+  const completed = Boolean(completedAt || learner.status === "completed");
+  const completionPercent = completed
+    ? 100
+    : Math.round(Math.min(0.95, (slideProgress * 0.55) + (practiceProgress * 0.25) + (feedbackProgress * 0.2)) * 100);
+
+  let nextAction = "Start lesson";
+  if (openedAt && viewedSlideIds.size < totalSlides) {
+    nextAction = "Continue slides";
+  } else if (totalPracticeItems && attemptedPracticeIds.size < totalPracticeItems) {
+    nextAction = "Try the practice item";
+  } else if (!completed) {
+    nextAction = "Mark lesson complete";
+  } else if (!feedbackRating) {
+    nextAction = "Send feedback";
+  } else {
+    nextAction = "Assignment complete";
+  }
+
+  return {
+    status: learner.status,
+    completionPercent,
+    opened: Boolean(openedAt),
+    completed,
+    openedAt: outcomeTimestamp(openedAt),
+    completedAt: outcomeTimestamp(completedAt),
+    lastActivityAt: outcomeTimestamp(lastActivityAt),
+    nextAction,
+    slideProgress: {
+      viewed: viewedSlideIds.size,
+      total: totalSlides,
+    },
+    practice: {
+      viewed: viewedPracticeIds.size,
+      attempted: attemptedPracticeIds.size,
+      total: totalPracticeItems,
+      attempts: practiceAttempts.length,
+      correct: practiceAttempts.filter((event) => event.payload?.isCorrect === true).length,
+      latest: latestPracticeAttempt ? {
+        itemId: latestPracticeAttempt.itemId,
+        selectedAnswer: latestPracticeAttempt.payload?.selectedAnswer || null,
+        correctAnswer: latestPracticeAttempt.payload?.correctAnswer || null,
+        isCorrect: latestPracticeAttempt.payload?.isCorrect ?? null,
+        createdAt: outcomeTimestamp(latestPracticeAttempt.createdAt),
+      } : null,
+    },
+    feedback: {
+      submitted: Boolean(feedbackRating),
+      rating: feedbackRating,
+      comment: feedbackComment,
+      submittedAt: outcomeTimestamp(latestFeedback?.createdAt || (feedbackRating ? lastActivityAt : null)),
+    },
+    eventCounts: events.reduce<Record<string, number>>((counts, event) => {
+      counts[event.eventType] = (counts[event.eventType] || 0) + 1;
+      return counts;
+    }, {}),
+  };
 }
 
 function csvValue(value: unknown) {
@@ -5971,6 +6059,18 @@ export function registerLessonBuilderRoutes(app: Express) {
         return res.status(404).json({ error: "Lesson not found" });
       }
 
+      const learnerEvents = await db
+        .select()
+        .from(lessonLearnerEvents)
+        .where(and(
+          eq(lessonLearnerEvents.packageId, assignment.packageId),
+          eq(lessonLearnerEvents.assignmentId, assignment.id),
+          eq(lessonLearnerEvents.assignmentLearnerId, assignmentContext.learner.id)
+        ))
+        .orderBy(desc(lessonLearnerEvents.createdAt))
+        .limit(500);
+      const progress = buildLearnerAssignmentProgress(bundle, assignmentContext.learner, learnerEvents);
+
       res.json({
         assignment: {
           id: assignment.id,
@@ -5987,6 +6087,11 @@ export function registerLessonBuilderRoutes(app: Express) {
           completedAt: assignmentContext.learner.completedAt,
           lastActivityAt: assignmentContext.learner.lastActivityAt,
           feedbackRating: assignmentContext.learner.feedbackRating,
+        },
+        progress,
+        links: {
+          dashboardUrl: publicAssignmentPath(assignment.packageId, assignment.id, assignmentContext.learner.id, learnerKey),
+          lessonUrl: publicLessonPath(assignment.packageId, assignment.id, assignmentContext.learner.id, learnerKey),
         },
         lesson: learnerLessonPayload(bundle, assignmentContext),
       });

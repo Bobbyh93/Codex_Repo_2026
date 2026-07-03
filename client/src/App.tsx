@@ -58,6 +58,7 @@ import CurriculumChapter from "@/pages/curriculum-chapter";
 import CurriculumCatalog from "@/pages/admin/curriculum-catalog";
 import ReferencesPage from "@/pages/references";
 import LessonPackage from "@/pages/lesson-package";
+import LearnerAssignment from "@/pages/learner-assignment";
 
 function AdminProtectedRoute({ component: Component, ...props }: { component: any; [key: string]: any }) {
   const [authState, setAuthState] = useState<"checking" | "authenticated" | "denied">("checking");
@@ -238,6 +239,7 @@ function Router() {
         <Route path="/curriculum/chapter/:chapterId" component={CurriculumChapter} />
 
         <Route path="/lessons/:id" component={LessonPackage} />
+        <Route path="/lesson-assignments/:assignmentId/learner/:learnerId" component={LearnerAssignment} />
         <Route path="/references" component={ReferencesPage} />
         
         <Route component={NotFound} />
