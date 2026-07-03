@@ -4377,6 +4377,8 @@ function renderPilotEvidenceMarkdown(report: ReturnType<typeof buildPilotEvidenc
     `- Export ready: ${report.readiness.exportReady ? "Yes" : "No"}`,
     `- AI review: ${aiReview?.decision || aiReview?.status || "Not recorded"}`,
     `- Faculty review: ${facultyReview?.decision || facultyReview?.status || "Premium / optional"}`,
+    `- Related audit patterns: ${report.relatedAuditPatterns.length}`,
+    `- Related deck exemplars: ${report.relatedDeckExemplars.length}`,
     "",
     "## Cohort Outcomes",
     "",
@@ -4415,8 +4417,8 @@ function renderPilotEvidenceMarkdown(report: ReturnType<typeof buildPilotEvidenc
       report.relatedAuditPatterns.length
         ? report.relatedAuditPatterns.map((pattern) => {
             const uses = pattern.patternUse.length ? ` Use for: ${pattern.patternUse.join(", ")}.` : "";
-            const uri = pattern.sourceUri ? ` ${pattern.sourceUri}` : "";
-            return `- ${pattern.title} (${pattern.role}; ${pattern.premiumWorkflowPattern ? "premium review pattern" : "reference pattern"}).${uses}${uri}`;
+            const link = pattern.sourceUri ? ` [Open reference](${pattern.sourceUri})` : "";
+            return `- ${pattern.title} (${pattern.role}; ${pattern.premiumWorkflowPattern ? "premium review pattern" : "reference pattern"}).${uses}${link}`;
           })
         : ["- No related audit patterns registered."]
     ),
@@ -4432,8 +4434,8 @@ function renderPilotEvidenceMarkdown(report: ReturnType<typeof buildPilotEvidenc
               deck.chapter,
               deck.unit,
             ].filter(Boolean).join("; ");
-            const uri = deck.sourceUri ? ` ${deck.sourceUri}` : "";
-            return `- ${deck.title} (${facts || deck.sourceType}).${deck.outlineSummary ? ` ${deck.outlineSummary}` : ""}${uri}`;
+            const link = deck.sourceUri ? ` [Open reference](${deck.sourceUri})` : "";
+            return `- ${deck.title} (${facts || deck.sourceType}).${deck.outlineSummary ? ` ${deck.outlineSummary}` : ""}${link}`;
           })
         : ["- No related Drive deck exemplars registered."]
     ),
@@ -4492,6 +4494,14 @@ function renderPilotEvidenceHtml(report: ReturnType<typeof buildPilotEvidenceRep
   const feedbackSummary = (report.cohortOutcomes?.feedbackSummary || {}) as Record<string, number>;
   const metric = (label: string, value: string | number) => `<div class="metric"><strong>${escapeHtml(value)}</strong><span>${escapeHtml(label)}</span></div>`;
   const list = (items: string[], empty: string) => (items.length ? items.map((item) => `<li>${escapeHtml(item)}</li>`).join("") : `<li>${escapeHtml(empty)}</li>`);
+  const linkedList = (items: Array<{ label: string; detail: string; url?: string | null }>, empty: string) => (
+    items.length
+      ? items.map((item) => {
+          const link = item.url ? ` <a href="${escapeHtml(item.url)}" target="_blank" rel="noopener noreferrer">Open reference</a>` : "";
+          return `<li><strong>${escapeHtml(item.label)}</strong>${item.detail ? `: ${escapeHtml(item.detail)}` : ""}${link}</li>`;
+        }).join("")
+      : `<li>${escapeHtml(empty)}</li>`
+  );
 
   return `<!doctype html>
 <html lang="en">
@@ -4514,6 +4524,7 @@ function renderPilotEvidenceHtml(report: ReturnType<typeof buildPilotEvidenceRep
     .metric strong { display: block; font-size: 22px; color: #0f172a; }
     .metric span { display: block; margin-top: 4px; font-size: 12px; color: #475569; text-transform: uppercase; letter-spacing: .05em; }
     .pill { display: inline-block; padding: 4px 10px; border-radius: 999px; background: #ccfbf1; color: #134e4a; font-size: 12px; font-weight: 700; }
+    a { color: #0f766e; font-weight: 700; }
     ul { margin: 0; padding-left: 20px; }
     li { margin: 6px 0; }
     .muted { color: #64748b; }
@@ -4538,6 +4549,8 @@ function renderPilotEvidenceHtml(report: ReturnType<typeof buildPilotEvidenceRep
         ${metric("Export ready", report.readiness.exportReady ? "Yes" : "No")}
         ${metric("AI review", aiReview?.decision || aiReview?.status || "Not recorded")}
         ${metric("Faculty review", facultyReview?.decision || facultyReview?.status || "Premium")}
+        ${metric("Audit patterns", report.relatedAuditPatterns.length)}
+        ${metric("Deck exemplars", report.relatedDeckExemplars.length)}
       </div>
     </section>
 
@@ -4595,16 +4608,24 @@ function renderPilotEvidenceHtml(report: ReturnType<typeof buildPilotEvidenceRep
     <section>
       <h2>Related Audit Patterns</h2>
       <ul>
-        ${list(report.relatedAuditPatterns.map((pattern) => `${pattern.title} (${pattern.role}; ${pattern.premiumWorkflowPattern ? "premium review pattern" : "reference pattern"}). ${pattern.patternUse.length ? `Use for: ${pattern.patternUse.join(", ")}.` : ""} ${pattern.sourceUri || ""}`), "No related audit patterns registered.")}
+        ${linkedList(report.relatedAuditPatterns.map((pattern) => ({
+          label: pattern.title,
+          detail: `(${pattern.role}; ${pattern.premiumWorkflowPattern ? "premium review pattern" : "reference pattern"}). ${pattern.patternUse.length ? `Use for: ${pattern.patternUse.join(", ")}.` : ""}`,
+          url: pattern.sourceUri,
+        })), "No related audit patterns registered.")}
       </ul>
     </section>
 
     <section>
       <h2>Related Deck Exemplars</h2>
       <ul>
-        ${list(report.relatedDeckExemplars.map((deck) => {
+        ${linkedList(report.relatedDeckExemplars.map((deck) => {
           const facts = [deck.role, deck.slideCount ? `${deck.slideCount} slides` : "", deck.chapter, deck.unit].filter(Boolean).join("; ");
-          return `${deck.title} (${facts || deck.sourceType}). ${deck.outlineSummary || ""} ${deck.sourceUri || ""}`;
+          return {
+            label: deck.title,
+            detail: `(${facts || deck.sourceType}). ${deck.outlineSummary || ""}`,
+            url: deck.sourceUri,
+          };
         }), "No related Drive deck exemplars registered.")}
       </ul>
     </section>
