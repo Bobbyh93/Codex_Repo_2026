@@ -4754,6 +4754,144 @@ function learnerLessonPayload(bundle: LessonBundle, assignmentContext?: { assign
   };
 }
 
+function uniqueStudentStrings(values: Array<string | null | undefined>) {
+  const seen = new Set<string>();
+  const result: string[] = [];
+  for (const value of values) {
+    const normalized = String(value || "").trim();
+    if (!normalized || seen.has(normalized)) continue;
+    seen.add(normalized);
+    result.push(normalized);
+  }
+  return result;
+}
+
+function studentAssessmentBridge(bundle: LessonBundle) {
+  return bundle.package.manifest?.assessmentBridge
+    || bundle.package.taxonomySnapshot?.assessmentBridge
+    || bundle.package.deckModel?.assessmentBridge
+    || null;
+}
+
+function studentSourceLabels(bundle: LessonBundle) {
+  const sourceTitles = bundle.sources.map((source) => source.title);
+  const citationTitles = bundle.citations.map((citation) => citation.citationLabel);
+  return uniqueStudentStrings([...sourceTitles, ...citationTitles]).slice(0, 8);
+}
+
+function studentSubjectForBundle(bundle: LessonBundle) {
+  const assessmentBridge = studentAssessmentBridge(bundle);
+  return assessmentBridge?.atiCategory
+    || bundle.sources.find((source) => source.subject)?.subject
+    || bundle.package.topic
+    || "Nursing fundamentals";
+}
+
+function studentLessonSummary(bundle: LessonBundle) {
+  const assessmentBridge = studentAssessmentBridge(bundle);
+  const slideTags = bundle.slides.flatMap((slide) => [
+    slide.nclexCategory,
+    slide.cjmStep,
+    slide.nursingProcess,
+    slide.bloomLevel,
+  ]);
+  const itemTags = bundle.items.flatMap((item) => [
+    item.tags?.nclexCategory,
+    item.tags?.cjmStep,
+    item.tags?.nursingProcess,
+    item.tags?.bloomLevel,
+    item.difficulty,
+  ]);
+  const sourceLabels = studentSourceLabels(bundle);
+  const guidedNotesAvailable = bundle.slides.some((slide) => Boolean(String(slide.guidedNotes || "").trim()));
+  const practiceCount = bundle.items.length;
+  const slideCount = bundle.slides.length;
+
+  return {
+    id: bundle.package.id,
+    title: bundle.package.title,
+    topic: bundle.package.topic,
+    audience: bundle.package.audience,
+    learnerUrl: `/lessons/${bundle.package.id}`,
+    publishedAt: bundle.package.publishedAt,
+    subject: studentSubjectForBundle(bundle),
+    weakTopic: assessmentBridge?.weakTopic || bundle.package.topic,
+    atiCategory: assessmentBridge?.atiCategory || null,
+    nclexCategory: assessmentBridge?.nclexCategory || bundle.slides.find((slide) => slide.nclexCategory)?.nclexCategory || null,
+    cjmStep: assessmentBridge?.cjmStep || bundle.slides.find((slide) => slide.cjmStep)?.cjmStep || null,
+    slideCount,
+    practiceCount,
+    citationCount: bundle.citations.length,
+    guidedNotesAvailable,
+    sourceLabels,
+    tags: uniqueStudentStrings([assessmentBridge?.weakTopic, ...slideTags, ...itemTags]).slice(0, 10),
+    estimatedMinutes: Math.max(8, Math.min(45, Math.round(slideCount * 2 + practiceCount * 4))),
+    trustSignals: {
+      sourceBacked: bundle.citations.length > 0,
+      citations: bundle.citations.length,
+      sources: bundle.sources.length,
+      guidedNotes: guidedNotesAvailable,
+      rationales: bundle.items.every((item) => Boolean(String(item.rationale || "").trim())),
+    },
+  };
+}
+
+async function publishedStudentLessonSummaries(limit = 50) {
+  const packageRows = await db
+    .select({ id: lessonPackages.id })
+    .from(lessonPackages)
+    .where(eq(lessonPackages.status, "published"))
+    .orderBy(desc(lessonPackages.publishedAt), desc(lessonPackages.createdAt))
+    .limit(limit);
+
+  const summaries = [];
+  for (const row of packageRows) {
+    const bundle = await findPackageBundle(row.id);
+    if (!bundle || bundle.package.status !== "published") continue;
+    summaries.push(studentLessonSummary(bundle));
+  }
+  return summaries;
+}
+
+function studentTopicTiles(lessons: Array<ReturnType<typeof studentLessonSummary>>) {
+  const groups = new Map<string, { key: string; label: string; count: number; description: string }>();
+  for (const lesson of lessons) {
+    const label = lesson.weakTopic || lesson.nclexCategory || lesson.subject || "Clinical Judgment";
+    const key = label.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "clinical-judgment";
+    const existing = groups.get(key) || {
+      key,
+      label,
+      count: 0,
+      description: `Practice source-backed clinical judgment for ${label}.`,
+    };
+    existing.count += 1;
+    groups.set(key, existing);
+  }
+  return Array.from(groups.values()).slice(0, 8);
+}
+
+function studentHomePayload(lessons: Array<ReturnType<typeof studentLessonSummary>>) {
+  const featuredLesson = lessons[0] || null;
+  return {
+    generatedAt: new Date().toISOString(),
+    featuredLesson,
+    lessons,
+    topicTiles: studentTopicTiles(lessons),
+    metrics: {
+      publishedLessons: lessons.length,
+      practiceItems: lessons.reduce((total, lesson) => total + lesson.practiceCount, 0),
+      citationCount: lessons.reduce((total, lesson) => total + lesson.citationCount, 0),
+      guidedNotesLessons: lessons.filter((lesson) => lesson.guidedNotesAvailable).length,
+    },
+    trustSignals: [
+      "Published lessons only",
+      "Source-backed citations",
+      "NCLEX and Clinical Judgment tags",
+      "Practice rationales included",
+    ],
+  };
+}
+
 async function generateLessonPackageFromData(data: z.infer<typeof generateSchema>, createdBy?: string) {
   let generationRunId: string | undefined;
   try {
@@ -5996,6 +6134,42 @@ function renderFacultyReviewCertificateHtml(bundle: LessonBundle, review: any) {
 }
 
 export function registerLessonBuilderRoutes(app: Express) {
+  app.get("/api/student/home", async (_req: Request, res: Response) => {
+    try {
+      await ensureLessonBuilderTables();
+      const lessons = await publishedStudentLessonSummaries(50);
+      res.json(studentHomePayload(lessons));
+    } catch (error) {
+      console.error("Student home load error:", error);
+      res.status(500).json({ error: "Failed to load student home" });
+    }
+  });
+
+  app.get("/api/student/lessons", async (_req: Request, res: Response) => {
+    try {
+      await ensureLessonBuilderTables();
+      const lessons = await publishedStudentLessonSummaries(75);
+      res.json({ lessons, generatedAt: new Date().toISOString() });
+    } catch (error) {
+      console.error("Student lesson library load error:", error);
+      res.status(500).json({ error: "Failed to load lesson library" });
+    }
+  });
+
+  app.get("/api/student/lessons/:id/summary", async (req: Request, res: Response) => {
+    try {
+      await ensureLessonBuilderTables();
+      const bundle = await findPackageBundle(req.params.id);
+      if (!bundle || bundle.package.status !== "published") {
+        return res.status(404).json({ error: "Lesson not found" });
+      }
+      res.json({ lesson: studentLessonSummary(bundle), generatedAt: new Date().toISOString() });
+    } catch (error) {
+      console.error("Student lesson summary load error:", error);
+      res.status(500).json({ error: "Failed to load lesson summary" });
+    }
+  });
+
   app.get("/api/lessons/:id", async (req: Request, res: Response) => {
     try {
       await ensureLessonBuilderTables();

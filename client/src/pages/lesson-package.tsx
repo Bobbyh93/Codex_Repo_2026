@@ -389,6 +389,10 @@ export default function LessonPackage() {
             <p className="mt-1 text-sm text-slate-600">{lesson.package.topic}</p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
+            <Button variant="outline" size="sm" onClick={() => { window.location.href = "/student"; }}>
+              <ChevronLeft className="mr-1 h-4 w-4" />
+              Library
+            </Button>
             <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-100">
               <CheckCircle2 className="mr-1 h-3.5 w-3.5" />
               Published

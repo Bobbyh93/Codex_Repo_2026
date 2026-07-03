@@ -61,6 +61,7 @@ import ReferencesPage from "@/pages/references";
 import LessonPackage from "@/pages/lesson-package";
 import LearnerAssignment from "@/pages/learner-assignment";
 import PublicLaunch from "@/pages/public-launch";
+import StudentHome from "@/pages/student-home";
 
 function AdminProtectedRoute({ component: Component, ...props }: { component: any; [key: string]: any }) {
   const [authState, setAuthState] = useState<"checking" | "authenticated" | "denied">("checking");
@@ -195,7 +196,10 @@ function Router() {
       }}
     >
       <Switch>
-        <Route path="/" component={PublicLaunch} />
+        <Route path="/" component={StudentHome} />
+        <Route path="/student" component={StudentHome} />
+        <Route path="/pilot-request" component={PublicLaunch} />
+        <Route path="/public-launch" component={PublicLaunch} />
         <Route path="/mvp-action-plan/:reportId" component={ExamRecoveryBlueprint} />
         
         {/* Auth Routes */}

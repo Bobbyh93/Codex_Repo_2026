@@ -2106,6 +2106,215 @@ async function exportZip(detail, profile = "harrity") {
   return zip.generateAsync({ type: "nodebuffer" });
 }
 
+function uniquePreviewStrings(values) {
+  const seen = new Set();
+  const result = [];
+  for (const value of values) {
+    const text = compactText(value || "");
+    if (!text || seen.has(text)) continue;
+    seen.add(text);
+    result.push(text);
+  }
+  return result;
+}
+
+function previewAssessmentBridge(detail) {
+  return detail.package.manifest?.assessmentBridge
+    || detail.package.taxonomySnapshot?.assessmentBridge
+    || detail.package.deckModel?.assessmentBridge
+    || null;
+}
+
+function previewSourceLabels(detail) {
+  return uniquePreviewStrings([
+    ...(detail.sources || []).map((source) => source.title),
+    ...(detail.citations || []).map((citation) => citation.citationLabel),
+  ]).slice(0, 8);
+}
+
+function previewLessonSummary(detail) {
+  const assessmentBridge = previewAssessmentBridge(detail);
+  const slideTags = (detail.slides || []).flatMap((slide) => [
+    slide.nclexCategory,
+    slide.cjmStep,
+    slide.nursingProcess,
+    slide.bloomLevel,
+  ]);
+  const itemTags = (detail.items || []).flatMap((item) => [
+    item.tags?.nclexCategory,
+    item.tags?.cjmStep,
+    item.tags?.nursingProcess,
+    item.tags?.bloomLevel,
+    item.difficulty,
+  ]);
+  const slideCount = detail.slides?.length || 0;
+  const practiceCount = detail.items?.length || 0;
+  const sourceLabels = previewSourceLabels(detail);
+  const guidedNotesAvailable = (detail.slides || []).some((slide) => compactText(slide.guidedNotes || ""));
+
+  return {
+    id: detail.package.id,
+    title: detail.package.title,
+    topic: detail.package.topic,
+    audience: detail.package.audience,
+    learnerUrl: `/lessons/${detail.package.id}`,
+    publishedAt: detail.package.publishedAt,
+    subject: assessmentBridge?.atiCategory || detail.sources?.find((source) => source.subject)?.subject || detail.package.topic || "Nursing fundamentals",
+    weakTopic: assessmentBridge?.weakTopic || detail.package.topic,
+    atiCategory: assessmentBridge?.atiCategory || null,
+    nclexCategory: assessmentBridge?.nclexCategory || detail.slides?.find((slide) => slide.nclexCategory)?.nclexCategory || null,
+    cjmStep: assessmentBridge?.cjmStep || detail.slides?.find((slide) => slide.cjmStep)?.cjmStep || null,
+    slideCount,
+    practiceCount,
+    citationCount: detail.citations?.length || 0,
+    guidedNotesAvailable,
+    sourceLabels,
+    tags: uniquePreviewStrings([assessmentBridge?.weakTopic, ...slideTags, ...itemTags]).slice(0, 10),
+    estimatedMinutes: Math.max(8, Math.min(45, Math.round(slideCount * 2 + practiceCount * 4))),
+    trustSignals: {
+      sourceBacked: (detail.citations?.length || 0) > 0,
+      citations: detail.citations?.length || 0,
+      sources: detail.sources?.length || 0,
+      guidedNotes: guidedNotesAvailable,
+      rationales: (detail.items || []).every((item) => compactText(item.rationale || "")),
+    },
+  };
+}
+
+function previewPublishedLessons() {
+  return Array.from(packageDetails.values())
+    .filter((detail) => detail.package.status === "published")
+    .sort((a, b) => String(b.package.publishedAt || b.package.createdAt || "").localeCompare(String(a.package.publishedAt || a.package.createdAt || "")));
+}
+
+function previewTopicTiles(lessons) {
+  const groups = new Map();
+  for (const lesson of lessons) {
+    const label = lesson.weakTopic || lesson.nclexCategory || lesson.subject || "Clinical Judgment";
+    const key = label.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "clinical-judgment";
+    const group = groups.get(key) || {
+      key,
+      label,
+      count: 0,
+      description: `Practice source-backed clinical judgment for ${label}.`,
+    };
+    group.count += 1;
+    groups.set(key, group);
+  }
+  return Array.from(groups.values()).slice(0, 8);
+}
+
+function previewStudentHomePayload() {
+  const lessons = previewPublishedLessons().map(previewLessonSummary);
+  return {
+    generatedAt: nowIso(),
+    featuredLesson: lessons[0] || null,
+    lessons,
+    topicTiles: previewTopicTiles(lessons),
+    metrics: {
+      publishedLessons: lessons.length,
+      practiceItems: lessons.reduce((total, lesson) => total + lesson.practiceCount, 0),
+      citationCount: lessons.reduce((total, lesson) => total + lesson.citationCount, 0),
+      guidedNotesLessons: lessons.filter((lesson) => lesson.guidedNotesAvailable).length,
+    },
+    trustSignals: [
+      "Published lessons only",
+      "Source-backed citations",
+      "NCLEX and Clinical Judgment tags",
+      "Practice rationales included",
+    ],
+  };
+}
+
+function previewLearnerPayload(detail) {
+  const citationsBySlide = new Map();
+  const citationsByItem = new Map();
+  for (const citation of detail.citations || []) {
+    if (citation.slideId) {
+      const existing = citationsBySlide.get(citation.slideId) || [];
+      existing.push(citation);
+      citationsBySlide.set(citation.slideId, existing);
+    }
+    if (citation.itemId) {
+      const existing = citationsByItem.get(citation.itemId) || [];
+      existing.push(citation);
+      citationsByItem.set(citation.itemId, existing);
+    }
+  }
+  const serializeCitation = (citation) => ({
+    id: citation.id,
+    citationLabel: citation.citationLabel,
+    pageStart: citation.pageStart,
+    pageEnd: citation.pageEnd,
+    excerpt: citation.excerpt,
+  });
+
+  return {
+    package: {
+      id: detail.package.id,
+      title: detail.package.title,
+      topic: detail.package.topic,
+      audience: detail.package.audience,
+      status: detail.package.status,
+      publishedAt: detail.package.publishedAt,
+      assessmentBridge: previewAssessmentBridge(detail),
+      manifestSummary: {
+        packageId: detail.package.manifest?.packageId || detail.package.id,
+        exportProfile: detail.package.manifest?.exportProfile || "harrity",
+        requiredFileCount: Array.isArray(detail.package.manifest?.requiredFiles) ? detail.package.manifest.requiredFiles.length : 11,
+        counts: detail.package.manifest?.counts || {
+          sources: detail.sources?.length || 0,
+          slides: detail.slides?.length || 0,
+          items: detail.items?.length || 0,
+          citations: detail.citations?.length || 0,
+        },
+      },
+    },
+    assignment: null,
+    deck: {
+      grammar: detail.package.deckModel?.grammar || "harrity-v0.3-web-lesson",
+      slideCount: detail.slides?.length || 0,
+    },
+    sources: (detail.sources || []).map((source) => ({
+      title: source.title,
+      sourceKind: source.sourceKind,
+      sourceType: source.sourceType,
+      subject: source.subject,
+      edition: source.edition,
+      citationPolicy: source.citationPolicy,
+      normalizationStatus: source.metadata?.normalization?.status || null,
+      officialPilotSource: Boolean(source.metadata?.pilot?.officialSource || source.metadata?.normalization?.officialPilot),
+    })),
+    slides: (detail.slides || []).map((slide) => ({
+      id: slide.id,
+      slideNumber: slide.slideNumber,
+      slideType: slide.slideType,
+      title: slide.title,
+      visibleContent: slide.visibleContent || {},
+      guidedNotes: slide.guidedNotes,
+      retrievalPrompt: slide.retrievalPrompt,
+      nclexCategory: slide.nclexCategory,
+      cjmStep: slide.cjmStep,
+      nursingProcess: slide.nursingProcess,
+      bloomLevel: slide.bloomLevel,
+      citations: (citationsBySlide.get(slide.id) || []).map(serializeCitation),
+    })),
+    practiceItems: (detail.items || []).map((item) => ({
+      id: item.id,
+      slideId: item.slideId,
+      itemType: item.itemType,
+      stem: item.stem,
+      options: item.options || [],
+      correctAnswer: item.correctAnswer,
+      rationale: item.rationale,
+      tags: item.tags || {},
+      difficulty: item.difficulty,
+      citations: (citationsByItem.get(item.id) || []).map(serializeCitation),
+    })),
+    citations: (detail.citations || []).map(serializeCitation),
+  };
+}
+
 async function handleApi(req, res, url) {
   if (url.pathname === "/api/privacy/consent" && req.method === "GET") {
     return sendJson(res, 200, privacyConsent);
@@ -2122,6 +2331,44 @@ async function handleApi(req, res, url) {
       updatedAt: nowIso(),
     };
     return sendJson(res, 200, privacyConsent);
+  }
+
+  if (url.pathname === "/api/student/home" && req.method === "GET") {
+    return sendJson(res, 200, previewStudentHomePayload());
+  }
+
+  if (url.pathname === "/api/student/lessons" && req.method === "GET") {
+    return sendJson(res, 200, {
+      lessons: previewPublishedLessons().map(previewLessonSummary),
+      generatedAt: nowIso(),
+    });
+  }
+
+  const studentSummaryMatch = url.pathname.match(/^\/api\/student\/lessons\/([^/]+)\/summary$/);
+  if (studentSummaryMatch && req.method === "GET") {
+    const detail = packageDetails.get(studentSummaryMatch[1]);
+    if (!detail || detail.package.status !== "published") return notFound(res);
+    return sendJson(res, 200, { lesson: previewLessonSummary(detail), generatedAt: nowIso() });
+  }
+
+  const publicLessonMatch = url.pathname.match(/^\/api\/lessons\/([^/]+)$/);
+  if (publicLessonMatch && req.method === "GET") {
+    const detail = packageDetails.get(publicLessonMatch[1]);
+    if (!detail || detail.package.status !== "published") return notFound(res);
+    return sendJson(res, 200, previewLearnerPayload(detail));
+  }
+
+  const publicLessonSignalMatch = url.pathname.match(/^\/api\/lessons\/([^/]+)\/(events|feedback)$/);
+  if (publicLessonSignalMatch && req.method === "POST") {
+    const detail = packageDetails.get(publicLessonSignalMatch[1]);
+    if (!detail || detail.package.status !== "published") return notFound(res);
+    const body = await readJson(req);
+    return sendJson(res, 200, {
+      eventId: makeId("learner-event"),
+      sessionId: body.sessionId || makeId("session"),
+      recorded: true,
+      preview: true,
+    });
   }
 
   if (url.pathname === "/api/privacy/consent-history" && req.method === "GET") {
@@ -2696,7 +2943,18 @@ async function handleApi(req, res, url) {
 
 async function serveStatic(req, res, url) {
   let filePath = path.join(publicDir, decodeURIComponent(url.pathname));
-  if (url.pathname === "/" || url.pathname.startsWith("/admin") || url.pathname.startsWith("/curriculum")) {
+  if (
+    url.pathname === "/"
+    || url.pathname.startsWith("/admin")
+    || url.pathname.startsWith("/curriculum")
+    || url.pathname.startsWith("/student")
+    || url.pathname.startsWith("/lessons")
+    || url.pathname.startsWith("/lesson-assignments")
+    || url.pathname.startsWith("/study-guide")
+    || url.pathname.startsWith("/dashboard")
+    || url.pathname.startsWith("/pilot-request")
+    || url.pathname.startsWith("/public-launch")
+  ) {
     filePath = path.join(publicDir, "index.html");
   }
 

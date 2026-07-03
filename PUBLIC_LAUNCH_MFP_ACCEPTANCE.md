@@ -9,6 +9,7 @@ The internal pilot is accepted as the baseline for public-launch MFP work. Do no
 - Live app: `https://nursestudy-lesson-builder.onrender.com/`
 - Accepted internal-pilot baseline commit: `473adb7`
 - Public MFP entry commit: `105b71a`
+- Student Learning Interface commit: pending current build
 - Live bundle observed: `assets/index-Ut4B9InS.js`
 - Active pilot package: `bf472933-fdb6-4e67-b893-491c00c7bcd4`
 - Pilot package title: `Therapeutic Communication Live AI MVP Release Smoke`
@@ -27,11 +28,12 @@ The internal pilot is accepted as the baseline for public-launch MFP work. Do no
 
 ## Public Launch MFP Boundary
 
-Public launch is a controlled product entry plus the protected admin workflow. It is not a signup-first sales funnel and it is not a full public student account platform.
+Public launch is now student-learning first plus the protected admin workflow. It is not a signup-first sales funnel and it is not a full public student account platform.
 
 Included:
 
-- Public launch page, pilot request capture, and admin-only request review as optional operations support.
+- Student-facing NurseStudy home at `/`, with a published-lesson library, featured lesson, topic filters, guided-notes/practice/citation signals, and links into `/lessons/:id`.
+- Pilot request capture remains available as optional operations support at `/pilot-request` and `/public-launch`, with admin-only review at `/admin/pilot-requests`.
 - Deploy/version proof endpoint.
 - Protected admin workflow: Knowledge Base/source intake -> Content Import -> Content Mapper -> Lesson Builder -> QA/export/publish.
 - Learner assignment dashboard and published lesson view.
@@ -39,9 +41,9 @@ Included:
 
 Core student-facing product direction:
 
-- Nursing students should experience NurseStudy as a learning interface: lessons, guided notes, quizzes, rationales, citations, progress, and source-backed study materials.
+- Nursing students now enter through a learning interface: lessons, guided notes, quizzes, rationales, citations, progress-friendly lesson structure, and source-backed study materials.
 - The creator/operator backend can continue to organize Data Chunker output, decks, videos, source catalogs, and guides, but those workflows should remain behind admin controls.
-- The next product build after request-review plumbing should restore and polish the prior student end-user interface patterns from earlier NurseStudy versions.
+- Public learner APIs are available at `/api/student/home`, `/api/student/lessons`, and `/api/student/lessons/:id/summary`, and they expose only published learner-safe package summaries.
 
 Post-MFP:
 
@@ -64,7 +66,10 @@ Post-MFP:
 
 - Render serves the accepted commit or newer public-launch commit.
 - `/api/public/deploy-proof` returns environment, commit, service, and internal pilot acceptance.
-- `/api/public/launch-interest` creates a lead from the public launch page.
+- `/` loads the student-facing NurseStudy home, not the pilot signup page.
+- `/api/student/home` returns featured published lesson data.
+- `/api/student/lessons` returns only published learner-safe lesson summaries.
+- `/api/public/launch-interest` still creates a lead from the secondary pilot request page.
 - `/admin/pilot-requests` lets an admin qualify, note, follow up, and export public MFP requests without exposing learner assignment keys.
 - `/admin/lesson-builder`, `/admin/content-import`, and `/admin/content-mapper` remain protected and reachable after admin login.
 - Learner assignment and `/lessons/:id` routes remain learner-facing.

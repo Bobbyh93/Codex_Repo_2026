@@ -125,6 +125,48 @@ async function run() {
     `status ${professionalGuide.status}, mode ${professionalGuide.payload?.status || professionalGuide.payload?.message || "unknown"}`
   );
 
+  const studentHomePage = await request("/");
+  record(
+    "public root serves student app",
+    studentHomePage.status === 200 && String(studentHomePage.contentType).includes("text/html"),
+    `status ${studentHomePage.status}, content-type ${studentHomePage.contentType || "missing"}`
+  );
+
+  const studentHome = await request("/api/student/home");
+  const studentHomeLessons = Array.isArray(studentHome.payload?.lessons) ? studentHome.payload.lessons : [];
+  record(
+    "student home API",
+    studentHome.status === 200
+      && isJson(studentHome)
+      && Boolean(studentHome.payload?.featuredLesson?.id)
+      && studentHomeLessons.length > 0,
+    `status ${studentHome.status}, lessons ${studentHomeLessons.length}, featured ${studentHome.payload?.featuredLesson?.id || "missing"}`
+  );
+
+  const studentLessons = await request("/api/student/lessons");
+  const studentLessonList = Array.isArray(studentLessons.payload?.lessons) ? studentLessons.payload.lessons : [];
+  const firstStudentLesson = studentLessonList[0] || studentHome.payload?.featuredLesson;
+  record(
+    "student lesson library API",
+    studentLessons.status === 200
+      && isJson(studentLessons)
+      && studentLessonList.length > 0
+      && studentLessonList.every((lesson) => lesson.learnerUrl && lesson.practiceCount >= 0),
+    `status ${studentLessons.status}, lessons ${studentLessonList.length}`
+  );
+
+  if (firstStudentLesson?.id) {
+    const studentSummary = await request(`/api/student/lessons/${firstStudentLesson.id}/summary`);
+    record(
+      "student lesson summary API",
+      studentSummary.status === 200
+        && isJson(studentSummary)
+        && studentSummary.payload?.lesson?.id === firstStudentLesson.id
+        && studentSummary.payload?.lesson?.citationCount > 0,
+      `status ${studentSummary.status}, lesson ${studentSummary.payload?.lesson?.id || "missing"}`
+    );
+  }
+
   const publicPilotEmail = `pilot-request-smoke-${Date.now()}@example.edu`;
   const publicPilotRequest = await request("/api/public/launch-interest", {
     method: "POST",
@@ -287,6 +329,36 @@ async function run() {
         && learnerPayloadLooksComplete(learnerApi.payload)
         && Boolean(learnerApi.payload?.package?.assessmentBridge?.weakTopic),
       `status ${learnerApi.status}, slides ${(learnerApi.payload?.slides || learnerApi.payload?.deck?.slides || []).length || 0}, items ${(learnerApi.payload?.items || learnerApi.payload?.practiceItems || []).length || 0}`
+    );
+
+    const lessonSignalSession = `student-smoke-${Date.now()}`;
+    const lessonEvent = await request(`/api/lessons/${latestPackageId}/events`, {
+      method: "POST",
+      json: {
+        sessionId: lessonSignalSession,
+        eventType: "lesson_opened",
+        payload: { source: "student_home_smoke" },
+      },
+    });
+    record(
+      "student lesson event records",
+      lessonEvent.status === 200 && isJson(lessonEvent) && lessonEvent.payload?.recorded === true,
+      `status ${lessonEvent.status}, recorded ${String(lessonEvent.payload?.recorded)}`
+    );
+
+    const lessonFeedback = await request(`/api/lessons/${latestPackageId}/feedback`, {
+      method: "POST",
+      json: {
+        sessionId: lessonSignalSession,
+        rating: "helpful",
+        comment: "Release smoke confirms student feedback path.",
+        payload: { source: "student_home_smoke" },
+      },
+    });
+    record(
+      "student lesson feedback records",
+      lessonFeedback.status === 200 && isJson(lessonFeedback) && lessonFeedback.payload?.recorded === true,
+      `status ${lessonFeedback.status}, recorded ${String(lessonFeedback.payload?.recorded)}`
     );
 
     const learnerPage = await request(`/lessons/${latestPackageId}`);
