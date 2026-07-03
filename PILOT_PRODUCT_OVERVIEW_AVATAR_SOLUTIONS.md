@@ -21,7 +21,7 @@ The current MVP is not the full ATI remediation engine or the full NursesBrain a
 - Admin Lesson Builder with source registry, package generation, QA, validation, publish, assignment, outcomes, and export actions.
 - Pilot Launch Console with readiness ladder, visible Drive deck exemplars, visible Pearson audit-pattern references, active package, AI review, learner link, export readiness, and avatar next actions.
 - Direct server-side OpenAI Chat Completions for live agent-assisted generation.
-- Premium faculty review status model, kept optional for MVP launch.
+- Premium faculty review workspace with scored rubric and printable review certificate/report, kept optional for MVP launch.
 - Learner lesson route for published packages.
 - Assignment link flow without requiring student accounts.
 - Learner events for open, practice, completion, and feedback.
@@ -63,11 +63,13 @@ Current solution: premium Faculty Review Workspace status model.
 Key value:
 
 - Faculty review can record comment, changes requested, approved for pilot, or approved for release.
+- Faculty review includes a 5-criterion rubric covering clinical accuracy, source traceability, NCLEX/CJM alignment, learner experience, and assessment quality.
+- Faculty reviewers can open a printable certificate/report for the premium handoff packet.
 - Faculty review is visible without blocking MVP launch when AI review is sufficient for internal pilot.
 
 Next improvement:
 
-- Add rubric scoring, reviewer certificate, and change-request threads.
+- Add change-request threads and reviewer sign-off history.
 
 ### Nursing Student / Learner
 
@@ -172,6 +174,6 @@ Post-MVP includes:
 1. Complete one browser click-through verification of the polished Pilot Evidence Export confirmation after Render is awake and Browser control is available.
 2. Completed: live-verified ChatGPT Library Pack and OpenStax Nursing Catalog registration on Render; duplicate imports dedupe cleanly and OpenStax no-AI-ingestion guardrails are present.
 3. Completed and live-verified: executive print/PDF-ready Pilot Evidence Report and slide-outline export are generated from the same evidence export payload.
-4. Add faculty rubric review as the first premium workflow upgrade.
+4. Completed locally: faculty rubric review and printable certificate/report are now the first premium workflow upgrade. Next step is live Render smoke after deployment.
 5. Add learner account dashboard for assigned lessons.
 6. Add manual ATI weak-topic-to-lesson assignment before automating ATI report upload.

@@ -313,6 +313,21 @@ const pilotEvidenceExportLabels: Record<PilotEvidenceExportKind, string> = {
   slides: "slide-deck outline",
 };
 
+const facultyRubricCriteria = [
+  { key: "clinical_accuracy", label: "Clinical accuracy", description: "Clinically sound for the stated learner level." },
+  { key: "source_traceability", label: "Source traceability", description: "Claims connect to approved source truth and citations." },
+  { key: "nclex_cjm_alignment", label: "NCLEX/CJM alignment", description: "Tags and activities align to NCLEX, CJM, Bloom, and nursing process." },
+  { key: "learner_experience", label: "Learner experience", description: "Learner-facing, focused, accessible, and appropriately paced." },
+  { key: "assessment_quality", label: "Assessment quality", description: "Practice, rationale, and follow-up signals support remediation." },
+] as const;
+
+type FacultyRubricKey = typeof facultyRubricCriteria[number]["key"];
+
+const defaultFacultyRubric = facultyRubricCriteria.reduce((rubric, criterion) => {
+  rubric[criterion.key] = { score: "3", note: "" };
+  return rubric;
+}, {} as Record<FacultyRubricKey, { score: string; note: string }>);
+
 type PackageDetail = {
   package: LessonPackage & { manifest?: Record<string, any>; deckModel?: Record<string, any>; taxonomySnapshot?: Record<string, any> };
   sources: SourceRecord[];
@@ -385,6 +400,7 @@ type PackageDetail = {
     decision: string;
     focusArea: string;
     comment: string;
+    metadata?: Record<string, any>;
     createdAt?: string;
   }>;
   assignments?: Array<{
@@ -879,6 +895,7 @@ export default function LessonBuilder() {
     decision: "comment",
     focusArea: "overall",
     comment: "",
+    rubric: { ...defaultFacultyRubric },
   });
   const [assignmentForm, setAssignmentForm] = useState({
     title: "",
@@ -1062,6 +1079,15 @@ export default function LessonBuilder() {
       || null
     : null;
   const latestReview = detailQuery.data?.reviews?.[0];
+  const latestFacultyReview = detailQuery.data?.reviews?.find((review) => review.reviewerRole !== "ai_reviewer");
+  const latestFacultyRubric = latestFacultyReview?.metadata?.rubricSummary || detailQuery.data?.package.manifest?.facultyReview?.rubricSummary || null;
+  const currentRubricScores = facultyRubricCriteria
+    .map((criterion) => Number(reviewForm.rubric[criterion.key]?.score || 0))
+    .filter((score) => Number.isFinite(score) && score > 0);
+  const currentRubricAverage = currentRubricScores.length
+    ? currentRubricScores.reduce((sum, score) => sum + score, 0) / currentRubricScores.length
+    : 0;
+  const currentRubricPassing = currentRubricScores.length === facultyRubricCriteria.length && currentRubricAverage >= 3 && Math.min(...currentRubricScores) >= 3;
   const learnerEvents = detailQuery.data?.learnerEvents || [];
   const learnerEventCounts = learnerEvents.reduce<Record<string, number>>((counts, event) => {
     counts[event.eventType] = (counts[event.eventType] || 0) + 1;
@@ -1502,7 +1528,27 @@ export default function LessonBuilder() {
 
   const saveReviewMutation = useMutation({
     mutationFn: async () => {
-      const response = await apiRequest("POST", `/api/admin/lesson-builder/packages/${selectedPackageId}/faculty-review`, reviewForm);
+      const rubric = Object.fromEntries(
+        facultyRubricCriteria.map((criterion) => [
+          criterion.key,
+          {
+            score: Number(reviewForm.rubric[criterion.key]?.score || 0),
+            note: reviewForm.rubric[criterion.key]?.note || "",
+          },
+        ])
+      );
+      const response = await apiRequest("POST", `/api/admin/lesson-builder/packages/${selectedPackageId}/faculty-review`, {
+        reviewerName: reviewForm.reviewerName,
+        reviewerRole: reviewForm.reviewerRole,
+        decision: reviewForm.decision,
+        focusArea: reviewForm.focusArea,
+        comment: reviewForm.comment,
+        metadata: {
+          rubric,
+          rubricVersion: "faculty_review_rubric_v1",
+          premiumFacultyReview: true,
+        },
+      });
       return response.json();
     },
     onSuccess: (data) => {
@@ -1732,6 +1778,24 @@ export default function LessonBuilder() {
       title: "Executive report opened",
       description: "Use browser print to save the slide-style report as PDF for the pilot handoff.",
     });
+  };
+
+  const openFacultyReviewCertificate = () => {
+    if (!selectedPackageId) return;
+    window.open(`/api/admin/lesson-builder/packages/${selectedPackageId}/faculty-review/certificate`, "_blank", "noopener,noreferrer");
+  };
+
+  const updateReviewRubric = (key: FacultyRubricKey, field: "score" | "note", value: string) => {
+    setReviewForm((current) => ({
+      ...current,
+      rubric: {
+        ...current.rubric,
+        [key]: {
+          ...current.rubric[key],
+          [field]: value,
+        },
+      },
+    }));
   };
 
   const copyLearnerLink = async () => {
@@ -3386,20 +3450,44 @@ export default function LessonBuilder() {
                           <div className="flex flex-wrap gap-2">
                             {health?.pilotReadiness?.aiReviewedPilotApproved ? <StatusBadge value="ai_reviewed" /> : null}
                             {!health?.pilotReadiness?.humanFacultyApproved ? <StatusBadge value="premium_feature" /> : null}
-                            <StatusBadge value={latestReview?.decision || "awaiting_review"} />
+                            <StatusBadge value={latestFacultyReview?.decision || latestReview?.decision || "awaiting_review"} />
                           </div>
                         </div>
                         <div className="mb-4 rounded-md bg-blue-50 p-3 text-sm text-blue-950">
                           AI-reviewed `approved_for_pilot` satisfies internal launch readiness. Human faculty review remains a premium feature for formal release support.
                         </div>
-                        {latestReview ? (
+                        {latestFacultyReview ? (
                           <div className="mb-4 rounded-md bg-slate-50 p-3 text-sm text-slate-700">
-                            <div className="flex flex-wrap items-center gap-2">
-                              <span className="font-medium text-slate-900">{latestReview.reviewerName}</span>
-                              <span>{latestReview.reviewerRole.replace(/_/g, " ")}</span>
-                              {latestReview.createdAt ? <span>{new Date(latestReview.createdAt).toLocaleString()}</span> : null}
+                            <div className="flex flex-wrap items-start justify-between gap-3">
+                              <div>
+                                <div className="flex flex-wrap items-center gap-2">
+                                  <span className="font-medium text-slate-900">{latestFacultyReview.reviewerName}</span>
+                                  <span>{latestFacultyReview.reviewerRole.replace(/_/g, " ")}</span>
+                                  {latestFacultyReview.createdAt ? <span>{new Date(latestFacultyReview.createdAt).toLocaleString()}</span> : null}
+                                </div>
+                                <p className="mt-2 leading-6">{latestFacultyReview.comment}</p>
+                              </div>
+                              <Button variant="outline" size="sm" onClick={openFacultyReviewCertificate}>
+                                <ExternalLink className="mr-2 h-3.5 w-3.5" />
+                                Open Certificate
+                              </Button>
                             </div>
-                            <p className="mt-2 leading-6">{latestReview.comment}</p>
+                            {latestFacultyRubric ? (
+                              <div className="mt-3 grid grid-cols-3 gap-2 text-xs text-slate-600">
+                                <div className="rounded-md bg-white px-3 py-2">
+                                  <div className="font-semibold text-slate-950">{latestFacultyRubric.averageScore || 0} / 4</div>
+                                  <div>Rubric average</div>
+                                </div>
+                                <div className="rounded-md bg-white px-3 py-2">
+                                  <div className="font-semibold text-slate-950">{latestFacultyRubric.percentScore || 0}%</div>
+                                  <div>Rubric score</div>
+                                </div>
+                                <div className="rounded-md bg-white px-3 py-2">
+                                  <div className="font-semibold text-slate-950">{String(latestFacultyRubric.status || "not scored").replace(/_/g, " ")}</div>
+                                  <div>Rubric status</div>
+                                </div>
+                              </div>
+                            ) : null}
                           </div>
                         ) : (
                           <div className="mb-4 rounded-md bg-amber-50 p-3 text-sm text-amber-900">
@@ -3449,6 +3537,58 @@ export default function LessonBuilder() {
                         <div className="mt-3 space-y-2">
                           <Label>Review note</Label>
                           <Textarea value={reviewForm.comment} onChange={(event) => setReviewForm({ ...reviewForm, comment: event.target.value })} rows={3} />
+                        </div>
+                        <div className="mt-4 rounded-md border bg-slate-50 p-3">
+                          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                            <div>
+                              <div className="text-sm font-semibold text-slate-900">Faculty rubric</div>
+                              <div className="text-xs text-slate-500">Score each criterion from 1 to 4. A premium release pass requires all criteria scored 3 or higher.</div>
+                            </div>
+                            <StatusBadge value={currentRubricPassing ? "rubric_pass" : "rubric_needs_review"} />
+                          </div>
+                          <div className="grid gap-3">
+                            {facultyRubricCriteria.map((criterion) => (
+                              <div key={criterion.key} className="rounded-md border bg-white p-3">
+                                <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_120px] md:items-start">
+                                  <div>
+                                    <div className="text-sm font-medium text-slate-900">{criterion.label}</div>
+                                    <div className="text-xs text-slate-500">{criterion.description}</div>
+                                  </div>
+                                  <Select value={reviewForm.rubric[criterion.key]?.score || "3"} onValueChange={(value) => updateReviewRubric(criterion.key, "score", value)}>
+                                    <SelectTrigger>
+                                      <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="1">1 - revise</SelectItem>
+                                      <SelectItem value="2">2 - weak</SelectItem>
+                                      <SelectItem value="3">3 - pass</SelectItem>
+                                      <SelectItem value="4">4 - strong</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                                <Input
+                                  className="mt-3"
+                                  value={reviewForm.rubric[criterion.key]?.note || ""}
+                                  onChange={(event) => updateReviewRubric(criterion.key, "note", event.target.value)}
+                                  placeholder="Criterion note"
+                                />
+                              </div>
+                            ))}
+                          </div>
+                          <div className="mt-3 grid grid-cols-3 gap-2 text-xs text-slate-600">
+                            <div className="rounded-md bg-white px-3 py-2">
+                              <div className="font-semibold text-slate-950">{currentRubricAverage.toFixed(2)} / 4</div>
+                              <div>Current average</div>
+                            </div>
+                            <div className="rounded-md bg-white px-3 py-2">
+                              <div className="font-semibold text-slate-950">{Math.round((currentRubricAverage / 4) * 100)}%</div>
+                              <div>Current score</div>
+                            </div>
+                            <div className="rounded-md bg-white px-3 py-2">
+                              <div className="font-semibold text-slate-950">{currentRubricPassing ? "Pass" : "Needs review"}</div>
+                              <div>Rubric gate</div>
+                            </div>
+                          </div>
                         </div>
                         <div className="mt-3 flex justify-end">
                           <Button onClick={() => saveReviewMutation.mutate()} disabled={saveReviewMutation.isPending || reviewForm.comment.trim().length < 3}>

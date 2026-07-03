@@ -224,6 +224,34 @@ const packageReviewSchema = z.object({
   metadata: z.record(z.any()).default({}),
 });
 
+const facultyReviewRubricCriteria = [
+  {
+    key: "clinical_accuracy",
+    label: "Clinical accuracy",
+    description: "Content is clinically sound for the stated learner level.",
+  },
+  {
+    key: "source_traceability",
+    label: "Source traceability",
+    description: "Claims are supported by approved sources, citations, and package artifacts.",
+  },
+  {
+    key: "nclex_cjm_alignment",
+    label: "NCLEX/CJM alignment",
+    description: "Slides and practice items align to NCLEX, CJM, Bloom, and nursing-process tags.",
+  },
+  {
+    key: "learner_experience",
+    label: "Learner experience",
+    description: "The lesson is learner-facing, focused, accessible, and appropriately paced.",
+  },
+  {
+    key: "assessment_quality",
+    label: "Assessment quality",
+    description: "Practice item, answer key, rationale, and follow-up signals support remediation.",
+  },
+] as const;
+
 const assignmentLearnerInputSchema = z.object({
   learnerName: z.string().trim().min(1).max(160),
   learnerEmail: z.string().trim().email().optional().or(z.literal("")),
@@ -4828,6 +4856,51 @@ async function generateLessonPackageFromData(data: z.infer<typeof generateSchema
   }
 }
 
+function rubricScore(value: unknown) {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return null;
+  return Math.max(1, Math.min(4, Math.round(parsed)));
+}
+
+function normalizeFacultyReviewRubric(metadata: Record<string, any> = {}) {
+  const rawRubric = (metadata.rubric || metadata.rubricScores || {}) as Record<string, any>;
+  const criteria = facultyReviewRubricCriteria.map((criterion) => {
+    const raw = rawRubric[criterion.key] || {};
+    const score = rubricScore(typeof raw === "object" ? raw.score : raw);
+    const note = typeof raw === "object" && typeof raw.note === "string" ? raw.note.trim().slice(0, 600) : "";
+    return {
+      key: criterion.key,
+      label: criterion.label,
+      description: criterion.description,
+      score,
+      note,
+      status: score == null ? "not_scored" : score >= 3 ? "meets_standard" : score === 2 ? "needs_review" : "does_not_meet",
+    };
+  });
+  const scored = criteria.filter((criterion) => typeof criterion.score === "number");
+  const totalScore = scored.reduce((sum, criterion) => sum + Number(criterion.score || 0), 0);
+  const averageScore = scored.length ? Number((totalScore / scored.length).toFixed(2)) : 0;
+  const lowestScore = scored.length ? Math.min(...scored.map((criterion) => Number(criterion.score || 0))) : 0;
+  const percentScore = scored.length ? Math.round((averageScore / 4) * 100) : 0;
+  const allCriteriaScored = scored.length === facultyReviewRubricCriteria.length;
+  const passing = allCriteriaScored && averageScore >= 3 && lowestScore >= 3;
+
+  return {
+    version: "faculty_review_rubric_v1",
+    maxScore: 4,
+    scoredCriteria: scored.length,
+    requiredCriteria: facultyReviewRubricCriteria.length,
+    allCriteriaScored,
+    totalScore,
+    averageScore,
+    percentScore,
+    lowestScore,
+    passing,
+    status: passing ? "rubric_pass" : allCriteriaScored ? "rubric_needs_review" : "rubric_incomplete",
+    criteria,
+  };
+}
+
 async function recordPackageReview(
   packageId: string,
   data: z.infer<typeof packageReviewSchema>,
@@ -4837,6 +4910,7 @@ async function recordPackageReview(
   await ensureLessonBuilderTables();
   const bundle = await findPackageBundle(packageId);
   if (!bundle) return null;
+  const rubricSummary = reviewKind === "faculty" ? normalizeFacultyReviewRubric(data.metadata || {}) : null;
 
   const [review] = await db.insert(lessonPackageReviews).values({
     packageId,
@@ -4847,6 +4921,7 @@ async function recordPackageReview(
     comment: data.comment,
     metadata: {
       ...data.metadata,
+      ...(rubricSummary ? { rubricSummary } : {}),
       reviewKind,
       premiumFeature: reviewKind === "faculty",
       packageStatusAtReview: bundle.package.status,
@@ -4868,6 +4943,12 @@ async function recordPackageReview(
     changesRequested: review.decision === "changes_requested",
     premiumFeature: reviewKind === "faculty",
     reviewKind,
+    ...(rubricSummary ? {
+      rubricSummary,
+      rubricPassing: rubricSummary.passing,
+      rubricAverageScore: rubricSummary.averageScore,
+      certificateEligible: rubricSummary.passing && (review.decision === "approved_for_pilot" || review.decision === "approved_for_release"),
+    } : {}),
   };
 
   await db.update(lessonPackages).set({
@@ -4888,6 +4969,11 @@ async function recordPackageReview(
       focusArea: review.focusArea,
       reviewerRole: review.reviewerRole,
       premiumFeature: reviewKind === "faculty",
+      ...(rubricSummary ? {
+        rubricAverageScore: rubricSummary.averageScore,
+        rubricPassing: rubricSummary.passing,
+        rubricStatus: rubricSummary.status,
+      } : {}),
     },
     actorId
   );
@@ -5721,6 +5807,101 @@ function renderPilotEvidenceExecutiveHtml(report: ReturnType<typeof buildPilotEv
       </div>
     </section>
     ${outline.slides.map(slideBlock).join("")}
+  </main>
+</body>
+</html>`;
+}
+
+function renderFacultyReviewCertificateHtml(bundle: LessonBundle, review: any) {
+  const metadata = (review.metadata || {}) as Record<string, any>;
+  const rubric = metadata.rubricSummary || normalizeFacultyReviewRubric(metadata);
+  const decisionLabel = String(review.decision || "comment").replace(/_/g, " ");
+  const eligible = rubric.passing && (review.decision === "approved_for_pilot" || review.decision === "approved_for_release");
+  const criterionRows = (rubric.criteria || []).map((criterion: any) => `
+    <tr>
+      <td><strong>${escapeHtml(criterion.label)}</strong><div class="muted">${escapeHtml(criterion.description)}</div></td>
+      <td>${escapeHtml(criterion.score ?? "Not scored")}</td>
+      <td>${escapeHtml(String(criterion.status || "not_scored").replace(/_/g, " "))}</td>
+      <td>${escapeHtml(criterion.note || "")}</td>
+    </tr>
+  `).join("");
+
+  return `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Faculty Review Certificate - ${escapeHtml(bundle.package.title)}</title>
+  <style>
+    :root { color: #111827; background: #f8fafc; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    body { margin: 0; padding: 28px; }
+    main { max-width: 980px; margin: 0 auto; background: #fff; border: 1px solid #dbe4ee; border-radius: 8px; box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08); overflow: hidden; }
+    header { padding: 34px; background: #1f2937; color: #f8fafc; }
+    header p { margin: 8px 0 0; color: #dbeafe; }
+    section { padding: 24px 34px; border-top: 1px solid #e5e7eb; }
+    h1, h2 { margin: 0; line-height: 1.2; }
+    h1 { font-size: 30px; }
+    h2 { font-size: 18px; margin-bottom: 12px; }
+    .pill { display: inline-block; margin-bottom: 12px; padding: 5px 10px; border-radius: 999px; background: ${eligible ? "#dcfce7" : "#fef3c7"}; color: #111827; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; }
+    .metric { border: 1px solid #e5e7eb; border-radius: 8px; padding: 14px; background: #f9fafb; }
+    .metric strong { display: block; font-size: 22px; color: #111827; }
+    .metric span { display: block; margin-top: 4px; color: #475569; font-size: 12px; text-transform: uppercase; letter-spacing: .05em; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th, td { border-bottom: 1px solid #e5e7eb; padding: 12px 10px; text-align: left; vertical-align: top; }
+    th { color: #475569; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; }
+    .muted { margin-top: 4px; color: #64748b; font-size: 12px; line-height: 1.4; }
+    .note { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e3a8a; border-radius: 8px; padding: 14px 16px; line-height: 1.55; }
+    @media (max-width: 760px) { body { padding: 12px; } header, section { padding: 22px; } table { font-size: 12px; } }
+    @media print { body { padding: 0; background: #fff; } main { box-shadow: none; border: 0; border-radius: 0; } }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div class="pill">${eligible ? "Faculty certificate eligible" : "Faculty review report"}</div>
+      <h1>${escapeHtml(bundle.package.title)}</h1>
+      <p>${escapeHtml(bundle.package.topic || "Topic not specified")} | ${escapeHtml(bundle.package.audience || "Audience not specified")}</p>
+      <p>Reviewed by ${escapeHtml(review.reviewerName)} (${escapeHtml(String(review.reviewerRole || "faculty_reviewer").replace(/_/g, " "))}) on ${escapeHtml(review.createdAt || new Date().toISOString())}</p>
+    </header>
+
+    <section>
+      <h2>Review Decision</h2>
+      <div class="grid">
+        <div class="metric"><strong>${escapeHtml(decisionLabel)}</strong><span>Decision</span></div>
+        <div class="metric"><strong>${escapeHtml(rubric.averageScore || 0)} / 4</strong><span>Average rubric score</span></div>
+        <div class="metric"><strong>${escapeHtml(rubric.percentScore || 0)}%</strong><span>Rubric percent</span></div>
+        <div class="metric"><strong>${escapeHtml(rubric.status.replace(/_/g, " "))}</strong><span>Rubric status</span></div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Faculty Note</h2>
+      <div class="note">${escapeHtml(review.comment || "No faculty note recorded.")}</div>
+    </section>
+
+    <section>
+      <h2>Rubric Evidence</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Criterion</th>
+            <th>Score</th>
+            <th>Status</th>
+            <th>Reviewer note</th>
+          </tr>
+        </thead>
+        <tbody>${criterionRows}</tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>Certificate Statement</h2>
+      <p class="muted">
+        This premium faculty review report records a human faculty decision and rubric snapshot for the selected NurseStudy lesson package.
+        AI review may satisfy internal MVP pilot readiness; human faculty review is the premium gate for formal release support.
+      </p>
+    </section>
   </main>
 </body>
 </html>`;
@@ -6612,11 +6793,18 @@ export function registerLessonBuilderRoutes(app: Express) {
       const bundle = await findPackageBundle(req.params.id);
       if (!bundle) return res.status(404).json({ error: "Lesson package not found" });
       const facultyReviews = bundle.reviews.filter((review) => review.reviewerRole !== "ai_reviewer");
+      const latestReview = facultyReviews[0] || null;
+      const latestRubricSummary = latestReview
+        ? ((latestReview.metadata || {}) as Record<string, any>).rubricSummary || normalizeFacultyReviewRubric((latestReview.metadata || {}) as Record<string, any>)
+        : null;
       res.json({
         packageId: req.params.id,
         premiumFeature: true,
-        status: facultyReviews[0] ? "review_recorded" : "premium_available",
-        latestReview: facultyReviews[0] || null,
+        status: latestReview ? "review_recorded" : "premium_available",
+        rubricCriteria: facultyReviewRubricCriteria,
+        latestReview,
+        latestRubricSummary,
+        certificateUrl: latestReview ? `/api/admin/lesson-builder/packages/${req.params.id}/faculty-review/certificate` : null,
         reviews: facultyReviews,
       });
     } catch (error) {
@@ -6625,9 +6813,38 @@ export function registerLessonBuilderRoutes(app: Express) {
     }
   });
 
+  app.get("/api/admin/lesson-builder/packages/:id/faculty-review/certificate", requireAdminSession, async (req: AdminAuthRequest, res: Response) => {
+    try {
+      await ensureLessonBuilderTables();
+      const bundle = await findPackageBundle(req.params.id);
+      if (!bundle) return res.status(404).json({ error: "Lesson package not found" });
+      const latestReview = bundle.reviews.find((review) => review.reviewerRole !== "ai_reviewer");
+      if (!latestReview) return res.status(404).json({ error: "Faculty review not found" });
+
+      const safeTitle = bundle.package.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || "lesson";
+      await recordReleaseAuditEvent(req.params.id, "faculty_review_certificate_opened", "Faculty review certificate opened for premium review handoff.", {
+        reviewId: latestReview.id,
+        decision: latestReview.decision,
+        reviewerRole: latestReview.reviewerRole,
+      }, req.session.adminUser?.userId);
+      res.setHeader("Content-Type", "text/html; charset=utf-8");
+      res.setHeader("Content-Disposition", `inline; filename="${safeTitle}-faculty-review-certificate.html"`);
+      res.send(renderFacultyReviewCertificateHtml(bundle, latestReview));
+    } catch (error) {
+      console.error("Lesson builder faculty review certificate error:", error);
+      res.status(500).json({ error: "Failed to open faculty review certificate" });
+    }
+  });
+
   app.post("/api/admin/lesson-builder/packages/:id/faculty-review", requireAdminSession, async (req: AdminAuthRequest, res: Response) => {
     try {
       await ensureLessonBuilderTables();
+      const metadata = {
+        ...(req.body?.metadata || {}),
+        premiumFeature: true,
+        humanFacultyReview: true,
+      };
+      const rubricSummary = normalizeFacultyReviewRubric(metadata);
       const data = packageReviewSchema.parse({
         reviewerName: req.body?.reviewerName || "Faculty reviewer",
         reviewerRole: req.body?.reviewerRole || "faculty_reviewer",
@@ -6635,9 +6852,8 @@ export function registerLessonBuilderRoutes(app: Express) {
         focusArea: req.body?.focusArea || "overall",
         comment: req.body?.comment || "Faculty review note recorded.",
         metadata: {
-          ...(req.body?.metadata || {}),
-          premiumFeature: true,
-          humanFacultyReview: true,
+          ...metadata,
+          rubricSummary,
         },
       });
       const result = await recordPackageReview(req.params.id, data, req.session.adminUser?.userId, "faculty");

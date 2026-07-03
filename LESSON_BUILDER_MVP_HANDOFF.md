@@ -12,6 +12,8 @@ The DB-backed Lesson Builder path is functional locally and is the live Render p
 - Packages can carry an assessment bridge: weak topic, ATI category, NCLEX category, CJM step, and evidence source.
 - Published learner lessons are available at `/lessons/:id`.
 - Faculty reviewers can record package decisions: comment, changes requested, approved for pilot, or approved for release.
+- Premium faculty review now includes a scored 5-criterion rubric for clinical accuracy, source traceability, NCLEX/CJM alignment, learner experience, and assessment quality.
+- Premium faculty review now has a printable faculty review certificate/report at `/api/admin/lesson-builder/packages/:id/faculty-review/certificate`.
 - Published learner lessons record anonymous open, slide, practice, completion, and feedback signals for pilot review.
 - Publish, export, faculty review, and learner feedback events are available as release audit history on package detail.
 - The live admin Lesson Builder includes a Pilot Launch Console with readiness ladder, active pilot package, AI review, premium faculty review status, assignment activity, learner link actions, and pilot evidence export.
@@ -158,6 +160,7 @@ Use a direct Neon connection string only for migration/admin commands, not app r
 - Generate, edit, rebuild, QA, validate, publish, and open learner lesson.
 - Attach one weak topic or ATI category to the package through Assessment Bridge.
 - Record one AI-reviewed `approved_for_pilot` decision for internal launch; add human faculty review only for the premium release workflow.
+- For premium release workflow, complete the faculty rubric, save the faculty decision, and open the faculty review certificate/report for the handoff packet.
 - Open the learner lesson, mark complete, submit feedback, and confirm learner signals appear in admin package detail.
 - Export Harrity bundle and verify required files are present.
 - Open the Pilot Launch Console, confirm all readiness steps pass, and export Pilot Evidence for the program-director handoff.
