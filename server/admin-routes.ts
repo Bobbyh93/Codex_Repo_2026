@@ -231,6 +231,106 @@ const ResourceSchema = z.object({
   })
 });
 
+const PUBLIC_PILOT_REQUEST_SOURCE = "public_launch_mfp";
+const publicPilotRequestStatuses = ["new", "qualified", "follow_up", "demo_ready", "closed_won", "closed_lost"] as const;
+
+const pilotRequestUpdateSchema = z.object({
+  status: z.enum(publicPilotRequestStatuses).optional(),
+  adminNotes: z.string().trim().max(4000).optional(),
+  followUpDate: z.string().trim().max(40).nullable().optional(),
+  score: z.coerce.number().int().min(0).max(100).optional(),
+  interestedTopics: z.array(z.string().trim().min(1).max(100)).max(12).optional(),
+});
+
+function parseNullableDate(value?: string | null) {
+  if (value === undefined) return undefined;
+  if (value === null || value === "") return null;
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    throw new Error("Invalid follow-up date");
+  }
+  return date;
+}
+
+function publicPilotRequestPayload(lead: any) {
+  const customFields = (lead.customFields || {}) as Record<string, any>;
+  return {
+    id: lead.id,
+    status: lead.status || "new",
+    score: lead.score || 0,
+    source: lead.source,
+    contactName: lead.contactName || "",
+    contactEmail: lead.contactEmail || "",
+    contactPhone: lead.contactPhone || "",
+    companyName: lead.companyName || "",
+    jobTitle: lead.jobTitle || "",
+    industry: lead.industry || "",
+    interestedTopics: Array.isArray(lead.interestedTopics) ? lead.interestedTopics : [],
+    tags: Array.isArray(lead.tags) ? lead.tags : [],
+    pilotGoal: customFields.pilotGoal || "",
+    adminNotes: customFields.adminNotes || "",
+    reviewedAt: customFields.reviewedAt || null,
+    followUpDate: lead.followUpDate,
+    firstContactDate: lead.firstContactDate,
+    lastContactDate: lead.lastContactDate,
+    createdAt: lead.createdAt,
+    updatedAt: lead.updatedAt,
+  };
+}
+
+function publicPilotRequestSummary(requests: ReturnType<typeof publicPilotRequestPayload>[]) {
+  const statusCounts = publicPilotRequestStatuses.reduce<Record<string, number>>((acc, status) => {
+    acc[status] = 0;
+    return acc;
+  }, {});
+
+  for (const request of requests) {
+    statusCounts[request.status] = (statusCounts[request.status] || 0) + 1;
+  }
+
+  const openStatuses = new Set(["new", "qualified", "follow_up", "demo_ready"]);
+  return {
+    total: requests.length,
+    open: requests.filter((request) => openStatuses.has(request.status)).length,
+    qualified: statusCounts.qualified || 0,
+    followUp: statusCounts.follow_up || 0,
+    demoReady: statusCounts.demo_ready || 0,
+    closed: (statusCounts.closed_won || 0) + (statusCounts.closed_lost || 0),
+    statusCounts,
+    newestRequest: requests[0] || null,
+  };
+}
+
+function csvCell(value: unknown) {
+  const text = Array.isArray(value) ? value.join("; ") : value == null ? "" : String(value);
+  return `"${text.replace(/"/g, '""')}"`;
+}
+
+function publicPilotRequestsCsv(requests: ReturnType<typeof publicPilotRequestPayload>[]) {
+  const columns: Array<[string, (request: ReturnType<typeof publicPilotRequestPayload>) => unknown]> = [
+    ["id", (request) => request.id],
+    ["status", (request) => request.status],
+    ["score", (request) => request.score],
+    ["contact_name", (request) => request.contactName],
+    ["contact_email", (request) => request.contactEmail],
+    ["contact_phone", (request) => request.contactPhone],
+    ["organization", (request) => request.companyName],
+    ["role", (request) => request.jobTitle],
+    ["organization_type", (request) => request.industry],
+    ["pilot_goal", (request) => request.pilotGoal],
+    ["interested_topics", (request) => request.interestedTopics],
+    ["admin_notes", (request) => request.adminNotes],
+    ["follow_up_date", (request) => request.followUpDate],
+    ["created_at", (request) => request.createdAt],
+  ];
+
+  return [
+    columns.map(([header]) => csvCell(header)).join(","),
+    ...requests.map((request) => columns.map(([, accessor]) => csvCell(accessor(request))).join(",")),
+  ].join("\n");
+}
+
 export function registerAdminRoutes(app: Express) {
   // Use session-based authentication for admin routes
   const requireAdmin = [requireAdminSession];
@@ -1429,6 +1529,106 @@ export function registerAdminRoutes(app: Express) {
     }
   });
   
+  // Admin: Public pilot request queue
+  app.get("/api/admin/pilot-requests", requireAdmin, auditLog('VIEW_PUBLIC_PILOT_REQUESTS'), async (req: AdminAuthRequest, res: Response) => {
+    try {
+      const status = typeof req.query.status === "string" ? req.query.status : "all";
+      if (status !== "all" && !publicPilotRequestStatuses.includes(status as any)) {
+        return res.status(400).json({ error: "Unsupported pilot request status" });
+      }
+
+      const leads = await storage.getLeads({ source: PUBLIC_PILOT_REQUEST_SOURCE });
+      const requests = leads
+        .map(publicPilotRequestPayload)
+        .filter((request) => status === "all" || request.status === status);
+
+      res.json({
+        requests,
+        summary: publicPilotRequestSummary(requests),
+        statuses: publicPilotRequestStatuses,
+      });
+    } catch (error) {
+      console.error("Error fetching public pilot requests:", error);
+      res.status(500).json({ error: "Failed to fetch public pilot requests" });
+    }
+  });
+
+  app.patch("/api/admin/pilot-requests/:id", requireAdmin, validateCSRFToken, auditLog('UPDATE_PUBLIC_PILOT_REQUEST'), async (req: AdminAuthRequest, res: Response) => {
+    try {
+      const parsed = pilotRequestUpdateSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({
+          error: "Invalid pilot request update",
+          details: parsed.error.errors,
+        });
+      }
+
+      const existing = await storage.getLeadById(req.params.id);
+      if (!existing || existing.source !== PUBLIC_PILOT_REQUEST_SOURCE) {
+        return res.status(404).json({ error: "Public pilot request not found" });
+      }
+
+      const followUpDate = parseNullableDate(parsed.data.followUpDate);
+      const updates: Record<string, any> = {};
+
+      if (parsed.data.status) updates.status = parsed.data.status;
+      if (parsed.data.score !== undefined) updates.score = parsed.data.score;
+      if (parsed.data.interestedTopics) updates.interestedTopics = parsed.data.interestedTopics;
+      if (followUpDate !== undefined) updates.followUpDate = followUpDate;
+      if (parsed.data.status || parsed.data.adminNotes !== undefined) updates.lastContactDate = new Date();
+
+      if (parsed.data.adminNotes !== undefined) {
+        updates.customFields = {
+          ...((existing.customFields || {}) as Record<string, any>),
+          adminNotes: parsed.data.adminNotes,
+          reviewedAt: new Date().toISOString(),
+        };
+      }
+
+      const updated = await storage.updateLead(existing.id, updates);
+      const payload = publicPilotRequestPayload(updated);
+      res.json({
+        request: payload,
+        summary: publicPilotRequestSummary([payload]),
+      });
+    } catch (error: any) {
+      console.error("Error updating public pilot request:", error);
+      res.status(error?.message === "Invalid follow-up date" ? 400 : 500).json({
+        error: error?.message === "Invalid follow-up date" ? error.message : "Failed to update public pilot request",
+      });
+    }
+  });
+
+  app.get("/api/admin/pilot-requests/export", requireAdmin, auditLog('EXPORT_PUBLIC_PILOT_REQUESTS'), async (req: AdminAuthRequest, res: Response) => {
+    try {
+      const format = typeof req.query.format === "string" ? req.query.format : "csv";
+      if (!["csv", "json"].includes(format)) {
+        return res.status(400).json({ error: "Unsupported export format" });
+      }
+
+      const requests = (await storage.getLeads({ source: PUBLIC_PILOT_REQUEST_SOURCE }))
+        .map(publicPilotRequestPayload);
+      const generatedAt = new Date().toISOString();
+
+      if (format === "json") {
+        res.setHeader("Content-Disposition", `attachment; filename="public-pilot-requests-${generatedAt.slice(0, 10)}.json"`);
+        return res.json({
+          generatedAt,
+          source: PUBLIC_PILOT_REQUEST_SOURCE,
+          summary: publicPilotRequestSummary(requests),
+          requests,
+        });
+      }
+
+      res.setHeader("Content-Type", "text/csv; charset=utf-8");
+      res.setHeader("Content-Disposition", `attachment; filename="public-pilot-requests-${generatedAt.slice(0, 10)}.csv"`);
+      res.send(publicPilotRequestsCsv(requests));
+    } catch (error) {
+      console.error("Error exporting public pilot requests:", error);
+      res.status(500).json({ error: "Failed to export public pilot requests" });
+    }
+  });
+
   // Admin: Get all leads
   app.get("/api/admin/leads", requireAdmin, auditLog('VIEW_LEADS'), async (req: AdminAuthRequest, res: Response) => {
     try {

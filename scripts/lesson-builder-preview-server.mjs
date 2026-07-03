@@ -237,6 +237,30 @@ const kbChunks = [];
 const kbJobs = [];
 const extractedTables = [];
 const mapperContentBlocks = [];
+const pilotRequests = [
+  {
+    id: "pilot-request-preview-1",
+    status: "new",
+    score: 45,
+    source: "public_launch_mfp",
+    contactName: "Preview Program Lead",
+    contactEmail: "preview.lead@example.edu",
+    contactPhone: "",
+    companyName: "Nursing Program Preview",
+    jobTitle: "Course Coordinator",
+    industry: "Nursing education",
+    interestedTopics: ["Therapeutic Communication", "Clinical Judgment"],
+    tags: ["public-launch", "lesson-builder", "pilot-interest"],
+    customFields: {
+      pilotGoal: "Review the student-facing lesson package and decide whether the content workflow fits an internal course pilot.",
+      requestedPath: "public_launch_mfp",
+    },
+    firstContactDate: new Date().toISOString(),
+    lastContactDate: new Date().toISOString(),
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+];
 let privacyConsent = null;
 
 function nowIso() {
@@ -1015,6 +1039,80 @@ function applyContentBlockUpdates(block, updates) {
   block.isProcessed = Boolean(block.nursingSpecialty || block.bodySystem || block.concepts?.length);
   block.updatedAt = nowIso();
   return block;
+}
+
+const pilotRequestStatuses = ["new", "qualified", "follow_up", "demo_ready", "closed_won", "closed_lost"];
+
+function pilotRequestPayload(request) {
+  const customFields = request.customFields || {};
+  return {
+    id: request.id,
+    status: request.status || "new",
+    score: request.score || 0,
+    source: request.source || "public_launch_mfp",
+    contactName: request.contactName || "",
+    contactEmail: request.contactEmail || "",
+    contactPhone: request.contactPhone || "",
+    companyName: request.companyName || "",
+    jobTitle: request.jobTitle || "",
+    industry: request.industry || "",
+    interestedTopics: Array.isArray(request.interestedTopics) ? request.interestedTopics : [],
+    tags: Array.isArray(request.tags) ? request.tags : [],
+    pilotGoal: customFields.pilotGoal || "",
+    adminNotes: customFields.adminNotes || "",
+    reviewedAt: customFields.reviewedAt || null,
+    followUpDate: request.followUpDate || null,
+    firstContactDate: request.firstContactDate || null,
+    lastContactDate: request.lastContactDate || null,
+    createdAt: request.createdAt || null,
+    updatedAt: request.updatedAt || null,
+  };
+}
+
+function pilotRequestSummary(requests) {
+  const statusCounts = Object.fromEntries(pilotRequestStatuses.map((status) => [status, 0]));
+  for (const request of requests) {
+    statusCounts[request.status] = (statusCounts[request.status] || 0) + 1;
+  }
+  const openStatuses = new Set(["new", "qualified", "follow_up", "demo_ready"]);
+  return {
+    total: requests.length,
+    open: requests.filter((request) => openStatuses.has(request.status)).length,
+    qualified: statusCounts.qualified || 0,
+    followUp: statusCounts.follow_up || 0,
+    demoReady: statusCounts.demo_ready || 0,
+    closed: (statusCounts.closed_won || 0) + (statusCounts.closed_lost || 0),
+    statusCounts,
+    newestRequest: requests[0] || null,
+  };
+}
+
+function pilotRequestsResponse(status = "all") {
+  const requests = pilotRequests
+    .map(pilotRequestPayload)
+    .filter((request) => status === "all" || request.status === status);
+  return { requests, summary: pilotRequestSummary(requests), statuses: pilotRequestStatuses };
+}
+
+function pilotRequestCsv(requests) {
+  const columns = [
+    ["id", (request) => request.id],
+    ["status", (request) => request.status],
+    ["score", (request) => request.score],
+    ["contact_name", (request) => request.contactName],
+    ["contact_email", (request) => request.contactEmail],
+    ["organization", (request) => request.companyName],
+    ["pilot_goal", (request) => request.pilotGoal],
+    ["interested_topics", (request) => request.interestedTopics.join("; ")],
+    ["admin_notes", (request) => request.adminNotes],
+    ["follow_up_date", (request) => request.followUpDate],
+    ["created_at", (request) => request.createdAt],
+  ];
+  const escape = (value) => `"${String(value ?? "").replace(/"/g, '""')}"`;
+  return [
+    columns.map(([header]) => escape(header)).join(","),
+    ...requests.map((request) => columns.map(([, accessor]) => escape(accessor(request))).join(",")),
+  ].join("\n");
 }
 
 async function readMultipartDocument(req) {
@@ -2039,6 +2137,75 @@ async function handleApi(req, res, url) {
   }
 
   if (url.pathname === "/api/admin/logout") return sendJson(res, 200, { success: true });
+
+  if (url.pathname === "/api/public/launch-interest" && req.method === "POST") {
+    const body = await readJson(req);
+    const request = {
+      id: makeId("pilot-request"),
+      status: "new",
+      score: 45,
+      source: "public_launch_mfp",
+      contactName: compactText(body.contactName || "Preview Contact"),
+      contactEmail: compactText(body.contactEmail || "preview@example.edu").toLowerCase(),
+      contactPhone: compactText(body.contactPhone || ""),
+      companyName: compactText(body.companyName || ""),
+      jobTitle: compactText(body.jobTitle || ""),
+      industry: compactText(body.organizationType || "Nursing education"),
+      interestedTopics: Array.isArray(body.interestedTopics) ? body.interestedTopics.map(String).filter(Boolean) : ["Harrity Lesson Builder pilot"],
+      tags: ["public-launch", "lesson-builder", "pilot-interest"],
+      customFields: {
+        pilotGoal: compactText(body.pilotGoal || ""),
+        requestedPath: "public_launch_mfp",
+      },
+      firstContactDate: nowIso(),
+      lastContactDate: nowIso(),
+      createdAt: nowIso(),
+      updatedAt: nowIso(),
+    };
+    pilotRequests.unshift(request);
+    return sendJson(res, 201, {
+      success: true,
+      message: "Pilot interest captured in local preview",
+      leadId: request.id,
+      nextStep: "NurseStudy will follow up with a controlled pilot review path.",
+    });
+  }
+
+  if (url.pathname === "/api/admin/pilot-requests" && req.method === "GET") {
+    const status = url.searchParams.get("status") || "all";
+    return sendJson(res, 200, pilotRequestsResponse(status));
+  }
+
+  const pilotRequestMatch = url.pathname.match(/^\/api\/admin\/pilot-requests\/([^/]+)$/);
+  if (pilotRequestMatch && req.method === "PATCH") {
+    const request = pilotRequests.find((candidate) => candidate.id === pilotRequestMatch[1]);
+    if (!request) return notFound(res);
+    const updates = await readJson(req);
+    if (updates.status && pilotRequestStatuses.includes(updates.status)) request.status = updates.status;
+    if (typeof updates.score === "number") request.score = Math.max(0, Math.min(100, Math.round(updates.score)));
+    if (Array.isArray(updates.interestedTopics)) request.interestedTopics = updates.interestedTopics.map(String).filter(Boolean);
+    request.followUpDate = updates.followUpDate || null;
+    request.customFields = {
+      ...(request.customFields || {}),
+      adminNotes: compactText(updates.adminNotes || ""),
+      reviewedAt: nowIso(),
+    };
+    request.lastContactDate = nowIso();
+    request.updatedAt = nowIso();
+    return sendJson(res, 200, { request: pilotRequestPayload(request), summary: pilotRequestSummary([pilotRequestPayload(request)]) });
+  }
+
+  if (url.pathname === "/api/admin/pilot-requests/export" && req.method === "GET") {
+    const format = url.searchParams.get("format") || "csv";
+    const requests = pilotRequests.map(pilotRequestPayload);
+    if (format === "json") {
+      res.setHeader("Content-Disposition", `attachment; filename="public-pilot-requests-preview.json"`);
+      return sendJson(res, 200, { generatedAt: nowIso(), source: "public_launch_mfp", summary: pilotRequestSummary(requests), requests });
+    }
+    res.setHeader("Content-Type", "text/csv; charset=utf-8");
+    res.setHeader("Content-Disposition", `attachment; filename="public-pilot-requests-preview.csv"`);
+    return res.end(pilotRequestCsv(requests));
+  }
 
   if (url.pathname === "/api/admin/knowledge-base/documents" && req.method === "GET") {
     return sendJson(res, 200, { documents: kbDocuments.map(documentPayload) });

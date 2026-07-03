@@ -120,6 +120,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       serviceName: process.env.RENDER_SERVICE_NAME || "local",
       startedAt: serverStartedAt,
       internalPilotAccepted: true,
+      publicLaunchMfp: true,
       internalPilotPackageId: "bf472933-fdb6-4e67-b893-491c00c7bcd4",
     });
   });

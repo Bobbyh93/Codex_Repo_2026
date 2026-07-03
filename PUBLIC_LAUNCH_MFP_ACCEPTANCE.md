@@ -7,7 +7,8 @@ Date: July 3, 2026
 The internal pilot is accepted as the baseline for public-launch MFP work. Do not rebuild the pilot loop unless one of these acceptance checks fails.
 
 - Live app: `https://nursestudy-lesson-builder.onrender.com/`
-- Accepted commit: `473adb7`
+- Accepted internal-pilot baseline commit: `473adb7`
+- Public MFP entry commit: `105b71a`
 - Live bundle observed: `assets/index-Ut4B9InS.js`
 - Active pilot package: `bf472933-fdb6-4e67-b893-491c00c7bcd4`
 - Pilot package title: `Therapeutic Communication Live AI MVP Release Smoke`
@@ -26,15 +27,21 @@ The internal pilot is accepted as the baseline for public-launch MFP work. Do no
 
 ## Public Launch MFP Boundary
 
-Public launch is a controlled product entry plus the protected admin workflow. It is not a full public student platform.
+Public launch is a controlled product entry plus the protected admin workflow. It is not a signup-first sales funnel and it is not a full public student account platform.
 
 Included:
 
-- Public launch page and pilot request capture.
+- Public launch page, pilot request capture, and admin-only request review as optional operations support.
 - Deploy/version proof endpoint.
 - Protected admin workflow: Knowledge Base/source intake -> Content Import -> Content Mapper -> Lesson Builder -> QA/export/publish.
 - Learner assignment dashboard and published lesson view.
 - Pilot outcomes and evidence exports.
+
+Core student-facing product direction:
+
+- Nursing students should experience NurseStudy as a learning interface: lessons, guided notes, quizzes, rationales, citations, progress, and source-backed study materials.
+- The creator/operator backend can continue to organize Data Chunker output, decks, videos, source catalogs, and guides, but those workflows should remain behind admin controls.
+- The next product build after request-review plumbing should restore and polish the prior student end-user interface patterns from earlier NurseStudy versions.
 
 Post-MFP:
 
@@ -58,6 +65,7 @@ Post-MFP:
 - Render serves the accepted commit or newer public-launch commit.
 - `/api/public/deploy-proof` returns environment, commit, service, and internal pilot acceptance.
 - `/api/public/launch-interest` creates a lead from the public launch page.
+- `/admin/pilot-requests` lets an admin qualify, note, follow up, and export public MFP requests without exposing learner assignment keys.
 - `/admin/lesson-builder`, `/admin/content-import`, and `/admin/content-mapper` remain protected and reachable after admin login.
 - Learner assignment and `/lessons/:id` routes remain learner-facing.
 - Production build and focused smoke pass.

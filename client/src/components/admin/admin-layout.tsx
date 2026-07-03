@@ -24,7 +24,8 @@ import {
   Map,
   BarChart3,
   Shield,
-  Phone
+  Phone,
+  Rocket
 } from "lucide-react";
 
 interface AdminLayoutProps {
@@ -34,6 +35,7 @@ interface AdminLayoutProps {
 const navigation = [
   { name: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
   { name: "Call Bookings", href: "/admin/call-bookings", icon: Phone },
+  { name: "Pilot Requests", href: "/admin/pilot-requests", icon: Rocket },
   { name: "Knowledge Base", href: "/admin/knowledge-base", icon: Database },
   { name: "Content Import", href: "/admin/content-import", icon: Upload },
   { name: "Lesson Builder", href: "/admin/lesson-builder", icon: Package },

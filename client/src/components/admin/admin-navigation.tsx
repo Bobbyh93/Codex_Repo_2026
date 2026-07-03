@@ -28,6 +28,7 @@ import {
   Brain,
   TrendingUp,
   BookOpenCheck,
+  Rocket,
 } from 'lucide-react';
 
 interface NavItem {
@@ -115,6 +116,12 @@ const navigationSections: NavSection[] = [
         href: '/admin/call-bookings',
         icon: <Phone className="h-4 w-4" />,
         description: 'Manage consultation bookings and leads'
+      },
+      {
+        title: 'Pilot Requests',
+        href: '/admin/pilot-requests',
+        icon: <Rocket className="h-4 w-4" />,
+        description: 'Review public launch interest and next actions'
       },
       {
         title: 'Knowledge Base',

@@ -50,6 +50,7 @@ import TopicsNeedingResources from "@/pages/admin/topics-needing-resources";
 import ResourceMapperPage from "@/pages/admin/resource-mapper";
 import DemandAnalyticsPage from "@/pages/admin/demand-analytics";
 import CallBookingsPage from "@/pages/admin/call-bookings";
+import PilotRequestsPage from "@/pages/admin/pilot-requests";
 import KnowledgeBase from "@/pages/admin/knowledge-base";
 import LessonBuilder from "@/pages/admin/lesson-builder";
 import NotFound from "@/pages/not-found";
@@ -162,6 +163,7 @@ function ProtectedProfessionalStudyGuideRoute(props: any) {
 
 const ProtectedAdminDashboard = withAdminProtection(AdminDashboard);
 const ProtectedCallBookingsPage = withAdminProtection(CallBookingsPage);
+const ProtectedPilotRequestsPage = withAdminProtection(PilotRequestsPage);
 const ProtectedKnowledgeBase = withAdminProtection(KnowledgeBase);
 const ProtectedLessonBuilder = withAdminProtection(LessonBuilder);
 const ProtectedResourceManagementPage = withAdminProtection(ResourceManagementPage);
@@ -213,6 +215,7 @@ function Router() {
         <Route path="/admin/login" component={AdminLogin} />
         <Route path="/admin/dashboard" component={ProtectedAdminDashboard} />
         <Route path="/admin/call-bookings" component={ProtectedCallBookingsPage} />
+        <Route path="/admin/pilot-requests" component={ProtectedPilotRequestsPage} />
         <Route path="/admin/knowledge-base" component={ProtectedKnowledgeBase} />
         <Route path="/admin/lesson-builder" component={ProtectedLessonBuilder} />
         <Route path="/admin/resources" component={ProtectedResourceManagementPage} />

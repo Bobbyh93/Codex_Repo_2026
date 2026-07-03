@@ -614,6 +614,23 @@ type PilotLaunchSummary = {
   } | null;
 };
 
+type PilotRequestsSummary = {
+  total: number;
+  open: number;
+  qualified: number;
+  followUp: number;
+  demoReady: number;
+  closed: number;
+  newestRequest?: {
+    id: string;
+    contactName?: string;
+    contactEmail?: string;
+    companyName?: string;
+    status?: string;
+    createdAt?: string;
+  } | null;
+};
+
 const defaultMappingRows = [
   { taxonomy: "NCLEX", code: "PHYS", label: "Physiological Integrity", confidence: 0.9 },
   { taxonomy: "CJM", code: "recognize-cues", label: "Recognize Cues", confidence: 0.9 },
@@ -945,6 +962,15 @@ export default function LessonBuilder() {
 
   const pilotLaunchQuery = useQuery<PilotLaunchSummary>({
     queryKey: ["/api/admin/pilot-launch/summary"],
+  });
+
+  const pilotRequestsQuery = useQuery<{ summary: PilotRequestsSummary }>({
+    queryKey: ["/api/admin/pilot-requests", "summary"],
+    queryFn: async () => {
+      const response = await fetch("/api/admin/pilot-requests", { credentials: "include" });
+      if (!response.ok) throw new Error("Failed to load pilot request summary");
+      return response.json();
+    },
   });
 
   const sourcesQuery = useQuery<{ sources: SourceRecord[]; taxonomyTerms: TaxonomyTerm[]; documents: any[]; archiveImports?: ArchiveImport[] }>({
@@ -1969,6 +1995,10 @@ export default function LessonBuilder() {
                     Copy Learner Link
                   </Button>
                 ) : null}
+                <Button size="sm" variant="outline" onClick={() => { window.location.href = "/admin/pilot-requests"; }}>
+                  <Rocket className="mr-2 h-4 w-4" />
+                  Pilot Requests
+                </Button>
               </div>
               {latestEvidenceExport ? (
                 <div className="max-w-3xl rounded-md border border-teal-200 bg-teal-50 p-3 text-sm text-teal-950">
@@ -1992,6 +2022,8 @@ export default function LessonBuilder() {
               <div className="rounded-md bg-slate-50 px-3 py-2">Assigned: {pilotLaunch?.outcomes?.totals.assigned ?? 0}</div>
               <div className="rounded-md bg-slate-50 px-3 py-2">Completed: {pilotLaunch?.outcomes?.totals.completed ?? 0}</div>
               <div className="rounded-md bg-slate-50 px-3 py-2">Export: {pilotLaunch?.exportStatus?.status?.replace(/_/g, " ") || "not checked"}</div>
+              <div className="rounded-md bg-slate-50 px-3 py-2">Public requests: {pilotRequestsQuery.data?.summary.open ?? 0} open</div>
+              <div className="rounded-md bg-slate-50 px-3 py-2">Qualified: {pilotRequestsQuery.data?.summary.qualified ?? 0}</div>
             </div>
           </div>
 

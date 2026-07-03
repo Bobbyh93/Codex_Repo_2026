@@ -125,6 +125,26 @@ async function run() {
     `status ${professionalGuide.status}, mode ${professionalGuide.payload?.status || professionalGuide.payload?.message || "unknown"}`
   );
 
+  const publicPilotEmail = `pilot-request-smoke-${Date.now()}@example.edu`;
+  const publicPilotRequest = await request("/api/public/launch-interest", {
+    method: "POST",
+    clientIp: smokeClientIp,
+    json: {
+      contactName: "Release Smoke Reviewer",
+      contactEmail: publicPilotEmail,
+      companyName: "Release Smoke Nursing Program",
+      jobTitle: "Course Lead",
+      organizationType: "Nursing education",
+      pilotGoal: "Verify the public pilot request queue captures and qualifies launch interest.",
+      interestedTopics: ["Therapeutic Communication", "Clinical Judgment"],
+    },
+  });
+  record(
+    "public pilot request captured",
+    publicPilotRequest.status === 201 && isJson(publicPilotRequest) && publicPilotRequest.payload?.success === true,
+    `status ${publicPilotRequest.status}, lead ${publicPilotRequest.payload?.leadId || "missing"}`
+  );
+
   const weakRegistration = await request("/api/auth/register", {
     method: "POST",
     clientIp: smokeClientIp,
@@ -152,6 +172,52 @@ async function run() {
     "admin login",
     adminLogin.status === 200 && isJson(adminLogin),
     `status ${adminLogin.status}`
+  );
+  const csrfToken = adminLogin.payload?.csrfToken;
+
+  const pilotRequests = await request("/api/admin/pilot-requests");
+  const pilotRequestList = Array.isArray(pilotRequests.payload?.requests) ? pilotRequests.payload.requests : [];
+  const smokePilotRequest = pilotRequestList.find((request) => request.contactEmail === publicPilotEmail);
+  record(
+    "admin pilot requests queue",
+    pilotRequests.status === 200 && isJson(pilotRequests) && Boolean(smokePilotRequest),
+    `status ${pilotRequests.status}, total ${pilotRequests.payload?.summary?.total ?? 0}`
+  );
+
+  if (smokePilotRequest?.id) {
+    const updatePilotRequest = await request(`/api/admin/pilot-requests/${smokePilotRequest.id}`, {
+      method: "PATCH",
+      headers: csrfToken ? { "x-csrf-token": csrfToken } : {},
+      json: {
+        status: "qualified",
+        score: 72,
+        followUpDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+        interestedTopics: ["Therapeutic Communication", "Clinical Judgment"],
+        adminNotes: "Release smoke qualified this public pilot request.",
+      },
+    });
+    record(
+      "admin qualifies pilot request",
+      updatePilotRequest.status === 200
+        && isJson(updatePilotRequest)
+        && updatePilotRequest.payload?.request?.status === "qualified"
+        && updatePilotRequest.payload?.request?.adminNotes,
+      `status ${updatePilotRequest.status}, request status ${updatePilotRequest.payload?.request?.status || "unknown"}`
+    );
+  }
+
+  const pilotRequestCsv = await request("/api/admin/pilot-requests/export?format=csv");
+  record(
+    "pilot request CSV export",
+    pilotRequestCsv.status === 200 && String(pilotRequestCsv.contentType).includes("text/csv"),
+    `status ${pilotRequestCsv.status}, content-type ${pilotRequestCsv.contentType || "missing"}`
+  );
+
+  const pilotRequestJson = await request("/api/admin/pilot-requests/export?format=json");
+  record(
+    "pilot request JSON export",
+    pilotRequestJson.status === 200 && isJson(pilotRequestJson) && Array.isArray(pilotRequestJson.payload?.requests),
+    `status ${pilotRequestJson.status}, records ${pilotRequestJson.payload?.requests?.length ?? 0}`
   );
 
   const readiness = await request("/api/admin/lesson-builder/release-readiness");
