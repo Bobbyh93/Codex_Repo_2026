@@ -90,6 +90,52 @@ type ArchiveImport = {
   createdAt?: string;
 };
 
+const defaultChatgptLibraryItemsText = [
+  "skill(21).zip | zip | skill_pack | Review as a possible lesson-builder skill or agent workflow pattern",
+  "harrity_lesson_builder_audio_feature_20260623.zip | zip | harrity_lesson_contract | Review as an audio lesson feature pattern",
+  "learner_handout.md | md | learner_material | Review as learner-facing handout grammar",
+  "facilitator_guide.md | md | facilitation_or_handoff | Review as instructor notes/facilitation grammar",
+  "boots_to_bedside_agent_packet.zip | zip | agent_packet | Review as agent handoff/reference packet pattern",
+  "boots_to_bedside_agent_handoff.docx | docx | facilitation_or_handoff | Review as handoff document pattern",
+  "Solution_Generator_Launch_Builder.zip | zip | solution_builder_pattern | Review as product launch builder pattern",
+  "VDIS_v1_Templates_Workbook.xlsx | xlsx | report_workbook_pattern | Review as workbook/report export pattern",
+  "VDIS_v1_Report_Package.pdf | pdf | report_workbook_pattern | Review as evidence-report package pattern",
+].join("\n");
+
+function inferChatgptFileType(title: string) {
+  const match = title.trim().toLowerCase().match(/\.([a-z0-9]+)$/);
+  return match?.[1] || "unknown";
+}
+
+function inferChatgptAssetFamily(title: string) {
+  const lower = title.toLowerCase();
+  if (lower.includes("harrity") || lower.includes("lesson_builder")) return "harrity_lesson_contract";
+  if (lower.includes("learner") || lower.includes("handout")) return "learner_material";
+  if (lower.includes("facilitator") || lower.includes("handoff")) return "facilitation_or_handoff";
+  if (lower.includes("skill")) return "skill_pack";
+  if (lower.includes("solution_generator")) return "solution_builder_pattern";
+  if (lower.includes("vdis")) return "report_workbook_pattern";
+  return "reference_pack";
+}
+
+function parseChatgptLibraryItems(itemsText: string, projectContext: string) {
+  return itemsText
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => {
+      const [titlePart, typePart, familyPart, usePart] = line.split("|").map((part) => part.trim());
+      const title = titlePart || "Untitled ChatGPT library asset";
+      return {
+        title,
+        fileType: typePart || inferChatgptFileType(title),
+        assetFamily: familyPart || inferChatgptAssetFamily(title),
+        candidateUse: usePart || "Review as a future NurseStudy reference/source contract candidate",
+        projectContext,
+      };
+    });
+}
+
 type LessonBuilderHealth = {
   runtime: string;
   aiMode?: "workspace_agent" | "openai_chat_completions" | "template_fallback" | "invalid" | string;
@@ -769,6 +815,14 @@ export default function LessonBuilder() {
     title: "MNN Maternal-Newborn Package Hub",
     packageKind: "mnn_package_hub",
   });
+  const [chatgptLibraryForm, setChatgptLibraryForm] = useState({
+    title: "ChatGPT Library Nursing Education Reference Pack",
+    libraryUrl: "https://chatgpt.com/library?tab=files",
+    projectTitle: "Nursing Education Concepts and Topics",
+    projectUrl: "https://chatgpt.com/g/g-p-69def0f95a00819184e951302b7bf3fb-nursing-education-concepts-and-topics/project",
+    notes: "Visible signed-in Chrome library inventory. Register as reference-only until each file is exported, reviewed, and approved.",
+    itemsText: defaultChatgptLibraryItemsText,
+  });
   const [documentSourceForm, setDocumentSourceForm] = useState({
     documentId: "",
     sourceType: "nursing_content_source",
@@ -1150,6 +1204,40 @@ export default function LessonBuilder() {
       toast({
         title: data.importJob.status === "duplicate" ? "Drive hub already registered" : "Drive hub imported",
         description: `${data.sources?.length || 0} source records and ${data.files?.length || 0} manifest entries are ${data.importJob.status}.`,
+      });
+    },
+  });
+
+  const importChatgptLibraryMutation = useMutation({
+    mutationFn: async () => {
+      const items = parseChatgptLibraryItems(chatgptLibraryForm.itemsText, chatgptLibraryForm.projectTitle);
+      const response = await apiRequest("POST", "/api/admin/lesson-builder/chatgpt-library/import", {
+        title: chatgptLibraryForm.title,
+        libraryUrl: chatgptLibraryForm.libraryUrl,
+        projectTitle: chatgptLibraryForm.projectTitle,
+        projectUrl: chatgptLibraryForm.projectUrl,
+        notes: chatgptLibraryForm.notes,
+        approvalStatus: "pending",
+        items,
+      }, {
+        timeout: 120000,
+        retries: 0,
+      });
+      return response.json();
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/sources"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/health"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/release-readiness"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/pilot-launch/summary"] });
+      setLastArchiveImportId(data.importJob?.id || "");
+      if (Array.isArray(data.sources) && data.sources[0]?.id) {
+        setSelectedSourceDetailId(data.sources[0].id);
+        setSelectedMappingSourceId(data.sources[0].id);
+      }
+      toast({
+        title: data.importJob?.status === "duplicate" ? "ChatGPT pack already registered" : "ChatGPT pack registered",
+        description: `${data.sources?.length || 0} source candidates and ${data.files?.length || 0} visible file records are ${data.importJob?.status || "registered"}.`,
       });
     },
   });
@@ -2206,6 +2294,9 @@ export default function LessonBuilder() {
                                 {source.sourceKind === "drive_presentation_collection" && <Badge variant="outline">Drive deck collection</Badge>}
                                 {source.sourceKind === "drive_chapter_source_candidate" && <Badge variant="outline">chapter candidate</Badge>}
                                 {source.sourceKind === "drive_notes_pass" && <Badge variant="outline">notes pass candidate</Badge>}
+                                {source.sourceKind === "chatgpt_library_reference_pack" && <Badge variant="outline">ChatGPT library pack</Badge>}
+                                {source.metadata?.origin === "chatgpt_library" && <Badge variant="outline">ChatGPT origin</Badge>}
+                                {source.metadata?.requiresExport && <Badge variant="outline">requires export review</Badge>}
                                 {source.metadata?.referenceOnly && <Badge variant="outline">reference-only</Badge>}
                                 {source.sourceKind === "sites_project" && <Badge variant="outline">Sites audit pattern</Badge>}
                                 {source.metadata?.premiumWorkflowPattern && <Badge variant="outline">premium review pattern</Badge>}
@@ -2429,6 +2520,79 @@ export default function LessonBuilder() {
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-base">
+                      <Layers3 className="h-4 w-4" />
+                      Register ChatGPT Library Pack
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="chatgpt-library-title">Pack title</Label>
+                      <Input
+                        id="chatgpt-library-title"
+                        value={chatgptLibraryForm.title}
+                        onChange={(event) => setChatgptLibraryForm({ ...chatgptLibraryForm, title: event.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="chatgpt-library-url">Library URL</Label>
+                      <Input
+                        id="chatgpt-library-url"
+                        value={chatgptLibraryForm.libraryUrl}
+                        onChange={(event) => setChatgptLibraryForm({ ...chatgptLibraryForm, libraryUrl: event.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="chatgpt-project-title">Project context</Label>
+                      <Input
+                        id="chatgpt-project-title"
+                        value={chatgptLibraryForm.projectTitle}
+                        onChange={(event) => setChatgptLibraryForm({ ...chatgptLibraryForm, projectTitle: event.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="chatgpt-project-url">Project URL</Label>
+                      <Textarea
+                        id="chatgpt-project-url"
+                        value={chatgptLibraryForm.projectUrl}
+                        onChange={(event) => setChatgptLibraryForm({ ...chatgptLibraryForm, projectUrl: event.target.value })}
+                        rows={2}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="chatgpt-library-items">Visible file inventory</Label>
+                      <Textarea
+                        id="chatgpt-library-items"
+                        value={chatgptLibraryForm.itemsText}
+                        onChange={(event) => setChatgptLibraryForm({ ...chatgptLibraryForm, itemsText: event.target.value })}
+                        rows={8}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="chatgpt-library-notes">Review note</Label>
+                      <Textarea
+                        id="chatgpt-library-notes"
+                        value={chatgptLibraryForm.notes}
+                        onChange={(event) => setChatgptLibraryForm({ ...chatgptLibraryForm, notes: event.target.value })}
+                        rows={3}
+                      />
+                    </div>
+                    <div className="rounded-md border bg-slate-50 p-3 text-xs text-slate-600">
+                      Registers visible ChatGPT Library metadata as pending reference-pack records. Export and approve a file before using it as source truth.
+                    </div>
+                    <Button
+                      className="w-full"
+                      disabled={!chatgptLibraryForm.title || !chatgptLibraryForm.itemsText.trim() || importChatgptLibraryMutation.isPending}
+                      onClick={() => importChatgptLibraryMutation.mutate()}
+                    >
+                      <Layers3 className="mr-2 h-4 w-4" />
+                      Register {parseChatgptLibraryItems(chatgptLibraryForm.itemsText, chatgptLibraryForm.projectTitle).length} Library Files
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-base">
                       <Archive className="h-4 w-4" />
                       Import Source Archive
                     </CardTitle>
@@ -2593,6 +2757,7 @@ export default function LessonBuilder() {
                           <SelectItem value="drive_presentation">Drive slides/PPT</SelectItem>
                           <SelectItem value="drive_package_hub">Drive package hub</SelectItem>
                           <SelectItem value="drive_chapter_source_candidate">Drive chapter candidate</SelectItem>
+                          <SelectItem value="chatgpt_library_reference_pack">ChatGPT library pack</SelectItem>
                           <SelectItem value="sites_project">Sites audit dashboard</SelectItem>
                           <SelectItem value="document">Knowledge document</SelectItem>
                           <SelectItem value="taxonomy">Taxonomy</SelectItem>

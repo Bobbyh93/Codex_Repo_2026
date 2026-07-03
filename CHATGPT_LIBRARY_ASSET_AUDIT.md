@@ -50,16 +50,19 @@ ChatGPT library files should feed NurseStudy as a new `chatgpt_library_reference
 4. Promote only reviewed files into source truth.
 5. Keep project/chat links as workspace context until files can be exported or connected through an official API/path.
 
-## Recommended Next Build
+## Implemented Source Studio Path
 
-Add Source Studio support for ChatGPT library reference packs:
+Source Studio now supports ChatGPT library reference packs:
 
-- Manual registration form for ChatGPT file title, file type, modified date, size, and project/chat context.
-- Bulk paste/import field for a visible library inventory.
+- Admin UI card: `Register ChatGPT Library Pack`.
+- API: `POST /api/admin/lesson-builder/chatgpt-library/import`.
+- Bulk paste/import field for visible library inventory lines.
 - Source kind: `chatgpt_library_reference_pack`.
 - Approval default: `pending`.
-- Citation policy default: `reference_only`.
-- Metadata fields: `chatgptProject`, `chatgptConversation`, `assetFamily`, `candidateUse`, `requiresExport`.
+- Citation policy default: `metadata_only_requires_export`.
+- Metadata fields include ChatGPT origin, project URL/title, asset family, candidate use, `referenceOnly`, and `requiresExport`.
+- Import jobs use role `chatgpt_library_reference_pack` and dedupe repeated inventories by content hash.
+- These records are still not clinical source truth until exported/downloaded and approved.
 
 ## Known Limits
 

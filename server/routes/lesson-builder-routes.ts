@@ -107,6 +107,28 @@ const drivePackageImportSchema = z.object({
   approvalStatus: z.enum(["pending", "approved", "rejected"]).default("pending"),
 });
 
+const chatgptLibraryItemSchema = z.object({
+  title: z.string().trim().min(2).max(240),
+  fileType: z.string().trim().max(80).optional().default("unknown"),
+  modifiedAt: z.string().trim().max(120).optional().default(""),
+  sizeLabel: z.string().trim().max(80).optional().default(""),
+  projectContext: z.string().trim().max(240).optional().default(""),
+  conversationUrl: z.string().trim().max(500).optional().default(""),
+  assetFamily: z.string().trim().max(120).optional().default("reference_pack"),
+  candidateUse: z.string().trim().max(500).optional().default("review for future product/source contract use"),
+  sourceUrl: z.string().trim().max(500).optional().default(""),
+});
+
+const chatgptLibraryReferencePackImportSchema = z.object({
+  title: z.string().trim().min(2).max(180).default("ChatGPT Library Reference Pack"),
+  libraryUrl: z.string().trim().max(500).default("https://chatgpt.com/library?tab=files"),
+  projectTitle: z.string().trim().max(240).optional().default(""),
+  projectUrl: z.string().trim().max(500).optional().default(""),
+  notes: z.string().trim().max(2000).optional().default(""),
+  approvalStatus: z.enum(["pending", "approved", "rejected"]).default("pending"),
+  items: z.array(chatgptLibraryItemSchema).min(1).max(80),
+});
+
 const attachDocumentSourceSchema = z.object({
   documentId: z.string().min(1),
   title: z.string().optional(),
@@ -1235,6 +1257,227 @@ function buildMnnDrivePackageSummary(folderId: string, title: string) {
       "drive_notes_pass_candidate",
     ],
   };
+}
+
+function normalizeChatgptFileType(value: string | undefined, title: string) {
+  const cleanValue = (value || "").trim().toLowerCase();
+  if (cleanValue && cleanValue !== "unknown") return cleanValue.replace(/^\./, "");
+  const match = title.trim().toLowerCase().match(/\.([a-z0-9]+)(?:[\s)]*)?$/);
+  return match?.[1] || "unknown";
+}
+
+function chatgptAssetFamilyForItem(item: z.infer<typeof chatgptLibraryItemSchema>) {
+  const title = item.title.toLowerCase();
+  const candidate = (item.assetFamily || "").trim();
+  if (candidate && candidate !== "reference_pack") return candidate;
+  if (title.includes("harrity") || title.includes("lesson_builder")) return "harrity_lesson_contract";
+  if (title.includes("learner") || title.includes("handout")) return "learner_material";
+  if (title.includes("facilitator") || title.includes("handoff")) return "facilitation_or_handoff";
+  if (title.includes("skill")) return "skill_pack";
+  if (title.includes("solution_generator")) return "solution_builder_pattern";
+  if (title.includes("vdis")) return "report_workbook_pattern";
+  return "reference_pack";
+}
+
+function buildChatgptLibrarySummary(data: z.infer<typeof chatgptLibraryReferencePackImportSchema>, contentHash: string) {
+  const fileTypeCounts = data.items.reduce<Record<string, number>>((acc, item) => {
+    const type = normalizeChatgptFileType(item.fileType, item.title);
+    acc[type] = (acc[type] || 0) + 1;
+    return acc;
+  }, {});
+  const assetFamilies = Array.from(new Set(data.items.map((item) => chatgptAssetFamilyForItem(item)))).sort();
+  return {
+    title: data.title,
+    role: "chatgpt_library_reference_pack",
+    origin: "chatgpt_library",
+    libraryUrl: data.libraryUrl,
+    projectTitle: data.projectTitle,
+    projectUrl: data.projectUrl,
+    contentHash,
+    visibleFileCount: data.items.length,
+    fileTypeCounts,
+    assetFamilies,
+    sourceTruthPolicy: "reference_only_until_export_review_and_admin_approval",
+    requiresExportBeforeCitation: true,
+    recommendedUse: [
+      "Register visible ChatGPT library inventory as metadata only.",
+      "Export or download the actual file before promoting any item into source truth.",
+      "Use handouts, facilitation guides, skills, and solution packs as product patterns until reviewed.",
+      "Do not use ChatGPT library metadata as clinical citation evidence.",
+    ],
+    notes: data.notes,
+    auditedIn: "CHATGPT_LIBRARY_ASSET_AUDIT.md",
+  };
+}
+
+async function importChatgptLibraryReferencePack(data: z.infer<typeof chatgptLibraryReferencePackImportSchema>, createdBy?: string) {
+  await ensureLessonBuilderTables();
+  const role = "chatgpt_library_reference_pack";
+  const normalizedLibraryUrl = data.libraryUrl || "https://chatgpt.com/library?tab=files";
+  const itemFingerprint = data.items
+    .map((item) => `${item.title}|${normalizeChatgptFileType(item.fileType, item.title)}|${item.projectContext || ""}`)
+    .sort()
+    .join("\n");
+  const contentHash = hashText(`${role}:${normalizedLibraryUrl}:${data.projectUrl || ""}:${itemFingerprint}`);
+  const summary = buildChatgptLibrarySummary(data, contentHash);
+
+  const [duplicate] = await db
+    .select()
+    .from(sourceArchiveImports)
+    .where(and(eq(sourceArchiveImports.contentHash, contentHash), eq(sourceArchiveImports.role, role)))
+    .orderBy(desc(sourceArchiveImports.createdAt))
+    .limit(1);
+
+  if (duplicate && duplicate.status !== "failed") {
+    const [duplicateJob] = await db.insert(sourceArchiveImports).values({
+      title: `${duplicate.title} duplicate`,
+      sourceUri: normalizedLibraryUrl,
+      archiveKind: "chatgpt_library",
+      role,
+      status: "duplicate",
+      contentHash,
+      fileCount: duplicate.fileCount,
+      importedSourceIds: duplicate.importedSourceIds || [],
+      summary: {
+        ...(duplicate.summary || {}),
+        duplicateOf: duplicate.id,
+        dedupedAt: new Date().toISOString(),
+      },
+      createdBy,
+    }).returning();
+
+    return { importJob: duplicateJob, files: [], sources: [], duplicateOf: duplicate.id };
+  }
+
+  const [importJob] = await db.insert(sourceArchiveImports).values({
+    title: data.title,
+    sourceUri: normalizedLibraryUrl,
+    archiveKind: "chatgpt_library",
+    role,
+    status: "processing",
+    contentHash,
+    fileCount: data.items.length,
+    importedSourceIds: [],
+    summary,
+    createdBy,
+  }).returning();
+
+  try {
+    const commonMetadata = {
+      chatgptLibraryImportId: importJob.id,
+      origin: "chatgpt_library",
+      libraryUrl: normalizedLibraryUrl,
+      projectTitle: data.projectTitle,
+      projectUrl: data.projectUrl,
+      referenceOnly: true,
+      requiresExport: true,
+      sourceTruthPolicy: "not_authoritative_source_truth",
+      approvalRequiredBeforeGeneration: true,
+      auditedIn: "CHATGPT_LIBRARY_ASSET_AUDIT.md",
+    };
+
+    const sourceRows = [
+      {
+        title: data.title,
+        sourceKind: "chatgpt_library_reference_pack",
+        sourceType: "chatgpt_visible_inventory",
+        sourceUri: normalizedLibraryUrl,
+        subject: data.projectTitle || "ChatGPT library reference inventory",
+        edition: "visible library inventory",
+        citationPolicy: "metadata_only_requires_export",
+        approvalStatus: data.approvalStatus,
+        ingestionStatus: "ready",
+        metadata: {
+          ...commonMetadata,
+          registryRole: "chatgpt_library_collection",
+          summary,
+        },
+        createdBy,
+      },
+      ...data.items.map((item) => {
+        const fileType = normalizeChatgptFileType(item.fileType, item.title);
+        const assetFamily = chatgptAssetFamilyForItem(item);
+        return {
+          title: item.title,
+          sourceKind: "chatgpt_library_reference_pack",
+          sourceType: assetFamily,
+          sourceUri: item.sourceUrl || item.conversationUrl || normalizedLibraryUrl,
+          subject: item.projectContext || data.projectTitle || "ChatGPT library asset candidate",
+          edition: item.modifiedAt || "visible library inventory",
+          citationPolicy: "metadata_only_requires_export",
+          approvalStatus: "pending",
+          ingestionStatus: "ready",
+          metadata: {
+            ...commonMetadata,
+            registryRole: "chatgpt_library_file_candidate",
+            fileType,
+            sizeLabel: item.sizeLabel,
+            modifiedAt: item.modifiedAt,
+            projectContext: item.projectContext,
+            conversationUrl: item.conversationUrl,
+            assetFamily,
+            candidateUse: item.candidateUse,
+            candidateSource: true,
+          },
+          createdBy,
+        };
+      }),
+    ];
+
+    const createdSources = await db.insert(sourceRegistry).values(sourceRows).returning();
+    const sourceIds = createdSources.map((source) => source.id);
+    const packSource = createdSources[0];
+    const candidateSources = createdSources.slice(1);
+    const fileRows = data.items.map((item, index) => {
+      const fileType = normalizeChatgptFileType(item.fileType, item.title);
+      const assetFamily = chatgptAssetFamilyForItem(item);
+      return {
+        importId: importJob.id,
+        sourceId: candidateSources[index]?.id || packSource.id,
+        filePath: `ChatGPT Library/${item.title}`,
+        fileKind: fileType,
+        fileRole: assetFamily,
+        sizeBytes: 0,
+        contentHash: hashText(`${contentHash}:${item.title}:${index}`),
+        extractedText: `${item.title}. Visible ChatGPT Library metadata only. Export/download and review the file before source-truth or citation use.`,
+        metadata: {
+          virtualChatgptLibraryFile: true,
+          origin: "chatgpt_library",
+          referenceOnly: true,
+          requiresExport: true,
+          projectTitle: data.projectTitle,
+          projectUrl: data.projectUrl,
+          modifiedAt: item.modifiedAt,
+          sizeLabel: item.sizeLabel,
+          projectContext: item.projectContext,
+          conversationUrl: item.conversationUrl,
+          candidateUse: item.candidateUse,
+        },
+      };
+    });
+
+    const createdFiles = await db.insert(sourceArchiveFiles).values(fileRows).returning();
+    const [completed] = await db.update(sourceArchiveImports).set({
+      status: "completed",
+      importedSourceIds: sourceIds,
+      fileCount: createdFiles.length,
+      summary: {
+        ...summary,
+        sourceRegistryIds: sourceIds,
+        completedAt: new Date().toISOString(),
+      },
+      updatedAt: new Date(),
+    }).where(eq(sourceArchiveImports.id, importJob.id)).returning();
+
+    return { importJob: completed, files: createdFiles, sources: createdSources, duplicateOf: null };
+  } catch (error) {
+    const [failed] = await db.update(sourceArchiveImports).set({
+      status: "failed",
+      errorMessage: error instanceof Error ? error.message : "Unknown ChatGPT library import failure",
+      updatedAt: new Date(),
+    }).where(eq(sourceArchiveImports.id, importJob.id)).returning();
+    return { importJob: failed, files: [], sources: [], duplicateOf: null };
+  }
 }
 
 async function importDrivePackageHub(data: z.infer<typeof drivePackageImportSchema>, createdBy?: string) {
@@ -5399,6 +5642,19 @@ export function registerLessonBuilderRoutes(app: Express) {
       }
       console.error("Lesson builder Drive package import error:", error);
       res.status(500).json({ error: "Failed to import Drive package", details: error instanceof Error ? error.message : undefined });
+    }
+  });
+
+  app.post("/api/admin/lesson-builder/chatgpt-library/import", requireAdminSession, async (req: AdminAuthRequest, res: Response) => {
+    try {
+      const data = chatgptLibraryReferencePackImportSchema.parse(req.body);
+      res.json(await importChatgptLibraryReferencePack(data, req.session.adminUser?.userId));
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid ChatGPT library import", details: error.errors });
+      }
+      console.error("Lesson builder ChatGPT library import error:", error);
+      res.status(500).json({ error: "Failed to import ChatGPT library reference pack", details: error instanceof Error ? error.message : undefined });
     }
   });
 
