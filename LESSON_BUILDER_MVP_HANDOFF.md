@@ -62,6 +62,7 @@ Verified live on Render:
 - Post-audit-pattern authenticated live API smoke passed for the same package: JSON evidence export includes `relatedAuditPatterns` with 2 entries, and printable HTML includes the `Related Audit Patterns` Pearson section.
 - Post-deck-exemplar authenticated live API smoke passed for the same package: JSON evidence export includes `relatedDeckExemplars` with 5 entries, and printable HTML includes the `Related Deck Exemplars` Drive section.
 - Post-link-polish authenticated live API smoke passed for the same package: Markdown evidence reports include `[Open reference]` links and related asset counts, while printable HTML includes clickable `Open reference` links plus audit/deck summary counts.
+- Post-policy authenticated live API smoke passed for the same package: JSON evidence export includes `relatedAssetPolicy.citationUse=not_authoritative_source_truth`, Markdown includes `Related asset policy`, and printable HTML includes the reference-only citation guardrail.
 - Browser verification reached the updated console after Render wake. A later export-click pass hit Render's cold-start/loading interstitial, so API smoke is the authoritative verification for the export response while the UI code is verified on GitHub `main`.
 
 Use the Pearson Sites projects as workflow models, not as nursing source truth:
