@@ -54,6 +54,7 @@ Verified live on Render:
 - Pilot Evidence Export includes related Google Drive deck exemplars in JSON, Markdown, and printable HTML reports.
 - Pilot Evidence reports include related asset counts in the executive summary, Markdown links, and clickable HTML `Open reference` links for Drive/Pearson references.
 - Pilot Evidence reports include a `relatedAssetPolicy` guardrail stating that lesson claims must cite approved source traceability records.
+- The admin export confirmation now shows generated file count, audit-pattern count, deck-exemplar count, completion count, and the reference-only source-truth policy after JSON or Markdown export.
 - Pilot Evidence Export also supports a director-ready Markdown brief through `?format=markdown` and the admin `Export Brief` action.
 - Pilot Evidence Export also supports a printable HTML report through `?format=html` and the admin `Open Report` action for faculty/program-director review.
 - Post-polish authenticated live API smoke passed for package `bf472933-fdb6-4e67-b893-491c00c7bcd4`: evidence export returned `200`, referenced 12 generated files, showed 1 assigned learner, 1 completed learner, and `exportReady=true`.

@@ -251,6 +251,12 @@ type PilotEvidenceReport = {
   cohortOutcomes?: {
     totals?: Record<string, number>;
   } | null;
+  relatedAuditPatterns?: any[];
+  relatedDeckExemplars?: any[];
+  relatedAssetPolicy?: {
+    note?: string;
+    citationUse?: string;
+  };
 };
 
 type PackageDetail = {
@@ -758,6 +764,9 @@ export default function LessonBuilder() {
     generatedAt: string;
     artifactCount: number;
     generatedFileCount: number;
+    auditPatternCount: number;
+    deckExemplarCount: number;
+    relatedAssetPolicyNote?: string;
     assignedCount: number;
     completedCount: number;
     exportReady: boolean;
@@ -1459,6 +1468,9 @@ export default function LessonBuilder() {
         generatedAt: report?.generatedAt || new Date().toISOString(),
         artifactCount: report?.lessonAssets?.artifactCount || activeLaunch?.exportStatus?.fileCount || generatedFiles.length || 0,
         generatedFileCount: generatedFiles.length || activeLaunch?.exportStatus?.fileCount || 0,
+        auditPatternCount: report?.relatedAuditPatterns?.length ?? stats.auditPatterns,
+        deckExemplarCount: report?.relatedDeckExemplars?.length ?? stats.driveDecks,
+        relatedAssetPolicyNote: report?.relatedAssetPolicy?.note || "Related Drive/Pearson assets are reference-only; lesson claims must cite approved source-truth records.",
         assignedCount: totals.assigned || 0,
         completedCount: totals.completed || 0,
         exportReady: report ? Boolean(report.readiness?.exportReady) : activeLaunch?.exportStatus?.status === "ready",
@@ -1466,7 +1478,7 @@ export default function LessonBuilder() {
       setLatestEvidenceExport(exportSummary);
       toast({
         title: format === "markdown" ? "Pilot evidence brief exported" : "Pilot evidence exported",
-        description: `${exportSummary.generatedFileCount} files referenced, ${exportSummary.completedCount}/${exportSummary.assignedCount} learners complete.`,
+        description: `${exportSummary.generatedFileCount} files, ${exportSummary.auditPatternCount} audit pattern(s), ${exportSummary.deckExemplarCount} deck exemplar(s).`,
       });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/packages", targetPackageId] });
       refreshLaunchQueries();
@@ -1650,7 +1662,8 @@ export default function LessonBuilder() {
                     <StatusBadge value={latestEvidenceExport.exportReady ? "export_ready" : "needs_export_check"} />
                   </div>
                   <div className="mt-1 text-xs leading-5 text-teal-900">
-                    {latestEvidenceExport.fileName} downloaded as a {latestEvidenceExport.reportKind === "markdown" ? "director-ready brief" : "JSON evidence bundle"} for {latestEvidenceExport.packageTitle}. It references {latestEvidenceExport.generatedFileCount} generated file(s), {latestEvidenceExport.artifactCount} artifact(s), and {latestEvidenceExport.completedCount}/{latestEvidenceExport.assignedCount} completed learner(s).
+                    {latestEvidenceExport.fileName} downloaded as a {latestEvidenceExport.reportKind === "markdown" ? "director-ready brief" : "JSON evidence bundle"} for {latestEvidenceExport.packageTitle}. It references {latestEvidenceExport.generatedFileCount} generated file(s), {latestEvidenceExport.artifactCount} artifact(s), {latestEvidenceExport.auditPatternCount} audit pattern(s), {latestEvidenceExport.deckExemplarCount} deck exemplar(s), and {latestEvidenceExport.completedCount}/{latestEvidenceExport.assignedCount} completed learner(s).
+                    <div className="mt-1 font-medium">{latestEvidenceExport.relatedAssetPolicyNote}</div>
                   </div>
                 </div>
               ) : null}
