@@ -65,6 +65,8 @@ Verified live on Render:
 - The admin export confirmation now shows generated file count, audit-pattern count, deck-exemplar count, completion count, and the reference-only source-truth policy after JSON or Markdown export.
 - Pilot Evidence Export also supports a director-ready Markdown brief through `?format=markdown` and the admin `Export Brief` action.
 - Pilot Evidence Export also supports a printable HTML report through `?format=html` and the admin `Open Report` action for faculty/program-director review.
+- Pilot Evidence Export now supports a print/PDF-ready executive slide report through `?format=executive` and the admin `Exec Report` action.
+- Pilot Evidence Export now supports a JSON slide-deck outline through `?format=slides` and the admin `Export Slides` action. The outline is generated from the same evidence payload as the JSON, Markdown, and HTML reports.
 - Post-polish authenticated live API smoke passed for package `bf472933-fdb6-4e67-b893-491c00c7bcd4`: evidence export returned `200`, referenced 12 generated files, showed 1 assigned learner, 1 completed learner, and `exportReady=true`.
 - Post-brief authenticated live API smoke passed for the same package: `?format=markdown` returned `200`, `text/markdown`, and filename `therapeutic-communication-live-ai-mvp-release-smoke-pilot-evidence-brief.md`.
 - Post-report authenticated live API smoke passed for the same package: `?format=html` returned `200`, `text/html`, and filename `therapeutic-communication-live-ai-mvp-release-smoke-pilot-evidence-report.html`.
@@ -73,6 +75,7 @@ Verified live on Render:
 - Post-link-polish authenticated live API smoke passed for the same package: Markdown evidence reports include `[Open reference]` links and related asset counts, while printable HTML includes clickable `Open reference` links plus audit/deck summary counts.
 - Post-policy authenticated live API smoke passed for the same package: JSON evidence export includes `relatedAssetPolicy.citationUse=not_authoritative_source_truth`, Markdown includes `Related asset policy`, and printable HTML includes the reference-only citation guardrail.
 - Post-export-confirmation live bundle check passed: Render deploy `c1536d6` serves `assets/index-8jbbh_bu.js`, and the client bundle includes audit-pattern count, deck-exemplar count, and related-asset policy confirmation copy.
+- Local build verification passed for the executive/slide evidence handoff: frontend production build and server bundle both completed after adding `Exec Report` and `Export Slides`.
 - Browser verification reached the updated console after Render wake. A later export-click pass hit Render's cold-start/loading interstitial, so API smoke is the authoritative verification for the export response while the UI code is verified on GitHub `main`.
 
 Use the Pearson Sites projects as workflow models, not as nursing source truth:

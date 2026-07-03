@@ -26,7 +26,7 @@ The current MVP is not the full ATI remediation engine or the full NursesBrain a
 - Assignment link flow without requiring student accounts.
 - Learner events for open, practice, completion, and feedback.
 - Pilot Outcomes for completion, feedback, practice results, and follow-up needs.
-- Harrity export, Pilot Evidence JSON export, and director-ready Pilot Evidence Brief Markdown export.
+- Harrity export, Pilot Evidence JSON export, director-ready Pilot Evidence Brief Markdown export, printable executive report, and slide-deck outline export.
 - Google Drive PPT/Slides assets registered as deck/source exemplars.
 - MNN Google Drive package hub audited as the strongest next Drive import target: 27 maternal-newborn chapter folders, Harrity decks, manifests, slide blueprint, QA log, notes pass, validation reports, and source/taxonomy JSON.
 - Source Studio Drive Package Hub import supports the MNN preset and creates reference-only package metadata plus 27 pending chapter source candidates.
@@ -120,17 +120,17 @@ Next improvement:
 
 Need: evidence that the pilot is useful, traceable, and ready to scale.
 
-Current solution: Pilot Evidence Export and Pilot Evidence Brief.
+Current solution: Pilot Evidence Export, Pilot Evidence Brief, executive report, and slide outline.
 
 Key value:
 
 - Summarizes package, source traceability, readiness, AI/faculty review status, lesson assets, cohort outcomes, generated files, and export readiness.
 - Supports buyer-facing pilot proof without needing raw admin logs.
-- Gives program leaders both a structured JSON evidence bundle and a readable Markdown brief.
+- Gives program leaders a structured JSON evidence bundle, a readable Markdown brief, a printable/PDF-ready executive report, and a slide-outline JSON handoff.
 
 Next improvement:
 
-- Add PDF/slide executive report with cohort trend charts and adoption recommendations.
+- Add cohort trend charts and adoption recommendations after more pilot cohorts have outcome data.
 
 ## Related Assets And How To Use Them
 
@@ -140,7 +140,7 @@ Next improvement:
 - OpenStax Nursing: use as a public coverage map and learner/faculty link catalog across fundamentals, skills, maternal-newborn, medical-surgical, pharmacology, nutrition, population health, and psychiatric-mental health. Keep book/PDF text out of RAG and AI generation unless OpenStax permission is documented.
 - Pearson Course Audit Workflow Dashboard: use as the model for premium review workflow, reviewer state, and coverage evidence.
 - Pearson Concept Audit Dashboard: use as the model for source-to-concept traceability and program-director reporting.
-- Pilot Evidence Export: use JSON for audit data, Markdown for director briefs, and printable HTML for faculty/program-director review packets; each export confirmation and report carries linked Drive deck exemplars plus audit-pattern references for premium review and traceability, clearly marked as reference-only rather than citation source truth.
+- Pilot Evidence Export: use JSON for audit data, Markdown for director briefs, printable HTML for faculty/program-director review packets, executive print/PDF-ready HTML for buyer handoff, and slide-outline JSON for deck production; each export confirmation and report carries linked Drive deck exemplars plus audit-pattern references for premium review and traceability, clearly marked as reference-only rather than citation source truth.
 - Data Chunker Pro: use on the local workstation for large PDF textbooks, manuals, and chapter sets; preserve its generated RAG-ready folders/files and register them in NurseStudy as approved source packs with citation policy and provenance.
 - OpenAI workspace agents: use Builder Agents for source-grounded lesson/item/remediation contracts, Architecture Planner for KIS/source-prep/data-model design, Supervisor for curriculum decisions, Planner for launch follow-ups, SQL Crafter for schema/query review, and Knowledge Search for workspace discovery. Direct OpenAI remains the live runtime until an agent API channel is published.
 - Replit NurseStudy: use later for ATI report upload, weak-topic study plans, and progress tracking.
@@ -171,7 +171,7 @@ Post-MVP includes:
 
 1. Complete one browser click-through verification of the polished Pilot Evidence Export confirmation after Render is awake and Browser control is available.
 2. Completed: live-verified ChatGPT Library Pack and OpenStax Nursing Catalog registration on Render; duplicate imports dedupe cleanly and OpenStax no-AI-ingestion guardrails are present.
-3. Add an executive PDF/slide Pilot Evidence Report generated from the same evidence export payload.
+3. Completed locally: executive print/PDF-ready Pilot Evidence Report and slide-outline export are generated from the same evidence export payload. Next step is live Render smoke after deployment.
 4. Add faculty rubric review as the first premium workflow upgrade.
 5. Add learner account dashboard for assigned lessons.
 6. Add manual ATI weak-topic-to-lesson assignment before automating ATI report upload.

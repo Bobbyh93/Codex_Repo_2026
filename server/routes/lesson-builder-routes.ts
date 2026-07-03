@@ -5521,6 +5521,211 @@ function renderPilotEvidenceHtml(report: ReturnType<typeof buildPilotEvidenceRep
 </html>`;
 }
 
+function formatEvidencePercent(value: number, total: number) {
+  if (!total) return "0%";
+  return `${Math.round((value / total) * 100)}%`;
+}
+
+function buildPilotEvidenceSlideOutline(report: ReturnType<typeof buildPilotEvidenceReport>) {
+  const totals = (report.cohortOutcomes?.totals || {}) as Record<string, number>;
+  const qaSummary = report.readiness.qaSummary || {};
+  const aiReview = report.readiness.aiReview as Record<string, any> | null;
+  const facultyReview = report.readiness.facultyReview as Record<string, any> | null;
+  const practiceSummary = (report.cohortOutcomes?.practiceSummary || {}) as Record<string, number>;
+  const feedbackSummary = (report.cohortOutcomes?.feedbackSummary || {}) as Record<string, number>;
+  const actionQueue = report.cohortOutcomes?.actionQueue || [];
+  const assigned = totals.assigned || 0;
+  const completed = totals.completed || 0;
+  const opened = totals.opened || 0;
+  const practiceAttempted = totals.practiceAttempted || 0;
+  const aiDecision = aiReview?.decision || aiReview?.status || "Not recorded";
+  const facultyDecision = facultyReview?.decision || facultyReview?.status || "Premium / optional";
+  const missingFiles = report.readiness.missingRequiredFiles || [];
+  const sourceLabels = report.sourceTraceability.map((source) => `${source.title} (${source.approvalStatus}/${source.ingestionStatus})`);
+  const followUpLabels = actionQueue.slice(0, 5).map((item: any) => `${item.learnerName || "Learner"}: ${item.reason || item.status || "Needs review"}`);
+
+  const slides = [
+    {
+      slideNumber: 1,
+      title: "Pilot Snapshot",
+      purpose: "Orient program leadership to the active internal pilot lesson.",
+      visibleBullets: [
+        `Package: ${report.package.title}`,
+        `Topic: ${report.package.topic || "Not specified"}`,
+        `Audience: ${report.package.audience || "Not specified"}`,
+        `Status: ${report.package.status}`,
+      ],
+      speakerNotes: "Use this opening slide to anchor the pilot in a single lesson package and remind reviewers that this is an internal cohort release, not a full public launch.",
+    },
+    {
+      slideNumber: 2,
+      title: "Launch Readiness",
+      purpose: "Summarize the release gates that matter for pilot launch.",
+      visibleBullets: [
+        `Export readiness: ${report.readiness.exportReady ? "Ready" : "Needs attention"}`,
+        `AI review: ${aiDecision}`,
+        `Faculty review: ${facultyDecision}`,
+        `Missing required files: ${missingFiles.length ? missingFiles.join(", ") : "None"}`,
+      ],
+      speakerNotes: "AI-reviewed approval is the MVP launch gate. Human faculty review remains a premium release layer unless the institution requires it.",
+    },
+    {
+      slideNumber: 3,
+      title: "Cohort Outcomes",
+      purpose: "Show whether the pilot has evidence of learner engagement.",
+      visibleBullets: [
+        `Assigned: ${assigned}`,
+        `Opened: ${opened} (${formatEvidencePercent(opened, assigned)})`,
+        `Completed: ${completed} (${formatEvidencePercent(completed, assigned)})`,
+        `Practice attempted: ${practiceAttempted} (${formatEvidencePercent(practiceAttempted, assigned)})`,
+      ],
+      speakerNotes: "Use this slide to decide whether the cohort has enough activity for a useful faculty conversation or whether more learner follow-up is needed first.",
+    },
+    {
+      slideNumber: 4,
+      title: "Lesson Quality Signals",
+      purpose: "Summarize QA, practice, and learner feedback signals.",
+      visibleBullets: [
+        `QA pass/warn/fail: ${qaSummary.passCount || 0}/${qaSummary.warningCount || 0}/${qaSummary.failCount || 0}`,
+        `Practice correct/incorrect: ${practiceSummary.correct || 0}/${practiceSummary.incorrect || 0}`,
+        `Helpful feedback: ${feedbackSummary.helpful || 0}`,
+        `Confusing or too hard: ${(feedbackSummary.confusing || 0) + (feedbackSummary.tooHard || 0)}`,
+      ],
+      speakerNotes: "Quality signals should guide review priorities. A clean QA pass still needs learner reception data before scale-up decisions.",
+    },
+    {
+      slideNumber: 5,
+      title: "Source Traceability",
+      purpose: "Make the source-truth policy visible to reviewers.",
+      visibleBullets: sourceLabels.length ? sourceLabels.slice(0, 6) : ["No approved source traceability attached."],
+      speakerNotes: report.relatedAssetPolicy.note,
+    },
+    {
+      slideNumber: 6,
+      title: "Reusable Assets",
+      purpose: "Show the supporting workflow and deck-pattern library without overstating citation authority.",
+      visibleBullets: [
+        `${report.relatedAuditPatterns.length} Pearson audit-pattern reference(s)`,
+        `${report.relatedDeckExemplars.length} Drive deck exemplar(s)`,
+        `${report.lessonAssets.slideCount} lesson slide(s)`,
+        `${report.lessonAssets.artifactCount} export artifact(s)`,
+      ],
+      speakerNotes: "Related Pearson and Drive assets are useful for workflow, coverage, and lesson grammar. They are reference-only and do not replace approved source truth.",
+    },
+    {
+      slideNumber: 7,
+      title: "Follow-Up Queue",
+      purpose: "Translate outcomes into faculty action.",
+      visibleBullets: followUpLabels.length ? followUpLabels : ["No follow-up actions currently flagged."],
+      speakerNotes: "Use this slide with remediation coaches or success faculty to decide who needs encouragement, clarification, or a practice review.",
+    },
+    {
+      slideNumber: 8,
+      title: "Scale Recommendation",
+      purpose: "Close with a practical next step for the program director.",
+      visibleBullets: [
+        report.readiness.exportReady ? "Evidence bundle is export-ready." : "Resolve missing evidence files before formal handoff.",
+        completed > 0 ? "Learner completion evidence is present." : "Collect at least one completion before scale decision.",
+        aiDecision !== "Not recorded" ? "AI review evidence is recorded." : "Run AI review before presenting this package.",
+        "Use faculty review as the premium gate for formal release.",
+      ],
+      speakerNotes: "This recommendation keeps the MVP launch path separate from the premium faculty approval path while still showing how the product scales.",
+    },
+  ];
+
+  return {
+    generatedAt: new Date().toISOString(),
+    reportType: "pilot_evidence_slide_outline",
+    package: report.package,
+    relatedAssetPolicy: report.relatedAssetPolicy,
+    slideCount: slides.length,
+    exportUse: {
+      audience: "Program director, faculty reviewer, product operator",
+      format: "JSON slide outline for slide deck creation or handoff",
+      sourcePayload: "Generated from the same Pilot Evidence Report data used by JSON, Markdown, and HTML exports.",
+    },
+    slides,
+  };
+}
+
+function renderPilotEvidenceExecutiveHtml(report: ReturnType<typeof buildPilotEvidenceReport>) {
+  const outline = buildPilotEvidenceSlideOutline(report);
+  const totals = (report.cohortOutcomes?.totals || {}) as Record<string, number>;
+  const aiReview = report.readiness.aiReview as Record<string, any> | null;
+  const facultyReview = report.readiness.facultyReview as Record<string, any> | null;
+  const qaSummary = report.readiness.qaSummary || {};
+  const metric = (label: string, value: string | number) => `<div class="metric"><strong>${escapeHtml(value)}</strong><span>${escapeHtml(label)}</span></div>`;
+  const slideBlock = (slide: typeof outline.slides[number]) => `
+    <section class="slide">
+      <div class="slide-kicker">Slide ${slide.slideNumber}</div>
+      <h2>${escapeHtml(slide.title)}</h2>
+      <p class="purpose">${escapeHtml(slide.purpose)}</p>
+      <ul>${slide.visibleBullets.map((bullet) => `<li>${escapeHtml(bullet)}</li>`).join("")}</ul>
+      <div class="notes"><strong>Presenter note:</strong> ${escapeHtml(slide.speakerNotes)}</div>
+    </section>
+  `;
+
+  return `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Executive Pilot Evidence Report - ${escapeHtml(report.package.title)}</title>
+  <style>
+    :root { color: #111827; background: #f6f7f9; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    body { margin: 0; padding: 24px; }
+    main { max-width: 1120px; margin: 0 auto; }
+    header, .summary, .slide { background: #fff; border: 1px solid #d9e2ec; border-radius: 8px; box-shadow: 0 10px 24px rgba(17, 24, 39, 0.08); }
+    header { padding: 34px; background: #12343b; color: #f8fafc; }
+    header p { margin: 10px 0 0; color: #dbeafe; }
+    h1, h2 { margin: 0; line-height: 1.15; }
+    h1 { font-size: 34px; }
+    h2 { font-size: 28px; }
+    .eyebrow { display: inline-flex; margin-bottom: 14px; padding: 5px 10px; border-radius: 999px; background: #d9f99d; color: #1f2937; font-weight: 800; font-size: 12px; text-transform: uppercase; letter-spacing: .08em; }
+    .summary { margin: 18px 0; padding: 24px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
+    .metric { border: 1px solid #e5e7eb; border-radius: 8px; padding: 14px; background: #f9fafb; }
+    .metric strong { display: block; font-size: 24px; color: #111827; }
+    .metric span { display: block; margin-top: 4px; font-size: 12px; color: #4b5563; text-transform: uppercase; letter-spacing: .05em; }
+    .slide { margin: 18px 0; min-height: 520px; padding: 38px; display: flex; flex-direction: column; justify-content: center; }
+    .slide-kicker { color: #0f766e; font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; margin-bottom: 12px; }
+    .purpose { margin: 12px 0 20px; max-width: 780px; color: #475569; font-size: 16px; }
+    ul { margin: 0; padding-left: 24px; font-size: 21px; line-height: 1.45; }
+    li { margin: 8px 0; }
+    .notes { margin-top: 28px; border-left: 4px solid #0f766e; background: #ecfeff; padding: 14px 16px; color: #164e63; font-size: 14px; line-height: 1.5; }
+    .policy { margin-top: 16px; color: #dbeafe; font-size: 13px; }
+    @media (max-width: 760px) { body { padding: 12px; } header, .summary, .slide { padding: 22px; } h1 { font-size: 26px; } h2 { font-size: 23px; } ul { font-size: 17px; } .slide { min-height: auto; } }
+    @media print { body { padding: 0; background: #fff; } header, .summary, .slide { box-shadow: none; border-radius: 0; page-break-after: always; break-after: page; } .slide:last-child { page-break-after: auto; break-after: auto; } }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div class="eyebrow">Executive Pilot Evidence Report</div>
+      <h1>${escapeHtml(report.package.title)}</h1>
+      <p>${escapeHtml(report.package.topic || "Topic not specified")} | ${escapeHtml(report.package.audience || "Audience not specified")}</p>
+      <p>Generated ${escapeHtml(report.generatedAt)} from the official Pilot Evidence Report payload.</p>
+      <p class="policy">${escapeHtml(report.relatedAssetPolicy.note)}</p>
+    </header>
+    <section class="summary">
+      <h2>Director Snapshot</h2>
+      <div class="grid" style="margin-top: 16px;">
+        ${metric("Package status", report.package.status)}
+        ${metric("Assigned", totals.assigned || 0)}
+        ${metric("Completed", totals.completed || 0)}
+        ${metric("Export ready", report.readiness.exportReady ? "Yes" : "No")}
+        ${metric("AI review", aiReview?.decision || aiReview?.status || "Not recorded")}
+        ${metric("Faculty review", facultyReview?.decision || facultyReview?.status || "Premium")}
+        ${metric("QA failures", qaSummary.failCount || 0)}
+        ${metric("Slide outline", outline.slideCount)}
+      </div>
+    </section>
+    ${outline.slides.map(slideBlock).join("")}
+  </main>
+</body>
+</html>`;
+}
+
 export function registerLessonBuilderRoutes(app: Express) {
   app.get("/api/lessons/:id", async (req: Request, res: Response) => {
     try {
@@ -6761,7 +6966,9 @@ export function registerLessonBuilderRoutes(app: Express) {
       if (!bundle) return res.status(404).json({ error: "Lesson package not found" });
 
       const report = buildPilotEvidenceReport(bundle, outcomes, auditPatterns, deckExemplars);
+      const format = typeof req.query.format === "string" ? req.query.format.toLowerCase() : "json";
       await recordReleaseAuditEvent(req.params.id, "pilot_evidence_exported", "Pilot evidence report exported for program review.", {
+        format,
         learnerCount: outcomes?.totals.assigned || 0,
         completedCount: outcomes?.totals.completed || 0,
         sourceCount: bundle.sources.length,
@@ -6771,7 +6978,6 @@ export function registerLessonBuilderRoutes(app: Express) {
       }, req.session.adminUser?.userId);
 
       const safeTitle = bundle.package.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || "lesson";
-      const format = typeof req.query.format === "string" ? req.query.format.toLowerCase() : "json";
       if (format === "markdown" || format === "md" || format === "brief") {
         res.setHeader("Content-Type", "text/markdown; charset=utf-8");
         res.setHeader("Content-Disposition", `attachment; filename="${safeTitle}-pilot-evidence-brief.md"`);
@@ -6782,6 +6988,18 @@ export function registerLessonBuilderRoutes(app: Express) {
         res.setHeader("Content-Type", "text/html; charset=utf-8");
         res.setHeader("Content-Disposition", `inline; filename="${safeTitle}-pilot-evidence-report.html"`);
         res.send(renderPilotEvidenceHtml(report));
+        return;
+      }
+      if (format === "executive" || format === "executive-html" || format === "pdf") {
+        res.setHeader("Content-Type", "text/html; charset=utf-8");
+        res.setHeader("Content-Disposition", `inline; filename="${safeTitle}-executive-pilot-evidence-report.html"`);
+        res.send(renderPilotEvidenceExecutiveHtml(report));
+        return;
+      }
+      if (format === "slides" || format === "deck" || format === "slide-outline") {
+        res.setHeader("Content-Type", "application/json; charset=utf-8");
+        res.setHeader("Content-Disposition", `attachment; filename="${safeTitle}-pilot-evidence-slides.json"`);
+        res.send(JSON.stringify(buildPilotEvidenceSlideOutline(report), null, 2));
         return;
       }
 

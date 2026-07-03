@@ -305,6 +305,14 @@ type PilotEvidenceReport = {
   };
 };
 
+type PilotEvidenceExportKind = "json" | "markdown" | "slides";
+
+const pilotEvidenceExportLabels: Record<PilotEvidenceExportKind, string> = {
+  json: "JSON evidence bundle",
+  markdown: "director-ready brief",
+  slides: "slide-deck outline",
+};
+
 type PackageDetail = {
   package: LessonPackage & { manifest?: Record<string, any>; deckModel?: Record<string, any>; taxonomySnapshot?: Record<string, any> };
   sources: SourceRecord[];
@@ -653,7 +661,7 @@ const fullMvpBuildRails = [
     source: "Pilot Evidence Export",
     value: "Show source traceability, AI/faculty review, completion, feedback, follow-up queue, and export readiness.",
     status: "export_ready",
-    next: "Add PDF/slide executive report for pilot handoff.",
+    next: "Use the executive report and slide-outline exports for buyer and program-director handoff.",
   },
 ];
 
@@ -883,7 +891,7 @@ export default function LessonBuilder() {
     packageId: string;
     packageTitle: string;
     fileName: string;
-    reportKind: "json" | "markdown";
+    reportKind: PilotEvidenceExportKind;
     generatedAt: string;
     artifactCount: number;
     generatedFileCount: number;
@@ -1637,13 +1645,14 @@ export default function LessonBuilder() {
     }, 1200);
   };
 
-  const exportPilotEvidence = async (packageId?: string, format: "json" | "markdown" = "json") => {
+  const exportPilotEvidence = async (packageId?: string, format: PilotEvidenceExportKind = "json") => {
     const targetPackageId = packageId || selectedPackageId;
     if (!targetPackageId) return;
 
     setEvidenceExportingPackageId(targetPackageId);
     try {
-      const response = await fetch(`/api/admin/lesson-builder/packages/${targetPackageId}/pilot-evidence-export${format === "markdown" ? "?format=markdown" : ""}`, {
+      const formatQuery = format === "json" ? "" : `?format=${format}`;
+      const response = await fetch(`/api/admin/lesson-builder/packages/${targetPackageId}/pilot-evidence-export${formatQuery}`, {
         credentials: "include",
       });
       if (!response.ok) {
@@ -1652,14 +1661,16 @@ export default function LessonBuilder() {
       }
 
       const disposition = response.headers.get("content-disposition") || "";
-      const fileName = disposition.match(/filename="?([^"]+)"?/i)?.[1] || `${targetPackageId}-pilot-evidence${format === "markdown" ? "-brief.md" : ".json"}`;
+      const fallbackExtension = format === "markdown" ? "-brief.md" : format === "slides" ? "-slides.json" : ".json";
+      const fileName = disposition.match(/filename="?([^"]+)"?/i)?.[1] || `${targetPackageId}-pilot-evidence${fallbackExtension}`;
       let report: PilotEvidenceReport | null = null;
       let blob: Blob;
       if (format === "markdown") {
         blob = new Blob([await response.text()], { type: "text/markdown;charset=utf-8" });
       } else {
-        report = (await response.json()) as PilotEvidenceReport;
-        blob = new Blob([JSON.stringify(report, null, 2)], { type: "application/json;charset=utf-8" });
+        const parsed = await response.json();
+        if (format === "json") report = parsed as PilotEvidenceReport;
+        blob = new Blob([JSON.stringify(parsed, null, 2)], { type: "application/json;charset=utf-8" });
       }
       const objectUrl = URL.createObjectURL(blob);
       const link = document.createElement("a");
@@ -1691,7 +1702,7 @@ export default function LessonBuilder() {
       };
       setLatestEvidenceExport(exportSummary);
       toast({
-        title: format === "markdown" ? "Pilot evidence brief exported" : "Pilot evidence exported",
+        title: format === "markdown" ? "Pilot evidence brief exported" : format === "slides" ? "Pilot evidence slide outline exported" : "Pilot evidence exported",
         description: `${exportSummary.generatedFileCount} files, ${exportSummary.auditPatternCount} audit pattern(s), ${exportSummary.deckExemplarCount} deck exemplar(s).`,
       });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/packages", targetPackageId] });
@@ -1711,6 +1722,16 @@ export default function LessonBuilder() {
     const targetPackageId = packageId || selectedPackageId;
     if (!targetPackageId) return;
     window.open(`/api/admin/lesson-builder/packages/${targetPackageId}/pilot-evidence-export?format=html`, "_blank", "noopener,noreferrer");
+  };
+
+  const openExecutiveEvidenceReport = (packageId?: string) => {
+    const targetPackageId = packageId || selectedPackageId;
+    if (!targetPackageId) return;
+    window.open(`/api/admin/lesson-builder/packages/${targetPackageId}/pilot-evidence-export?format=executive`, "_blank", "noopener,noreferrer");
+    toast({
+      title: "Executive report opened",
+      description: "Use browser print to save the slide-style report as PDF for the pilot handoff.",
+    });
   };
 
   const copyLearnerLink = async () => {
@@ -1859,6 +1880,23 @@ export default function LessonBuilder() {
                       <ExternalLink className="mr-2 h-4 w-4" />
                       Open Report
                     </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => openExecutiveEvidenceReport(pilotLaunch.package!.id)}
+                    >
+                      <ExternalLink className="mr-2 h-4 w-4" />
+                      Exec Report
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => exportPilotEvidence(pilotLaunch.package!.id, "slides")}
+                      disabled={evidenceExportingPackageId === pilotLaunch.package!.id}
+                    >
+                      <Layers3 className="mr-2 h-4 w-4" />
+                      Export Slides
+                    </Button>
                   </>
                 ) : null}
                 {pilotLaunch?.assignment?.firstLearnerLink ? (
@@ -1876,7 +1914,7 @@ export default function LessonBuilder() {
                     <StatusBadge value={latestEvidenceExport.exportReady ? "export_ready" : "needs_export_check"} />
                   </div>
                   <div className="mt-1 text-xs leading-5 text-teal-900">
-                    {latestEvidenceExport.fileName} downloaded as a {latestEvidenceExport.reportKind === "markdown" ? "director-ready brief" : "JSON evidence bundle"} for {latestEvidenceExport.packageTitle}. It references {latestEvidenceExport.generatedFileCount} generated file(s), {latestEvidenceExport.artifactCount} artifact(s), {latestEvidenceExport.auditPatternCount} audit pattern(s), {latestEvidenceExport.deckExemplarCount} deck exemplar(s), and {latestEvidenceExport.completedCount}/{latestEvidenceExport.assignedCount} completed learner(s).
+                    {latestEvidenceExport.fileName} downloaded as a {pilotEvidenceExportLabels[latestEvidenceExport.reportKind]} for {latestEvidenceExport.packageTitle}. It references {latestEvidenceExport.generatedFileCount} generated file(s), {latestEvidenceExport.artifactCount} artifact(s), {latestEvidenceExport.auditPatternCount} audit pattern(s), {latestEvidenceExport.deckExemplarCount} deck exemplar(s), and {latestEvidenceExport.completedCount}/{latestEvidenceExport.assignedCount} completed learner(s).
                     <div className="mt-1 font-medium">{latestEvidenceExport.relatedAssetPolicyNote}</div>
                   </div>
                 </div>
@@ -3232,6 +3270,18 @@ export default function LessonBuilder() {
                           <Button variant="outline" onClick={() => openPilotEvidenceReport(selectedPackageId)}>
                             <ExternalLink className="mr-2 h-4 w-4" />
                             Open Report
+                          </Button>
+                          <Button variant="outline" onClick={() => openExecutiveEvidenceReport(selectedPackageId)}>
+                            <ExternalLink className="mr-2 h-4 w-4" />
+                            Exec Report
+                          </Button>
+                          <Button
+                            variant="outline"
+                            onClick={() => exportPilotEvidence(selectedPackageId, "slides")}
+                            disabled={evidenceExportingPackageId === selectedPackageId}
+                          >
+                            <Layers3 className="mr-2 h-4 w-4" />
+                            Export Slides
                           </Button>
                           <Button onClick={() => publishMutation.mutate()} disabled={publishMutation.isPending}>
                             <Rocket className="mr-2 h-4 w-4" />
