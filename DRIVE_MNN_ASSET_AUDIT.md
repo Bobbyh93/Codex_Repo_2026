@@ -63,6 +63,13 @@ Implemented first pass:
 - Created record types: `drive_package_hub`, `drive_supporting_manifest`, `drive_presentation_collection`, `drive_notes_pass`, and 27 `drive_chapter_source_candidate` records.
 - Safety behavior: imported records are pending/reference-only and require approval before source-truth use.
 
+Live Render verification:
+
+- First import completed successfully on `https://nursestudy-lesson-builder.onrender.com`.
+- Created 31 source records and 38 manifest/file rows.
+- Registry summary after import: 27 chapter source candidates, 1 package hub, 1 supporting manifest record, 1 deck collection record, and 1 notes-pass candidate.
+- Repeat import returned `duplicate` and created zero new source/file rows.
+
 ## Known Limits
 
 - Drive inspection verified structure and metadata, not clinical accuracy.
