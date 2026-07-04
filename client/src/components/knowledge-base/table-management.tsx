@@ -90,6 +90,20 @@ interface TableStats {
   low: number;
 }
 
+interface TableStatsResponse {
+  summary: TableStats;
+  confidenceStats: Pick<TableStats, 'high' | 'medium' | 'low'>;
+}
+
+interface TableSearchResponse {
+  tables: ExtractedTable[];
+  totalPages: number;
+}
+
+interface TableCellsResponse {
+  cells: TableCell[][];
+}
+
 export function TableManagement() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -118,19 +132,19 @@ export function TableManagement() {
   const tableSearchUrl = `/api/admin/tables/search?${tableSearchParams.toString()}`;
 
   // Fetch table statistics
-  const { data: stats, isLoading: statsLoading } = useQuery({
+  const { data: stats, isLoading: statsLoading } = useQuery<TableStatsResponse>({
     queryKey: ['/api/admin/tables/stats'],
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
   // Fetch tables with search and filters
-  const { data: tablesData, isLoading: tablesLoading, refetch: refetchTables } = useQuery({
+  const { data: tablesData, isLoading: tablesLoading, refetch: refetchTables } = useQuery<TableSearchResponse>({
     queryKey: [tableSearchUrl],
     staleTime: 1000 * 30, // 30 seconds
   });
 
   // Fetch table cells for viewing/editing
-  const { data: tableCells } = useQuery({
+  const { data: tableCells } = useQuery<TableCellsResponse>({
     queryKey: ['/api/admin/tables', viewingTable || editingTable, 'cells'],
     enabled: !!(viewingTable || editingTable),
   });

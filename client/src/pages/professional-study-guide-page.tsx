@@ -202,6 +202,7 @@ export function ProfessionalStudyGuidePagePage({ params }: ProfessionalStudyGuid
       {guide && (
         <ProfessionalStudyGuide 
           reportId={reportId}
+          guide={guide}
           mode={mode}
           onExportPDF={handleExportPDF}
         />

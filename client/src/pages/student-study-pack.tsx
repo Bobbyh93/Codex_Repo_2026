@@ -11,7 +11,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { getStudentSessionId } from "@/lib/student-session";
+import { getLastUploadedReport, getStudentSessionId } from "@/lib/student-session";
 
 type StudyPackLesson = {
   summary: {
@@ -68,6 +68,7 @@ async function fetchStudyPack(sessionId: string): Promise<StudentStudyPackRespon
 
 export default function StudentStudyPack() {
   const sessionId = useMemo(() => getStudentSessionId(), []);
+  const lastUpload = useMemo(() => getLastUploadedReport(), []);
   const packQuery = useQuery<StudentStudyPackResponse>({
     queryKey: ["/api/student/study-pack", sessionId],
     enabled: Boolean(sessionId),
@@ -131,9 +132,25 @@ export default function StudentStudyPack() {
             {pack.lessons.length === 0 ? (
               <Card className="rounded-md">
                 <CardContent className="p-6">
-                  <h2 className="font-semibold text-slate-950">{pack.emptyState?.title || "No study pack yet."}</h2>
-                  <p className="mt-2 text-sm leading-6 text-slate-600">{pack.emptyState?.detail}</p>
-                  <a href="/student"><Button className="mt-4">Browse lessons</Button></a>
+                  <h2 className="font-semibold text-slate-950">
+                    {lastUpload ? "Your assessment guide is ready." : pack.emptyState?.title || "No study pack yet."}
+                  </h2>
+                  <p className="mt-2 text-sm leading-6 text-slate-600">
+                    {lastUpload
+                      ? "Use the launch preview guide as your first study pack, then open or save lessons to collect guided notes and rationales here."
+                      : pack.emptyState?.detail}
+                  </p>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {lastUpload ? (
+                      <a href={lastUpload.nextStep || `/professional-study-guide/${lastUpload.reportId}`}>
+                        <Button>
+                          <FileText className="mr-2 h-4 w-4" />
+                          Open uploaded guide
+                        </Button>
+                      </a>
+                    ) : null}
+                    <a href="/student"><Button variant={lastUpload ? "outline" : "default"}>Browse lessons</Button></a>
+                  </div>
                 </CardContent>
               </Card>
             ) : (

@@ -1107,6 +1107,20 @@ export const lessonPackageReviews = pgTable("lesson_package_reviews", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const topicProductionReviews = pgTable("topic_production_reviews", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  sourceKey: text("source_key").notNull().unique(),
+  sourceType: text("source_type").notNull(),
+  sourceId: text("source_id").notNull(),
+  decision: text("decision").notNull().default("unreviewed"),
+  reviewerNotes: text("reviewer_notes").notNull().default(""),
+  reviewedBy: text("reviewed_by").notNull().default("admin"),
+  reviewedAt: timestamp("reviewed_at").defaultNow(),
+  metadata: jsonb("metadata").$type<Record<string, any>>().default({}),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 export const lessonAssignments = pgTable("lesson_assignments", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   packageId: varchar("package_id").references(() => lessonPackages.id, { onDelete: "cascade" }).notNull(),

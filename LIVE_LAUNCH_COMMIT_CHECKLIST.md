@@ -12,6 +12,8 @@ npm run manifest:live-launch-source
 npm run scan:live-launch-secrets
 npm run archive:live-launch
 npm run preflight:live-launch
+npm run check:launch
+npm run smoke:launch-surfaces
 npm run smoke:lesson-builder
 npm run gate:live-launch
 ```
@@ -23,6 +25,8 @@ Expected evidence before staging:
 - Secret scan passes.
 - Archive dry run reports the expected Git-visible deploy file count.
 - Live launch preflight has zero failures.
+- Launch-surface typecheck passes.
+- Fast launch-surface smoke has zero failures.
 - Lesson Builder release smoke has zero failures.
 - Live launch gate passes.
 - Production build output exists in `dist/` from a recent build.
@@ -81,6 +85,8 @@ npm run scan:live-launch-secrets
 npm run manifest:live-launch-source
 npm run plan:live-launch-commit
 npm run archive:live-launch
+npm run check:launch
+npm run smoke:launch-surfaces
 npm run gate:live-launch
 git status --short
 git commit -m "Launch NurseStudy Lesson Builder pilot"
@@ -103,6 +109,8 @@ Confirm GitHub Actions runs `Live Launch Check` successfully. That workflow shou
 - Verify the deployment source manifest.
 - Scan for deploy-blocking secrets.
 - Build the production app.
+- Run launch-surface typecheck.
+- Start the local preview and run launch-surface smoke.
 - Run live-launch preflight.
 
 Only after GitHub Actions passes should Render be connected to the repository.

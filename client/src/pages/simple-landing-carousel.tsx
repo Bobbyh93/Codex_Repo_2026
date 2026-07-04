@@ -27,6 +27,7 @@ import { useDropzone } from 'react-dropzone';
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { PageHeader } from "@/components/ui/page-header";
+import { rememberLastUploadedReport } from "@/lib/student-session";
 
 export default function SimpleLandingCarousel() {
   useScrollToTop();
@@ -63,17 +64,14 @@ export default function SimpleLandingCarousel() {
       
       const data = await response.json();
       
-      // Store reportId and timestamp for session continuity
-      localStorage.setItem('lastReportId', data.reportId);
-      localStorage.setItem('lastReportTime', Date.now().toString());
+      rememberLastUploadedReport(data);
       
       toast({
         title: "Analysis Complete",
         description: `Identified ${data.topicsFound || 0} topics to review`,
       });
       
-      // Navigate to the mvp-action-plan page with reportId
-      navigate(`/mvp-action-plan?reportId=${data.reportId}`);
+      navigate(data.nextStep || `/professional-study-guide/${data.reportId}`);
     } catch (error) {
       toast({
         title: "Upload Failed",

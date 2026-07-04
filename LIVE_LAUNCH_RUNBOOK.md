@@ -15,13 +15,14 @@ Use this as the practical go-live queue. Each gate should have evidence before m
 | Stage | Action | Evidence |
 | --- | --- | --- |
 | 1 | Run `npm run preflight:live-launch` from the NurseStudy app folder. | Preflight reports zero failures. |
-| 2 | Push the NurseStudy app to GitHub. | GitHub repo contains `package.json`, `package-lock.json`, `render.yaml`, `server/`, `client/`, `shared/`, and `scripts/`. |
-| 3 | Connect Render to the GitHub repo. | Render service is created as a Node web service in Oregon. |
-| 4 | Set Render secrets. | `DATABASE_URL`, `SESSION_SECRET`, `OPENAI_API_KEY`, `APP_URL`, and `NODE_ENV=production` are present in Render and not committed. |
-| 5 | Push schema to Neon with the direct URL. | `npm run db:push` succeeds against the direct Neon connection string. |
-| 6 | Deploy the Render service. | `/health` returns JSON status `ok`. |
-| 7 | Run live Lesson Builder smoke. | `APP_URL="https://<live-hostname>" npm run smoke:lesson-builder` passes. |
-| 8 | Complete pilot cutover. | Admin can publish/export, learner can open the lesson, assignment completion records, and Pilot Outcomes updates. |
+| 2 | Run `npm run check:launch` and `npm run smoke:launch-surfaces` against the local preview. | Focused launch typecheck passes, and the fast public/admin surface smoke has zero failures. |
+| 3 | Push the NurseStudy app to GitHub. | GitHub repo contains `package.json`, `package-lock.json`, `render.yaml`, `server/`, `client/`, `shared`, and `scripts/`. |
+| 4 | Connect Render to the GitHub repo. | Render service is created as a Node web service in Oregon. |
+| 5 | Set Render secrets. | `DATABASE_URL`, `SESSION_SECRET`, `OPENAI_API_KEY`, `APP_URL`, and `NODE_ENV=production` are present in Render and not committed. |
+| 6 | Push schema to Neon with the direct URL. | `npm run db:push` succeeds against the direct Neon connection string. |
+| 7 | Deploy the Render service. | `/health` returns JSON status `ok`. |
+| 8 | Run live Lesson Builder smoke. | `APP_URL="https://<live-hostname>" npm run smoke:lesson-builder` passes. |
+| 9 | Complete pilot cutover. | Admin can publish/export, learner can open the lesson, assignment completion records, and Pilot Outcomes updates. |
 
 Current repo status for launch:
 
@@ -66,7 +67,7 @@ Use a Node web service host such as Render, Railway, Fly, or Replit Deployments.
    ```text
    Runtime: Node
    Region: Oregon
-   Build command: npm ci && npm run build
+   Build command: npm ci --include=dev && npm run build
    Start command: npm run start
    Health check path: /health
    ```

@@ -48,6 +48,8 @@ export function ChunkViewer({ chunkId, documentId, onClose }: ChunkViewerProps) 
 
   const chunks = documentId && documentChunks ? documentChunks : chunkId && singleChunk ? [singleChunk] : [];
   const currentChunk = chunks[currentChunkIndex];
+  const currentTopicIds = currentChunk?.topicIds || [];
+  const currentTags = currentChunk?.tags || [];
   const isLoading = isLoadingChunk || isLoadingChunks;
 
   const copyToClipboard = async (text: string) => {
@@ -218,15 +220,15 @@ export function ChunkViewer({ chunkId, documentId, onClose }: ChunkViewerProps) 
               </Card>
 
               {/* Topics and Tags */}
-              {(currentChunk.topicIds?.length > 0 || currentChunk.tags?.length > 0) && (
+              {(currentTopicIds.length > 0 || currentTags.length > 0) && (
                 <Card className="p-4">
                   <h4 className="font-semibold mb-3">Classification</h4>
                   <div className="space-y-3">
-                    {currentChunk.topicIds?.length > 0 && (
+                    {currentTopicIds.length > 0 && (
                       <div>
                         <p className="text-sm font-medium mb-2">Topics</p>
                         <div className="flex flex-wrap gap-2">
-                          {currentChunk.topicIds.map((topicId: string) => (
+                          {currentTopicIds.map((topicId: string) => (
                             <Badge key={topicId} variant="secondary">
                               {topicId}
                             </Badge>
@@ -234,11 +236,11 @@ export function ChunkViewer({ chunkId, documentId, onClose }: ChunkViewerProps) 
                         </div>
                       </div>
                     )}
-                    {currentChunk.tags?.length > 0 && (
+                    {currentTags.length > 0 && (
                       <div>
                         <p className="text-sm font-medium mb-2">Tags</p>
                         <div className="flex flex-wrap gap-2">
-                          {currentChunk.tags.map((tag: string) => (
+                          {currentTags.map((tag: string) => (
                             <Badge key={tag} variant="outline">
                               {tag}
                             </Badge>

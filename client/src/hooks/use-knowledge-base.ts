@@ -109,14 +109,14 @@ export function useDocumentQuery(documentId: string) {
   });
 }
 
-export function useDocumentChunksQuery(documentId: string, options?: { limit?: number; offset?: number }) {
+export function useDocumentChunksQuery(documentId: string, options?: { limit?: number; offset?: number; enabled?: boolean }) {
   const params = new URLSearchParams();
   if (options?.limit) params.append("limit", options.limit.toString());
   if (options?.offset) params.append("offset", options.offset.toString());
   
   return useQuery<DocumentChunk[]>({
     queryKey: ["/api/admin/knowledge-base/documents", documentId, "chunks", params.toString()],
-    enabled: !!documentId,
+    enabled: options?.enabled !== false && !!documentId,
   });
 }
 

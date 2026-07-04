@@ -35,6 +35,7 @@ import ContentMapper from "@/pages/admin/content-mapper";
 import ImportExport from "@/pages/admin/import-export";
 import ContentImport from "@/pages/admin/content-import";
 import ContentWorkflow from "@/pages/admin/content-workflow";
+import TopicProductionMatrix from "@/pages/admin/topic-production-matrix";
 import SimplifiedContentMapper from "@/pages/admin/simplified-content-mapper";
 import StudyGuideAnalyzer from "@/pages/admin/study-guide-analyzer";
 import ContentPriorities from "@/pages/admin/content-priorities";
@@ -160,10 +161,6 @@ function ProtectedStudyGuideRoute(props: any) {
   return <LearnerProtectedRoute component={StudyGuide} {...props} />;
 }
 
-function ProtectedProfessionalStudyGuideRoute(props: any) {
-  return <LearnerProtectedRoute component={ProfessionalStudyGuidePage} {...props} />;
-}
-
 const ProtectedAdminDashboard = withAdminProtection(AdminDashboard);
 const ProtectedCallBookingsPage = withAdminProtection(CallBookingsPage);
 const ProtectedPilotRequestsPage = withAdminProtection(PilotRequestsPage);
@@ -175,6 +172,7 @@ const ProtectedTopicsQueuePage = withAdminProtection(TopicsQueuePage);
 const ProtectedAIAnalyzerPage = withAdminProtection(AIAnalyzerPage);
 const ProtectedContentImport = withAdminProtection(ContentImport);
 const ProtectedContentMapper = withAdminProtection(ContentMapper);
+const ProtectedTopicProductionMatrix = withAdminProtection(TopicProductionMatrix);
 const ProtectedDemandAnalyticsPage = withAdminProtection(DemandAnalyticsPage);
 const ProtectedAssessmentManager = withAdminProtection(AssessmentManager);
 const ProtectedContentWorkflow = withAdminProtection(ContentWorkflow);
@@ -217,7 +215,7 @@ function Router() {
         <Route path="/dashboard" component={ProtectedDashboardRoute} />
         <Route path="/progress-dashboard" component={ProtectedProgressDashboardRoute} />
         <Route path="/study-guide" component={ProtectedStudyGuideRoute} />
-        <Route path="/professional-study-guide/:reportId" component={ProtectedProfessionalStudyGuideRoute} />
+        <Route path="/professional-study-guide/:reportId" component={ProfessionalStudyGuidePage} />
         
         {/* Admin Routes */}
         <Route path="/admin/login" component={AdminLogin} />
@@ -233,6 +231,7 @@ function Router() {
         <Route path="/admin/data-processing" component={ProtectedAIAnalyzerPage} />
         <Route path="/admin/content-import" component={ProtectedContentImport} />
         <Route path="/admin/content-mapper" component={ProtectedContentMapper} />
+        <Route path="/admin/topic-production" component={ProtectedTopicProductionMatrix} />
         <Route path="/admin/demand-analytics" component={ProtectedDemandAnalyticsPage} />
         <Route path="/admin/assessment-manager" component={ProtectedAssessmentManager} />
         <Route path="/admin/content-workflow" component={ProtectedContentWorkflow} />

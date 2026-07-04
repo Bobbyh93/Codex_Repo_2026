@@ -136,10 +136,12 @@ console.log("Recommended pre-push command sequence:");
 console.log("1. npm run manifest:live-launch-source");
 console.log("2. npm run scan:live-launch-secrets");
 console.log("3. npm run preflight:live-launch");
-console.log("4. npm run smoke:lesson-builder");
-console.log("5. git add -A");
-console.log("6. git commit -m \"Launch NurseStudy Lesson Builder pilot\"");
-console.log("7. git push -u origin main");
+console.log("4. npm run check:launch");
+console.log("5. npm run smoke:launch-surfaces");
+console.log("6. npm run smoke:lesson-builder");
+console.log("7. git add -A");
+console.log("8. git commit -m \"Launch NurseStudy Lesson Builder pilot\"");
+console.log("9. git push -u origin main");
 console.log("");
 
 if (changedLaunchFiles.length > 0) {

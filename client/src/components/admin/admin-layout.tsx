@@ -38,9 +38,10 @@ const navigation = [
   { name: "Pilot Requests", href: "/admin/pilot-requests", icon: Rocket },
   { name: "Knowledge Base", href: "/admin/knowledge-base", icon: Database },
   { name: "Content Import", href: "/admin/content-import", icon: Upload },
+  { name: "Topic Matrix", href: "/admin/topic-production", icon: GitBranch },
+  { name: "Content Mapper", href: "/admin/content-mapper", icon: Map },
   { name: "Lesson Builder", href: "/admin/lesson-builder", icon: Package },
   { name: "Database Manager", href: "/admin/database", icon: Database },
-  { name: "Content Mapper (post-MVP)", href: "/admin/content-mapper", icon: Map },
   { name: "Resources (post-MVP)", href: "/admin/resources", icon: BookOpen },
   { name: "Topics Queue (post-MVP)", href: "/admin/topics-queue", icon: Brain },
 ];

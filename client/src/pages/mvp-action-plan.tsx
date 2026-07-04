@@ -17,6 +17,7 @@ import { PageHeader, BrandLogo } from "@/components/ui/page-header";
 import { Link, useLocation, useParams } from "wouter";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useAuth } from "@/contexts/auth-context";
+import { rememberLastUploadedReport } from "@/lib/student-session";
 
 const BANNED_BRANDS = /\b(ATI|HESI|Pearson|Kaplan|UWorld)\b/gi;
 function sanitizeAssessmentName(name?: string | null): string {
@@ -246,7 +247,7 @@ export default function ExamRecoveryBlueprint() {
 
     if (uploadResult) {
       setReportId(uploadResult.reportId);
-      localStorage.setItem("lastReportId", uploadResult.reportId);
+      rememberLastUploadedReport(uploadResult);
       setStep("plan");
       track(EVENTS.UPLOAD_COMPLETE);
       successFeedback.showUploadSuccess(uploadResult.topicsFound);
@@ -268,7 +269,7 @@ export default function ExamRecoveryBlueprint() {
       const data = await response.json();
       setUploadProgress(100);
       setReportId(data.reportId);
-      localStorage.setItem("lastReportId", data.reportId);
+      rememberLastUploadedReport(data);
       setStep("plan");
       track(EVENTS.UPLOAD_COMPLETE);
       successFeedback.showUploadSuccess(data.topicsFound);
@@ -405,6 +406,27 @@ export default function ExamRecoveryBlueprint() {
             </div>
           )}
         </div>
+
+        {reportId && (
+          <div className="mb-5 grid gap-2 sm:grid-cols-3">
+            <Link href={`/professional-study-guide/${reportId}`}>
+              <Button variant="outline" size="sm" className="w-full justify-start">
+                <FileText className="h-4 w-4 mr-2" />
+                Open Study Guide
+              </Button>
+            </Link>
+            <Link href="/student/progress">
+              <Button variant="outline" size="sm" className="w-full justify-start">
+                Study Path
+              </Button>
+            </Link>
+            <Link href="/student/study-pack">
+              <Button variant="outline" size="sm" className="w-full justify-start">
+                Study Pack
+              </Button>
+            </Link>
+          </div>
+        )}
 
         {/* Score bar */}
         {assessmentReport && (

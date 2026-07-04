@@ -27,6 +27,7 @@ import { cn } from "@/lib/utils";
 
 interface ProfessionalStudyGuideProps {
   reportId: string;
+  guide?: any;
   mode?: 'preview' | 'full';
   onExportPDF?: () => void;
 }
@@ -60,12 +61,11 @@ type ResourcePlaceholder = {
   clinicalRelevance: 'critical' | 'high' | 'medium' | 'low';
 };
 
-export function ProfessionalStudyGuide({ reportId, mode = 'preview', onExportPDF }: ProfessionalStudyGuideProps) {
+export function ProfessionalStudyGuide({ reportId, guide, mode = 'preview', onExportPDF }: ProfessionalStudyGuideProps) {
   const [currentSection, setCurrentSection] = useState(0);
   const [expandedResources, setExpandedResources] = useState<string[]>([]);
 
-  // Mock data for demonstration - in real implementation, this would fetch from the server
-  const studyGuide = {
+  const defaultStudyGuide = {
     title: "NCLEX SUCCESS BLUEPRINT",
     subtitle: "PERSONALIZED STUDY GUIDE",
     studentName: "Nursing Student",
@@ -120,6 +120,14 @@ export function ProfessionalStudyGuide({ reportId, mode = 'preview', onExportPDF
       }
     ]
   };
+  const studyGuide = guide || defaultStudyGuide;
+  const priorityTopics = studyGuide.sections?.flatMap((section: any) => section.topics || []).slice(0, 6);
+  const topicsToRender = priorityTopics?.length
+    ? priorityTopics
+    : [
+        { name: "Medication Administration", priority: 1, gapScore: 75, difficulty: "Intermediate" },
+        { name: "Infection Control", priority: 2, gapScore: 68, difficulty: "Foundation" }
+      ];
 
   const resourceIcons = {
     reading: BookOpen,
@@ -179,7 +187,7 @@ export function ProfessionalStudyGuide({ reportId, mode = 'preview', onExportPDF
           </div>
           
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {studyGuide.progressMap.map((stage, index) => (
+            {studyGuide.progressMap.map((stage: ProgressIndicator, index: number) => (
               <div 
                 key={stage.stage}
                 className={cn(
@@ -278,7 +286,7 @@ export function ProfessionalStudyGuide({ reportId, mode = 'preview', onExportPDF
                   <div>
                     <h3 className="text-heading-3 mb-3">Learning Objectives</h3>
                     <ul className="space-y-2">
-                      {studyGuide.progressStage.objectives.map((objective, index) => (
+                      {studyGuide.progressStage.objectives.map((objective: string, index: number) => (
                         <li key={index} className="flex items-start gap-2">
                           <CheckCircle className="h-4 w-4 mt-1 text-success" />
                           <span className="text-body">{objective}</span>
@@ -320,11 +328,7 @@ export function ProfessionalStudyGuide({ reportId, mode = 'preview', onExportPDF
               
               <TabsContent value="topics" className="mt-6">
                 <div className="space-y-4">
-                  {/* Mock topic data */}
-                  {[
-                    { name: "Medication Administration", priority: 1, gapScore: 75, difficulty: "Intermediate" },
-                    { name: "Infection Control", priority: 2, gapScore: 68, difficulty: "Foundation" }
-                  ].map((topic, index) => (
+                  {topicsToRender.map((topic: any, index: number) => (
                     <Card key={index} className="border-l-4 border-l-priority-high">
                       <CardContent className="mobile-p-4">
                         <div className="flex items-start justify-between mb-3">
@@ -349,9 +353,13 @@ export function ProfessionalStudyGuide({ reportId, mode = 'preview', onExportPDF
                           <div>
                             <h5 className="text-body font-medium mb-1">Key Nursing Actions</h5>
                             <ul className="text-body-small text-muted-foreground space-y-1">
-                              <li>• Comprehensive assessment protocols</li>
-                              <li>• Evidence-based intervention strategies</li>
-                              <li>• Patient safety and monitoring procedures</li>
+                              {(topic.keyNursingActions || [
+                                "Comprehensive assessment protocols",
+                                "Evidence-based intervention strategies",
+                                "Patient safety and monitoring procedures"
+                              ]).slice(0, 3).map((action: string, actionIndex: number) => (
+                                <li key={actionIndex}>- {action}</li>
+                              ))}
                             </ul>
                           </div>
                           
@@ -361,7 +369,7 @@ export function ProfessionalStudyGuide({ reportId, mode = 'preview', onExportPDF
                               <div>
                                 <h5 className="text-body-small font-medium text-warning">Safety Considerations</h5>
                                 <p className="text-caption text-muted-foreground">
-                                  Review safety protocols and error prevention strategies specific to this topic area.
+                                  {topic.safetyConsiderations?.[0] || "Review safety protocols and error prevention strategies specific to this topic area."}
                                 </p>
                               </div>
                             </div>

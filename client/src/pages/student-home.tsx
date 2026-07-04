@@ -168,7 +168,7 @@ function LessonCard({ lesson, compact = false }: { lesson: StudentLessonSummary;
           <span className="text-xs text-slate-500">{lesson.estimatedMinutes} min lesson</span>
           <a href={lesson.learnerUrl}>
             <Button size="sm">
-              Start
+              Open lesson
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </a>
@@ -200,6 +200,7 @@ export default function StudentHome() {
   const home = homeQuery.data;
   const progress = progressQuery.data;
   const lessons = home?.lessons || [];
+  const topicTiles = home?.topicTiles || [];
   const featuredLesson = home?.featuredLesson || lessons[0] || null;
   const learningSteps = [
     { label: "Cue", detail: "Read the patient cue before the explanation.", Icon: Target },
@@ -422,6 +423,49 @@ export default function StudentHome() {
 
       <section className="bg-white">
         <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
+          {topicTiles.length > 0 ? (
+            <div className="mb-8">
+              <div className="mb-3 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                  <h2 className="text-xl font-semibold tracking-normal text-slate-950">Start by topic</h2>
+                  <p className="text-sm leading-6 text-slate-600">
+                    Pick a mapped weak topic or subject area, then open the source-backed lesson.
+                  </p>
+                </div>
+                <a href="/student/progress" className="text-sm font-medium text-emerald-700 hover:underline">
+                  View study path
+                </a>
+              </div>
+              <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+                {topicTiles.map((tile) => (
+                  <button
+                    key={tile.key}
+                    type="button"
+                    className="rounded-md border border-slate-200 bg-slate-50 p-4 text-left transition hover:border-emerald-300 hover:bg-emerald-50"
+                    onClick={() => {
+                      if (filters.weakTopics.includes(tile.label)) {
+                        setWeakTopic(tile.label);
+                        setSearch("");
+                      } else if (filters.subjects.includes(tile.label)) {
+                        setSubject(tile.label);
+                        setSearch("");
+                      } else {
+                        setSearch(tile.label);
+                      }
+                      document.getElementById("library")?.scrollIntoView({ behavior: "smooth", block: "start" });
+                    }}
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="font-semibold text-slate-950">{tile.label}</div>
+                      <Badge variant="outline" className="bg-white">{tile.count}</Badge>
+                    </div>
+                    <p className="mt-2 text-sm leading-6 text-slate-600">{tile.description}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : null}
+
           <div className="mb-5 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <h2 className="text-2xl font-semibold tracking-normal text-slate-950">Topic Library</h2>

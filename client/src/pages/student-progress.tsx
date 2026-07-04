@@ -6,13 +6,14 @@ import {
   BookOpenCheck,
   CheckCircle2,
   ClipboardList,
+  FileText,
   GraduationCap,
   MessageSquare,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { getStudentSessionId } from "@/lib/student-session";
+import { getLastUploadedReport, getStudentSessionId } from "@/lib/student-session";
 
 type StudentLessonSummary = {
   id: string;
@@ -116,6 +117,7 @@ function LessonRow({ state }: { state: LessonProgressState }) {
 
 export default function StudentProgress() {
   const sessionId = useMemo(() => getStudentSessionId(), []);
+  const lastUpload = useMemo(() => getLastUploadedReport(), []);
   const progressQuery = useQuery<StudentProgressResponse>({
     queryKey: ["/api/student/progress", sessionId],
     enabled: Boolean(sessionId),
@@ -162,7 +164,7 @@ export default function StudentProgress() {
               {[
                 ["Saved", progress.totals.savedLessons, BookMarked],
                 ["Opened", progress.totals.openedLessons, BookOpenCheck],
-                ["Complete", progress.totals.completedLessons, CheckCircle2],
+                ["Completed", progress.totals.completedLessons, CheckCircle2],
                 ["Practice", progress.totals.practiceAttempts, ClipboardList],
                 ["Feedback", progress.totals.feedbackSubmitted, MessageSquare],
               ].map(([label, value, Icon]) => {
@@ -176,6 +178,32 @@ export default function StudentProgress() {
                 );
               })}
             </div>
+
+            {lastUpload ? (
+              <Card className="rounded-md border-blue-200 bg-blue-50">
+                <CardContent className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100">Latest assessment upload</Badge>
+                    <h2 className="mt-2 font-semibold text-blue-950">Your launch preview guide is ready</h2>
+                    <p className="mt-1 text-sm leading-6 text-blue-900">
+                      {lastUpload.topicsFound ? `${lastUpload.topicsFound} topics were identified. ` : ""}
+                      Open the guide, then save or complete lessons to fill this path.
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <a href={lastUpload.nextStep || `/professional-study-guide/${lastUpload.reportId}`}>
+                      <Button size="sm">
+                        <FileText className="mr-2 h-4 w-4" />
+                        Open guide
+                      </Button>
+                    </a>
+                    <a href="/student">
+                      <Button size="sm" variant="outline">Browse lessons</Button>
+                    </a>
+                  </div>
+                </CardContent>
+              </Card>
+            ) : null}
 
             {progress.continueLesson ? (
               <Card className="rounded-md border-emerald-200 bg-emerald-50">

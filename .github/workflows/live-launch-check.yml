@@ -32,6 +32,25 @@ jobs:
       - name: Build production app
         run: npm run build
 
+      - name: Run launch surface typecheck
+        run: npm run check:launch
+
+      - name: Start local launch preview
+        shell: bash
+        run: |
+          PORT=5055 npm run preview:lesson-builder > /tmp/nursestudy-preview.log 2>&1 &
+          echo $! > /tmp/nursestudy-preview.pid
+          for attempt in {1..30}; do
+            if curl -fsS http://127.0.0.1:5055/ >/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/nursestudy-preview.log
+          exit 1
+
+      - name: Run launch surface smoke
+        run: npm run smoke:launch-surfaces
+
       - name: Run live launch preflight
         run: npm run preflight:live-launch
-

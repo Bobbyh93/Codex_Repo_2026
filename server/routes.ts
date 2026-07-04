@@ -897,21 +897,258 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  function buildLaunchStudyGuideFallback(reportId: string, report: any, options: any, reason: string) {
+    const maxTopics = Number(options?.maxTopics || (options?.focusOnTopGaps ? 2 : 5));
+    const fallbackTopics = [
+      { name: "Safety and Infection Control", category: "NCLEX Client Needs", gapScore: 72, priority: 1, subject: "Fundamentals" },
+      { name: "Clinical Judgment and Prioritization", category: "Clinical Judgment", gapScore: 68, priority: 1, subject: "Medical-Surgical" },
+      { name: "Medication Administration", category: "Pharmacological Therapies", gapScore: 62, priority: 2, subject: "Pharmacology" },
+      { name: "Maternal-Newborn Assessment", category: "Health Promotion and Maintenance", gapScore: 55, priority: 2, subject: "Maternal-Newborn" },
+      { name: "Pediatric Respiratory Cues", category: "Physiological Adaptation", gapScore: 48, priority: 3, subject: "Pediatrics" },
+    ];
+
+    let parsedTopics = fallbackTopics;
+    if (report?.extractedText) {
+      try {
+        const parsed = parseATIReport(report.extractedText);
+        const reviewTopics = getTopicsForReview(parsed);
+        if (reviewTopics.length > 0) {
+          parsedTopics = reviewTopics.map((topic: any, index: number) => ({
+            name: topic.name || topic.topicName || "Assessment topic",
+            category: topic.category || topic.contentArea || "NCLEX Review",
+            gapScore: topic.groupScore != null ? Math.max(0, 100 - Number(topic.groupScore)) : 60 - Math.min(index * 6, 30),
+            priority: index < 2 ? 1 : index < 4 ? 2 : 3,
+            subject: categorizeTopicBySubject(topic.name || topic.topicName || ""),
+          }));
+        }
+      } catch (error) {
+        console.warn("[ProfessionalGuide] Falling back to launch template after parse issue:", error);
+      }
+    }
+
+    const selectedTopics = parsedTopics.slice(0, Number.isFinite(maxTopics) && maxTopics > 0 ? maxTopics : 5);
+    const criticalCount = selectedTopics.filter((topic) => topic.priority === 1).length;
+    const highCount = selectedTopics.filter((topic) => topic.priority === 2).length;
+    const estimatedHours = Math.max(2, Math.ceil(selectedTopics.length * 1.5));
+    const generatedDate = new Date().toLocaleDateString();
+
+    const topicDetails = selectedTopics.map((topic, index) => ({
+      name: topic.name,
+      description: `${topic.category} focus area mapped for immediate NCLEX review.`,
+      priority: topic.priority || index + 1,
+      gapScore: Number(topic.gapScore || 50),
+      clinicalScenarios: [
+        `Recognize priority cues related to ${topic.name}.`,
+        `Choose the safest first nursing action for ${topic.name}.`,
+      ],
+      keyNursingActions: [
+        "Recognize relevant cues before choosing interventions",
+        "Prioritize safety, airway, circulation, and client risk",
+        "Evaluate the response and update the study plan",
+      ],
+      safetyConsiderations: [
+        "Escalate unstable findings",
+        "Verify orders, allergies, and contraindications",
+      ],
+      difficulty: topic.priority === 1 ? "foundation" : "intermediate",
+      estimatedStudyTime: topic.priority === 1 ? 60 : 45,
+      prerequisites: ["Review core concept summary", "Complete one rationale-backed quiz"],
+      performanceData: {
+        currentScore: Math.max(0, 100 - Number(topic.gapScore || 50)),
+        targetScore: 85,
+        improvementNeeded: Number(topic.gapScore || 50),
+      },
+    }));
+
+    return {
+      title: "NCLEX SUCCESS BLUEPRINT",
+      subtitle: "LAUNCH PREVIEW STUDY GUIDE",
+      studentName: report?.studentName || "Nursing Student",
+      generatedDate,
+      launchFallback: true,
+      fallbackReason: reason,
+      sourceReportId: report?.id || reportId,
+      progressStage: {
+        current: "foundation",
+        description: "Start with the highest-risk topics, then connect each topic to clinical judgment and practice rationales.",
+        objectives: [
+          "Map weak topics to nursing concepts and subject areas",
+          "Study one source-backed guide section per topic",
+          "Complete at least one rationale-backed practice item per topic",
+        ],
+        nextStage: "Application of mapped topics in patient scenarios",
+      },
+      overview: {
+        totalTopics: selectedTopics.length,
+        estimatedHours,
+        priorityDistribution: {
+          critical: criticalCount,
+          high: highCount,
+          medium: Math.max(0, selectedTopics.length - criticalCount - highCount),
+          low: 0,
+        },
+        subjectBreakdown: selectedTopics.map((topic) => ({
+          name: topic.subject || "Nursing Review",
+          topicCount: 1,
+          estimatedTime: topic.priority === 1 ? 60 : 45,
+          priority: topic.priority === 1 ? "critical" : "high",
+          systems: [{
+            name: topic.category || "NCLEX Review",
+            topics: [topic.name],
+            clinicalRelevance: topic.priority === 1 ? "critical" : "high",
+          }],
+        })),
+        studySequence: selectedTopics.map((topic) => topic.name),
+      },
+      progressMap: [
+        {
+          stage: "foundation",
+          title: "Map Weak Topics",
+          description: "Confirm concept, specialty, NCLEX category, and CJM step.",
+          isCompleted: false,
+          isCurrent: true,
+          estimatedCompletion: "Today",
+        },
+        {
+          stage: "application",
+          title: "Study Pack",
+          description: "Review guide, visuals, deck, and one quiz item per topic.",
+          isCompleted: false,
+          isCurrent: false,
+          estimatedCompletion: "1-2 days",
+        },
+        {
+          stage: "synthesis",
+          title: "Practice Rationales",
+          description: "Use rationales to correct cue recognition and action choices.",
+          isCompleted: false,
+          isCurrent: false,
+          estimatedCompletion: "2-3 days",
+        },
+        {
+          stage: "mastery",
+          title: "Repeat Check",
+          description: "Reattempt items and update weak-topic status.",
+          isCompleted: false,
+          isCurrent: false,
+          estimatedCompletion: "3-5 days",
+        },
+      ],
+      sections: [{
+        id: "launch-priority-topics",
+        title: "PRIORITY TOPIC MAP",
+        subtitle: "First launch version: deterministic, reviewable, and ready for expert polish.",
+        stage: {
+          current: "foundation",
+          description: "Launch-safe review path for mapped weak topics.",
+          objectives: ["Identify cues", "Connect topic to concept", "Practice one rationale-backed item"],
+          nextStage: "Expert-reviewed study pack",
+        },
+        learningObjectives: [
+          "Explain the core concept for each weak topic",
+          "Recognize priority cues using the Clinical Judgment Model",
+          "Complete a quiz item and review the rationale",
+        ],
+        criticalConcepts: selectedTopics.map((topic) => topic.name),
+        clinicalApplications: [
+          "Cue recognition",
+          "Priority setting",
+          "Safe nursing action",
+        ],
+        clinicalJudgmentSteps: [
+          {
+            layer: "clinical_judgment",
+            step: "Recognize Cues",
+            description: "Identify assessment findings that matter first.",
+            application: "Pull cues from the scenario before picking an answer.",
+            examples: ["Vital sign changes", "Risk factors", "Unexpected findings"],
+          },
+          {
+            layer: "clinical_judgment",
+            step: "Take Action",
+            description: "Choose the safest nursing action.",
+            application: "Match intervention to the most urgent cue.",
+            examples: ["Airway support", "Medication safety", "Escalation"],
+          },
+        ],
+        topics: topicDetails,
+        estimatedTime: estimatedHours * 60,
+        difficulty: "foundation",
+        resources: {
+          requiredReading: [],
+          supplementalReading: [],
+          interactiveContent: [],
+          practiceQuestions: [],
+          videoContent: [],
+          simulationActivities: [],
+          externalResources: [],
+          additionalPractice: [],
+        },
+        assessmentFocus: {
+          nclexCategories: Array.from(new Set(selectedTopics.map((topic) => topic.category || "NCLEX Review"))),
+          clientNeedsAreas: Array.from(new Set(selectedTopics.map((topic) => topic.category || "NCLEX Review"))),
+          cognitiveLevel: "Application",
+          integratedProcesses: ["Clinical Judgment", "Nursing Process", "Teaching and Learning"],
+          expectedQuestionTypes: ["Multiple choice", "Case scenario", "Priority action"],
+        },
+        completionCriteria: [
+          "Review guide section",
+          "Open related slide deck or lesson",
+          "Complete one quiz item with rationale",
+        ],
+        selfAssessmentQuestions: [
+          "Can I name the most important cue?",
+          "Can I explain why the correct action is safest?",
+          "Do I need expert review before publishing this topic?",
+        ],
+      }],
+      resourceLibrary: {
+        categories: ["study-guide", "slide-deck", "quiz", "visuals"],
+        totalResources: selectedTopics.length * 4,
+        estimatedTime: estimatedHours * 60,
+      },
+      clinicalJudgmentFramework: {
+        overview: "Use the Clinical Judgment Model to connect weak topics to cues, hypotheses, actions, and evaluation.",
+        layers: [],
+        applicationExamples: [],
+        practiceFramework: {
+          recognizeCues: ["Highlight abnormal findings", "Identify risk factors"],
+          analyzeCues: ["Connect cues to likely problem"],
+          prioritizeHypotheses: ["Rank by safety and urgency"],
+          generateSolutions: ["Choose evidence-based nursing actions"],
+          takeActions: ["Act on the highest priority"],
+          evaluateOutcomes: ["Check if the response improved"],
+        },
+      },
+      progressTracking: {
+        currentStage: "foundation",
+        overallProgress: 0,
+        sectionProgress: [],
+        timeTracking: { totalStudyTime: 0, dailyAverage: 0, weeklyGoal: estimatedHours * 60, streakDays: 0 },
+        milestones: [],
+      },
+    };
+  }
+
   // Professional study guide generation endpoint
   app.post("/api/generate-professional-guide", async (req, res) => {
     try {
-      if (process.env.ENABLE_PROFESSIONAL_STUDY_GUIDE !== "true") {
-        return res.status(503).json({
-          error: "Professional study guide is post-MVP",
-          status: "post_mvp_disabled",
-          message: "This feature is intentionally disabled for the Lesson Builder pilot release.",
-        });
-      }
-
       const { reportId, options = {} } = req.body;
       
       if (!reportId) {
         return res.status(400).json({ error: "Report ID is required" });
+      }
+
+      if (process.env.ENABLE_PROFESSIONAL_STUDY_GUIDE !== "true") {
+        const report = reportId === "demo-report" ? undefined : await storage.getAssessmentReport(reportId);
+        const guide = buildLaunchStudyGuideFallback(reportId, report, options, "professional_guide_disabled");
+        return res.json({
+          success: true,
+          guide,
+          status: "launch_template_fallback",
+          warning: "Full professional guide generation is disabled; returned the launch-safe preview guide.",
+          message: "Launch preview study guide generated successfully",
+        });
       }
 
       const { generateProfessionalStudyGuide } = await import("./professional-study-guide");
@@ -924,6 +1161,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       console.error("Error generating professional study guide:", error);
+      if (error instanceof Error && error.message.includes("Assessment report not found")) {
+        const { reportId, options = {} } = req.body || {};
+        const guide = buildLaunchStudyGuideFallback(reportId || "demo-report", undefined, options, "assessment_report_not_found");
+        return res.json({
+          success: true,
+          guide,
+          status: "launch_template_fallback",
+          warning: "Assessment report was not found; returned the launch-safe preview guide.",
+          message: "Launch preview study guide generated successfully",
+        });
+      }
       res.status(500).json({ 
         error: "Failed to generate professional study guide",
         message: error instanceof Error ? error.message : "Unknown error"
@@ -1376,7 +1624,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Upload and process assessment report - supports both authenticated and guest users
-  app.post("/api/assessment-reports", upload.single("file"), async (req, res) => {
+  app.post(["/api/assessment-reports", "/api/assessment-reports/upload"], upload.single("file"), async (req, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ error: "No file uploaded" });

@@ -6,8 +6,9 @@ import OpenAI from "openai";
 import { z } from "zod";
 import { and, asc, desc, eq, ilike, inArray, sql } from "drizzle-orm";
 import { db } from "../db";
-import { requireAdminSession, type AdminAuthRequest } from "../admin-auth-session";
+import { requireAdminSession, validateCSRFToken, type AdminAuthRequest } from "../admin-auth-session";
 import {
+  contentBlocks,
   documents,
   documentChunks,
   lessonAssignmentLearners,
@@ -28,6 +29,7 @@ import {
   sourceRegistry,
   sourceTaxonomyMappings,
   taxonomyTerms,
+  topicProductionReviews,
 } from "@shared/schema";
 
 type EvidenceChunk = {
@@ -64,6 +66,314 @@ type PackageArtifactPayload = {
   mimeType: string;
   contentJson?: any;
   contentText?: string;
+};
+
+const topicProductionAssetLabels = {
+  mapping: "Concept + nursing subject",
+  slideDeck: "Video lesson slide deck",
+  studyGuide: "Study guide",
+  visuals: "Visuals",
+  quiz: "Quiz item",
+  citations: "Source citations",
+} as const;
+
+const publicPublishConfirmationText = "I understand this makes the lesson public";
+const publicPublishConfirmationSchema = z.object({
+  confirmPublicPublish: z.literal(true),
+  confirmationText: z.string().trim().refine((value) => value === publicPublishConfirmationText, {
+    message: `confirmationText must equal "${publicPublishConfirmationText}"`,
+  }),
+});
+
+const topicProductionDriveProjectInventory = {
+  id: "1c0Ayvgi8Av0c8M4SdOrwvHGhieXz553k",
+  title: "NursePrep Platform Development",
+  url: "https://drive.google.com/drive/project/1c0Ayvgi8Av0c8M4SdOrwvHGhieXz553k",
+  sourceType: "google_drive_project",
+  status: "indexed_from_metadata_and_search",
+  note: "Google Drive project objects are not folder-listable through the Drive file API; these assets were grounded by project metadata plus targeted Harrity/Pediatrics/Maternal-Newborn/shorts searches.",
+  costPolicy: "No AI generation or video processing in this inventory step. Review placements first, then approve one $100-$250 production checkpoint.",
+  assets: [
+    {
+      id: "1NTwLb9FGhgwsPwr7sxKvPUCz98K9hU9g",
+      title: "maternal_newborn_in_depth_lesson_guide_20260610.docx",
+      url: "https://docs.google.com/document/d/1NTwLb9FGhgwsPwr7sxKvPUCz98K9hU9g/edit",
+      mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      subject: "Maternal-Newborn",
+      concept: "Reproductive Health",
+      matchers: ["maternal", "newborn", "postpartum", "contraception"],
+      assetKeys: ["studyGuide", "citations"],
+      belongsIn: "Knowledge Base intake, Content Mapper, and Lesson Builder source evidence.",
+      nextAction: "Use as the faculty/source-backed guide before building or polishing maternal-newborn decks and quizzes.",
+    },
+    {
+      id: "1NozANY2clLE41Dpb00vBEBCWyfa3UJMN_mCYQRfezd8",
+      title: "maternal_newborn_unit1_assembled_deck_20260502",
+      url: "https://docs.google.com/presentation/d/1NozANY2clLE41Dpb00vBEBCWyfa3UJMN_mCYQRfezd8",
+      mimeType: "application/vnd.google-apps.presentation",
+      subject: "Maternal-Newborn",
+      concept: "Reproductive Health",
+      matchers: ["maternal", "newborn", "postpartum", "contraception"],
+      assetKeys: ["slideDeck", "visuals"],
+      belongsIn: "Lesson Builder deck reference and visual/source artifact review.",
+      nextAction: "Attach or import as a deck source only after the topic mapping is accepted.",
+    },
+    {
+      id: "1DygdF06m67p97LxVK2_zXwi1c53x0OyQZz1cEwwxSK0",
+      title: "ch01_contraception_harrity_deck_notes_pass",
+      url: "https://docs.google.com/presentation/d/1DygdF06m67p97LxVK2_zXwi1c53x0OyQZz1cEwwxSK0",
+      mimeType: "application/vnd.google-apps.presentation",
+      subject: "Maternal-Newborn",
+      concept: "Reproductive Health",
+      matchers: ["contraception", "maternal", "newborn"],
+      assetKeys: ["slideDeck", "studyGuide", "visuals"],
+      belongsIn: "Lesson Builder deck/audio-script preparation for the maternal-newborn starter topic.",
+      nextAction: "Review speaker notes for TTS/video readiness before any audio/video spend.",
+    },
+    {
+      id: "1SOc0Ep0v9l0iPy2JH9lWjqH81r5p2mDb",
+      title: "CH18_Asthma_Learner_Facing_Lesson_Package_20260510.pptx",
+      url: "https://docs.google.com/presentation/d/1SOc0Ep0v9l0iPy2JH9lWjqH81r5p2mDb/edit",
+      mimeType: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+      subject: "Pediatrics",
+      concept: "Gas Exchange",
+      matchers: ["pediatric", "pediatrics", "asthma", "wheez", "airway"],
+      assetKeys: ["slideDeck", "studyGuide", "visuals", "quiz", "citations"],
+      belongsIn: "Golden Lesson Builder example and student-facing asthma lesson pattern.",
+      nextAction: "Use as the first pediatrics quality benchmark before broad batch production.",
+    },
+    {
+      id: "18fW_Yqq7Gge-4j46dvDjv7wRA_66nJUKJxk7WIva-eU",
+      title: "Pediatric Emergencies Part 1 Google Slides",
+      url: "https://docs.google.com/presentation/d/18fW_Yqq7Gge-4j46dvDjv7wRA_66nJUKJxk7WIva-eU",
+      mimeType: "application/vnd.google-apps.presentation",
+      subject: "Pediatrics",
+      concept: "Safety / Clinical Judgment",
+      matchers: ["pediatric", "pediatrics", "emergencies", "children"],
+      assetKeys: ["slideDeck", "visuals"],
+      belongsIn: "Later pediatrics deck source after the asthma checkpoint passes.",
+      nextAction: "Hold for Phase 4+ expansion; do not spend on it before the two-topic checkpoint is reviewed.",
+    },
+    {
+      id: "13IQdvJI4ktmh-rEhIyOYEETw6uCtDCH8",
+      title: "expanded_subtopics_table_1778073061306.xlsx",
+      url: "https://drive.google.com/file/d/13IQdvJI4ktmh-rEhIyOYEETw6uCtDCH8",
+      mimeType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      subject: "Topic taxonomy",
+      concept: "Production planning",
+      matchers: ["maternal", "newborn", "pediatric", "pediatrics", "asthma", "topic"],
+      assetKeys: ["mapping"],
+      belongsIn: "Content Mapper taxonomy review and topic-production backlog expansion.",
+      nextAction: "Use only for mapping decisions; not student-facing content.",
+    },
+    {
+      id: "1z8P4ci4FEzouDhNsMG9eZtaMZBE6FylF",
+      title: "virality-scoring.md",
+      url: "https://drive.google.com/file/d/1z8P4ci4FEzouDhNsMG9eZtaMZBE6FylF",
+      mimeType: "text/markdown",
+      subject: "Video/Shorts workflow",
+      concept: "Clip scoring",
+      matchers: ["maternal", "newborn", "pediatric", "pediatrics", "asthma", "lesson"],
+      assetKeys: ["videoShorts"],
+      belongsIn: "Phase 3 Shorts/Airtable handoff, after a lesson draft is approved.",
+      nextAction: "Use as the future scoring recipe; do not run AI vision scoring during the $100-$250 content checkpoint.",
+    },
+    {
+      id: "1seHNGDEu4MMrIjGPOiDtr-Aj8ve4jwKo",
+      title: "video-editing SKILL.md",
+      url: "https://drive.google.com/file/d/1seHNGDEu4MMrIjGPOiDtr-Aj8ve4jwKo",
+      mimeType: "text/markdown",
+      subject: "Video/Shorts workflow",
+      concept: "FFmpeg production",
+      matchers: ["maternal", "newborn", "pediatric", "pediatrics", "asthma", "lesson"],
+      assetKeys: ["videoShorts"],
+      belongsIn: "Future audio/video rendering workflow after script and visual review.",
+      nextAction: "Keep as production guidance; no video processing until topic content quality is accepted.",
+    },
+  ],
+} as const;
+
+const topicProductionReviewDecisions = [
+  "unreviewed",
+  "approve_mapping",
+  "needs_edit",
+  "build_lesson",
+  "needs_visuals",
+  "needs_quiz",
+  "hold",
+] as const;
+
+const topicProductionNextBuildDecisions = new Set<string>([
+  "approve_mapping",
+  "build_lesson",
+  "needs_visuals",
+  "needs_quiz",
+]);
+
+const topicProductionReviewSchema = z.object({
+  decision: z.enum(topicProductionReviewDecisions).default("unreviewed"),
+  reviewerNotes: z.string().max(2000).optional().default(""),
+});
+
+const topicProductionDraftReviewDecisions = [
+  "unreviewed",
+  "approve_polish",
+  "needs_fix",
+  "hold",
+] as const;
+
+const topicProductionDraftReviewSchema = z.object({
+  decision: z.enum(topicProductionDraftReviewDecisions).default("unreviewed"),
+  reviewerNotes: z.string().max(2000).optional().default(""),
+});
+
+const topicProductionPhaseThreeDecisions = [
+  "unreviewed",
+  "approve_polish_pass",
+  "approve_short_planning",
+  "needs_fix",
+  "hold_spend",
+] as const;
+
+const topicProductionPhaseThreeDecisionSchema = z.object({
+  decision: z.enum(topicProductionPhaseThreeDecisions).default("unreviewed"),
+  reviewerNotes: z.string().max(2000).optional().default(""),
+});
+
+const topicProductionStudentLaunchDecisions = [
+  "unreviewed",
+  "approve_student_preview",
+  "needs_fix",
+  "hold_release",
+] as const;
+
+const topicProductionStudentLaunchDecisionSchema = z.object({
+  decision: z.enum(topicProductionStudentLaunchDecisions).default("unreviewed"),
+  reviewerNotes: z.string().max(2000).optional().default(""),
+});
+
+const topicProductionMediaWorkOrderDecisions = [
+  "unreviewed",
+  "approve_single_topic_scaffold",
+  "needs_revision",
+  "hold_spend",
+] as const;
+
+const topicProductionMediaWorkOrderReviewSchema = z.object({
+  decision: z.enum(topicProductionMediaWorkOrderDecisions).default("unreviewed"),
+  reviewerNotes: z.string().max(2000).optional().default(""),
+});
+
+const topicProductionMediaScaffoldReviewDecisions = [
+  "unreviewed",
+  "approve_ai_draft_checkpoint",
+  "needs_revision",
+  "hold_spend",
+] as const;
+
+const topicProductionMediaScaffoldReviewSchema = z.object({
+  decision: z.enum(topicProductionMediaScaffoldReviewDecisions).default("unreviewed"),
+  reviewerNotes: z.string().max(2000).optional().default(""),
+});
+
+const topicProductionMediaTextDraftReviewDecisions = [
+  "unreviewed",
+  "approve_package_assembly_checkpoint",
+  "needs_revision",
+  "hold_spend",
+] as const;
+
+const topicProductionMediaTextDraftReviewSchema = z.object({
+  decision: z.enum(topicProductionMediaTextDraftReviewDecisions).default("unreviewed"),
+  reviewerNotes: z.string().max(2000).optional().default(""),
+});
+
+const topicProductionPackageReviewBlueprintDecisions = [
+  "unreviewed",
+  "approve_review_package_build",
+  "needs_revision",
+  "hold_spend",
+] as const;
+
+const topicProductionPackageReviewBlueprintSchema = z.object({
+  decision: z.enum(topicProductionPackageReviewBlueprintDecisions).default("unreviewed"),
+  reviewerNotes: z.string().max(2000).optional().default(""),
+});
+
+const topicProductionPreviewReviewOutcomes = [
+  "ready_for_release",
+  "needs_fix",
+  "hold_release",
+] as const;
+
+const topicProductionPreviewReviewSchema = z.object({
+  previewKey: z.string().trim().min(12).max(120),
+  outcome: z.enum(topicProductionPreviewReviewOutcomes),
+  reviewerNotes: z.string().max(2000).optional().default(""),
+});
+
+const topicProductionPreviewReviewAdminSchema = z.object({
+  outcome: z.enum(topicProductionPreviewReviewOutcomes),
+  reviewerNotes: z.string().max(2000).optional().default(""),
+});
+
+const topicProductionPublicReleaseDecisions = [
+  "approve_public_release",
+  "needs_fix",
+  "hold_release",
+] as const;
+
+const topicProductionPublicReleaseDecisionSchema = z.object({
+  decision: z.enum(topicProductionPublicReleaseDecisions),
+  reviewerNotes: z.string().max(2000).optional().default(""),
+});
+
+const topicProductionReviewOverrides = new Map<string, TopicProductionReview>();
+const topicProductionMediaWorkOrderReviewOverrides = new Map<string, TopicProductionMediaWorkOrderReview>();
+const topicProductionMediaScaffoldReviewOverrides = new Map<string, TopicProductionMediaScaffoldReview>();
+const topicProductionMediaTextDraftReviewOverrides = new Map<string, TopicProductionMediaTextDraftReview>();
+const topicProductionPackageReviewBlueprintOverrides = new Map<string, TopicProductionPackageReviewBlueprintReview>();
+
+type TopicProductionReview = {
+  decision: (typeof topicProductionReviewDecisions)[number];
+  reviewerNotes: string;
+  reviewedAt: string | null;
+  reviewedBy: string;
+};
+
+type TopicProductionMediaWorkOrderReview = {
+  decision: (typeof topicProductionMediaWorkOrderDecisions)[number];
+  reviewerNotes: string;
+  reviewedAt: string | null;
+  reviewedBy: string;
+};
+
+type TopicProductionMediaScaffoldReview = {
+  decision: (typeof topicProductionMediaScaffoldReviewDecisions)[number];
+  reviewerNotes: string;
+  reviewedAt: string | null;
+  reviewedBy: string;
+};
+
+type TopicProductionMediaTextDraftReview = {
+  decision: (typeof topicProductionMediaTextDraftReviewDecisions)[number];
+  reviewerNotes: string;
+  reviewedAt: string | null;
+  reviewedBy: string;
+};
+
+type TopicProductionPackageReviewBlueprintReview = {
+  decision: (typeof topicProductionPackageReviewBlueprintDecisions)[number];
+  reviewerNotes: string;
+  reviewedAt: string | null;
+  reviewedBy: string;
+};
+
+type TopicProductionPublicReleaseDecision = {
+  decision: (typeof topicProductionPublicReleaseDecisions)[number];
+  reviewerNotes: string;
+  reviewedAt: string | null;
+  reviewedBy: string;
 };
 
 const sourceImportSchema = z.object({
@@ -294,6 +604,7 @@ const learnerEventSchema = z.object({
   assignmentId: z.string().trim().min(1).optional(),
   assignmentLearnerId: z.string().trim().min(1).optional(),
   learnerKey: z.string().trim().min(8).optional(),
+  previewKey: z.string().trim().min(12).max(120).optional(),
   eventType: z.enum(["lesson_opened", "slide_viewed", "practice_viewed", "practice_attempted", "lesson_completed", "lesson_saved"]),
   slideId: z.string().optional(),
   itemId: z.string().optional(),
@@ -309,6 +620,7 @@ const learnerFeedbackSchema = z.object({
   assignmentId: z.string().trim().min(1).optional(),
   assignmentLearnerId: z.string().trim().min(1).optional(),
   learnerKey: z.string().trim().min(8).optional(),
+  previewKey: z.string().trim().min(12).max(120).optional(),
   slideId: z.string().optional(),
   itemId: z.string().optional(),
   rating: z.enum(["helpful", "confusing", "too_easy", "too_hard", "needs_faculty_review"]),
@@ -1135,6 +1447,23 @@ async function ensureLessonBuilderTables() {
       created_at timestamp DEFAULT now()
     )
   `);
+
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS topic_production_reviews (
+      id varchar PRIMARY KEY DEFAULT gen_random_uuid(),
+      source_key text NOT NULL UNIQUE,
+      source_type text NOT NULL,
+      source_id text NOT NULL,
+      decision text NOT NULL DEFAULT 'unreviewed',
+      reviewer_notes text NOT NULL DEFAULT '',
+      reviewed_by text NOT NULL DEFAULT 'admin',
+      reviewed_at timestamp DEFAULT now(),
+      metadata jsonb DEFAULT '{}'::jsonb,
+      created_at timestamp DEFAULT now(),
+      updated_at timestamp DEFAULT now()
+    )
+  `);
+  await db.execute(sql`CREATE INDEX IF NOT EXISTS topic_production_reviews_source_idx ON topic_production_reviews(source_type, source_id)`);
 
   await db.execute(sql`
     CREATE TABLE IF NOT EXISTS lesson_assignments (
@@ -3872,6 +4201,3836 @@ async function findPackageBundle(packageId: string): Promise<LessonBundle | null
   return { package: pkg, sources, slides, items, citations, qaResults, generationRuns, artifacts, contractValidations, reviews, assignments, learnerEvents, releaseAuditEvents };
 }
 
+function compactTopicKey(value: string | null | undefined) {
+  return String(value || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+function topicProductionRowKey(sourceType: string, id: string) {
+  return `${sourceType}:${id}`;
+}
+
+function defaultTopicProductionReview(): TopicProductionReview {
+  return {
+    decision: "unreviewed",
+    reviewerNotes: "",
+    reviewedAt: null,
+    reviewedBy: "",
+  };
+}
+
+function defaultTopicProductionMediaWorkOrderReview(): TopicProductionMediaWorkOrderReview {
+  return {
+    decision: "unreviewed",
+    reviewerNotes: "",
+    reviewedAt: null,
+    reviewedBy: "",
+  };
+}
+
+function defaultTopicProductionMediaScaffoldReview(): TopicProductionMediaScaffoldReview {
+  return {
+    decision: "unreviewed",
+    reviewerNotes: "",
+    reviewedAt: null,
+    reviewedBy: "",
+  };
+}
+
+function defaultTopicProductionMediaTextDraftReview(): TopicProductionMediaTextDraftReview {
+  return {
+    decision: "unreviewed",
+    reviewerNotes: "",
+    reviewedAt: null,
+    reviewedBy: "",
+  };
+}
+
+function defaultTopicProductionPackageReviewBlueprintReview(): TopicProductionPackageReviewBlueprintReview {
+  return {
+    decision: "unreviewed",
+    reviewerNotes: "",
+    reviewedAt: null,
+    reviewedBy: "",
+  };
+}
+
+function normalizeTopicProductionReview(value: any): TopicProductionReview {
+  const parsed = topicProductionReviewSchema.safeParse(value || {});
+  if (!parsed.success) return defaultTopicProductionReview();
+  return {
+    decision: parsed.data.decision,
+    reviewerNotes: parsed.data.reviewerNotes || "",
+    reviewedAt: typeof value?.reviewedAt === "string" ? value.reviewedAt : null,
+    reviewedBy: typeof value?.reviewedBy === "string" ? value.reviewedBy : "",
+  };
+}
+
+function normalizeTopicProductionMediaWorkOrderReview(value: any): TopicProductionMediaWorkOrderReview {
+  const parsed = topicProductionMediaWorkOrderReviewSchema.safeParse(value || {});
+  if (!parsed.success) return defaultTopicProductionMediaWorkOrderReview();
+  return {
+    decision: parsed.data.decision,
+    reviewerNotes: parsed.data.reviewerNotes || "",
+    reviewedAt: typeof value?.reviewedAt === "string" ? value.reviewedAt : null,
+    reviewedBy: typeof value?.reviewedBy === "string" ? value.reviewedBy : "",
+  };
+}
+
+function normalizeTopicProductionMediaScaffoldReview(value: any): TopicProductionMediaScaffoldReview {
+  const parsed = topicProductionMediaScaffoldReviewSchema.safeParse(value || {});
+  if (!parsed.success) return defaultTopicProductionMediaScaffoldReview();
+  return {
+    decision: parsed.data.decision,
+    reviewerNotes: parsed.data.reviewerNotes || "",
+    reviewedAt: typeof value?.reviewedAt === "string" ? value.reviewedAt : null,
+    reviewedBy: typeof value?.reviewedBy === "string" ? value.reviewedBy : "",
+  };
+}
+
+function normalizeTopicProductionMediaTextDraftReview(value: any): TopicProductionMediaTextDraftReview {
+  const parsed = topicProductionMediaTextDraftReviewSchema.safeParse(value || {});
+  if (!parsed.success) return defaultTopicProductionMediaTextDraftReview();
+  return {
+    decision: parsed.data.decision,
+    reviewerNotes: parsed.data.reviewerNotes || "",
+    reviewedAt: typeof value?.reviewedAt === "string" ? value.reviewedAt : null,
+    reviewedBy: typeof value?.reviewedBy === "string" ? value.reviewedBy : "",
+  };
+}
+
+function normalizeTopicProductionPackageReviewBlueprintReview(value: any): TopicProductionPackageReviewBlueprintReview {
+  const parsed = topicProductionPackageReviewBlueprintSchema.safeParse(value || {});
+  if (!parsed.success) return defaultTopicProductionPackageReviewBlueprintReview();
+  return {
+    decision: parsed.data.decision,
+    reviewerNotes: parsed.data.reviewerNotes || "",
+    reviewedAt: typeof value?.reviewedAt === "string" ? value.reviewedAt : null,
+    reviewedBy: typeof value?.reviewedBy === "string" ? value.reviewedBy : "",
+  };
+}
+
+function topicProductionReviewForRow(sourceType: string, id: string, fallback?: any) {
+  const override = topicProductionReviewOverrides.get(topicProductionRowKey(sourceType, id));
+  return override || normalizeTopicProductionReview(fallback);
+}
+
+function topicProductionMediaWorkOrderId(sourceId: string) {
+  return `media-work-order-${sourceId}`;
+}
+
+function topicProductionMediaWorkOrderReviewForId(workOrderId: string, fallback?: any) {
+  const override = topicProductionMediaWorkOrderReviewOverrides.get(topicProductionRowKey("media_work_order", workOrderId));
+  return override || normalizeTopicProductionMediaWorkOrderReview(fallback);
+}
+
+function topicProductionMediaScaffoldReviewForId(workOrderId: string, fallback?: any) {
+  const override = topicProductionMediaScaffoldReviewOverrides.get(topicProductionRowKey("media_scaffold", workOrderId));
+  return override || normalizeTopicProductionMediaScaffoldReview(fallback);
+}
+
+function topicProductionMediaTextDraftReviewForId(workOrderId: string, fallback?: any) {
+  const override = topicProductionMediaTextDraftReviewOverrides.get(topicProductionRowKey("media_text_draft", workOrderId));
+  return override || normalizeTopicProductionMediaTextDraftReview(fallback);
+}
+
+function topicProductionPackageReviewBlueprintForId(workOrderId: string, fallback?: any) {
+  const override = topicProductionPackageReviewBlueprintOverrides.get(topicProductionRowKey("package_review_blueprint", workOrderId));
+  return override || normalizeTopicProductionPackageReviewBlueprintReview(fallback);
+}
+
+async function loadTopicProductionReviewOverrides() {
+  const rows = await db.select().from(topicProductionReviews);
+  for (const row of rows) {
+    const payload = {
+      decision: row.decision,
+      reviewerNotes: row.reviewerNotes,
+      reviewedAt: row.reviewedAt instanceof Date ? row.reviewedAt.toISOString() : row.reviewedAt,
+      reviewedBy: row.reviewedBy,
+    };
+    if (row.sourceType === "media_work_order") {
+      topicProductionMediaWorkOrderReviewOverrides.set(row.sourceKey, normalizeTopicProductionMediaWorkOrderReview(payload));
+    } else if (row.sourceType === "media_scaffold") {
+      topicProductionMediaScaffoldReviewOverrides.set(row.sourceKey, normalizeTopicProductionMediaScaffoldReview(payload));
+    } else if (row.sourceType === "media_text_draft") {
+      topicProductionMediaTextDraftReviewOverrides.set(row.sourceKey, normalizeTopicProductionMediaTextDraftReview(payload));
+    } else if (row.sourceType === "package_review_blueprint") {
+      topicProductionPackageReviewBlueprintOverrides.set(row.sourceKey, normalizeTopicProductionPackageReviewBlueprintReview(payload));
+    } else {
+      topicProductionReviewOverrides.set(row.sourceKey, normalizeTopicProductionReview(payload));
+    }
+  }
+}
+
+async function saveTopicProductionReview(sourceType: string, sourceId: string, review: TopicProductionReview, metadata: Record<string, any> = {}) {
+  const sourceKey = topicProductionRowKey(sourceType, sourceId);
+  const reviewedAt = review.reviewedAt ? new Date(review.reviewedAt) : new Date();
+  const [saved] = await db.insert(topicProductionReviews).values({
+    sourceKey,
+    sourceType,
+    sourceId,
+    decision: review.decision,
+    reviewerNotes: review.reviewerNotes || "",
+    reviewedBy: review.reviewedBy || "admin",
+    reviewedAt,
+    metadata,
+    updatedAt: new Date(),
+  }).onConflictDoUpdate({
+    target: topicProductionReviews.sourceKey,
+    set: {
+      decision: review.decision,
+      reviewerNotes: review.reviewerNotes || "",
+      reviewedBy: review.reviewedBy || "admin",
+      reviewedAt,
+      metadata,
+      updatedAt: new Date(),
+    },
+  }).returning();
+
+  topicProductionReviewOverrides.set(sourceKey, normalizeTopicProductionReview({
+    decision: saved.decision,
+    reviewerNotes: saved.reviewerNotes,
+    reviewedAt: saved.reviewedAt instanceof Date ? saved.reviewedAt.toISOString() : saved.reviewedAt,
+    reviewedBy: saved.reviewedBy,
+  }));
+  return saved;
+}
+
+async function saveTopicProductionMediaWorkOrderReview(workOrderId: string, review: TopicProductionMediaWorkOrderReview, metadata: Record<string, any> = {}) {
+  const sourceType = "media_work_order";
+  const sourceKey = topicProductionRowKey(sourceType, workOrderId);
+  const reviewedAt = review.reviewedAt ? new Date(review.reviewedAt) : new Date();
+  const [saved] = await db.insert(topicProductionReviews).values({
+    sourceKey,
+    sourceType,
+    sourceId: workOrderId,
+    decision: review.decision,
+    reviewerNotes: review.reviewerNotes || "",
+    reviewedBy: review.reviewedBy || "admin",
+    reviewedAt,
+    metadata,
+    updatedAt: new Date(),
+  }).onConflictDoUpdate({
+    target: topicProductionReviews.sourceKey,
+    set: {
+      decision: review.decision,
+      reviewerNotes: review.reviewerNotes || "",
+      reviewedBy: review.reviewedBy || "admin",
+      reviewedAt,
+      metadata,
+      updatedAt: new Date(),
+    },
+  }).returning();
+
+  topicProductionMediaWorkOrderReviewOverrides.set(sourceKey, normalizeTopicProductionMediaWorkOrderReview({
+    decision: saved.decision,
+    reviewerNotes: saved.reviewerNotes,
+    reviewedAt: saved.reviewedAt instanceof Date ? saved.reviewedAt.toISOString() : saved.reviewedAt,
+    reviewedBy: saved.reviewedBy,
+  }));
+  return saved;
+}
+
+async function saveTopicProductionMediaScaffoldReview(workOrderId: string, review: TopicProductionMediaScaffoldReview, metadata: Record<string, any> = {}) {
+  const sourceType = "media_scaffold";
+  const sourceKey = topicProductionRowKey(sourceType, workOrderId);
+  const reviewedAt = review.reviewedAt ? new Date(review.reviewedAt) : new Date();
+  const [saved] = await db.insert(topicProductionReviews).values({
+    sourceKey,
+    sourceType,
+    sourceId: workOrderId,
+    decision: review.decision,
+    reviewerNotes: review.reviewerNotes || "",
+    reviewedBy: review.reviewedBy || "admin",
+    reviewedAt,
+    metadata,
+    updatedAt: new Date(),
+  }).onConflictDoUpdate({
+    target: topicProductionReviews.sourceKey,
+    set: {
+      decision: review.decision,
+      reviewerNotes: review.reviewerNotes || "",
+      reviewedBy: review.reviewedBy || "admin",
+      reviewedAt,
+      metadata,
+      updatedAt: new Date(),
+    },
+  }).returning();
+
+  topicProductionMediaScaffoldReviewOverrides.set(sourceKey, normalizeTopicProductionMediaScaffoldReview({
+    decision: saved.decision,
+    reviewerNotes: saved.reviewerNotes,
+    reviewedAt: saved.reviewedAt instanceof Date ? saved.reviewedAt.toISOString() : saved.reviewedAt,
+    reviewedBy: saved.reviewedBy,
+  }));
+  return saved;
+}
+
+async function saveTopicProductionMediaTextDraftReview(workOrderId: string, review: TopicProductionMediaTextDraftReview, metadata: Record<string, any> = {}) {
+  const sourceType = "media_text_draft";
+  const sourceKey = topicProductionRowKey(sourceType, workOrderId);
+  const reviewedAt = review.reviewedAt ? new Date(review.reviewedAt) : new Date();
+  const [saved] = await db.insert(topicProductionReviews).values({
+    sourceKey,
+    sourceType,
+    sourceId: workOrderId,
+    decision: review.decision,
+    reviewerNotes: review.reviewerNotes || "",
+    reviewedBy: review.reviewedBy || "admin",
+    reviewedAt,
+    metadata,
+    updatedAt: new Date(),
+  }).onConflictDoUpdate({
+    target: topicProductionReviews.sourceKey,
+    set: {
+      decision: review.decision,
+      reviewerNotes: review.reviewerNotes || "",
+      reviewedBy: review.reviewedBy || "admin",
+      reviewedAt,
+      metadata,
+      updatedAt: new Date(),
+    },
+  }).returning();
+
+  topicProductionMediaTextDraftReviewOverrides.set(sourceKey, normalizeTopicProductionMediaTextDraftReview({
+    decision: saved.decision,
+    reviewerNotes: saved.reviewerNotes,
+    reviewedAt: saved.reviewedAt instanceof Date ? saved.reviewedAt.toISOString() : saved.reviewedAt,
+    reviewedBy: saved.reviewedBy,
+  }));
+  return saved;
+}
+
+async function saveTopicProductionPackageReviewBlueprint(workOrderId: string, review: TopicProductionPackageReviewBlueprintReview, metadata: Record<string, any> = {}) {
+  const sourceType = "package_review_blueprint";
+  const sourceKey = topicProductionRowKey(sourceType, workOrderId);
+  const reviewedAt = review.reviewedAt ? new Date(review.reviewedAt) : new Date();
+  const [saved] = await db.insert(topicProductionReviews).values({
+    sourceKey,
+    sourceType,
+    sourceId: workOrderId,
+    decision: review.decision,
+    reviewerNotes: review.reviewerNotes || "",
+    reviewedBy: review.reviewedBy || "admin",
+    reviewedAt,
+    metadata,
+    updatedAt: new Date(),
+  }).onConflictDoUpdate({
+    target: topicProductionReviews.sourceKey,
+    set: {
+      decision: review.decision,
+      reviewerNotes: review.reviewerNotes || "",
+      reviewedBy: review.reviewedBy || "admin",
+      reviewedAt,
+      metadata,
+      updatedAt: new Date(),
+    },
+  }).returning();
+
+  topicProductionPackageReviewBlueprintOverrides.set(sourceKey, normalizeTopicProductionPackageReviewBlueprintReview({
+    decision: saved.decision,
+    reviewerNotes: saved.reviewerNotes,
+    reviewedAt: saved.reviewedAt instanceof Date ? saved.reviewedAt.toISOString() : saved.reviewedAt,
+    reviewedBy: saved.reviewedBy,
+  }));
+  return saved;
+}
+
+function firstString(...values: any[]) {
+  for (const value of values) {
+    if (typeof value === "string" && value.trim()) return value.trim();
+    if (Array.isArray(value)) {
+      const found = value.find((item) => typeof item === "string" && item.trim());
+      if (found) return found.trim();
+    }
+  }
+  return "";
+}
+
+function compactText(value: unknown): string {
+  return String(value ?? "").replace(/\s+/g, " ").trim();
+}
+
+function topicProductionDriveAssetsForRow(row: any) {
+  const rowText = compactText([
+    row.topic,
+    row.title,
+    row.concept,
+    row.weakTopic,
+    row.nursingSubject,
+    row.sourceEvidence,
+  ].filter(Boolean).join(" ")).toLowerCase();
+
+  return topicProductionDriveProjectInventory.assets
+    .filter((asset) => asset.matchers.some((matcher) => rowText.includes(matcher)))
+    .map((asset) => ({
+      id: asset.id,
+      title: asset.title,
+      url: asset.url,
+      mimeType: asset.mimeType,
+      subject: asset.subject,
+      concept: asset.concept,
+      assetKeys: asset.assetKeys,
+      belongsIn: asset.belongsIn,
+      nextAction: asset.nextAction,
+    }));
+}
+
+function topicProductionDriveProjectPayload(rows: any[]) {
+  const matchedAssetIds = new Set(rows.flatMap((row) => topicProductionDriveAssetsForRow(row).map((asset) => asset.id)));
+  return {
+    id: topicProductionDriveProjectInventory.id,
+    title: topicProductionDriveProjectInventory.title,
+    url: topicProductionDriveProjectInventory.url,
+    sourceType: topicProductionDriveProjectInventory.sourceType,
+    status: topicProductionDriveProjectInventory.status,
+    note: topicProductionDriveProjectInventory.note,
+    costPolicy: topicProductionDriveProjectInventory.costPolicy,
+    assetCount: topicProductionDriveProjectInventory.assets.length,
+    matchedAssetCount: matchedAssetIds.size,
+    assets: topicProductionDriveProjectInventory.assets.map((asset) => ({
+      id: asset.id,
+      title: asset.title,
+      url: asset.url,
+      mimeType: asset.mimeType,
+      subject: asset.subject,
+      concept: asset.concept,
+      assetKeys: asset.assetKeys,
+      belongsIn: asset.belongsIn,
+      nextAction: asset.nextAction,
+      matchedToCurrentRows: matchedAssetIds.has(asset.id),
+    })),
+  };
+}
+
+const topicProductionAirtableTrackerFields = [
+  { name: "Tracker Stage", type: "singleSelect", required: true, source: "system", notes: "Phase/status label for filtering records into Airtable views." },
+  { name: "Spend Window", type: "singleSelect", required: true, source: "system", notes: "Budget checkpoint, currently $100-$250 only." },
+  { name: "Spend Permission", type: "longText", required: true, source: "system", notes: "Human-readable spend boundary before any video or AI polish." },
+  { name: "Topic", type: "singleLineText", required: true, source: "lesson_builder", notes: "Primary field; one record per approved topic/draft." },
+  { name: "Concept", type: "singleLineText", required: true, source: "content_mapper", notes: "Nursing concept attached before draft production." },
+  { name: "Nursing Subject", type: "singleSelect", required: true, source: "content_mapper", notes: "Subject or specialty such as Maternal-Newborn or Pediatrics." },
+  { name: "Weak Topic", type: "singleLineText", required: false, source: "assessment_bridge", notes: "Optional weak-topic/remediation bridge label." },
+  { name: "NCLEX Category", type: "singleLineText", required: false, source: "assessment_bridge", notes: "Learner-safe NCLEX category tag." },
+  { name: "CJM Step", type: "singleLineText", required: false, source: "assessment_bridge", notes: "Clinical Judgment Measurement Model step." },
+  { name: "Template Draft Package ID", type: "singleLineText", required: true, source: "lesson_builder", notes: "Internal package ID used to reopen QA/export." },
+  { name: "Lesson Builder Review URL", type: "url", required: true, source: "system", notes: "Admin review link; keep internal only." },
+  { name: "Student Surface After Publish", type: "url", required: false, source: "system", notes: "Student lesson route after publish." },
+  { name: "Drive Project Assets", type: "longText", required: true, source: "google_drive_project", notes: "Source files associated with the topic." },
+  { name: "Drive Asset Links", type: "longText", required: true, source: "google_drive_project", notes: "Drive source links for content review and traceability." },
+  { name: "Short Hook", type: "longText", required: true, source: "template", notes: "First no-cost short hook draft." },
+  { name: "Short Script Draft", type: "longText", required: true, source: "template", notes: "First no-cost script draft; not final polished copy." },
+  { name: "CTA", type: "longText", required: true, source: "template", notes: "Call to action pointing to the NurseStudy lesson." },
+  { name: "Video Lesson Deck", type: "singleSelect", required: true, source: "coverage_contract", notes: "Deck coverage state." },
+  { name: "Study Guide", type: "singleSelect", required: true, source: "coverage_contract", notes: "Study guide coverage state." },
+  { name: "Quiz/Rationale", type: "singleSelect", required: true, source: "coverage_contract", notes: "Quiz and rationale coverage state." },
+  { name: "Visuals", type: "singleSelect", required: true, source: "coverage_contract", notes: "Visual coverage state." },
+  { name: "Citations", type: "singleSelect", required: true, source: "coverage_contract", notes: "Citation coverage state." },
+  { name: "Visual Brief", type: "longText", required: true, source: "template", notes: "One visual direction for review before image/video spend." },
+  { name: "Audio/TTS Status", type: "singleLineText", required: true, source: "system", notes: "Keeps audio generation separate from draft approval." },
+  { name: "Coverage Summary", type: "singleLineText", required: true, source: "coverage_contract", notes: "Human-readable coverage count." },
+  { name: "Next Production Action", type: "longText", required: true, source: "system", notes: "One next action, not broad production." },
+  { name: "Human Review Gate", type: "longText", required: true, source: "system", notes: "Review gates that must stay human-owned." },
+  { name: "Cost Guardrail", type: "longText", required: true, source: "system", notes: "Budget rule for this record." },
+] as const;
+
+const topicProductionPhaseTwoCandidates = [
+  {
+    id: "phase-2-postpartum-hemorrhage",
+    topic: "Postpartum Hemorrhage Priorities",
+    title: "Postpartum Hemorrhage Priorities",
+    concept: "Perfusion / Reproductive Health",
+    nursingSubject: "Maternal-Newborn",
+    weakTopic: "Postpartum complications",
+    nclexCategory: "Reduction of Risk Potential",
+    cjmStep: "Recognize Cues",
+    sourceEvidence: "MNN CH20 Postpartum Disorders and CH17 Postpartum Physiological Adaptations source candidates.",
+    nextAction: "Review source approval and create the first learner-facing slide deck, quiz rationale, visuals, and guided notes before publish.",
+  },
+  {
+    id: "phase-2-newborn-assessment",
+    topic: "Newborn Assessment Cues",
+    title: "Newborn Assessment Cues",
+    concept: "Health Promotion / Safety",
+    nursingSubject: "Maternal-Newborn",
+    weakTopic: "Newborn assessment",
+    nclexCategory: "Health Promotion and Maintenance",
+    cjmStep: "Recognize Cues",
+    sourceEvidence: "MNN CH23 Newborn Assessment and CH24 Nursing Care of Newborns source candidates.",
+    nextAction: "Review normal-versus-abnormal cue taxonomy, then draft study guide prompts and one NCLEX-style item.",
+  },
+  {
+    id: "phase-2-pediatric-emergency-priorities",
+    topic: "Pediatric Emergency Priorities",
+    title: "Pediatric Emergency Priorities",
+    concept: "Safety / Clinical Judgment",
+    nursingSubject: "Pediatrics",
+    weakTopic: "Emergency prioritization",
+    nclexCategory: "Physiological Integrity",
+    cjmStep: "Prioritize Hypotheses",
+    sourceEvidence: "Pediatric Emergencies Part 1 Google Slides and Nursing Care of Children source-pattern assets.",
+    nextAction: "Use the pediatrics deck as a source-pattern reference, then draft the first quiz and visual flow only after review.",
+  },
+] as const;
+
+const topicProductionHumanReviewCatalogTopics = [
+  "Maternal-Newborn Lesson Guide",
+  "Pediatrics Asthma",
+  "Postpartum Hemorrhage Priorities",
+  "Newborn Assessment Cues",
+  "Pediatric Emergency Priorities",
+] as const;
+
+function topicProductionAirtableTrackerPayload() {
+  return {
+    baseName: "NurseStudy Content Production",
+    tableName: "Viral Shorts Workflow",
+    version: "phase_3_no_ai_v1",
+    primaryField: "Topic",
+    importMode: "CSV import now; API upsert later after Airtable base selection is confirmed.",
+    costPolicy: "Do not batch audio, vision scoring, or video rendering. Review two topic rows first, then approve one $100-$250 polish checkpoint.",
+    requiredCsvHeaders: topicProductionAirtableTrackerFields.map((field) => field.name),
+    fields: topicProductionAirtableTrackerFields,
+    recommendedViews: [
+      { name: "Needs Review", filter: "Tracker Stage is phase_3_shorts_video_handoff and Spend Permission is not empty" },
+      { name: "Approved $100-$250", filter: "Spend Window is $100-$250" },
+      { name: "Needs Visual Choice", filter: "Visuals is not ready" },
+      { name: "Ready for Audio Later", filter: "Audio/TTS Status contains script draft only" },
+    ],
+  };
+}
+
+function topicProductionIsGenericLabel(value: string) {
+  return /^(imported source|source|knowledge source|mapped nursing content|slide deck import)$/i.test(String(value || "").trim());
+}
+
+function topicProductionHumanizeLabel(value: string) {
+  const cleaned = String(value || "")
+    .replace(/\.(zip|docx|pptx|pdf|md|txt|json|jsonl|csv)\b/gi, "")
+    .replace(/\s*-\s*chunk\s*\d+\b/gi, "")
+    .replace(/\bchunk\s*\d+\b/gi, "")
+    .replace(/\b20\d{6,8}\b/g, "")
+    .replace(/[_-]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (!cleaned) return "";
+  return cleaned
+    .split(" ")
+    .map((word) => {
+      const upper = word.toUpperCase();
+      if (["RN", "ATI", "NCLEX", "CJM", "QA"].includes(upper)) return upper;
+      return word.charAt(0).toUpperCase() + word.slice(1);
+    })
+    .join(" ");
+}
+
+function topicProductionBlockText(block: any) {
+  return [
+    block.title,
+    block.source,
+    block.description,
+    block.content,
+    block.category,
+    block.nursingSpecialty,
+    block.bodySystem,
+    Array.isArray(block.concepts) ? block.concepts.join(" ") : "",
+    Array.isArray(block.keywords) ? block.keywords.join(" ") : "",
+  ].filter(Boolean).join(" ");
+}
+
+function topicProductionInferredBlockTopic(block: any) {
+  const text = topicProductionBlockText(block);
+  const lower = text.toLowerCase();
+  if (/maternal|newborn|postpartum|contraception|pregnan|labor|fetal/.test(lower)) {
+    return /depthpass|depth pass/.test(lower) ? "Maternal-Newborn Builder Depth Pass" : "Maternal-Newborn Lesson Guide";
+  }
+  if (/asthma|wheez|bronchodilator/.test(lower)) return "Pediatrics Asthma";
+  if (/pediatric|paediatric|child|children|infant/.test(lower)) return "Pediatrics Nursing Care of Children";
+  if (/concept.*curriculum|curriculum.*concept|data hub/.test(lower)) return "RN Concept-Based Curriculum Data Hub";
+  return topicProductionHumanizeLabel(firstString(block.source, block.title, block.category));
+}
+
+function topicProductionInferredBlockConcept(block: any) {
+  const existing = firstString(block.concepts, block.category);
+  if (existing && !topicProductionIsGenericLabel(existing)) return existing;
+  const lower = topicProductionBlockText(block).toLowerCase();
+  if (/asthma|wheez|oxygen|respiratory|airway/.test(lower)) return "Gas Exchange";
+  if (/maternal|newborn|postpartum|contraception|pregnan|labor|fetal|reproductive/.test(lower)) return "Reproductive Health";
+  if (/pediatric|child|children|infant|growth|development/.test(lower)) return "Growth and Development";
+  if (/concept.*curriculum|curriculum.*concept|data hub/.test(lower)) return "Curriculum Concepts";
+  if (/lesson[_\s-]*builder|harrity[_\s-]*builder|skill[_\s-]*overview|improvement[_\s-]*spec/.test(lower)) return "Production Workflow";
+  return "";
+}
+
+function topicProductionInferredBlockSubject(block: any) {
+  const existing = firstString(block.nursingSpecialty, block.sourceType === "pptx" ? "Slide deck import" : "");
+  if (existing && !topicProductionIsGenericLabel(existing)) return existing;
+  const lower = topicProductionBlockText(block).toLowerCase();
+  if (/maternal|newborn|postpartum|contraception|pregnan|labor|fetal/.test(lower)) return "Maternal-Newborn";
+  if (/asthma|pediatric|paediatric|child|children|infant/.test(lower)) return "Pediatrics";
+  if (/concept.*curriculum|curriculum.*concept|data hub/.test(lower)) return "Curriculum Planning";
+  if (/lesson[_\s-]*builder|harrity[_\s-]*builder|skill[_\s-]*overview|improvement[_\s-]*spec/.test(lower)) return "Builder Operations";
+  return "";
+}
+
+function artifactMatches(artifact: any, pattern: RegExp) {
+  return pattern.test([
+    artifact?.artifactKey,
+    artifact?.artifactType,
+    artifact?.fileName,
+    artifact?.mimeType,
+    artifact?.metadata ? JSON.stringify(artifact.metadata) : "",
+  ].filter(Boolean).join(" "));
+}
+
+function bundleHasVisualSignals(bundle: LessonBundle) {
+  if (bundle.artifacts.some((artifact) => artifactMatches(artifact, /visual|image|diagram|chart|graphic|illustration/i))) {
+    return true;
+  }
+  return bundle.slides.some((slide) => {
+    const text = JSON.stringify(slide.visibleContent || {});
+    return /visual|image|diagram|chart|graphic|illustration|concept map|table/i.test(text);
+  });
+}
+
+function topicProductionStatus(missing: string[]) {
+  if (missing.length === 0) return "ready";
+  if (missing.includes("mapping")) return "needs_mapping";
+  return "needs_assets";
+}
+
+function topicProductionNextAction(status: string, missing: string[]) {
+  if (status === "ready") return "Ready for student-facing release and optional shorts/video production.";
+  if (missing.includes("mapping")) return "Map concept and nursing subject before production.";
+  if (missing.includes("slideDeck")) return "Generate or attach the related lesson slide deck.";
+  if (missing.includes("studyGuide")) return "Add guided notes or study guide artifact.";
+  if (missing.includes("visuals")) return "Add visual prompts, diagrams, or verified slide visuals.";
+  if (missing.includes("quiz")) return "Add at least one practice item with rationale.";
+  if (missing.includes("citations")) return "Attach source-backed citations.";
+  return "Review production assets.";
+}
+
+function topicProductionPlacementForBundle(pkg: any, status: string, missing: string[]) {
+  const isPublished = pkg.status === "published";
+  return {
+    contentKind: "Generated lesson package",
+    currentLocation: "Lesson Builder package",
+    belongsIn: isPublished ? "Student lesson library and study pack" : "Lesson Builder QA, export, and publish workflow",
+    reviewSurface: "Lesson Builder",
+    nextBuildSurface: status === "ready"
+      ? "Publish, export, then queue optional shorts/video production"
+      : topicProductionNextAction(status, missing),
+    productionQueue: status === "ready" ? "Airtable shorts/video queue ready" : "Hold until missing assets are resolved",
+    studentVisible: isPublished,
+  };
+}
+
+function topicProductionPlacementForContentBlock(status: string, missing: string[]) {
+  return {
+    contentKind: "Processed imported source",
+    currentLocation: "Content Mapper backlog",
+    belongsIn: "Topic taxonomy review before lesson generation",
+    reviewSurface: "Content Mapper",
+    nextBuildSurface: topicProductionNextAction(status, missing),
+    productionQueue: "Not queued for shorts/video until a lesson package exists",
+    studentVisible: false,
+  };
+}
+
+function topicProductionRowFromBundle(bundle: LessonBundle) {
+  const pkg = bundle.package;
+  const manifest = pkg.manifest || {};
+  const taxonomySnapshot = pkg.taxonomySnapshot || {};
+  const topicProductionMeta = (manifest as any).topicProduction || (taxonomySnapshot as any).topicProduction || {};
+  const assessmentBridge = manifest.assessmentBridge || taxonomySnapshot.assessmentBridge || {};
+  const itemTags = bundle.items.flatMap((item) => {
+    const tags = item.tags || {};
+    return [tags.concept, tags.weakTopic, tags.nclexCategory, ...(Array.isArray(tags.concepts) ? tags.concepts : [])];
+  });
+  const concept = firstString(
+    topicProductionMeta.concept,
+    taxonomySnapshot.concept,
+    taxonomySnapshot.concepts,
+    assessmentBridge.weakTopic,
+    itemTags
+  );
+  const specialty = firstString(
+    topicProductionMeta.nursingSubject,
+    taxonomySnapshot.nursingSpecialty,
+    taxonomySnapshot.subject,
+    bundle.sources.map((source) => source.subject),
+    assessmentBridge.atiCategory
+  );
+  const sourceEvidence = firstString(
+    assessmentBridge.sourceEvidence,
+    bundle.sources.map((source) => source.title)
+  );
+  const hasStudyGuide = bundle.slides.some((slide) => Boolean(String(slide.guidedNotes || "").trim()))
+    || bundle.artifacts.some((artifact) => artifactMatches(artifact, /guided|study[_ -]?guide|student[_ -]?notes/i));
+  const assets = {
+    mapping: Boolean(concept && specialty),
+    slideDeck: bundle.slides.length > 0,
+    studyGuide: hasStudyGuide,
+    visuals: bundleHasVisualSignals(bundle),
+    quiz: bundle.items.length >= 1,
+    citations: bundle.citations.length >= 1,
+  };
+  const missing = Object.entries(assets)
+    .filter(([, value]) => !value)
+    .map(([key]) => key);
+  const status = topicProductionStatus(missing);
+
+  return {
+    id: pkg.id,
+    sourceType: "lesson_package",
+    topic: pkg.topic,
+    title: pkg.title,
+    status,
+    packageStatus: pkg.status,
+    concept,
+    nursingSubject: specialty,
+    weakTopic: assessmentBridge.weakTopic || topicProductionMeta.weakTopic || "",
+    nclexCategory: assessmentBridge.nclexCategory || topicProductionMeta.nclexCategory || taxonomySnapshot.nclexCategory || firstString(bundle.slides.map((slide) => slide.nclexCategory)),
+    cjmStep: assessmentBridge.cjmStep || topicProductionMeta.cjmStep || firstString(bundle.slides.map((slide) => slide.cjmStep)),
+    sourceEvidence,
+    review: manifest.topicProductionReview,
+    assets,
+    missing,
+    missingLabels: missing.map((key) => topicProductionAssetLabels[key as keyof typeof topicProductionAssetLabels]),
+    placement: topicProductionPlacementForBundle(pkg, status, missing),
+    counts: {
+      slides: bundle.slides.length,
+      studyGuideSlides: bundle.slides.filter((slide) => Boolean(String(slide.guidedNotes || "").trim())).length,
+      quizItems: bundle.items.length,
+      citations: bundle.citations.length,
+      artifacts: bundle.artifacts.length,
+    },
+    nextAction: topicProductionNextAction(status, missing),
+    updatedAt: pkg.updatedAt || pkg.createdAt,
+  };
+}
+
+function topicProductionRowFromContentBlock(block: any) {
+  const inferredTopic = topicProductionInferredBlockTopic(block);
+  const concept = topicProductionInferredBlockConcept(block);
+  const specialty = topicProductionInferredBlockSubject(block);
+  const assets = {
+    mapping: Boolean(concept && specialty),
+    slideDeck: false,
+    studyGuide: false,
+    visuals: false,
+    quiz: false,
+    citations: false,
+  };
+  const missing = Object.entries(assets)
+    .filter(([, value]) => !value)
+    .map(([key]) => key);
+  const status = topicProductionStatus(missing);
+
+  return {
+    id: block.id,
+    sourceType: "content_block",
+    topic: inferredTopic || block.title,
+    title: block.title,
+    status,
+    packageStatus: "not_generated",
+    concept,
+    nursingSubject: specialty,
+    weakTopic: "",
+    nclexCategory: "",
+    cjmStep: "",
+    sourceEvidence: block.source || "",
+    assets,
+    missing,
+    missingLabels: missing.map((key) => topicProductionAssetLabels[key as keyof typeof topicProductionAssetLabels]),
+    placement: topicProductionPlacementForContentBlock(status, missing),
+    counts: {
+      slides: 0,
+      studyGuideSlides: 0,
+      quizItems: 0,
+      citations: 0,
+      artifacts: 0,
+    },
+    nextAction: topicProductionNextAction(status, missing),
+    updatedAt: block.updatedAt || block.createdAt,
+  };
+}
+
+function topicProductionRollupRows(rows: Array<ReturnType<typeof topicProductionRowFromContentBlock>>) {
+  const groups = new Map<string, ReturnType<typeof topicProductionRowFromContentBlock>[]>();
+  for (const row of rows) {
+    const key = compactTopicKey(row.sourceEvidence || row.topic || row.title);
+    if (!key) continue;
+    groups.set(key, [...(groups.get(key) || []), row]);
+  }
+
+  return Array.from(groups.values()).map((group) => {
+    const first = group[0];
+    const assets = {
+      mapping: group.some((row) => Boolean(row.assets.mapping)),
+      slideDeck: group.some((row) => Boolean(row.assets.slideDeck)),
+      studyGuide: group.some((row) => Boolean(row.assets.studyGuide)),
+      visuals: group.some((row) => Boolean(row.assets.visuals)),
+      quiz: group.some((row) => Boolean(row.assets.quiz)),
+      citations: group.some((row) => Boolean(row.assets.citations)),
+    };
+    const missing = Object.entries(assets).filter(([, value]) => !value).map(([key]) => key);
+    const status = topicProductionStatus(missing);
+    const sourceEvidence = first.sourceEvidence || first.topic || first.title;
+
+    return {
+      ...first,
+      id: `source:${compactTopicKey(sourceEvidence)}`,
+      sourceType: "content_block" as const,
+      title: sourceEvidence,
+      status,
+      assets,
+      missing,
+      missingLabels: missing.map((key) => topicProductionAssetLabels[key as keyof typeof topicProductionAssetLabels]),
+      counts: {
+        slides: 0,
+        studyGuideSlides: 0,
+        quizItems: 0,
+        citations: 0,
+        artifacts: group.length,
+      },
+      nextAction: topicProductionNextAction(status, missing),
+      sourceEvidence,
+      childBlockIds: group.map((row) => row.id),
+      chunkCount: group.length,
+      updatedAt: group.map((row) => row.updatedAt || "").sort().reverse()[0] || first.updatedAt,
+    };
+  });
+}
+
+function topicProductionPhaseTwoCandidateRows(existingRows: any[] = []) {
+  const existingTopicKeys = new Set(existingRows.map((row) => compactTopicKey(row.topic || row.title)));
+  return topicProductionPhaseTwoCandidates
+    .filter((candidate) => !existingTopicKeys.has(compactTopicKey(candidate.topic)))
+    .map((candidate) => {
+      const assets = {
+        mapping: true,
+        slideDeck: false,
+        studyGuide: false,
+        visuals: false,
+        quiz: false,
+        citations: false,
+      };
+      const missing = Object.entries(assets).filter(([, value]) => !value).map(([key]) => key);
+      const status = topicProductionStatus(missing);
+      return {
+        id: candidate.id,
+        sourceType: "topic_candidate" as const,
+        topic: candidate.topic,
+        title: candidate.title,
+        status,
+        packageStatus: "not_generated",
+        concept: candidate.concept,
+        nursingSubject: candidate.nursingSubject,
+        weakTopic: candidate.weakTopic,
+        nclexCategory: candidate.nclexCategory,
+        cjmStep: candidate.cjmStep,
+        sourceEvidence: candidate.sourceEvidence,
+        assets,
+        missing,
+        missingLabels: missing.map((key) => topicProductionAssetLabels[key as keyof typeof topicProductionAssetLabels]),
+        placement: {
+          contentKind: "Phase 2 topic candidate",
+          currentLocation: "Topic Production backlog",
+          belongsIn: "Content Mapper review, source approval, then Lesson Builder draft generation",
+          reviewSurface: "Topic Production",
+          nextBuildSurface: candidate.nextAction,
+          productionQueue: "Hold for human review before any AI polish, video, audio, or visual spend",
+          studentVisible: false,
+        },
+        counts: {
+          slides: 0,
+          studyGuideSlides: 0,
+          quizItems: 0,
+          citations: 0,
+          artifacts: 0,
+        },
+        nextAction: candidate.nextAction,
+        updatedAt: new Date().toISOString(),
+      };
+    });
+}
+
+function summarizeTopicProductionRows(rows: any[]) {
+  const statusCounts = rows.reduce<Record<string, number>>((acc, row) => {
+    acc[row.status] = (acc[row.status] || 0) + 1;
+    return acc;
+  }, {});
+  const assetCounts = Object.keys(topicProductionAssetLabels).reduce<Record<string, number>>((acc, key) => {
+    acc[key] = rows.filter((row) => Boolean(row.assets[key as keyof typeof row.assets])).length;
+    return acc;
+  }, {});
+
+  return {
+    totalTopics: rows.length,
+    ready: statusCounts.ready || 0,
+    needsMapping: statusCounts.needs_mapping || 0,
+    needsAssets: statusCounts.needs_assets || 0,
+    packageRows: rows.filter((row) => row.sourceType === "lesson_package").length,
+    contentBlockRows: rows.filter((row) => row.sourceType === "content_block").length,
+    candidateRows: rows.filter((row) => row.sourceType === "topic_candidate").length,
+    assetCounts,
+    requiredAssets: topicProductionAssetLabels,
+  };
+}
+
+function topicProductionAirtableStage(row: any) {
+  if (row.status === "ready") return "ready_for_review";
+  if (row.status === "needs_mapping") return "taxonomy_mapping";
+  return "asset_build";
+}
+
+function topicProductionShortHook(row: any) {
+  const topic = row.topic || row.title || "this nursing topic";
+  const concept = row.concept || row.weakTopic || "clinical judgment";
+  return `Stop memorizing ${topic}. Learn the ${concept} cue that changes the nursing action.`;
+}
+
+function topicProductionShortScript(row: any) {
+  const topic = row.topic || row.title || "this nursing topic";
+  const concept = row.concept || row.weakTopic || "clinical judgment";
+  const subject = row.nursingSubject || "nursing";
+  return [
+    `If ${topic} keeps showing up in practice questions, do not start by memorizing facts.`,
+    `Start with the ${concept} cue, connect it to ${subject}, then choose the safest next nursing action.`,
+    "Open the full NurseStudy lesson for the deck, guided notes, rationale, and source-backed quiz practice.",
+  ].join(" ");
+}
+
+function topicProductionDecoratedRow(row: any) {
+  const review = topicProductionReviewForRow(row.sourceType, row.id, row.review);
+  return {
+    ...row,
+    review,
+    nextBuildApproved: topicProductionNextBuildDecisions.has(review.decision),
+    shorts: {
+      hook: topicProductionShortHook(row),
+      scriptDraft: topicProductionShortScript(row),
+      cta: "Open the full NurseStudy lesson for deck, guided notes, rationales, citations, and quiz practice.",
+    },
+  };
+}
+
+function topicProductionPhaseOneCheckpoint(rows: any[]) {
+  const findRow = (subjectKey: "maternal_newborn" | "pediatrics") => {
+    const isMaternal = subjectKey === "maternal_newborn";
+    const candidates = rows.filter((row) => {
+      const text = compactText(`${row.topic || ""} ${row.title || ""} ${row.nursingSubject || ""}`).toLowerCase();
+      return isMaternal
+        ? /maternal|newborn|postpartum/.test(text)
+        : /pediatric|paediatric|child|children|asthma/.test(text);
+    });
+    const preferred = candidates.find((row) => {
+      const text = compactText(`${row.topic || ""} ${row.title || ""}`).toLowerCase();
+      return isMaternal
+        ? text.includes("maternal-newborn lesson guide") || text.includes("maternal newborn lesson guide")
+        : text.includes("pediatrics asthma") || text.includes("asthma");
+    });
+    return preferred || candidates[0] || null;
+  };
+
+  const topics = [
+    {
+      key: "maternal_newborn",
+      subject: "Maternal-Newborn",
+      reason: "First nursing-subject review slice for the Harrity maternal-newborn lesson guide.",
+      row: findRow("maternal_newborn"),
+    },
+    {
+      key: "pediatrics",
+      subject: "Pediatrics",
+      reason: "First nursing-subject review slice for the pediatric asthma learner package.",
+      row: findRow("pediatrics"),
+    },
+  ].map((item) => {
+    const row = item.row;
+    return {
+      key: item.key,
+      subject: item.subject,
+      reason: item.reason,
+      found: Boolean(row),
+      sourceType: row?.sourceType || "",
+      rowId: row?.id || "",
+      topic: row?.topic || "",
+      title: row?.title || "",
+      concept: row?.concept || "",
+      nursingSubject: row?.nursingSubject || item.subject,
+      status: row?.status || "missing_source",
+      reviewDecision: row?.review?.decision || "unreviewed",
+      nextBuildApproved: Boolean(row?.nextBuildApproved),
+      recommendedDecision: "build_lesson",
+      nextAction: row
+        ? row.nextBuildApproved
+          ? "Open the build packet and inspect coverage before any paid polish."
+          : "Review mapping, confirm the asset homes, then mark this row build_lesson."
+        : "Import or map the source before spending on generation.",
+    };
+  });
+  const foundCount = topics.filter((topic) => topic.found).length;
+  const queuedCount = topics.filter((topic) => topic.nextBuildApproved).length;
+
+  return {
+    phase: "Phase 1",
+    label: "Two-topic review checkpoint",
+    budgetDollars: "$100-$250",
+    tokenRule: "2,500 tokens = $100",
+    costPolicy: "No broad AI/video batch. Use existing source packets and template drafts first; spend only after both topic rows are reviewed.",
+    totalCount: topics.length,
+    foundCount,
+    queuedCount,
+    status: queuedCount >= 2 ? "ready" : foundCount >= 2 ? "review_needed" : "missing_sources",
+    topics,
+  };
+}
+
+function topicProductionPhaseOneStarterSubject(row: any) {
+  const text = compactText(`${row.topic || ""} ${row.title || ""}`).toLowerCase();
+  if (text.includes("maternal-newborn lesson guide") || text.includes("maternal newborn lesson guide")) return "Maternal-Newborn";
+  if (text.includes("pediatrics asthma") || text.includes("asthma")) return "Pediatrics";
+  return "";
+}
+
+function topicProductionAirtableRows(rows: any[]) {
+  return rows.map((row) => {
+    const phaseOneSubject = topicProductionPhaseOneStarterSubject(row);
+    return {
+      "Airtable Status": row.status === "ready" ? "Ready for review" : row.status === "needs_mapping" ? "Needs mapping" : "Needs assets",
+      "Production Stage": topicProductionAirtableStage(row),
+      "Phase 1 Starter": phaseOneSubject ? "Yes" : "No",
+      "Phase 1 Subject": phaseOneSubject,
+      "Phase 1 Cost Guardrail": phaseOneSubject ? "$100-$250 checkpoint; no batch AI/video spend until both starter topics pass review." : "",
+      "Review Decision": row.review?.decision || "unreviewed",
+      "Reviewer Notes": row.review?.reviewerNotes || "",
+      "Reviewed At": row.review?.reviewedAt || "",
+      "Topic": row.topic || "",
+      "Title": row.title || "",
+      "Concept": row.concept || "",
+      "Nursing Subject": row.nursingSubject || "",
+      "Weak Topic": row.weakTopic || "",
+      "NCLEX Category": row.nclexCategory || "",
+      "CJM Step": row.cjmStep || "",
+      "Source Type": row.sourceType || "",
+      "Content Kind": row.placement?.contentKind || "",
+      "Current Location": row.placement?.currentLocation || "",
+      "Belongs In": row.placement?.belongsIn || "",
+      "Review Surface": row.placement?.reviewSurface || "",
+      "Next Build Surface": row.placement?.nextBuildSurface || "",
+      "Production Queue": row.placement?.productionQueue || "",
+      "Student Visible": row.placement?.studentVisible ? "Yes" : "No",
+      "Package Status": row.packageStatus || "",
+      "Lesson Package ID": row.sourceType === "lesson_package" ? row.id : "",
+      "Content Block ID": row.sourceType === "content_block" ? row.id : "",
+      "Chunk Count": row.chunkCount || "",
+      "Child Content Block IDs": Array.isArray(row.childBlockIds) ? row.childBlockIds.join("; ") : "",
+      "Slide Deck Ready": row.assets?.slideDeck ? "Yes" : "No",
+      "Study Guide Ready": row.assets?.studyGuide ? "Yes" : "No",
+      "Visuals Ready": row.assets?.visuals ? "Yes" : "No",
+      "Quiz Ready": row.assets?.quiz ? "Yes" : "No",
+      "Citations Ready": row.assets?.citations ? "Yes" : "No",
+      "Slide Count": row.counts?.slides || 0,
+      "Guided Notes Slides": row.counts?.studyGuideSlides || 0,
+      "Quiz Count": row.counts?.quizItems || 0,
+      "Citation Count": row.counts?.citations || 0,
+      "Missing Assets": Array.isArray(row.missingLabels) ? row.missingLabels.join("; ") : "",
+      "Suggested Short Hook": row.shorts?.hook || topicProductionShortHook(row),
+      "Short Script Draft": row.shorts?.scriptDraft || topicProductionShortScript(row),
+      "CTA": row.shorts?.cta || "Open the full NurseStudy lesson for deck, guided notes, rationales, citations, and quiz practice.",
+      "Next Action": row.nextAction || "",
+      "Source Evidence": row.sourceEvidence || "",
+      "Updated At": row.updatedAt || "",
+    };
+  });
+}
+
+function topicProductionAirtableCsv(rows: any[]) {
+  const exportRows = topicProductionAirtableRows(rows);
+  const headers = [
+    "Airtable Status",
+    "Production Stage",
+    "Phase 1 Starter",
+    "Phase 1 Subject",
+    "Phase 1 Cost Guardrail",
+    "Review Decision",
+    "Reviewer Notes",
+    "Reviewed At",
+    "Topic",
+    "Title",
+    "Concept",
+    "Nursing Subject",
+    "Weak Topic",
+    "NCLEX Category",
+    "CJM Step",
+    "Source Type",
+    "Content Kind",
+    "Current Location",
+    "Belongs In",
+    "Review Surface",
+    "Next Build Surface",
+    "Production Queue",
+    "Student Visible",
+    "Package Status",
+    "Lesson Package ID",
+    "Content Block ID",
+    "Chunk Count",
+    "Child Content Block IDs",
+    "Slide Deck Ready",
+    "Study Guide Ready",
+    "Visuals Ready",
+    "Quiz Ready",
+    "Citations Ready",
+    "Slide Count",
+    "Guided Notes Slides",
+    "Quiz Count",
+    "Citation Count",
+    "Missing Assets",
+    "Suggested Short Hook",
+    "Short Script Draft",
+    "CTA",
+    "Next Action",
+    "Source Evidence",
+    "Updated At",
+  ];
+  return [
+    headers.map(csvValue).join(","),
+    ...exportRows.map((row) => headers.map((header) => csvValue(row[header as keyof typeof row])).join(",")),
+  ].join("\n");
+}
+
+function topicProductionBuildBrief(row: any, assetKey: string) {
+  const topic = row.topic || row.title || "Selected nursing topic";
+  const concept = row.concept || row.weakTopic || "clinical judgment";
+  const subject = row.nursingSubject || "nursing";
+  const briefs: Record<string, string> = {
+    slideDeck: `Build a concise learner-facing deck for ${topic}: cue recognition, ${concept} explanation, safe nursing action, common trap, and retrieval prompt.`,
+    studyGuide: `Create guided notes for ${topic} with fill-in cues, priority decision prompts, and a one-page review summary for ${subject}.`,
+    visuals: `Add simple visuals only where they clarify ${topic}: cue map, decision flow, comparison table, or medication/safety diagram.`,
+    quiz: `Create at least one NCLEX-style item with answer, rationale, why-wrong options, ${concept} tag, and CJM step.`,
+    citations: `Attach source-backed citations from the selected source chunks and keep excerpts short, paraphrased, and learner-safe.`,
+  };
+  return briefs[assetKey] || "";
+}
+
+function topicProductionTemplateDraft(row: any) {
+  const topic = row.topic || row.title || "Selected nursing topic";
+  const concept = row.concept || row.weakTopic || "clinical judgment";
+  const subject = row.nursingSubject || "nursing";
+  const nclexCategory = row.nclexCategory || "Physiological Integrity";
+  const cjmStep = row.cjmStep || "Recognize Cues";
+  return {
+    slideOutline: [
+      {
+        title: `${topic}: why this matters`,
+        purpose: `Orient the learner to the ${subject} context and the core ${concept} decision.`,
+        retrievalPrompt: `What cue would make ${topic} a priority?`,
+      },
+      {
+        title: "Recognize the cue pattern",
+        purpose: `Name the assessment findings, risk signals, and source-backed cues tied to ${concept}.`,
+        retrievalPrompt: "Which cue changes what the nurse does first?",
+      },
+      {
+        title: "Connect concept to safe action",
+        purpose: `Link ${concept} to nursing action, patient teaching, and escalation/delegation limits.`,
+        retrievalPrompt: "What action is safe, timely, and within nursing scope?",
+      },
+      {
+        title: "Common trap and rationale",
+        purpose: `Contrast the tempting memorization answer with the clinical-judgment rationale.`,
+        retrievalPrompt: "Why is the common distractor unsafe or incomplete?",
+      },
+      {
+        title: "Practice and commit",
+        purpose: `Close with one NCLEX-style practice item, rationale, citation reminder, and student takeaway.`,
+        retrievalPrompt: "What evidence supports your answer?",
+      },
+    ],
+    guidedNotesOutline: [
+      `Key cue for ${topic}: ________`,
+      `Concept link: ${concept} means the nurse should first ________.`,
+      `Patient teaching or safety point: ________`,
+      `Common trap to avoid: ________`,
+      `Citation/evidence note: ________`,
+    ],
+    practicePreview: {
+      stem: `A nursing student reviews a patient scenario related to ${topic}. Which response best reflects ${cjmStep} and safe ${subject} care?`,
+      correctAnswer: "Assess the priority cue, connect it to the clinical concept, and choose the safest nursing action.",
+      rationale: `The correct answer should use ${concept}, align with ${nclexCategory}, and cite the approved source evidence before publishing.`,
+    },
+    reviewChecklist: [
+      "Slide titles are learner-facing and not instructor notes.",
+      "Guided notes have blanks/prompts students can complete.",
+      "Practice item has answer, rationale, and why-wrong review.",
+      "Every clinical claim can be traced to approved source truth.",
+    ],
+  };
+}
+
+function topicProductionPacketReadiness(row: any, assetPlan: any[], templateDraft: any) {
+  const plannedAssets = new Set(assetPlan.map((asset) => asset.assetKey));
+  const checks = [
+    {
+      key: "topic_mapping",
+      label: "Concept and nursing subject mapped",
+      passed: Boolean(row.concept && row.nursingSubject),
+      detail: [row.concept, row.nursingSubject].filter(Boolean).join(" / ") || "Missing concept or nursing subject.",
+    },
+    {
+      key: "source_evidence",
+      label: "Source evidence attached",
+      passed: Boolean(row.sourceEvidence || row.chunkCount || row.childBlockIds?.length),
+      detail: row.sourceEvidence || `${row.chunkCount || 0} source chunk(s) available.`,
+    },
+    {
+      key: "asset_plan",
+      label: "Required asset slots planned",
+      passed: ["slideDeck", "studyGuide", "visuals", "quiz", "citations"].every((assetKey) => plannedAssets.has(assetKey)),
+      detail: assetPlan.map((asset) => asset.asset).join(", "),
+    },
+    {
+      key: "template_skeleton",
+      label: "Template draft skeleton complete",
+      passed: (templateDraft.slideOutline?.length || 0) >= 5
+        && (templateDraft.guidedNotesOutline?.length || 0) >= 5
+        && Boolean(templateDraft.practicePreview?.stem && templateDraft.practicePreview?.rationale),
+      detail: `${templateDraft.slideOutline?.length || 0} slides, ${templateDraft.guidedNotesOutline?.length || 0} guided-note prompts, practice preview ${templateDraft.practicePreview?.stem ? "present" : "missing"}.`,
+    },
+    {
+      key: "review_decision",
+      label: "Queued by review decision",
+      passed: topicProductionNextBuildDecisions.has(row.review?.decision),
+      detail: row.review?.decision || "unreviewed",
+    },
+  ];
+  const passedCount = checks.filter((check) => check.passed).length;
+  return {
+    readyForTemplateDraft: passedCount === checks.length,
+    passedCount,
+    totalCount: checks.length,
+    checks,
+  };
+}
+
+function topicProductionCoverageContract(row: any, draftPackage: any, assetPlan: any[]) {
+  const assetStatus = (assetKey: string) => {
+    if (row.assets?.[assetKey]) return "ready";
+    if (draftPackage && ["slideDeck", "studyGuide", "quiz", "citations"].includes(assetKey)) return "draft";
+    if (assetPlan.some((asset) => asset.assetKey === assetKey)) return "placeholder";
+    return "needed";
+  };
+  const coverageRows = [
+    {
+      key: "lessonDeck",
+      label: "Video lesson slide deck",
+      status: assetStatus("slideDeck"),
+      belongsIn: "Lesson Builder package",
+      studentSurface: draftPackage ? `/lessons/${draftPackage.packageId}` : "Student lesson page after publish",
+      adminSurface: draftPackage ? `/admin/lesson-builder?tab=review&packageId=${draftPackage.packageId}` : "Generate tab in Lesson Builder",
+      proof: draftPackage ? `${draftPackage.slideCount || 0} draft slide(s)` : `${row.counts?.slides || 0} slide(s) on current source row`,
+      nextAction: draftPackage ? "Review deck flow and publish after QA." : "Create template draft from this packet.",
+    },
+    {
+      key: "studyGuide",
+      label: "Guided study guide",
+      status: assetStatus("studyGuide"),
+      belongsIn: "Guided notes + student study pack",
+      studentSurface: draftPackage ? "/student/study-pack" : "Study Pack after lesson is opened or saved",
+      adminSurface: draftPackage ? `/admin/lesson-builder?tab=review&packageId=${draftPackage.packageId}` : "Lesson Builder guided notes",
+      proof: draftPackage ? "Draft package includes guided-note review checks." : `${row.counts?.studyGuideSlides || 0} guided-note slide(s)`,
+      nextAction: "Confirm fill-in cues, priority prompts, and one-page summary.",
+    },
+    {
+      key: "quiz",
+      label: "Quiz item and rationale",
+      status: assetStatus("quiz"),
+      belongsIn: "Lesson practice item",
+      studentSurface: draftPackage ? `/lessons/${draftPackage.packageId}` : "Student lesson practice tab after publish",
+      adminSurface: draftPackage ? `/admin/lesson-builder?tab=review&packageId=${draftPackage.packageId}` : "Lesson Builder practice item",
+      proof: draftPackage ? `${draftPackage.itemCount || 0} draft item(s)` : `${row.counts?.quizItems || 0} quiz item(s)`,
+      nextAction: "Verify answer, rationale, why-wrong options, NCLEX tag, and CJM step.",
+    },
+    {
+      key: "visuals",
+      label: "Visuals",
+      status: assetStatus("visuals"),
+      belongsIn: "Slide visual prompts or visual asset queue",
+      studentSurface: "Embedded in lesson slides after review",
+      adminSurface: "Visual asset queue / Lesson Builder slide edit",
+      proof: row.assets?.visuals ? "Visual signals found in current package." : "Placeholder brief only; no paid visual generation yet.",
+      nextAction: "Use simple cue map, decision flow, comparison table, or safety diagram before custom art.",
+    },
+    {
+      key: "videoShorts",
+      label: "Short/video script",
+      status: row.shorts?.scriptDraft ? "placeholder" : "needed",
+      belongsIn: "Airtable shorts/video queue after draft approval",
+      studentSurface: "Post-MVP video lesson/shorts channel",
+      adminSurface: "Topic Matrix Airtable CSV / next spend queue",
+      proof: row.shorts?.hook || "No hook drafted yet.",
+      nextAction: "Do not spend on audio/video until deck, guide, quiz, citations, and review status pass.",
+    },
+    {
+      key: "citations",
+      label: "Source citations",
+      status: assetStatus("citations"),
+      belongsIn: "Lesson citations and export package",
+      studentSurface: draftPackage ? `/lessons/${draftPackage.packageId}` : "Student citations section after publish",
+      adminSurface: draftPackage ? `/admin/lesson-builder?tab=review&packageId=${draftPackage.packageId}` : "Lesson Builder QA/export",
+      proof: draftPackage ? `${draftPackage.citationCount || 0} citation(s)` : `${row.counts?.citations || 0} citation(s)`,
+      nextAction: "Keep source traceability and short learner-safe excerpts.",
+    },
+  ];
+  const readyCount = coverageRows.filter((item) => item.status === "ready" || item.status === "draft").length;
+  return {
+    readyCount,
+    totalCount: coverageRows.length,
+    studentReady: Boolean(draftPackage && readyCount >= 4),
+    rows: coverageRows,
+  };
+}
+
+function topicProductionSourceTokens(value: string): string[] {
+  return compactText(value)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .split(/\s+/)
+    .filter((token: string) => token.length >= 4 && !["source", "lesson", "guide", "package"].includes(token));
+}
+
+function topicProductionMatchedSource(row: any, sourceRecords: any[] = []) {
+  const rawNeedles = [row.topic, row.concept, row.nursingSubject, row.sourceEvidence, String(row.id || "").replace(/^source:/i, "")]
+    .filter(Boolean)
+    .join(" ");
+  const tokens = Array.from(new Set(topicProductionSourceTokens(rawNeedles)));
+  return sourceRecords
+    .map((source) => {
+      const haystack = [source.id, source.title, source.subject, source.sourceType].filter(Boolean).join(" ").toLowerCase();
+      const tokenScore = tokens.reduce((score, token) => score + (haystack.includes(token) ? 1 : 0), 0);
+      const readyBonus = source.approvalStatus === "approved" && source.ingestionStatus === "ready" ? 2 : 0;
+      return { source, score: tokenScore + readyBonus };
+    })
+    .filter((candidate) => candidate.score >= 4)
+    .sort((a, b) => b.score - a.score)[0]?.source || null;
+}
+
+function topicProductionDraftTopicKey(value: any) {
+  return compactText(value)
+    .toLowerCase()
+    .replace(/\b(template|draft|lesson|guide|package)\b/g, " ")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+function topicProductionPreviewKey(existing?: unknown) {
+  const current = typeof existing === "string" ? existing.trim() : "";
+  return current.length >= 16 ? current : randomBytes(18).toString("base64url");
+}
+
+function topicProductionPreviewAllowed(pkg: any, previewKey?: unknown) {
+  if (pkg?.status === "published") return true;
+  const key = typeof previewKey === "string" ? previewKey.trim() : "";
+  const decision = pkg?.manifest?.topicProductionStudentLaunchDecision || {};
+  return Boolean(
+    key
+    && decision.decision === "approve_student_preview"
+    && decision.previewKey
+    && decision.previewKey === key
+  );
+}
+
+function topicProductionDraftSummary(record: any) {
+  if (!record) return null;
+  const pkg = record.package || record;
+  const slides = Array.isArray(record.slides) ? record.slides : [];
+  const items = Array.isArray(record.items) ? record.items : [];
+  const citations = Array.isArray(record.citations) ? record.citations : [];
+  if (!pkg?.id || !pkg?.title) return null;
+  const failCount = Number(pkg.qaSummary?.failCount || 0);
+  const warnCount = Number(pkg.qaSummary?.warnCount || pkg.qaSummary?.warningCount || 0);
+  const draftReview = pkg.manifest?.topicProductionDraftReview || {
+    decision: "unreviewed",
+    reviewerNotes: "",
+    reviewedAt: null,
+    reviewedBy: "",
+  };
+  const phaseThreeDecision = pkg.manifest?.topicProductionPhaseThreeDecision || {
+    decision: "unreviewed",
+    reviewerNotes: "",
+    reviewedAt: null,
+    reviewedBy: "",
+  };
+  const studentLaunchDecision = pkg.manifest?.topicProductionStudentLaunchDecision || {
+    decision: "unreviewed",
+    reviewerNotes: "",
+    reviewedAt: null,
+    reviewedBy: "",
+  };
+  const topicProduction = pkg.manifest?.topicProduction || {};
+  const publicReleaseDecision = pkg.manifest?.topicProductionStudentLaunchDecision?.publicReleaseDecision || {
+    decision: "unreviewed",
+    reviewerNotes: "",
+    reviewedAt: null,
+    reviewedBy: "",
+  };
+  const reviewChecklist = [
+    {
+      key: "slides",
+      label: "Lesson deck exists",
+      passed: slides.length >= 5,
+      detail: `${slides.length} slide(s) generated for review.`,
+    },
+    {
+      key: "practice",
+      label: "Quiz/rationale exists",
+      passed: items.length >= 1,
+      detail: `${items.length} practice item(s) attached.`,
+    },
+    {
+      key: "citations",
+      label: "Citations are attached",
+      passed: citations.length >= Math.max(1, Math.min(slides.length, 5)),
+      detail: `${citations.length} citation(s) available for source checking.`,
+    },
+    {
+      key: "qa",
+      label: "QA has no failures",
+      passed: failCount === 0,
+      detail: `${failCount} fail / ${warnCount} warning(s).`,
+    },
+    {
+      key: "source_truth",
+      label: "Source truth linked",
+      passed: Array.isArray(pkg.sourceIds) && pkg.sourceIds.length > 0,
+      detail: `${Array.isArray(pkg.sourceIds) ? pkg.sourceIds.length : 0} source record(s) selected.`,
+    },
+  ];
+  const reviewPassedCount = reviewChecklist.filter((check) => check.passed).length;
+  const baseRecommendation = reviewPassedCount === reviewChecklist.length
+    ? "Ready for human review or a small polish pass."
+    : "Do not spend on polish/video yet; fix the failed checklist items first.";
+  const nextSpendRecommendation = draftReview.decision === "approve_polish"
+    ? "Approved for the next $100-$250 polish checkpoint."
+    : draftReview.decision === "needs_fix"
+      ? "Needs fixes before the next spend checkpoint."
+      : draftReview.decision === "hold"
+        ? "Hold spending on this draft until the topic is re-prioritized."
+        : baseRecommendation;
+  return {
+    packageId: pkg.id,
+    title: pkg.title,
+    topic: pkg.topic || "",
+    status: pkg.status || "draft",
+    slideCount: slides.length,
+    itemCount: items.length,
+    citationCount: citations.length,
+    qaStatus: pkg.qaSummary?.status || pkg.status || "unknown",
+    failCount,
+    warnCount,
+    reviewChecklist,
+    reviewPassedCount,
+    reviewTotalCount: reviewChecklist.length,
+    reviewPackageWorkOrderId: topicProduction.reviewPackageWorkOrderId || "",
+    draftReview,
+    phaseThreeDecision,
+    studentLaunchDecision,
+    publicReleaseDecision,
+    nextSpendApproved: draftReview.decision === "approve_polish" && reviewPassedCount === reviewChecklist.length,
+    nextSpendRecommendation,
+    updatedAt: pkg.updatedAt || pkg.createdAt || new Date().toISOString(),
+  };
+}
+
+function topicProductionPreviewReviewSummary(record: any) {
+  const draft = topicProductionDraftSummary(record);
+  if (!draft) return null;
+
+  return {
+    status: draft.reviewPassedCount === draft.reviewTotalCount ? "ready_for_human_review" : "needs_admin_fix",
+    passedCount: draft.reviewPassedCount,
+    totalCount: draft.reviewTotalCount,
+    checklist: draft.reviewChecklist.map((check: any) => ({
+      label: check.label,
+      passed: Boolean(check.passed),
+      detail: check.detail,
+    })),
+    decisions: {
+      draftReview: draft.draftReview?.decision || "unreviewed",
+      phaseThree: draft.phaseThreeDecision?.decision || "unreviewed",
+      studentLaunch: draft.studentLaunchDecision?.decision || "unreviewed",
+      previewReview: draft.studentLaunchDecision?.previewReview?.outcome || "not_recorded",
+    },
+    reviewerFocus: [
+      "Confirm the lesson is clinically accurate for prelicensure RN learners.",
+      "Check that slide language is learner-facing and not instructor-only planning text.",
+      "Verify the practice answer, rationale, and citation support before public release.",
+    ],
+    recommendation: draft.nextSpendRecommendation,
+  };
+}
+
+function topicProductionExistingDraft(row: any, draftRecords: any[] = []) {
+  const topic = row.topic || row.title || "";
+  const expectedTitle = `${topic} Template Draft`.toLowerCase();
+  const topicKey = topicProductionDraftTopicKey(topic);
+  return draftRecords
+    .map(topicProductionDraftSummary)
+    .filter(Boolean)
+    .find((summary: any) => {
+      const title = String(summary.title || "").toLowerCase();
+      const summaryTopicKey = topicProductionDraftTopicKey(summary.topic || summary.title);
+      return title === expectedTitle || (title.includes("template draft") && topicKey && summaryTopicKey.includes(topicKey));
+    }) || null;
+}
+
+function topicProductionBuildPackets(rows: any[], sourceRecords: any[] = [], draftRecords: any[] = []) {
+  return rows.map((row, index) => {
+    const topic = row.topic || row.title || "Selected nursing topic";
+    const concept = row.concept || row.weakTopic || "";
+    const subject = row.nursingSubject || "";
+    const assetPlan = Object.keys(topicProductionAssetLabels).map((assetKey) => ({
+      assetKey,
+      asset: topicProductionAssetLabels[assetKey as keyof typeof topicProductionAssetLabels],
+      status: row.assets?.[assetKey] ? "ready" : "needed",
+      belongsIn: assetKey === "visuals" ? "Visual asset queue" : "Lesson Builder",
+      brief: topicProductionBuildBrief(row, assetKey),
+    }));
+    const templateDraft = topicProductionTemplateDraft(row);
+    const readiness = topicProductionPacketReadiness(row, assetPlan, templateDraft);
+    const matchedSource = topicProductionMatchedSource(row, sourceRecords);
+    const draftPackage = topicProductionExistingDraft(row, draftRecords);
+    const coverageContract = topicProductionCoverageContract(row, draftPackage, assetPlan);
+    const driveProjectAssets = topicProductionDriveAssetsForRow(row);
+    return {
+      buildOrder: index + 1,
+      topic,
+      concept,
+      nursingSubject: subject,
+      weakTopic: row.weakTopic || "",
+      nclexCategory: row.nclexCategory || "",
+      cjmStep: row.cjmStep || "",
+      sourceType: row.sourceType,
+      sourceId: row.id,
+      sourceTruth: matchedSource ? {
+        sourceId: matchedSource.id,
+        title: matchedSource.title,
+        sourceType: matchedSource.sourceType,
+        subject: matchedSource.subject,
+        approvalStatus: matchedSource.approvalStatus,
+        ingestionStatus: matchedSource.ingestionStatus,
+      } : null,
+      sourceEvidence: row.sourceEvidence || "",
+      reviewDecision: row.review?.decision || "unreviewed",
+      reviewerNotes: row.review?.reviewerNotes || "",
+      chunkCount: row.chunkCount || 0,
+      childBlockIds: Array.isArray(row.childBlockIds) ? row.childBlockIds : [],
+      lessonBuilderInput: {
+        title: topic,
+        audience: "nursing students",
+        concept,
+        nursingSubject: subject,
+        slideTarget: row.counts?.slides > 0 ? row.counts.slides : 8,
+        minimumQuizItems: Math.max(1, row.counts?.quizItems || 0),
+        guidedNotesRequired: true,
+        citationsRequired: true,
+      },
+      assetPlan,
+      driveProjectAssets,
+      coverageContract,
+      templateDraft,
+      draftPackage,
+      readiness,
+      shortsStarter: row.shorts || {
+        hook: topicProductionShortHook(row),
+        scriptDraft: topicProductionShortScript(row),
+        cta: "Open the full NurseStudy lesson.",
+      },
+      humanReviewGate: [
+        "Confirm concept and nursing subject before generation.",
+        "Faculty/content expert reviews any safety-sensitive teaching.",
+        "Publish only after deck, study guide, quiz rationale, and citations pass QA.",
+      ],
+      costGuardrail: "Use this packet to approve scope before spending AI/video production budget.",
+    };
+  });
+}
+
+function topicProductionBuildPacketRows(packets: any[]) {
+  return packets.flatMap((packet) => packet.assetPlan.map((asset: any) => ({
+    "Build Order": packet.buildOrder,
+    "Topic": packet.topic,
+    "Concept": packet.concept,
+    "Nursing Subject": packet.nursingSubject,
+    "Weak Topic": packet.weakTopic,
+    "NCLEX Category": packet.nclexCategory,
+    "CJM Step": packet.cjmStep,
+    "Source Type": packet.sourceType,
+    "Source ID": packet.sourceId,
+    "Matched Source ID": packet.sourceTruth?.sourceId || "",
+    "Matched Source Title": packet.sourceTruth?.title || "",
+    "Drive Project Assets": (packet.driveProjectAssets || []).map((asset: any) => asset.title).join(" | "),
+    "Drive Asset Links": (packet.driveProjectAssets || []).map((asset: any) => asset.url).join(" | "),
+    "Chunk Count": packet.chunkCount,
+    "Asset": asset.asset,
+    "Asset Status": asset.status,
+    "Belongs In": asset.belongsIn,
+    "Build Brief": asset.brief,
+    "Coverage Status": (packet.coverageContract?.rows || []).find((item: any) => item.key === (asset.assetKey === "slideDeck" ? "lessonDeck" : asset.assetKey))?.status || "",
+    "Coverage Proof": (packet.coverageContract?.rows || []).find((item: any) => item.key === (asset.assetKey === "slideDeck" ? "lessonDeck" : asset.assetKey))?.proof || "",
+    "Student Surface": (packet.coverageContract?.rows || []).find((item: any) => item.key === (asset.assetKey === "slideDeck" ? "lessonDeck" : asset.assetKey))?.studentSurface || "",
+    "Admin Surface": (packet.coverageContract?.rows || []).find((item: any) => item.key === (asset.assetKey === "slideDeck" ? "lessonDeck" : asset.assetKey))?.adminSurface || "",
+    "Coverage Summary": packet.coverageContract ? `${packet.coverageContract.readyCount}/${packet.coverageContract.totalCount} reviewable; student ready ${packet.coverageContract.studentReady ? "yes" : "no"}` : "",
+    "Video/Shorts Status": (packet.coverageContract?.rows || []).find((item: any) => item.key === "videoShorts")?.status || "",
+    "Short Hook": packet.shortsStarter.hook || "",
+    "Short Script Draft": packet.shortsStarter.scriptDraft || "",
+    "Template Slide Outline": (packet.templateDraft?.slideOutline || []).map((slide: any) => slide.title).join(" | "),
+    "Practice Preview": packet.templateDraft?.practicePreview?.stem || "",
+    "Template Draft Status": packet.draftPackage ? `${packet.draftPackage.status} / ${packet.draftPackage.qaStatus}` : "Not created",
+    "Template Draft Package ID": packet.draftPackage?.packageId || "",
+    "Template Draft Counts": packet.draftPackage
+      ? `${packet.draftPackage.slideCount} slides / ${packet.draftPackage.itemCount} item(s) / ${packet.draftPackage.citationCount} citation(s)`
+      : "",
+    "Template Draft Review Checks": packet.draftPackage
+      ? `${packet.draftPackage.reviewPassedCount}/${packet.draftPackage.reviewTotalCount}`
+      : "",
+    "Template Draft Review Decision": packet.draftPackage?.draftReview?.decision || "",
+    "Next Spend Approved": packet.draftPackage?.nextSpendApproved ? "yes" : "no",
+    "Next Spend Recommendation": packet.draftPackage?.nextSpendRecommendation || "",
+    "Readiness Status": packet.readiness?.readyForTemplateDraft ? "Ready for template draft" : "Not ready",
+    "Readiness Checks": (packet.readiness?.checks || []).map((check: any) => `${check.label}: ${check.passed ? "pass" : "needs review"}`).join(" | "),
+    "Review Gate": packet.humanReviewGate.join(" | "),
+    "Source Evidence": packet.sourceEvidence,
+    "Cost Guardrail": packet.costGuardrail,
+  })));
+}
+
+function topicProductionBuildPacketsCsv(rows: any[], sourceRecords: any[] = [], draftRecords: any[] = []) {
+  const exportRows = topicProductionBuildPacketRows(topicProductionBuildPackets(rows, sourceRecords, draftRecords));
+  const headers = [
+    "Build Order",
+    "Topic",
+    "Concept",
+    "Nursing Subject",
+    "Weak Topic",
+    "NCLEX Category",
+    "CJM Step",
+    "Source Type",
+    "Source ID",
+    "Matched Source ID",
+    "Matched Source Title",
+    "Drive Project Assets",
+    "Drive Asset Links",
+    "Chunk Count",
+    "Asset",
+    "Asset Status",
+    "Belongs In",
+    "Build Brief",
+    "Coverage Status",
+    "Coverage Proof",
+    "Student Surface",
+    "Admin Surface",
+    "Coverage Summary",
+    "Video/Shorts Status",
+    "Short Hook",
+    "Short Script Draft",
+    "Template Slide Outline",
+    "Practice Preview",
+    "Template Draft Status",
+    "Template Draft Package ID",
+    "Template Draft Counts",
+    "Template Draft Review Checks",
+    "Template Draft Review Decision",
+    "Next Spend Approved",
+    "Next Spend Recommendation",
+    "Readiness Status",
+    "Readiness Checks",
+    "Review Gate",
+    "Source Evidence",
+    "Cost Guardrail",
+  ];
+  return [
+    headers.map(csvValue).join(","),
+    ...exportRows.map((row) => headers.map((header) => csvValue((row as Record<string, any>)[header])).join(",")),
+  ].join("\n");
+}
+
+function topicProductionHumanReviewCatalogRows(rows: any[]) {
+  const rank = (row: any) => {
+    if (row.sourceType === "lesson_package" && row.packageStatus === "published") return 0;
+    if (row.sourceType === "lesson_package") return 1;
+    if (row.sourceType === "topic_candidate") return 2;
+    return 3;
+  };
+  const sortedRows = [...rows].sort((a, b) => rank(a) - rank(b));
+  return topicProductionHumanReviewCatalogTopics
+    .map((topic) => sortedRows.find((row) => compactTopicKey(row.topic || row.title) === compactTopicKey(topic)))
+    .filter(Boolean);
+}
+
+function topicProductionHumanReviewPackRows(rows: any[]) {
+  return topicProductionHumanReviewCatalogRows(rows).map((row) => {
+    const driveAssets = topicProductionDriveAssetsForRow(row);
+    const review = topicProductionReviewForRow(row.sourceType, row.id, row.review);
+    const recommendedDecision = row.sourceType === "lesson_package"
+      ? "approve_mapping"
+      : row.assets?.mapping
+        ? "approve_mapping"
+        : "needs_edit";
+    const assetPlacement = Object.entries(topicProductionAssetLabels)
+      .map(([key, label]) => `${label}: ${row.assets?.[key] ? "ready" : "needed"}`)
+      .join(" | ");
+    const reviewStage = row.sourceType === "lesson_package"
+      ? (row.packageStatus === "published" ? "public_example_review" : "draft_review")
+      : "candidate_topic_review";
+
+    return {
+      "Review Stage": reviewStage,
+      "Spend Window": "$100-$500",
+      "Topic": row.topic,
+      "Concept": row.concept,
+      "Nursing Subject": row.nursingSubject,
+      "Weak Topic": row.weakTopic || "",
+      "NCLEX Category": row.nclexCategory || "",
+      "CJM Step": row.cjmStep || "",
+      "Source Type": row.sourceType,
+      "Source ID": row.id,
+      "Package Status": row.packageStatus || "",
+      "Current Location": row.placement?.currentLocation || "",
+      "Belongs In": row.placement?.belongsIn || "",
+      "Student Visible": row.placement?.studentVisible ? "yes" : "no",
+      "Asset Placement": assetPlacement,
+      "Drive Project Assets": driveAssets.map((asset: any) => asset.title).join(" | "),
+      "Drive Asset Links": driveAssets.map((asset: any) => asset.url).join(" | "),
+      "Source Evidence": row.sourceEvidence || "",
+      "Review Decision": review.decision || "unreviewed",
+      "Reviewer Notes": review.reviewerNotes || "",
+      "Recommended Decision": recommendedDecision,
+      "Immediate Review Question": "Is this topic mapped to the right concept, nursing subject, weak-topic bridge, source placement, and next build action?",
+      "Next Owner Action": row.nextAction || row.placement?.nextBuildSurface || "",
+      "Hold Trigger": "Hold if the concept, specialty, source evidence, quiz rationale, or student value is unclear.",
+      "Cost Guardrail": "Human review only. Do not spend on AI polish, visuals, audio, or video until this row has an explicit review decision.",
+    };
+  });
+}
+
+function topicProductionHumanReviewPackCsv(rows: any[]) {
+  const exportRows = topicProductionHumanReviewPackRows(rows);
+  const headers = [
+    "Review Stage",
+    "Spend Window",
+    "Topic",
+    "Concept",
+    "Nursing Subject",
+    "Weak Topic",
+    "NCLEX Category",
+    "CJM Step",
+    "Source Type",
+    "Source ID",
+    "Package Status",
+    "Current Location",
+    "Belongs In",
+    "Student Visible",
+    "Asset Placement",
+    "Drive Project Assets",
+    "Drive Asset Links",
+    "Source Evidence",
+    "Review Decision",
+    "Reviewer Notes",
+    "Recommended Decision",
+    "Immediate Review Question",
+    "Next Owner Action",
+    "Hold Trigger",
+    "Cost Guardrail",
+  ];
+  return [
+    headers.map(csvValue).join(","),
+    ...exportRows.map((row) => headers.map((header) => csvValue((row as Record<string, any>)[header])).join(",")),
+  ].join("\n");
+}
+
+function topicProductionMediaPilotPackRows(rows: any[]) {
+  return topicProductionHumanReviewCatalogRows(rows)
+    .filter((row) => topicProductionReviewForRow(row.sourceType, row.id, row.review).decision === "approve_mapping")
+    .map((row) => {
+      const driveAssets = topicProductionDriveAssetsForRow(row);
+      const review = topicProductionReviewForRow(row.sourceType, row.id, row.review);
+      const topic = row.topic || row.title || "Untitled topic";
+      const sourceEvidence = row.sourceEvidence || row.placement?.sourceEvidence || "";
+
+      return {
+        "Pilot Stage": "phase_4_media_pilot_plan",
+        "Spend Window": "$100-$500",
+        "Topic": topic,
+        "Concept": row.concept || "",
+        "Nursing Subject": row.nursingSubject || "",
+        "Weak Topic": row.weakTopic || "",
+        "NCLEX Category": row.nclexCategory || "",
+        "CJM Step": row.cjmStep || "",
+        "Source Type": row.sourceType,
+        "Source ID": row.id,
+        "Review Decision": review.decision,
+        "Reviewer Notes": review.reviewerNotes || "",
+        "Slide Deck Plan": `Create or attach a 6-8 slide learner deck for ${topic}: why it matters, cue pattern, safest action, common trap, practice/rationale, and source recap.`,
+        "Study Guide Plan": `Create a one-page guided note for ${topic} with blanks for priority cues, concept link, safety action, patient teaching, and citation note.`,
+        "Visual Plan": `Place one cue map or decision-flow visual for ${topic}; do not generate image/video assets until this media pilot row is explicitly approved.`,
+        "Quiz/Rationale Plan": `Attach at least 1 NCLEX-style item for ${topic} with correct answer, why-wrong rationales, concept tag, CJM step, and citation.`,
+        "Narration Script Plan": `Draft speaker-notes narration from the deck for ${topic}; TTS, audio, and video rendering are not approved in this checkpoint.`,
+        "Video Status": "not_started_manual_approval_required",
+        "Required Human Approval": "Approve one media pilot only. No batch generation, paid media rendering, TTS, or video export until the first row is reviewed.",
+        "Source Evidence": sourceEvidence,
+        "Drive Project Assets": driveAssets.map((asset: any) => asset.title).join(" | "),
+        "Drive Asset Links": driveAssets.map((asset: any) => asset.url).join(" | "),
+        "Hold Trigger": "Hold if the topic placement, concept, specialty, source evidence, quiz rationale, or learner value is unclear.",
+        "Cost Guardrail": "Planning and placement only. Keep this checkpoint inside $100-$500; do not run media generation until a single row is explicitly approved.",
+      };
+    });
+}
+
+function topicProductionMediaPilotPackCsv(rows: any[]) {
+  const exportRows = topicProductionMediaPilotPackRows(rows);
+  const headers = [
+    "Pilot Stage",
+    "Spend Window",
+    "Topic",
+    "Concept",
+    "Nursing Subject",
+    "Weak Topic",
+    "NCLEX Category",
+    "CJM Step",
+    "Source Type",
+    "Source ID",
+    "Review Decision",
+    "Reviewer Notes",
+    "Slide Deck Plan",
+    "Study Guide Plan",
+    "Visual Plan",
+    "Quiz/Rationale Plan",
+    "Narration Script Plan",
+    "Video Status",
+    "Required Human Approval",
+    "Source Evidence",
+    "Drive Project Assets",
+    "Drive Asset Links",
+    "Hold Trigger",
+    "Cost Guardrail",
+  ];
+  return [
+    headers.map(csvValue).join(","),
+    ...exportRows.map((row) => headers.map((header) => csvValue((row as Record<string, any>)[header])).join(",")),
+  ].join("\n");
+}
+
+const topicProductionMediaWorkOrderLineItems = [
+  { name: "Slide deck scaffold", tokens: 1000, dollars: 40 },
+  { name: "Guided study guide scaffold", tokens: 700, dollars: 28 },
+  { name: "Quiz and rationale draft", tokens: 500, dollars: 20 },
+  { name: "Visual storyboard or prompt plan", tokens: 300, dollars: 12 },
+  { name: "Narration script outline", tokens: 500, dollars: 20 },
+  { name: "Creator review checklist", tokens: 500, dollars: 20 },
+];
+
+function topicProductionMediaWorkOrderRows(rows: any[]) {
+  const lineItemSummary = topicProductionMediaWorkOrderLineItems
+    .map((item) => `${item.name}: ${item.tokens} tokens / $${item.dollars}`)
+    .join(" | ");
+  const estimatedTokens = topicProductionMediaWorkOrderLineItems.reduce((sum, item) => sum + item.tokens, 0);
+  const estimatedDollars = topicProductionMediaWorkOrderLineItems.reduce((sum, item) => sum + item.dollars, 0);
+
+  return topicProductionMediaPilotPackRows(rows).map((pilotRow) => {
+    const topic = String(pilotRow["Topic"] || "Untitled topic");
+    const sourceId = String(pilotRow["Source ID"] || compactTopicKey(topic));
+    const workOrderId = topicProductionMediaWorkOrderId(sourceId);
+    const review = topicProductionMediaWorkOrderReviewForId(workOrderId);
+    const approvalStatus = review.decision === "approve_single_topic_scaffold"
+      ? "approved_for_single_topic_scaffold"
+      : review.decision === "needs_revision"
+        ? "needs_revision"
+        : review.decision === "hold_spend"
+          ? "hold_spend"
+          : "manual_approval_required";
+
+    return {
+      "Work Order ID": workOrderId,
+      "Work Order Stage": "phase_4_single_topic_media_work_order",
+      "Approval Status": approvalStatus,
+      "Work Order Review Decision": review.decision,
+      "Work Order Review Notes": review.reviewerNotes,
+      "Work Order Reviewed At": review.reviewedAt || "",
+      "Cost Basis": "2,500 tokens = $100; $0.04 per token planning rate.",
+      "Estimated Token Budget": estimatedTokens,
+      "Estimated Dollar Budget": `$${estimatedDollars}`,
+      "Maximum Dollar Checkpoint": "$500",
+      "Topic": topic,
+      "Concept": pilotRow["Concept"],
+      "Nursing Subject": pilotRow["Nursing Subject"],
+      "Weak Topic": pilotRow["Weak Topic"],
+      "NCLEX Category": pilotRow["NCLEX Category"],
+      "CJM Step": pilotRow["CJM Step"],
+      "Production Line Items": lineItemSummary,
+      "Slide Deck Work": pilotRow["Slide Deck Plan"],
+      "Study Guide Work": pilotRow["Study Guide Plan"],
+      "Visual Work": pilotRow["Visual Plan"],
+      "Quiz Work": pilotRow["Quiz/Rationale Plan"],
+      "Narration Work": pilotRow["Narration Script Plan"],
+      "Video Work": "Do not start video production. Create only a storyboard slot until manual approval is recorded.",
+      "Current Video Status": pilotRow["Video Status"],
+      "Required Before Spend": approvalStatus === "approved_for_single_topic_scaffold"
+        ? "Single-topic scaffold planning is approved; media rendering, TTS, and video still require a separate decision."
+        : "Creator approves this single work order and confirms source evidence, quiz rationale, and learner value.",
+      "Source Evidence": pilotRow["Source Evidence"],
+      "Drive Project Assets": pilotRow["Drive Project Assets"],
+      "Drive Asset Links": pilotRow["Drive Asset Links"],
+      "Cost Guardrail": "One topic only. No batch generation, no TTS, no rendered video, and no paid visual generation in this checkpoint.",
+    };
+  });
+}
+
+function topicProductionMediaWorkOrderCsv(rows: any[]) {
+  const exportRows = topicProductionMediaWorkOrderRows(rows);
+  const headers = [
+    "Work Order ID",
+    "Work Order Stage",
+    "Approval Status",
+    "Work Order Review Decision",
+    "Work Order Review Notes",
+    "Work Order Reviewed At",
+    "Cost Basis",
+    "Estimated Token Budget",
+    "Estimated Dollar Budget",
+    "Maximum Dollar Checkpoint",
+    "Topic",
+    "Concept",
+    "Nursing Subject",
+    "Weak Topic",
+    "NCLEX Category",
+    "CJM Step",
+    "Production Line Items",
+    "Slide Deck Work",
+    "Study Guide Work",
+    "Visual Work",
+    "Quiz Work",
+    "Narration Work",
+    "Video Work",
+    "Current Video Status",
+    "Required Before Spend",
+    "Source Evidence",
+    "Drive Project Assets",
+    "Drive Asset Links",
+    "Cost Guardrail",
+  ];
+  return [
+    headers.map(csvValue).join(","),
+    ...exportRows.map((row) => headers.map((header) => csvValue((row as Record<string, any>)[header])).join(",")),
+  ].join("\n");
+}
+
+function topicProductionMediaScaffoldPackRows(rows: any[]) {
+  return topicProductionMediaWorkOrderRows(rows)
+    .filter((workOrder) => workOrder["Work Order Review Decision"] === "approve_single_topic_scaffold")
+    .map((workOrder) => {
+      const topic = String(workOrder["Topic"] || "Untitled topic");
+      const concept = String(workOrder["Concept"] || "Clinical Judgment");
+      const subject = String(workOrder["Nursing Subject"] || "Nursing");
+      const weakTopic = String(workOrder["Weak Topic"] || "Priority decision");
+      const cjmStep = String(workOrder["CJM Step"] || "Recognize Cues");
+      const nclexCategory = String(workOrder["NCLEX Category"] || "Physiological Integrity");
+      const scaffoldReview = topicProductionMediaScaffoldReviewForId(String(workOrder["Work Order ID"] || ""));
+      const scaffoldApprovalStatus = scaffoldReview.decision === "approve_ai_draft_checkpoint"
+        ? "approved_for_ai_draft_checkpoint"
+        : scaffoldReview.decision === "needs_revision"
+          ? "needs_revision"
+          : scaffoldReview.decision === "hold_spend"
+            ? "hold_spend"
+            : "creator_review_required";
+
+      return {
+        "Scaffold Stage": "phase_4_single_topic_scaffold_ready",
+        "Approved Work Order ID": workOrder["Work Order ID"],
+        "Scaffold Approval Status": scaffoldApprovalStatus,
+        "Scaffold Review Decision": scaffoldReview.decision,
+        "Scaffold Review Notes": scaffoldReview.reviewerNotes,
+        "Scaffold Reviewed At": scaffoldReview.reviewedAt || "",
+        "Topic": topic,
+        "Concept": concept,
+        "Nursing Subject": subject,
+        "Weak Topic": weakTopic,
+        "NCLEX Category": nclexCategory,
+        "CJM Step": cjmStep,
+        "Estimated Dollar Budget": workOrder["Estimated Dollar Budget"],
+        "Estimated Token Budget": workOrder["Estimated Token Budget"],
+        "Slide Deck Scaffold": [
+          `Slide 1: Why ${topic} matters for ${subject}`,
+          `Slide 2: Priority cues and risk signals`,
+          `Slide 3: Link cues to ${concept}`,
+          `Slide 4: Safest first nursing action`,
+          `Slide 5: Common trap or distractor`,
+          `Slide 6: Practice item and rationale`,
+          `Slide 7: Source-backed recap`,
+          `Slide 8: Student takeaways and next review`,
+        ].join(" | "),
+        "Study Guide Scaffold": `Guided notes for ${topic}: define ${weakTopic}; list three priority cues; connect cues to ${cjmStep}; choose safest action; write one patient-teaching point; cite source evidence.`,
+        "Visual Storyboard": `Create a simple cue-to-action flow: source cue -> risk interpretation -> ${concept} link -> safest nursing action. Do not render custom art yet.`,
+        "Quiz Scaffold": `One NCLEX-style item for ${topic} with one correct answer, three distractors, why-correct rationale, why-wrong rationales, ${nclexCategory} tag, ${cjmStep} tag, and citation.`,
+        "Narration Outline": `Speaker notes only: introduce ${topic}; explain why the cue pattern matters; walk through the decision; close with the practice rationale. No TTS/audio rendering.`,
+        "Creator Review Checklist": "Confirm source evidence | Confirm concept/specialty mapping | Confirm quiz rationale | Confirm student value | Confirm no media rendering requested",
+        "Next Allowed Action": scaffoldApprovalStatus === "approved_for_ai_draft_checkpoint"
+          ? "Creator approved this scaffold for the next AI text-draft checkpoint only; TTS, video, batch generation, and paid visuals remain blocked."
+          : scaffoldApprovalStatus === "needs_revision"
+            ? "Revise the scaffold outline before approving any AI text-draft checkpoint."
+            : scaffoldApprovalStatus === "hold_spend"
+              ? "Hold this topic; do not start AI drafting or media work."
+              : "Creator reviews and edits this scaffold; no paid media rendering or batch production.",
+        "Source Evidence": workOrder["Source Evidence"],
+        "Drive Project Assets": workOrder["Drive Project Assets"],
+        "Drive Asset Links": workOrder["Drive Asset Links"],
+        "Cost Guardrail": "Deterministic scaffold only until creator approval. Scaffold approval permits only a separately budgeted AI text-draft checkpoint; no TTS, no rendered video, no paid visual generation.",
+      };
+    });
+}
+
+function topicProductionMediaScaffoldPackCsv(rows: any[]) {
+  const exportRows = topicProductionMediaScaffoldPackRows(rows);
+  const headers = [
+    "Scaffold Stage",
+    "Approved Work Order ID",
+    "Scaffold Approval Status",
+    "Scaffold Review Decision",
+    "Scaffold Review Notes",
+    "Scaffold Reviewed At",
+    "Topic",
+    "Concept",
+    "Nursing Subject",
+    "Weak Topic",
+    "NCLEX Category",
+    "CJM Step",
+    "Estimated Dollar Budget",
+    "Estimated Token Budget",
+    "Slide Deck Scaffold",
+    "Study Guide Scaffold",
+    "Visual Storyboard",
+    "Quiz Scaffold",
+    "Narration Outline",
+    "Creator Review Checklist",
+    "Next Allowed Action",
+    "Source Evidence",
+    "Drive Project Assets",
+    "Drive Asset Links",
+    "Cost Guardrail",
+  ];
+  return [
+    headers.map(csvValue).join(","),
+    ...exportRows.map((row) => headers.map((header) => csvValue((row as Record<string, any>)[header])).join(",")),
+  ].join("\n");
+}
+
+function topicProductionMediaTextDraftPackRows(rows: any[]) {
+  return topicProductionMediaScaffoldPackRows(rows)
+    .filter((scaffold) => scaffold["Scaffold Review Decision"] === "approve_ai_draft_checkpoint")
+    .map((scaffold) => {
+      const topic = String(scaffold["Topic"] || "Untitled topic");
+      const concept = String(scaffold["Concept"] || "Clinical Judgment");
+      const subject = String(scaffold["Nursing Subject"] || "Nursing");
+      const weakTopic = String(scaffold["Weak Topic"] || "Priority decision");
+      const cjmStep = String(scaffold["CJM Step"] || "Recognize Cues");
+      const nclexCategory = String(scaffold["NCLEX Category"] || "Physiological Integrity");
+      const sourceEvidence = String(scaffold["Source Evidence"] || "Source evidence pending creator review.");
+      const textDraftReview = topicProductionMediaTextDraftReviewForId(String(scaffold["Approved Work Order ID"] || ""));
+      const textDraftApprovalStatus = textDraftReview.decision === "approve_package_assembly_checkpoint"
+        ? "approved_for_package_assembly_checkpoint"
+        : textDraftReview.decision === "needs_revision"
+          ? "needs_revision"
+          : textDraftReview.decision === "hold_spend"
+            ? "hold_spend"
+            : "creator_review_required";
+
+      return {
+        "Draft Stage": "phase_5_single_topic_text_draft_ready_for_creator_review",
+        "Approved Work Order ID": scaffold["Approved Work Order ID"],
+        "Text Draft Approval Status": textDraftApprovalStatus,
+        "Text Draft Review Decision": textDraftReview.decision,
+        "Text Draft Review Notes": textDraftReview.reviewerNotes,
+        "Text Draft Reviewed At": textDraftReview.reviewedAt || "",
+        "Topic": topic,
+        "Concept": concept,
+        "Nursing Subject": subject,
+        "Weak Topic": weakTopic,
+        "NCLEX Category": nclexCategory,
+        "CJM Step": cjmStep,
+        "Draft Mode": "local_text_draft_checkpoint_no_external_media_generation",
+        "Slide Deck Text Draft": [
+          `Slide 1 - Why it matters: ${topic} is a priority ${subject} decision because students must recognize early cues, connect them to ${concept}, and choose the safest first nursing action.`,
+          `Slide 2 - Cues: look for changes in assessment findings, risk factors, timing, and response to intervention that point toward ${weakTopic}.`,
+          `Slide 3 - Clinical judgment link: use ${cjmStep} to separate expected findings from warning signs before choosing an action.`,
+          `Slide 4 - Action: prioritize safety, rapid reassessment, escalation when indicated, and patient-centered teaching.`,
+          `Slide 5 - Trap: do not jump to a familiar task before matching the cue pattern to the highest-risk problem.`,
+          `Slide 6 - Practice: answer one NCLEX-style item, then read both correct and incorrect rationales.`,
+          `Slide 7 - Evidence: anchor the explanation to the cited source packet and keep paraphrasing concise.`,
+          `Slide 8 - Takeaway: name the cue, explain the risk, choose the action, and document the reassessment.`,
+        ].join(" | "),
+        "Study Guide Text Draft": `Student notes: define ${weakTopic}; list three priority cues; explain why those cues matter in ${subject}; connect the decision to ${concept} and ${cjmStep}; write the safest first action; write one teaching point; add the citation used for review.`,
+        "Visual Brief Text": `Storyboard a simple four-step flow: cue observed -> risk interpreted -> ${concept} decision -> safest nursing action. Use plain icons/placeholders only until visual generation is separately approved.`,
+        "Quiz/Rationale Text Draft": `Stem: A nursing student reviews a client scenario about ${topic}. Which action best reflects ${cjmStep}? Correct answer should prioritize the safest first nursing action. Rationales: explain why the correct answer addresses ${weakTopic}; explain why each distractor is delayed, incomplete, or mismatched to the cue pattern. Tags: ${nclexCategory}; ${cjmStep}; ${subject}.`,
+        "Narration Script Draft": `Opening: Today we are focusing on ${topic}. Body: Start with the cue pattern, then explain the risk, the ${concept} link, and the safest action. Practice: Pause for the NCLEX item and rationale. Close: Before moving on, students should be able to name the priority cue and justify the nursing action. No TTS or audio rendering is approved.`,
+        "Creator Review Questions": "Is the source evidence accurate? | Is the student-facing wording clear? | Does the quiz rationale teach why distractors are wrong? | Is the visual brief simple enough for first review? | Should this move to paid AI/media production?",
+        "Next Allowed Action": textDraftApprovalStatus === "approved_for_package_assembly_checkpoint"
+          ? "Creator approved package assembly checkpoint only. Build a learner-safe package next; TTS, rendered video, paid visuals, and batch generation remain blocked."
+          : textDraftApprovalStatus === "needs_revision"
+            ? "Revise slide, study guide, quiz, visual brief, or narration text before package assembly."
+            : textDraftApprovalStatus === "hold_spend"
+              ? "Hold this text draft; do not assemble package or start media work."
+              : "Creator reviews and edits text drafts. A separate approval is required before package assembly, TTS, rendered video, paid visuals, or batch generation.",
+        "Source Evidence": sourceEvidence,
+        "Drive Project Assets": scaffold["Drive Project Assets"],
+        "Drive Asset Links": scaffold["Drive Asset Links"],
+        "Cost Guardrail": "Text-draft checkpoint only. No TTS, no rendered video, no paid visual generation, and no batch generation.",
+      };
+    });
+}
+
+function topicProductionMediaTextDraftPackCsv(rows: any[]) {
+  const exportRows = topicProductionMediaTextDraftPackRows(rows);
+  const headers = [
+    "Draft Stage",
+    "Approved Work Order ID",
+    "Text Draft Approval Status",
+    "Text Draft Review Decision",
+    "Text Draft Review Notes",
+    "Text Draft Reviewed At",
+    "Topic",
+    "Concept",
+    "Nursing Subject",
+    "Weak Topic",
+    "NCLEX Category",
+    "CJM Step",
+    "Draft Mode",
+    "Slide Deck Text Draft",
+    "Study Guide Text Draft",
+    "Visual Brief Text",
+    "Quiz/Rationale Text Draft",
+    "Narration Script Draft",
+    "Creator Review Questions",
+    "Next Allowed Action",
+    "Source Evidence",
+    "Drive Project Assets",
+    "Drive Asset Links",
+    "Cost Guardrail",
+  ];
+  return [
+    headers.map(csvValue).join(","),
+    ...exportRows.map((row) => headers.map((header) => csvValue((row as Record<string, any>)[header])).join(",")),
+  ].join("\n");
+}
+
+function topicProductionPackageAssemblyPackRows(rows: any[]) {
+  return topicProductionMediaTextDraftPackRows(rows)
+    .filter((draft) => draft["Text Draft Review Decision"] === "approve_package_assembly_checkpoint")
+    .map((draft) => {
+      const topic = String(draft["Topic"] || "Untitled topic");
+      const concept = String(draft["Concept"] || "Clinical Judgment");
+      const subject = String(draft["Nursing Subject"] || "Nursing");
+      const weakTopic = String(draft["Weak Topic"] || "Priority decision");
+      const cjmStep = String(draft["CJM Step"] || "Recognize Cues");
+      const nclexCategory = String(draft["NCLEX Category"] || "Physiological Integrity");
+
+      return {
+        "Assembly Stage": "phase_6_package_assembly_ready_for_creator_review",
+        "Approved Work Order ID": draft["Approved Work Order ID"],
+        "Topic": topic,
+        "Concept": concept,
+        "Nursing Subject": subject,
+        "Weak Topic": weakTopic,
+        "NCLEX Category": nclexCategory,
+        "CJM Step": cjmStep,
+        "Lesson Package Title": `${topic}: NurseStudy Review Package`,
+        "Slide Assembly Plan": `Create an 8-slide learner deck from the approved text draft: why it matters, cue pattern, ${cjmStep}, safest action, common trap, practice prompt, cited evidence, and takeaway.`,
+        "Guided Notes Assembly Plan": `Convert the study-guide draft into fillable notes with sections for ${weakTopic}, priority cues, ${concept}, first action, teaching point, and citation used for review.`,
+        "Practice Item Assembly Plan": `Build one NCLEX-style item tagged ${nclexCategory}, ${cjmStep}, and ${subject}. Include one correct answer and rationales for correct and incorrect options.`,
+        "Citation Plan": "Attach source-backed citations from the approved evidence packet. Keep source text paraphrased and show citations in the lesson, study guide, and export manifest.",
+        "Learner Surface Plan": "Publish only after review: lesson library card, lesson deck, guided notes panel, practice/rationale panel, citation drawer, and completion/feedback controls.",
+        "Export Plan": "Bundle slides, guided notes, quiz/rationale, citations, manifest, QA summary, and creator notes as the review export.",
+        "Review Gate": "Creator reviews assembled package before publish. Human content expert review remains recommended before broad student release.",
+        "Next Allowed Action": "Assemble one learner-safe package for review only. Do not render video, TTS, paid visuals, public publish, or batch-produce topics without the next approval.",
+        "Source Evidence": draft["Source Evidence"],
+        "Drive Project Assets": draft["Drive Project Assets"],
+        "Drive Asset Links": draft["Drive Asset Links"],
+        "Cost Guardrail": "Package assembly checkpoint only. No TTS, no rendered video, no paid visual generation, no batch generation, and no public publish without review.",
+      };
+    });
+}
+
+function topicProductionPackageAssemblyPackCsv(rows: any[]) {
+  const exportRows = topicProductionPackageAssemblyPackRows(rows);
+  const headers = [
+    "Assembly Stage",
+    "Approved Work Order ID",
+    "Topic",
+    "Concept",
+    "Nursing Subject",
+    "Weak Topic",
+    "NCLEX Category",
+    "CJM Step",
+    "Lesson Package Title",
+    "Slide Assembly Plan",
+    "Guided Notes Assembly Plan",
+    "Practice Item Assembly Plan",
+    "Citation Plan",
+    "Learner Surface Plan",
+    "Export Plan",
+    "Review Gate",
+    "Next Allowed Action",
+    "Source Evidence",
+    "Drive Project Assets",
+    "Drive Asset Links",
+    "Cost Guardrail",
+  ];
+  return [
+    headers.map(csvValue).join(","),
+    ...exportRows.map((row) => headers.map((header) => csvValue((row as Record<string, any>)[header])).join(",")),
+  ].join("\n");
+}
+
+function topicProductionPackageReviewBlueprintRows(rows: any[]) {
+  return topicProductionPackageAssemblyPackRows(rows).map((assembly) => {
+    const workOrderId = String(assembly["Approved Work Order ID"] || "");
+    const topic = String(assembly["Topic"] || "Untitled topic");
+    const concept = String(assembly["Concept"] || "Clinical Judgment");
+    const subject = String(assembly["Nursing Subject"] || "Nursing");
+    const weakTopic = String(assembly["Weak Topic"] || "Priority decision");
+    const cjmStep = String(assembly["CJM Step"] || "Recognize Cues");
+    const nclexCategory = String(assembly["NCLEX Category"] || "Physiological Integrity");
+    const blueprintReview = topicProductionPackageReviewBlueprintForId(workOrderId);
+    const buildApprovalStatus = blueprintReview.decision === "approve_review_package_build"
+      ? "approved_for_deterministic_review_package_build"
+      : blueprintReview.decision === "needs_revision"
+        ? "needs_blueprint_revision"
+        : blueprintReview.decision === "hold_spend"
+          ? "hold_spend"
+          : "creator_review_required";
+    const nextAllowedAction = buildApprovalStatus === "approved_for_deterministic_review_package_build"
+      ? "Build one deterministic unpublished review package from this blueprint. No public publish, TTS, video, paid visuals, or batch generation is approved."
+      : buildApprovalStatus === "needs_blueprint_revision"
+        ? "Revise learner outcome, slides, guided notes, practice, citations, or stop conditions before building a package."
+        : buildApprovalStatus === "hold_spend"
+          ? "Hold this blueprint. Do not build the package or start media work."
+          : "Creator reviews this blueprint, then either requests revisions or explicitly approves one deterministic review package build. Media and public publish stay blocked.";
+
+    return {
+      "Blueprint Stage": "phase_7_review_blueprint_ready_for_creator_review",
+      "Approved Work Order ID": workOrderId,
+      "Build Approval Status": buildApprovalStatus,
+      "Blueprint Review Decision": blueprintReview.decision,
+      "Blueprint Review Notes": blueprintReview.reviewerNotes,
+      "Blueprint Reviewed At": blueprintReview.reviewedAt || "",
+      "Topic": topic,
+      "Concept": concept,
+      "Nursing Subject": subject,
+      "Weak Topic": weakTopic,
+      "NCLEX Category": nclexCategory,
+      "CJM Step": cjmStep,
+      "Lesson Package Title": assembly["Lesson Package Title"],
+      "Learner Outcome": `After this review package, the student should identify priority cues for ${weakTopic}, explain the ${concept} risk, choose the safest first nursing action, and justify the action with source-backed rationale.`,
+      "Slide Blueprint": [
+        "Slide 1: why this topic matters for nursing judgment",
+        "Slide 2: priority cue pattern",
+        `Slide 3: ${cjmStep} decision point`,
+        "Slide 4: safest first nursing action",
+        "Slide 5: common NCLEX trap",
+        "Slide 6: practice item setup",
+        "Slide 7: citation-backed rationale",
+        "Slide 8: student takeaway and completion prompt",
+      ].join(" | "),
+      "Guided Notes Blueprint": `Sections: define ${weakTopic}; list three priority cues; connect to ${concept}; choose first action; write one teaching point; cite the source used.`,
+      "Practice Blueprint": `One NCLEX-style item tagged ${nclexCategory}, ${cjmStep}, and ${subject}; four options; one correct answer; rationales for every option; feedback tied to cue recognition and safety.`,
+      "Visual Placeholder Blueprint": "Use simple placeholders only: cue icon, risk arrow, action checklist, citation badge. Do not generate paid visuals until review approves the visual direction.",
+      "Citation Slot Blueprint": "Minimum citation slots: source evidence for cue pattern, rationale source, and review manifest source. All citations remain tied to approved source records.",
+      "Export File Blueprint": "review_manifest.json | learner_slides.md | guided_notes.md | practice_item.md | citations.md | creator_review_checklist.md",
+      "Review Checklist": "Clinical accuracy | student clarity | taxonomy fit | rationale quality | citation traceability | visual direction | publish readiness",
+      "Human Expert Questions": `Does ${topic} reflect current safe nursing practice? Are the distractors plausible? Is the ${cjmStep} tag correct? Is this ready for a human expert or student preview?`,
+      "Stop Conditions": "Stop if source evidence is weak, the nursing action is ambiguous, quiz rationales are thin, or the package cannot be understood without admin context.",
+      "Next Allowed Action": nextAllowedAction,
+      "Source Evidence": assembly["Source Evidence"],
+      "Cost Guardrail": "Blueprint checkpoint only. Approval permits at most one deterministic unpublished review package build. No package publish, no TTS, no rendered video, no paid visual generation, and no batch generation.",
+    };
+  });
+}
+
+function topicProductionPackageReviewBlueprintCsv(rows: any[]) {
+  const exportRows = topicProductionPackageReviewBlueprintRows(rows);
+  const headers = [
+    "Blueprint Stage",
+    "Approved Work Order ID",
+    "Build Approval Status",
+    "Blueprint Review Decision",
+    "Blueprint Review Notes",
+    "Blueprint Reviewed At",
+    "Topic",
+    "Concept",
+    "Nursing Subject",
+    "Weak Topic",
+    "NCLEX Category",
+    "CJM Step",
+    "Lesson Package Title",
+    "Learner Outcome",
+    "Slide Blueprint",
+    "Guided Notes Blueprint",
+    "Practice Blueprint",
+    "Visual Placeholder Blueprint",
+    "Citation Slot Blueprint",
+    "Export File Blueprint",
+    "Review Checklist",
+    "Human Expert Questions",
+    "Stop Conditions",
+    "Next Allowed Action",
+    "Source Evidence",
+    "Cost Guardrail",
+  ];
+  return [
+    headers.map(csvValue).join(","),
+    ...exportRows.map((row) => headers.map((header) => csvValue((row as Record<string, any>)[header])).join(",")),
+  ].join("\n");
+}
+
+const topicProductionReviewPackageFileNames = [
+  "review_manifest.json",
+  "learner_slides.md",
+  "guided_notes.md",
+  "practice_item.md",
+  "citations.md",
+  "creator_review_checklist.md",
+] as const;
+
+function topicProductionReviewPackageSlug(value: any) {
+  const slug = String(value || "review-package")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+  return slug || "review-package";
+}
+
+function topicProductionReviewPackageFiles(blueprint: Record<string, any>) {
+  const topic = String(blueprint["Topic"] || "Untitled topic");
+  const title = String(blueprint["Lesson Package Title"] || `${topic}: NurseStudy Review Package`);
+  const concept = String(blueprint["Concept"] || "Clinical Judgment");
+  const subject = String(blueprint["Nursing Subject"] || "Nursing");
+  const weakTopic = String(blueprint["Weak Topic"] || "Priority decision");
+  const nclexCategory = String(blueprint["NCLEX Category"] || "Physiological Integrity");
+  const cjmStep = String(blueprint["CJM Step"] || "Recognize Cues");
+  const slideLines = String(blueprint["Slide Blueprint"] || "")
+    .split(" | ")
+    .map((line) => line.trim())
+    .filter(Boolean);
+  const reviewChecklist = String(blueprint["Review Checklist"] || "")
+    .split(" | ")
+    .map((line) => line.trim())
+    .filter(Boolean);
+  const guardrail = "No public publish, no TTS, no rendered video, no paid visual generation, and no batch generation.";
+
+  return {
+    "review_manifest.json": JSON.stringify({
+      packageTitle: title,
+      topic,
+      concept,
+      nursingSubject: subject,
+      weakTopic,
+      nclexCategory,
+      cjmStep,
+      buildMode: "deterministic_unpublished_review_package",
+      publishStatus: "not_published",
+      mediaStatus: "not_started",
+      sourceEvidence: blueprint["Source Evidence"] || "",
+      guardrail,
+    }, null, 2),
+    "learner_slides.md": [
+      `# ${title}`,
+      "",
+      ...slideLines.flatMap((line, index) => [
+        `## ${line}`,
+        "",
+        `Student-facing draft content placeholder for creator review. Connect this section to ${weakTopic}, ${concept}, and ${cjmStep}.`,
+        index === 0 ? `Use ${subject} context and keep the explanation learner-safe.` : "Keep this section concise, source-backed, and ready for later expert polish.",
+        "",
+      ]),
+    ].join("\n"),
+    "guided_notes.md": [
+      "# Guided Notes",
+      "",
+      String(blueprint["Guided Notes Blueprint"] || `Define ${weakTopic}, identify cues, choose a first action, and cite the source.`),
+      "",
+      "## Student Prompts",
+      "- Priority cues:",
+      "- Risk or safety concern:",
+      "- Best first nursing action:",
+      "- Rationale in my words:",
+      "- Citation/source used:",
+    ].join("\n"),
+    "practice_item.md": [
+      "# Practice Item",
+      "",
+      String(blueprint["Practice Blueprint"] || `One NCLEX-style item tagged ${nclexCategory} and ${cjmStep}.`),
+      "",
+      "## Draft Item Shell",
+      `A nursing student is reviewing ${topic}. Which finding or action best reflects ${cjmStep}?`,
+      "",
+      "- A.",
+      "- B.",
+      "- C.",
+      "- D.",
+      "",
+      "## Rationale Review",
+      "- Correct answer rationale:",
+      "- Distractor rationale checks:",
+      "- Source/citation check:",
+    ].join("\n"),
+    "citations.md": [
+      "# Citations",
+      "",
+      String(blueprint["Citation Slot Blueprint"] || "Citations remain tied to approved source records."),
+      "",
+      "## Source Evidence",
+      String(blueprint["Source Evidence"] || "Source evidence pending review."),
+    ].join("\n"),
+    "creator_review_checklist.md": [
+      "# Creator Review Checklist",
+      "",
+      ...reviewChecklist.map((item) => `- [ ] ${item}`),
+      "",
+      "## Human Expert Questions",
+      String(blueprint["Human Expert Questions"] || "Expert questions pending."),
+      "",
+      "## Stop Conditions",
+      String(blueprint["Stop Conditions"] || "Stop if source, rationale, or student clarity is weak."),
+      "",
+      "## Guardrail",
+      guardrail,
+    ].join("\n"),
+  } satisfies Record<(typeof topicProductionReviewPackageFileNames)[number], string>;
+}
+
+function topicProductionReviewPackageBuildRows(rows: any[]) {
+  return topicProductionPackageReviewBlueprintRows(rows)
+    .filter((blueprint) => blueprint["Blueprint Review Decision"] === "approve_review_package_build"
+      && blueprint["Build Approval Status"] === "approved_for_deterministic_review_package_build")
+    .map((blueprint) => {
+      const files = topicProductionReviewPackageFiles(blueprint as Record<string, any>);
+      return {
+        "Build Stage": "phase_9_deterministic_review_package_built",
+        "Approved Work Order ID": blueprint["Approved Work Order ID"],
+        "Topic": blueprint["Topic"],
+        "Concept": blueprint["Concept"],
+        "Nursing Subject": blueprint["Nursing Subject"],
+        "Weak Topic": blueprint["Weak Topic"],
+        "NCLEX Category": blueprint["NCLEX Category"],
+        "CJM Step": blueprint["CJM Step"],
+        "Lesson Package Title": blueprint["Lesson Package Title"],
+        "Build Mode": "deterministic_unpublished_review_package",
+        "Publish Status": "not_published",
+        "Media Status": "not_started",
+        "Bundle File Count": topicProductionReviewPackageFileNames.length,
+        "Bundle Files": topicProductionReviewPackageFileNames.join(" | "),
+        "Review Manifest": files["review_manifest.json"],
+        "Learner Slides": files["learner_slides.md"],
+        "Guided Notes": files["guided_notes.md"],
+        "Practice Item": files["practice_item.md"],
+        "Citations": files["citations.md"],
+        "Creator Review Checklist": files["creator_review_checklist.md"],
+        "Next Allowed Action": "Creator reviews the built package files, then either requests revisions or explicitly promotes it into Lesson Builder as an unpublished package. Public publish and media remain blocked.",
+        "Cost Guardrail": "Review package build only. No public publish, no TTS, no rendered video, no paid visual generation, and no batch generation.",
+      };
+    });
+}
+
+function topicProductionReviewPackageBuildCsv(rows: any[]) {
+  const exportRows = topicProductionReviewPackageBuildRows(rows);
+  const headers = [
+    "Build Stage",
+    "Approved Work Order ID",
+    "Topic",
+    "Concept",
+    "Nursing Subject",
+    "Weak Topic",
+    "NCLEX Category",
+    "CJM Step",
+    "Lesson Package Title",
+    "Build Mode",
+    "Publish Status",
+    "Media Status",
+    "Bundle File Count",
+    "Bundle Files",
+    "Next Allowed Action",
+    "Cost Guardrail",
+  ];
+  return [
+    headers.map(csvValue).join(","),
+    ...exportRows.map((row) => headers.map((header) => csvValue((row as Record<string, any>)[header])).join(",")),
+  ].join("\n");
+}
+
+async function topicProductionReviewPackageBuildZip(rows: any[]) {
+  const exportRows = topicProductionReviewPackageBuildRows(rows);
+  const zip = new JSZip();
+  for (const row of exportRows) {
+    const folder = zip.folder(topicProductionReviewPackageSlug(row["Lesson Package Title"]));
+    if (!folder) continue;
+    folder.file("review_manifest.json", String(row["Review Manifest"] || ""));
+    folder.file("learner_slides.md", String(row["Learner Slides"] || ""));
+    folder.file("guided_notes.md", String(row["Guided Notes"] || ""));
+    folder.file("practice_item.md", String(row["Practice Item"] || ""));
+    folder.file("citations.md", String(row["Citations"] || ""));
+    folder.file("creator_review_checklist.md", String(row["Creator Review Checklist"] || ""));
+  }
+  return zip.generateAsync({ type: "nodebuffer" });
+}
+
+function topicProductionReviewPackageDraftSlides(record: Record<string, any>) {
+  const title = String(record["Lesson Package Title"] || record["Topic"] || "NurseStudy Review Package");
+  const topic = String(record["Topic"] || "Clinical judgment priority decision");
+  const weakTopic = String(record["Weak Topic"] || "Priority decision");
+  const concept = String(record["Concept"] || "Clinical Judgment");
+  const nclexCategory = String(record["NCLEX Category"] || "Physiological Integrity");
+  const cjmStep = String(record["CJM Step"] || "Recognize Cues");
+  const learnerSlides = String(record["Learner Slides"] || "");
+  const slideHeadings = learnerSlides
+    .split(/\r?\n/)
+    .filter((line) => line.startsWith("## "))
+    .map((line) => line.replace(/^##\s+/, "").trim())
+    .filter(Boolean);
+  const headings = slideHeadings.length ? slideHeadings : [
+    `${title}: why it matters`,
+    "Priority cue pattern",
+    `${cjmStep} decision point`,
+    "Safest first nursing action",
+    "Common NCLEX trap",
+    "Practice item setup",
+    "Citation-backed rationale",
+    "Student takeaway",
+  ];
+  const slideTypes = ["patient_cue", "priority_cues", "clinical_judgment", "take_action", "common_trap", "practice_item", "rationale", "takeaway"];
+
+  return headings.slice(0, 8).map((heading, index) => ({
+    slideNumber: index + 1,
+    slideType: slideTypes[index] || "review_slide",
+    title: heading,
+    visibleContent: {
+      heading,
+      studentFocus: `${weakTopic} in ${topic}`,
+      cueToAction: `Connect ${concept} cues to the safest nursing action.`,
+      examAnchor: nclexCategory,
+      learningMoment: index === 1
+        ? `Predict which cue changes the nursing priority before reading the teaching point.`
+        : index === 6
+          ? `Use the rationale to explain why the safest answer reduces risk.`
+          : `Use the evidence to move from cue recognition to clinical judgment.`,
+    },
+    speakerNotes: `Creator review draft generated from Phase 9 review-package files. Confirm clinical accuracy and source traceability before QA or publish.`,
+    guidedNotes: `Cue: ____________________ Meaning: ____________________ First action: ____________________ Evidence: ____________________`,
+    retrievalPrompt: index === 0
+      ? `What cue makes ${topic} a priority?`
+      : index === 5
+        ? "Answer the practice item before reading the rationale."
+        : `How does this slide support ${cjmStep}?`,
+    nclexCategory,
+    cjmStep,
+    nursingProcess: index < 3 ? "Assessment" : index < 6 ? "Planning" : "Evaluation",
+    bloomLevel: "Apply",
+  }));
+}
+
+function topicProductionReviewPackageDraftItem(record: Record<string, any>) {
+  const topic = String(record["Topic"] || "Clinical judgment priority decision");
+  const nclexCategory = String(record["NCLEX Category"] || "Physiological Integrity");
+  const cjmStep = String(record["CJM Step"] || "Analyze Cues");
+  return {
+    itemType: "multiple_choice",
+    stem: `A nursing student is reviewing ${topic}. Which action best supports safe clinical judgment?`,
+    options: [
+      { id: "A", text: "Identify the priority cue and connect it to the safest first nursing action." },
+      { id: "B", text: "Choose the option that sounds familiar even if it does not address the cue." },
+      { id: "C", text: "Delay assessment until all teaching has been completed." },
+      { id: "D", text: "Focus on documentation before deciding whether the patient is stable." },
+    ],
+    correctAnswer: "A",
+    rationale: `The safest answer starts with the priority cue, connects it to ${cjmStep}, and selects the nursing action that best reduces risk for ${topic}.`,
+    tags: {
+      nclexCategory,
+      cjmStep,
+      nursingProcess: "Assessment",
+      bloomLevel: "Apply",
+      source: "phase_9_review_package_build",
+    },
+    difficulty: "application",
+  };
+}
+
+async function findTopicProductionReviewDraft(workOrderId: string) {
+  const packages = await db.select().from(lessonPackages).orderBy(desc(lessonPackages.createdAt)).limit(200);
+  const draftPhases = new Set([
+    "phase_10_unpublished_lesson_builder_draft",
+    "phase_11_creator_qa_gate",
+    "phase_13_controlled_preview_decision",
+    "phase_14_controlled_preview_review",
+  ]);
+  const existing = packages.find((pkg) => {
+    const manifest = (pkg.manifest || {}) as Record<string, any>;
+    const phase = manifest.topicProduction?.phase;
+    return draftPhases.has(phase)
+      && manifest.topicProduction?.reviewPackageWorkOrderId === workOrderId
+      && pkg.status !== "published"
+      && manifest.topicProduction?.publishStatus !== "published";
+  });
+  return existing ? findPackageBundle(existing.id) : null;
+}
+
+async function promoteTopicProductionReviewPackageDraft(record: Record<string, any>, createdBy?: string | null) {
+  const workOrderId = String(record["Approved Work Order ID"] || "");
+  const existing = workOrderId ? await findTopicProductionReviewDraft(workOrderId) : null;
+  if (existing) {
+    return { bundle: existing, created: false };
+  }
+
+  const title = String(record["Lesson Package Title"] || `${record["Topic"] || "Untitled topic"}: NurseStudy Review Package`);
+  const topic = String(record["Topic"] || "Clinical judgment priority decision");
+  const sourceEvidence = String(record["Review Manifest"] || record["Citations"] || record["Cost Guardrail"] || "");
+  const reviewDocumentId = `topic-production-review-package:${workOrderId || hashText(title).slice(0, 10)}`;
+  const slideDrafts = topicProductionReviewPackageDraftSlides(record);
+  const taxonomySnapshot = {
+    topicProduction: {
+      concept: record["Concept"],
+      nursingSubject: record["Nursing Subject"],
+      weakTopic: record["Weak Topic"],
+      nclexCategory: record["NCLEX Category"],
+      cjmStep: record["CJM Step"],
+    },
+  };
+  const [pkg] = await db.insert(lessonPackages).values({
+    title,
+    topic,
+    audience: "Prelicensure RN",
+    status: "draft",
+    sourceIds: [],
+    taxonomySnapshot,
+    deckModel: {},
+    manifest: {},
+    qaSummary: {
+      status: "creator_review_required",
+      passCount: 0,
+      warningCount: 0,
+      failCount: 0,
+      reason: "Promoted from Phase 9 review package; QA, publish, and media remain blocked until creator review.",
+    },
+    createdBy: createdBy || null,
+  }).returning();
+
+  const createdSlides = [];
+  for (const slide of slideDrafts) {
+    const [createdSlide] = await db.insert(lessonSlides).values({
+      packageId: pkg.id,
+      slideNumber: slide.slideNumber,
+      slideType: slide.slideType,
+      title: slide.title,
+      visibleContent: slide.visibleContent,
+      speakerNotes: slide.speakerNotes,
+      guidedNotes: slide.guidedNotes,
+      retrievalPrompt: slide.retrievalPrompt,
+      nclexCategory: slide.nclexCategory,
+      cjmStep: slide.cjmStep,
+      nursingProcess: slide.nursingProcess,
+      bloomLevel: slide.bloomLevel,
+    }).returning();
+    createdSlides.push(createdSlide);
+  }
+
+  const practiceSlide = createdSlides.find((slide) => slide.slideType === "practice_item") || createdSlides[0];
+  const practiceItem = topicProductionReviewPackageDraftItem(record);
+  const [item] = await db.insert(lessonItems).values({
+    packageId: pkg.id,
+    slideId: practiceSlide?.id,
+    ...practiceItem,
+  }).returning();
+
+  for (const slide of createdSlides) {
+    await db.insert(lessonCitations).values({
+      packageId: pkg.id,
+      slideId: slide.id,
+      documentId: reviewDocumentId,
+      chunkId: `${reviewDocumentId}:slide:${slide.slideNumber}`,
+      citationLabel: "Topic Production Phase 9 Review Bundle",
+      excerpt: textSnippet(sourceEvidence || `Review bundle evidence for ${topic}.`, 320),
+      relevanceScore: "0.7500",
+    });
+  }
+  await db.insert(lessonCitations).values({
+    packageId: pkg.id,
+    slideId: practiceSlide?.id,
+    itemId: item.id,
+    documentId: reviewDocumentId,
+    chunkId: `${reviewDocumentId}:practice-item`,
+    citationLabel: "Topic Production Phase 9 Practice Blueprint",
+    excerpt: textSnippet(String(record["Practice Item"] || `Practice blueprint for ${topic}.`), 320),
+    relevanceScore: "0.7500",
+  });
+
+  const deckModel = {
+    ...buildDeckModel(pkg.id, title, topic, "Prelicensure RN", slideDrafts, taxonomySnapshot),
+    generation: {
+      usedMode: "deterministic_review_package_promotion",
+      sourceQueue: "phase_9_review_package_builds",
+      aiCalls: 0,
+      mediaGenerated: false,
+    },
+  };
+  const manifest = {
+    ...buildManifest(pkg.id, title, topic, []),
+    topicProduction: {
+      phase: "phase_10_unpublished_lesson_builder_draft",
+      reviewPackageWorkOrderId: workOrderId,
+      concept: record["Concept"],
+      nursingSubject: record["Nursing Subject"],
+      weakTopic: record["Weak Topic"],
+      nclexCategory: record["NCLEX Category"],
+      cjmStep: record["CJM Step"],
+      sourceQueue: "phase_9_review_package_builds",
+      promotionStatus: "unpublished_creator_review",
+      publishStatus: "not_published",
+      mediaStatus: "not_started",
+      costGuardrail: "Unpublished Lesson Builder draft only. No public publish, no TTS, no rendered video, no paid visual generation, and no batch generation.",
+      bundleFiles: topicProductionReviewPackageFileNames,
+    },
+  };
+  await db.update(lessonPackages).set({
+    deckModel,
+    manifest,
+    updatedAt: new Date(),
+  }).where(eq(lessonPackages.id, pkg.id));
+
+  const bundle = await findPackageBundle(pkg.id);
+  return { bundle, created: true };
+}
+
+async function repairTopicProductionReviewDraftForCreatorQa(bundle: LessonBundle, workOrderId: string) {
+  const reviewDocumentId = `topic-production-review-package:${workOrderId || bundle.package.id}`;
+  const slideNumberById = new Map(bundle.slides.map((slide) => [slide.id, slide.slideNumber]));
+
+  for (const slide of bundle.slides) {
+    const visibleContent = {
+      ...((slide.visibleContent || {}) as Record<string, any>),
+      learningMoment: slide.slideNumber === 2
+        ? "Predict which cue changes the nursing priority before reading the teaching point."
+        : slide.slideNumber === 7
+          ? "Use the rationale to explain why the safest answer reduces risk."
+          : "Use the evidence to move from cue recognition to clinical judgment.",
+    };
+    await db.update(lessonSlides).set({
+      visibleContent,
+    }).where(eq(lessonSlides.id, slide.id));
+  }
+
+  for (const citation of bundle.citations) {
+    const slideNumber = citation.slideId ? slideNumberById.get(citation.slideId) : null;
+    await db.update(lessonCitations).set({
+      documentId: citation.documentId || reviewDocumentId,
+      chunkId: citation.chunkId || `${reviewDocumentId}:${citation.itemId ? "practice-item" : slideNumber ? `slide:${slideNumber}` : `citation:${citation.id}`}`,
+    }).where(eq(lessonCitations.id, citation.id));
+  }
+}
+
+async function runTopicProductionCreatorQaGate(workOrderId: string, reviewedBy?: string | null) {
+  let promotedBundle = await findTopicProductionReviewDraft(workOrderId);
+  if (!promotedBundle) return null;
+
+  const packageId = promotedBundle.package.id;
+  await repairTopicProductionReviewDraftForCreatorQa(promotedBundle, workOrderId);
+  promotedBundle = await findPackageBundle(packageId);
+  if (!promotedBundle) throw new Error("Lesson package not found after draft repair");
+  const qa = await runQaForPackage(packageId);
+  const validation = await validateLessonContract(packageId, "harrity");
+  const refreshedBundle = await findPackageBundle(packageId);
+  if (!refreshedBundle) throw new Error("Lesson package not found after QA");
+
+  const qaFailCount = Number(qa.qaSummary.failCount || 0);
+  const contractFailCount = Number(validation.validationSummary.failCount || 0);
+  const qaWarningCount = Number(qa.qaSummary.warningCount || 0);
+  const contractWarningCount = Number(validation.validationSummary.warningCount || 0);
+  const readyForControlledPreview = qaFailCount === 0 && contractFailCount === 0;
+  const checkedAt = new Date().toISOString();
+  const creatorQaGate = {
+    phase: "phase_11_creator_qa_gate",
+    reviewPackageWorkOrderId: workOrderId,
+    packageId,
+    status: readyForControlledPreview ? "ready_for_controlled_preview" : "needs_revision",
+    qaStatus: qa.qaSummary.status,
+    contractStatus: validation.validationSummary.status,
+    qaFailCount,
+    qaWarningCount,
+    contractFailCount,
+    contractWarningCount,
+    artifactCount: validation.validationSummary.artifactCount || 0,
+    publishStatus: "not_published",
+    mediaStatus: "not_started",
+    controlledPreviewStatus: readyForControlledPreview ? "eligible_after_creator_approval" : "blocked_until_revision",
+    nextAllowedAction: readyForControlledPreview
+      ? "Creator may inspect the Lesson Builder draft and decide whether to open a controlled preview. Public publish and media still require a later explicit checkpoint."
+      : "Revise the draft issues shown by QA/contract validation, then rerun this creator QA gate before any preview or publish decision.",
+    costGuardrail: "Creator QA checkpoint only. No public publish, no TTS, no rendered video, no paid visual generation, and no batch generation.",
+    reviewedBy: reviewedBy || null,
+    checkedAt,
+  };
+
+  const existingManifest = (refreshedBundle.package.manifest || {}) as Record<string, any>;
+  await db.update(lessonPackages).set({
+    manifest: {
+      ...existingManifest,
+      topicProduction: {
+        ...(existingManifest.topicProduction || {}),
+        phase: "phase_11_creator_qa_gate",
+        reviewPackageWorkOrderId: workOrderId,
+        creatorQaGate,
+        publishStatus: "not_published",
+        mediaStatus: "not_started",
+        costGuardrail: creatorQaGate.costGuardrail,
+      },
+    },
+    updatedAt: new Date(),
+  }).where(eq(lessonPackages.id, packageId));
+
+  return {
+    bundle: await findPackageBundle(packageId),
+    qa,
+    validation,
+    creatorQaGate,
+  };
+}
+
+async function saveTopicProductionControlledPreviewDecision(workOrderId: string, decision: (typeof topicProductionStudentLaunchDecisions)[number], reviewerNotes: string, reviewedBy?: string | null) {
+  const bundle = await findTopicProductionReviewDraft(workOrderId);
+  if (!bundle) return null;
+
+  const topicProduction = ((bundle.package.manifest || {}) as Record<string, any>).topicProduction || {};
+  const creatorQaGate = topicProduction.creatorQaGate || {};
+  const blockers = [
+    creatorQaGate.status !== "ready_for_controlled_preview" ? "Creator QA gate is not ready for controlled preview" : "",
+    bundle.package.status !== "qa_ready" && bundle.package.status !== "published" ? "Package is not QA-ready" : "",
+    Number((bundle.package.qaSummary as any)?.failCount || 0) > 0 ? "QA has failures" : "",
+    bundle.slides.length < 5 ? "Lesson deck is too small for controlled preview" : "",
+    bundle.items.length < 1 ? "Practice item is missing" : "",
+    bundle.citations.length < bundle.slides.length ? "Citations are incomplete" : "",
+  ].filter(Boolean);
+
+  if (decision === "approve_student_preview" && blockers.length) {
+    return { bundle, blocked: true, blockers };
+  }
+
+  const previousDecision = ((bundle.package.manifest || {}) as Record<string, any>).topicProductionStudentLaunchDecision || {};
+  const previewKey = decision === "approve_student_preview"
+    ? topicProductionPreviewKey(previousDecision.previewKey)
+    : null;
+  const studentLaunchDecision = {
+    decision,
+    reviewerNotes: reviewerNotes.trim(),
+    reviewedAt: new Date().toISOString(),
+    reviewedBy: reviewedBy || "admin",
+    previewKey,
+    previewReview: previousDecision.previewReview || null,
+  };
+  const controlledPreviewDecision = {
+    phase: "phase_13_controlled_preview_decision",
+    reviewPackageWorkOrderId: workOrderId,
+    packageId: bundle.package.id,
+    decision,
+    previewKeyStatus: previewKey ? "active" : "not_created",
+    studentPreviewUrl: previewKey ? `/lessons/${bundle.package.id}?previewKey=${encodeURIComponent(previewKey)}` : "",
+    publishStatus: "not_published",
+    mediaStatus: "not_started",
+    nextAllowedAction: decision === "approve_student_preview"
+      ? "Open the controlled preview link and record preview feedback before any public publish decision."
+      : decision === "needs_fix"
+        ? "Revise the QA-ready draft before opening controlled preview."
+        : decision === "hold_release"
+          ? "Hold release. No preview, public publish, or media work is approved."
+          : "Record approve_student_preview, needs_fix, or hold_release.",
+    costGuardrail: "Controlled preview decision only. No public publish, no TTS, no rendered video, no paid visual generation, and no batch generation.",
+    reviewedAt: studentLaunchDecision.reviewedAt,
+    reviewedBy: studentLaunchDecision.reviewedBy,
+    blockers,
+  };
+  const manifest = {
+    ...(bundle.package.manifest || {}),
+    topicProductionStudentLaunchDecision: studentLaunchDecision,
+    topicProduction: {
+      ...topicProduction,
+      phase: "phase_13_controlled_preview_decision",
+      reviewPackageWorkOrderId: workOrderId,
+      controlledPreviewDecision,
+      publishStatus: "not_published",
+      mediaStatus: "not_started",
+      costGuardrail: controlledPreviewDecision.costGuardrail,
+    },
+  };
+  await db.update(lessonPackages).set({ manifest, updatedAt: new Date() }).where(eq(lessonPackages.id, bundle.package.id));
+  const updatedBundle = await findPackageBundle(bundle.package.id);
+  return {
+    bundle: updatedBundle,
+    blocked: false,
+    blockers,
+    studentLaunchDecision,
+    controlledPreviewDecision,
+  };
+}
+
+async function saveTopicProductionControlledPreviewReview(workOrderId: string, outcome: (typeof topicProductionPreviewReviewOutcomes)[number], reviewerNotes: string, reviewedBy?: string | null) {
+  const bundle = await findTopicProductionReviewDraft(workOrderId);
+  if (!bundle) return null;
+
+  const existingDecision = ((bundle.package.manifest || {}) as Record<string, any>).topicProductionStudentLaunchDecision || {};
+  const previewKey = typeof existingDecision.previewKey === "string" ? existingDecision.previewKey : "";
+  const blockers = [
+    existingDecision.decision !== "approve_student_preview" ? "Controlled preview is not approved" : "",
+    !previewKey ? "Controlled preview key is missing" : "",
+    bundle.package.status !== "qa_ready" && bundle.package.status !== "published" ? "Package is not QA-ready" : "",
+    Number((bundle.package.qaSummary as any)?.failCount || 0) > 0 ? "QA has failures" : "",
+  ].filter(Boolean);
+  if (blockers.length) {
+    return { bundle, blocked: true, blockers };
+  }
+
+  const previewReview = {
+    outcome,
+    reviewerNotes: reviewerNotes.trim(),
+    reviewedAt: new Date().toISOString(),
+    reviewedBy: reviewedBy || "controlled_preview_reviewer",
+  };
+  const topicProduction = ((bundle.package.manifest || {}) as Record<string, any>).topicProduction || {};
+  const controlledPreviewReview = {
+    phase: "phase_14_controlled_preview_review",
+    reviewPackageWorkOrderId: workOrderId,
+    packageId: bundle.package.id,
+    outcome,
+    previewKeyStatus: "active",
+    studentPreviewUrl: `/lessons/${bundle.package.id}?previewKey=${encodeURIComponent(previewKey)}`,
+    publishStatus: "not_published",
+    mediaStatus: "not_started",
+    nextAllowedAction: outcome === "ready_for_release"
+      ? "Creator preview review is ready. A later explicit publish checkpoint is still required before public release."
+      : outcome === "needs_fix"
+        ? "Revise the controlled preview issues before any publish decision."
+        : "Hold release. No public publish or media work is approved.",
+    costGuardrail: "Controlled preview review only. No public publish, no TTS, no rendered video, no paid visual generation, and no batch generation.",
+    reviewedAt: previewReview.reviewedAt,
+    reviewedBy: previewReview.reviewedBy,
+    blockers: [],
+  };
+  const manifest = {
+    ...(bundle.package.manifest || {}),
+    topicProductionStudentLaunchDecision: {
+      ...existingDecision,
+      previewKey,
+      previewReview,
+    },
+    topicProduction: {
+      ...topicProduction,
+      phase: "phase_14_controlled_preview_review",
+      reviewPackageWorkOrderId: workOrderId,
+      controlledPreviewReview,
+      publishStatus: "not_published",
+      mediaStatus: "not_started",
+      costGuardrail: controlledPreviewReview.costGuardrail,
+    },
+  };
+  await db.update(lessonPackages).set({ manifest, updatedAt: new Date() }).where(eq(lessonPackages.id, bundle.package.id));
+  const updatedBundle = await findPackageBundle(bundle.package.id);
+  return {
+    bundle: updatedBundle,
+    blocked: false,
+    blockers: [],
+    previewReview,
+    controlledPreviewReview,
+    reviewSummary: updatedBundle ? topicProductionPreviewReviewSummary(updatedBundle) : null,
+  };
+}
+
+async function persistTopicProductionPublicReleaseDecision(bundle: LessonBundle, releaseReferenceId: string, decision: (typeof topicProductionPublicReleaseDecisions)[number], reviewerNotes: string, reviewedBy?: string | null) {
+  const manifestRecord = (bundle.package.manifest || {}) as Record<string, any>;
+  const existingDecision = manifestRecord.topicProductionStudentLaunchDecision || {};
+  const previewReview = existingDecision.previewReview || {};
+  const topicProduction = manifestRecord.topicProduction || {};
+  const reviewPackageWorkOrderId = topicProduction.reviewPackageWorkOrderId || releaseReferenceId;
+  const blockers = [
+    existingDecision.decision !== "approve_student_preview" ? "Controlled preview is not approved" : "",
+    !existingDecision.previewKey ? "Controlled preview key is missing" : "",
+    previewReview.outcome !== "ready_for_release" ? "Controlled preview review is not marked ready for release" : "",
+    bundle.package.status !== "qa_ready" && bundle.package.status !== "published" ? "Package is not QA-ready" : "",
+    Number((bundle.package.qaSummary as any)?.failCount || 0) > 0 ? "QA has failures" : "",
+  ].filter(Boolean);
+  if (blockers.length) {
+    return { bundle, blocked: true, blockers };
+  }
+
+  const publicReleaseDecision: TopicProductionPublicReleaseDecision = {
+    decision,
+    reviewerNotes: reviewerNotes.trim(),
+    reviewedAt: new Date().toISOString(),
+    reviewedBy: reviewedBy || "release_reviewer",
+  };
+  const publicReleaseGate = {
+    phase: "phase_15_public_release_decision",
+    reviewPackageWorkOrderId,
+    releaseReferenceId,
+    packageId: bundle.package.id,
+    decision,
+    releaseStatus: decision === "approve_public_release"
+      ? "approved_for_public_publish"
+      : decision === "needs_fix"
+        ? "needs_fix_before_publish"
+        : "release_held",
+    publishStatus: decision === "approve_public_release" ? "approved_for_public_publish" : "not_published",
+    mediaStatus: "not_started",
+    nextAllowedAction: decision === "approve_public_release"
+      ? "Open the final Lesson Builder publish panel for this single package only. Media, video, audio, paid visuals, and batch production remain separate approvals."
+      : decision === "needs_fix"
+        ? "Fix the release concern before enabling the public publish endpoint."
+        : "Hold release. Do not publish or start media work.",
+    costGuardrail: "Public release decision only. No TTS, rendered video, paid visual generation, or batch production is approved.",
+    reviewedAt: publicReleaseDecision.reviewedAt,
+    reviewedBy: publicReleaseDecision.reviewedBy,
+    blockers: [],
+  };
+  const manifest = {
+    ...manifestRecord,
+    topicProductionStudentLaunchDecision: {
+      ...existingDecision,
+      previewReview,
+      publicReleaseDecision,
+    },
+    topicProduction: {
+      ...topicProduction,
+      phase: "phase_15_public_release_decision",
+      reviewPackageWorkOrderId,
+      publicReleaseDecision: publicReleaseGate,
+      publishStatus: publicReleaseGate.publishStatus,
+      mediaStatus: "not_started",
+      costGuardrail: publicReleaseGate.costGuardrail,
+    },
+  };
+  await db.update(lessonPackages).set({ manifest, updatedAt: new Date() }).where(eq(lessonPackages.id, bundle.package.id));
+  const updatedBundle = await findPackageBundle(bundle.package.id);
+  return {
+    bundle: updatedBundle,
+    blocked: false,
+    blockers: [],
+    publicReleaseDecision,
+    publicReleaseGate,
+  };
+}
+
+async function saveTopicProductionPublicReleaseDecision(workOrderId: string, decision: (typeof topicProductionPublicReleaseDecisions)[number], reviewerNotes: string, reviewedBy?: string | null) {
+  const bundle = await findTopicProductionReviewDraft(workOrderId);
+  if (!bundle) return null;
+  return persistTopicProductionPublicReleaseDecision(bundle, workOrderId, decision, reviewerNotes, reviewedBy);
+}
+
+async function saveTopicProductionPublicReleaseDecisionForPackage(packageId: string, decision: (typeof topicProductionPublicReleaseDecisions)[number], reviewerNotes: string, reviewedBy?: string | null) {
+  const bundle = await findPackageBundle(packageId);
+  if (!bundle) return null;
+  return persistTopicProductionPublicReleaseDecision(bundle, packageId, decision, reviewerNotes, reviewedBy);
+}
+
+function topicProductionNextSpendPackets(rows: any[], sourceRecords: any[] = [], draftRecords: any[] = []) {
+  return topicProductionBuildPackets(rows, sourceRecords, draftRecords)
+    .filter((packet: any) => packet.draftPackage?.nextSpendApproved);
+}
+
+function topicProductionDraftReviewRows(packets: any[]) {
+  return packets
+    .filter((packet) => packet.draftPackage)
+    .map((packet) => {
+      const checklist = packet.draftPackage?.reviewChecklist || [];
+      return {
+        "Review Stage": packet.draftPackage?.nextSpendApproved ? "approved_for_next_checkpoint" : "human_review_needed",
+        "Spend Window": "$100-$250",
+        "Topic": packet.topic,
+        "Concept": packet.concept,
+        "Nursing Subject": packet.nursingSubject,
+        "Weak Topic": packet.weakTopic || "",
+        "NCLEX Category": packet.nclexCategory || "",
+        "CJM Step": packet.cjmStep || "",
+        "Template Draft Package ID": packet.draftPackage?.packageId || "",
+        "Lesson Builder Review URL": packet.draftPackage?.packageId ? `/admin/lesson-builder?tab=review&packageId=${packet.draftPackage.packageId}` : "",
+        "Slide Count": packet.draftPackage?.slideCount || 0,
+        "Quiz Count": packet.draftPackage?.itemCount || 0,
+        "Citation Count": packet.draftPackage?.citationCount || 0,
+        "QA Status": packet.draftPackage?.qaStatus || "",
+        "QA Failures": packet.draftPackage?.failCount || 0,
+        "QA Warnings": packet.draftPackage?.warnCount || 0,
+        "Checklist Summary": `${packet.draftPackage?.reviewPassedCount || 0}/${packet.draftPackage?.reviewTotalCount || checklist.length} checks passed`,
+        "Checklist Detail": checklist.map((check: any) => `${check.label}: ${check.passed ? "pass" : "needs review"} (${check.detail})`).join(" | "),
+        "Slide Outline": (packet.templateDraft?.slideOutline || []).map((slide: any) => `${slide.title}: ${slide.purpose}`).join(" | "),
+        "Guided Notes Outline": (packet.templateDraft?.guidedNotesOutline || []).join(" | "),
+        "Practice Stem": packet.templateDraft?.practicePreview?.stem || "",
+        "Correct Answer": packet.templateDraft?.practicePreview?.correctAnswer || "",
+        "Rationale": packet.templateDraft?.practicePreview?.rationale || "",
+        "Drive Project Assets": (packet.driveProjectAssets || []).map((asset: any) => asset.title).join(" | "),
+        "Drive Asset Links": (packet.driveProjectAssets || []).map((asset: any) => asset.url).join(" | "),
+        "Coverage Summary": packet.coverageContract ? `${packet.coverageContract.readyCount}/${packet.coverageContract.totalCount} reviewable; student ready ${packet.coverageContract.studentReady ? "yes" : "no"}` : "",
+        "Human Review Questions": [
+          "Is the concept and nursing subject correct?",
+          "Are slide titles learner-facing and clinically safe?",
+          "Does the practice item test judgment rather than memorization?",
+          "Are citations sufficient for the claims?",
+          "Should this draft receive a small polish pass, need fixes, or hold spend?",
+        ].join(" | "),
+        "Decision Options": "approve_polish | needs_fix | hold",
+        "Cost Guardrail": "Review first. Do not buy AI polish, audio, visuals, or video until the human review decision is recorded.",
+      };
+    });
+}
+
+function topicProductionDraftReviewCsv(rows: any[], sourceRecords: any[] = [], draftRecords: any[] = []) {
+  const exportRows = topicProductionDraftReviewRows(topicProductionBuildPackets(rows, sourceRecords, draftRecords));
+  const headers = [
+    "Review Stage",
+    "Spend Window",
+    "Topic",
+    "Concept",
+    "Nursing Subject",
+    "Weak Topic",
+    "NCLEX Category",
+    "CJM Step",
+    "Template Draft Package ID",
+    "Lesson Builder Review URL",
+    "Slide Count",
+    "Quiz Count",
+    "Citation Count",
+    "QA Status",
+    "QA Failures",
+    "QA Warnings",
+    "Checklist Summary",
+    "Checklist Detail",
+    "Slide Outline",
+    "Guided Notes Outline",
+    "Practice Stem",
+    "Correct Answer",
+    "Rationale",
+    "Drive Project Assets",
+    "Drive Asset Links",
+    "Coverage Summary",
+    "Human Review Questions",
+    "Decision Options",
+    "Cost Guardrail",
+  ];
+  return [
+    headers.map(csvValue).join(","),
+    ...exportRows.map((row) => headers.map((header) => csvValue(row[header as keyof typeof row])).join(",")),
+  ].join("\n");
+}
+
+function topicProductionNextSpendCsv(rows: any[], sourceRecords: any[] = [], draftRecords: any[] = []) {
+  const exportRows = topicProductionBuildPacketRows(topicProductionNextSpendPackets(rows, sourceRecords, draftRecords));
+  const headers = [
+    "Build Order",
+    "Topic",
+    "Concept",
+    "Nursing Subject",
+    "Weak Topic",
+    "NCLEX Category",
+    "CJM Step",
+    "Template Draft Package ID",
+    "Template Draft Status",
+    "Template Draft Review Decision",
+    "Next Spend Approved",
+    "Next Spend Recommendation",
+    "Asset",
+    "Asset Status",
+    "Belongs In",
+    "Build Brief",
+    "Coverage Status",
+    "Coverage Proof",
+    "Student Surface",
+    "Admin Surface",
+    "Coverage Summary",
+    "Video/Shorts Status",
+    "Short Hook",
+    "Short Script Draft",
+    "Review Gate",
+    "Cost Guardrail",
+  ];
+  return [
+    headers.map(csvValue).join(","),
+    ...exportRows.map((row) => headers.map((header) => csvValue((row as Record<string, any>)[header])).join(",")),
+  ].join("\n");
+}
+
+function topicProductionShortsWorkflowRows(packets: any[]) {
+  return packets.map((packet) => {
+    const coverage = (key: string) => (packet.coverageContract?.rows || []).find((item: any) => item.key === key);
+    const visualAsset = (packet.assetPlan || []).find((asset: any) => asset.assetKey === "visuals");
+    const packageId = packet.draftPackage?.packageId || "";
+    return {
+      "Tracker Stage": "phase_3_shorts_video_handoff",
+      "Spend Window": "$100-$250",
+      "Spend Permission": "Approved for small polish/shorts planning checkpoint only",
+      "Topic": packet.topic,
+      "Concept": packet.concept,
+      "Nursing Subject": packet.nursingSubject,
+      "Weak Topic": packet.weakTopic || "",
+      "NCLEX Category": packet.nclexCategory || "",
+      "CJM Step": packet.cjmStep || "",
+      "Template Draft Package ID": packageId,
+      "Lesson Builder Review URL": packageId ? `/admin/lesson-builder?tab=review&packageId=${packageId}` : "",
+      "Student Surface After Publish": packageId ? `/lessons/${packageId}` : "",
+      "Drive Project Assets": (packet.driveProjectAssets || []).map((asset: any) => asset.title).join(" | "),
+      "Drive Asset Links": (packet.driveProjectAssets || []).map((asset: any) => asset.url).join(" | "),
+      "Short Hook": packet.shortsStarter?.hook || "",
+      "Short Script Draft": packet.shortsStarter?.scriptDraft || "",
+      "CTA": packet.shortsStarter?.cta || "Open the full NurseStudy lesson.",
+      "Video Lesson Deck": coverage("lessonDeck")?.status || "",
+      "Study Guide": coverage("studyGuide")?.status || "",
+      "Quiz/Rationale": coverage("quiz")?.status || "",
+      "Visuals": coverage("visuals")?.status || "",
+      "Citations": coverage("citations")?.status || "",
+      "Visual Brief": visualAsset?.brief || "",
+      "Audio/TTS Status": "script draft only; record audio after content review",
+      "Coverage Summary": packet.coverageContract ? `${packet.coverageContract.readyCount}/${packet.coverageContract.totalCount} reviewable` : "",
+      "Next Production Action": "Review the hook/script, choose one visual direction, then approve only one short for polish.",
+      "Human Review Gate": (packet.humanReviewGate || []).join(" | "),
+      "Cost Guardrail": "Do not batch video/audio. Approve one short per topic inside the $100-$250 checkpoint.",
+    };
+  });
+}
+
+function topicProductionShortsWorkflowCsv(rows: any[], sourceRecords: any[] = [], draftRecords: any[] = []) {
+  const exportRows = topicProductionShortsWorkflowRows(topicProductionNextSpendPackets(rows, sourceRecords, draftRecords));
+  const headers = [
+    "Tracker Stage",
+    "Spend Window",
+    "Spend Permission",
+    "Topic",
+    "Concept",
+    "Nursing Subject",
+    "Weak Topic",
+    "NCLEX Category",
+    "CJM Step",
+    "Template Draft Package ID",
+    "Lesson Builder Review URL",
+    "Student Surface After Publish",
+    "Drive Project Assets",
+    "Drive Asset Links",
+    "Short Hook",
+    "Short Script Draft",
+    "CTA",
+    "Video Lesson Deck",
+    "Study Guide",
+    "Quiz/Rationale",
+    "Visuals",
+    "Citations",
+    "Visual Brief",
+    "Audio/TTS Status",
+    "Coverage Summary",
+    "Next Production Action",
+    "Human Review Gate",
+    "Cost Guardrail",
+  ];
+  return [
+    headers.map(csvValue).join(","),
+    ...exportRows.map((row) => headers.map((header) => csvValue((row as Record<string, any>)[header])).join(",")),
+  ].join("\n");
+}
+
+function topicProductionPhaseThreeHandoffRows(packets: any[]) {
+  return packets.map((packet) => {
+    const coverage = (key: string) => (packet.coverageContract?.rows || []).find((item: any) => item.key === key);
+    const packageId = packet.draftPackage?.packageId || "";
+    const phaseThreeDecision = packet.draftPackage?.phaseThreeDecision || {};
+    const readyItems = [
+      `lesson deck: ${coverage("lessonDeck")?.status || "needed"}`,
+      `study guide: ${coverage("studyGuide")?.status || "needed"}`,
+      `quiz/rationale: ${coverage("quiz")?.status || "needed"}`,
+      `citations: ${coverage("citations")?.status || "needed"}`,
+      `visuals: ${coverage("visuals")?.status || "needed"}`,
+      `video/shorts: ${coverage("videoShorts")?.status || "needed"}`,
+    ].join(" | ");
+
+    return {
+      "Handoff Stage": "phase_3_review_before_polish",
+      "Spend Window": "$100-$250",
+      "Topic": packet.topic,
+      "Concept": packet.concept,
+      "Nursing Subject": packet.nursingSubject,
+      "Template Draft Package ID": packageId,
+      "Admin Review URL": packageId ? `/admin/lesson-builder?tab=review&packageId=${packageId}` : "",
+      "Student Lesson URL": packageId ? `/lessons/${packageId}` : "",
+      "Airtable Tracker Row": "ready_to_import",
+      "Shorts Workflow Row": "ready_to_export",
+      "Current Asset Coverage": readyItems,
+      "Drive Project Assets": (packet.driveProjectAssets || []).map((asset: any) => asset.title).join(" | "),
+      "Immediate Human Decision": "approve one polish pass | request fixes | hold spend",
+      "Recorded Decision": phaseThreeDecision.decision || "unreviewed",
+      "Decision Notes": phaseThreeDecision.reviewerNotes || "",
+      "Decision Recorded At": phaseThreeDecision.reviewedAt || "",
+      "Next Owner Action": "Review the lesson draft, quiz rationale, citations, and hook/script; choose exactly one approved production action.",
+      "Allowed Next Work": "One polish pass or one short planning pass for this topic only.",
+      "Hold Trigger": "Any incorrect concept/specialty, unsafe rationale, missing citation, or unclear student value.",
+      "Cost Guardrail": "No batch generation, no full video production, no paid audio until this row is reviewed and accepted.",
+    };
+  });
+}
+
+function topicProductionPhaseThreeHandoffCsv(rows: any[], sourceRecords: any[] = [], draftRecords: any[] = []) {
+  const exportRows = topicProductionPhaseThreeHandoffRows(topicProductionNextSpendPackets(rows, sourceRecords, draftRecords));
+  const headers = [
+    "Handoff Stage",
+    "Spend Window",
+    "Topic",
+    "Concept",
+    "Nursing Subject",
+    "Template Draft Package ID",
+    "Admin Review URL",
+    "Student Lesson URL",
+    "Airtable Tracker Row",
+    "Shorts Workflow Row",
+    "Current Asset Coverage",
+    "Drive Project Assets",
+    "Immediate Human Decision",
+    "Recorded Decision",
+    "Decision Notes",
+    "Decision Recorded At",
+    "Next Owner Action",
+    "Allowed Next Work",
+    "Hold Trigger",
+    "Cost Guardrail",
+  ];
+  return [
+    headers.map(csvValue).join(","),
+    ...exportRows.map((row) => headers.map((header) => csvValue((row as Record<string, any>)[header])).join(",")),
+  ].join("\n");
+}
+
+function topicProductionStudentLaunchReadinessRows(packets: any[]) {
+  return packets.map((packet) => {
+    const draft = packet.draftPackage || {};
+    const packageId = draft.packageId || "";
+    const phaseThreeDecision = draft.phaseThreeDecision || {};
+    const studentLaunchDecision = draft.studentLaunchDecision || {};
+    const previewReview = studentLaunchDecision.previewReview || {};
+    const blockers = [
+      !draft.nextSpendApproved ? "Phase 2 draft is not approved for next checkpoint" : "",
+      !phaseThreeDecision.decision || phaseThreeDecision.decision === "unreviewed" ? "Phase 3 production decision is not recorded" : "",
+      Number(draft.slideCount || 0) < 5 ? "Lesson deck is too small for student review" : "",
+      Number(draft.itemCount || 0) < 1 ? "Practice item is missing" : "",
+      Number(draft.citationCount || 0) < 1 ? "Citations are missing" : "",
+      Number(draft.failCount || 0) > 0 ? "QA has failures" : "",
+      studentLaunchDecision.decision === "needs_fix" ? "Student launch reviewer requested fixes" : "",
+      studentLaunchDecision.decision === "hold_release" ? "Student launch reviewer put release on hold" : "",
+      previewReview.outcome === "needs_fix" ? "Controlled preview reviewer requested fixes" : "",
+      previewReview.outcome === "hold_release" ? "Controlled preview reviewer put release on hold" : "",
+    ].filter(Boolean);
+    const publicVisible = draft.status === "published";
+    const approvedPreview = studentLaunchDecision.decision === "approve_student_preview" && blockers.length === 0;
+    const previewEnabled = studentLaunchDecision.decision === "approve_student_preview" && studentLaunchDecision.previewKey;
+    const previewUrl = publicVisible
+      ? `/lessons/${packageId}`
+      : previewEnabled
+        ? `/lessons/${packageId}?previewKey=${encodeURIComponent(studentLaunchDecision.previewKey)}`
+        : "";
+    const launchGateStatus = publicVisible
+      ? "published"
+      : approvedPreview && previewReview.outcome === "ready_for_release"
+        ? "reviewed_ready_for_release"
+        : approvedPreview
+        ? "approved_for_student_preview"
+        : blockers.length
+          ? "blocked"
+          : "student_review_needed";
+
+    return {
+      "Launch Gate Status": launchGateStatus,
+      "Topic": packet.topic,
+      "Concept": packet.concept,
+      "Nursing Subject": packet.nursingSubject,
+      "Template Draft Package ID": packageId,
+      "Package Status": draft.status || "",
+      "Student Preview URL": previewUrl,
+      "Public Visibility": publicVisible ? "published" : "admin_only_until_publish",
+      "Student Launch Decision": studentLaunchDecision.decision || "unreviewed",
+      "Preview Key Status": studentLaunchDecision.previewKey ? "active" : "not_created",
+      "Decision Notes": studentLaunchDecision.reviewerNotes || "",
+      "Decision Recorded At": studentLaunchDecision.reviewedAt || "",
+      "Preview Review Outcome": previewReview.outcome || "not_recorded",
+      "Preview Review Notes": previewReview.reviewerNotes || "",
+      "Preview Review Recorded At": previewReview.reviewedAt || "",
+      "Phase 3 Decision": phaseThreeDecision.decision || "unreviewed",
+      "Slide Count": draft.slideCount || 0,
+      "Quiz Count": draft.itemCount || 0,
+      "Citation Count": draft.citationCount || 0,
+      "QA Failures": draft.failCount || 0,
+      "Coverage Summary": packet.coverageContract ? `${packet.coverageContract.readyCount}/${packet.coverageContract.totalCount} reviewable; student ready ${packet.coverageContract.studentReady ? "yes" : "no"}` : "",
+      "Blockers": blockers.join(" | "),
+      "Next Action": previewReview.outcome === "ready_for_release"
+        ? "Admin can proceed to final publish decision after confirming no external release blockers remain."
+        : approvedPreview
+        ? "Open a controlled student preview review; publish only after visual/content review passes."
+        : blockers.length
+          ? "Resolve blockers before public release."
+          : "Record approve_student_preview, needs_fix, or hold_release.",
+      "Cost Guardrail": "No broad public launch, video/audio, or batch production until this gate is approved.",
+    };
+  });
+}
+
+function topicProductionStudentLaunchReadinessCsv(rows: any[], sourceRecords: any[] = [], draftRecords: any[] = []) {
+  const exportRows = topicProductionStudentLaunchReadinessRows(topicProductionNextSpendPackets(rows, sourceRecords, draftRecords));
+  const headers = [
+    "Launch Gate Status",
+    "Topic",
+    "Concept",
+    "Nursing Subject",
+    "Template Draft Package ID",
+    "Package Status",
+    "Student Preview URL",
+    "Public Visibility",
+    "Student Launch Decision",
+    "Preview Key Status",
+    "Decision Notes",
+    "Decision Recorded At",
+    "Preview Review Outcome",
+    "Preview Review Notes",
+    "Preview Review Recorded At",
+    "Phase 3 Decision",
+    "Slide Count",
+    "Quiz Count",
+    "Citation Count",
+    "QA Failures",
+    "Coverage Summary",
+    "Blockers",
+    "Next Action",
+    "Cost Guardrail",
+  ];
+  return [
+    headers.map(csvValue).join(","),
+    ...exportRows.map((row) => headers.map((header) => csvValue((row as Record<string, any>)[header])).join(",")),
+  ].join("\n");
+}
+
+function topicProductionPublishReadinessRows(packets: any[]) {
+  return packets.map((packet) => {
+    const draft = packet.draftPackage || {};
+    const packageId = draft.packageId || "";
+    const phaseThreeDecision = draft.phaseThreeDecision || {};
+    const studentLaunchDecision = draft.studentLaunchDecision || {};
+    const previewReview = studentLaunchDecision.previewReview || {};
+    const publicReleaseDecision = draft.publicReleaseDecision || {};
+    const publicVisible = draft.status === "published";
+    const blockers = [
+      publicVisible ? "" : (!draft.nextSpendApproved ? "Phase 2 draft is not approved for next checkpoint" : ""),
+      publicVisible ? "" : (!phaseThreeDecision.decision || phaseThreeDecision.decision === "unreviewed" ? "Phase 3 production decision is not recorded" : ""),
+      publicVisible ? "" : (studentLaunchDecision.decision !== "approve_student_preview" ? "Controlled student preview is not approved" : ""),
+      publicVisible ? "" : (previewReview.outcome !== "ready_for_release" ? "Controlled preview reviewer has not marked ready for release" : ""),
+      publicVisible ? "" : (publicReleaseDecision.decision === "needs_fix" ? "Final release reviewer requested fixes" : ""),
+      publicVisible ? "" : (publicReleaseDecision.decision === "hold_release" ? "Final release reviewer put release on hold" : ""),
+      Number(draft.slideCount || 0) < 5 ? "Lesson deck is too small for public release" : "",
+      Number(draft.itemCount || 0) < 1 ? "Practice item is missing" : "",
+      Number(draft.citationCount || 0) < 1 ? "Citations are missing" : "",
+      Number(draft.failCount || 0) > 0 ? "QA has failures" : "",
+    ].filter(Boolean);
+    const baseReadyForReleaseDecision = !publicVisible && blockers.length === 0 && previewReview.outcome === "ready_for_release";
+    const releaseApproved = publicReleaseDecision.decision === "approve_public_release";
+    const readyForPublish = baseReadyForReleaseDecision && releaseApproved;
+    const publishGateStatus = publicVisible
+      ? "published"
+      : readyForPublish
+        ? "ready_for_public_publish"
+        : baseReadyForReleaseDecision
+          ? "release_decision_needed"
+        : "blocked";
+
+    return {
+      "Publish Gate Status": publishGateStatus,
+      "Topic": packet.topic,
+      "Concept": packet.concept,
+      "Nursing Subject": packet.nursingSubject,
+      "Approved Work Order ID": draft.reviewPackageWorkOrderId || "",
+      "Template Draft Package ID": packageId,
+      "Package Status": draft.status || "",
+      "Public Lesson URL": publicVisible && packageId ? `/lessons/${packageId}` : "",
+      "Lesson Builder Publish URL": packageId ? `/admin/lesson-builder?tab=review&packageId=${packageId}` : "",
+      "Publish Endpoint": readyForPublish && packageId ? `/api/admin/lesson-builder/packages/${packageId}/publish` : "",
+      "Release Audit Endpoint": packageId ? `/api/admin/topic-production-matrix/drafts/${packageId}/release-audit-snapshot` : "",
+      "Student Release QA Endpoint": packageId ? `/api/admin/topic-production-matrix/drafts/${packageId}/student-release-sanity` : "",
+      "Student Launch Decision": studentLaunchDecision.decision || "unreviewed",
+      "Preview Review Outcome": previewReview.outcome || "not_recorded",
+      "Preview Review Notes": previewReview.reviewerNotes || "",
+      "Public Release Decision": publicReleaseDecision.decision || "unreviewed",
+      "Public Release Notes": publicReleaseDecision.reviewerNotes || "",
+      "Public Release Recorded At": publicReleaseDecision.reviewedAt || "",
+      "Phase 3 Decision": phaseThreeDecision.decision || "unreviewed",
+      "Slide Count": draft.slideCount || 0,
+      "Quiz Count": draft.itemCount || 0,
+      "Citation Count": draft.citationCount || 0,
+      "QA Failures": draft.failCount || 0,
+      "Publish Blockers": blockers.join(" | "),
+      "Next Action": publicVisible
+        ? "Lesson is already public; monitor student outcomes and feedback."
+        : readyForPublish
+          ? "Open Lesson Builder and publish after final admin confirmation."
+          : baseReadyForReleaseDecision
+            ? "Record approve_public_release, needs_fix, or hold_release before exposing the publish endpoint."
+          : "Resolve blockers before publishing.",
+      "Cost Guardrail": "No paid video/audio, rendered visuals, or batch production is included in this public release gate.",
+    };
+  });
+}
+
+function topicProductionPublishReadinessCsv(rows: any[], sourceRecords: any[] = [], draftRecords: any[] = []) {
+  const exportRows = topicProductionPublishReadinessRows(topicProductionNextSpendPackets(rows, sourceRecords, draftRecords));
+  const headers = [
+    "Publish Gate Status",
+    "Topic",
+    "Concept",
+    "Nursing Subject",
+    "Approved Work Order ID",
+    "Template Draft Package ID",
+    "Package Status",
+    "Public Lesson URL",
+    "Lesson Builder Publish URL",
+    "Publish Endpoint",
+    "Release Audit Endpoint",
+    "Student Release QA Endpoint",
+    "Student Launch Decision",
+    "Preview Review Outcome",
+    "Preview Review Notes",
+    "Public Release Decision",
+    "Public Release Notes",
+    "Public Release Recorded At",
+    "Phase 3 Decision",
+    "Slide Count",
+    "Quiz Count",
+    "Citation Count",
+    "QA Failures",
+    "Publish Blockers",
+    "Next Action",
+    "Cost Guardrail",
+  ];
+  return [
+    headers.map(csvValue).join(","),
+    ...exportRows.map((row) => headers.map((header) => csvValue((row as Record<string, any>)[header])).join(",")),
+  ].join("\n");
+}
+
+function topicProductionReleaseAuditSnapshot(bundle: LessonBundle) {
+  const pkg = bundle.package;
+  const manifest = (pkg.manifest || {}) as Record<string, any>;
+  const draft = topicProductionDraftSummary(bundle);
+  if (!draft) throw new Error("Release audit snapshot requires a package draft summary");
+  const studentLaunchDecision = draft.studentLaunchDecision || {};
+  const previewReview = studentLaunchDecision.previewReview || {};
+  const publicReleaseDecision = draft.publicReleaseDecision || {};
+  const publicVisible = pkg.status === "published";
+  const previewKey = typeof studentLaunchDecision.previewKey === "string" ? studentLaunchDecision.previewKey : "";
+  const blockers = [
+    publicVisible ? "" : (!draft.nextSpendApproved ? "Phase 2 draft is not approved for next checkpoint" : ""),
+    publicVisible ? "" : (studentLaunchDecision.decision !== "approve_student_preview" ? "Controlled student preview is not approved" : ""),
+    publicVisible ? "" : (previewReview.outcome !== "ready_for_release" ? "Controlled preview reviewer has not marked ready for release" : ""),
+    publicVisible ? "" : (publicReleaseDecision.decision !== "approve_public_release" ? "Public release decision is not approved" : ""),
+    Number(draft.slideCount || 0) < 5 ? "Lesson deck is too small for public release" : "",
+    Number(draft.itemCount || 0) < 1 ? "Practice item is missing" : "",
+    Number(draft.citationCount || 0) < 1 ? "Citations are missing" : "",
+    Number(draft.failCount || 0) > 0 ? "QA has failures" : "",
+  ].filter(Boolean);
+  const publishGateStatus = publicVisible
+    ? "published"
+    : blockers.length === 0
+      ? "ready_for_public_publish"
+      : "blocked";
+  const slideDeck = bundle.slides
+    .sort((a: any, b: any) => Number(a.slideNumber || 0) - Number(b.slideNumber || 0))
+    .map((slide: any) => ({
+      slideNumber: slide.slideNumber,
+      title: slide.title,
+      type: slide.slideType || slide.type || "",
+      learningObjective: slide.learningObjective || "",
+      speakerNotesAvailable: Boolean(slide.speakerNotes),
+    }));
+  const practiceItems = bundle.items.map((item: any) => ({
+    itemType: item.itemType,
+    stem: item.stem,
+    correctAnswer: item.correctAnswer,
+    rationalePreview: String(item.rationale || "").slice(0, 240),
+    tags: item.tags || {},
+  }));
+  const citations = bundle.citations.map((citation: any) => ({
+    sourceTitle: citation.sourceTitle || citation.title || citation.sourceId || "Source",
+    section: citation.sectionTitle || citation.location || citation.sourceLocator || "",
+    claim: citation.claim || citation.snippet || citation.evidence || "",
+  }));
+  const qaFailures = bundle.qaResults.filter((result: any) => result.status === "fail");
+  const qaWarnings = bundle.qaResults.filter((result: any) => result.status === "warn" || result.status === "warning");
+
+  return {
+    generatedAt: new Date().toISOString(),
+    phase: "phase_16_release_audit_snapshot",
+    package: {
+      id: pkg.id,
+      title: pkg.title,
+      topic: pkg.topic,
+      status: pkg.status,
+      deckModel: pkg.deckModel,
+      updatedAt: pkg.updatedAt,
+    },
+    learnerVisibility: {
+      currentVisibility: publicVisible ? "public" : "hidden_until_publish",
+      publicLessonUrl: publicVisible ? `/lessons/${pkg.id}` : "",
+      controlledPreviewUrl: previewKey ? `/lessons/${pkg.id}?previewKey=${encodeURIComponent(previewKey)}` : "",
+      publishEndpoint: !publicVisible && blockers.length === 0 ? `/api/admin/lesson-builder/packages/${pkg.id}/publish` : "",
+      lessonBuilderReviewUrl: `/admin/lesson-builder?tab=review&packageId=${pkg.id}`,
+    },
+    publicContentInventory: {
+      slideCount: bundle.slides.length,
+      practiceItemCount: bundle.items.length,
+      citationCount: bundle.citations.length,
+      artifactCount: bundle.artifacts.length,
+      guidedNotesAvailable: Boolean(manifest.guidedNotes || bundle.artifacts.some((artifact: any) => String(artifact.artifactType || "").includes("guided"))),
+      learnerSafeSurface: "slides, guided notes, practice item/rationale, citations, and completion/feedback events",
+    },
+    slideDeck,
+    practiceItems,
+    citations,
+    qa: {
+      summary: pkg.qaSummary || {},
+      resultCount: bundle.qaResults.length,
+      failureCount: qaFailures.length,
+      warningCount: qaWarnings.length,
+      failures: qaFailures.map((result: any) => ({ gate: result.gateName || result.gateKey, details: result.details || "" })),
+      warnings: qaWarnings.map((result: any) => ({ gate: result.gateName || result.gateKey, details: result.details || "" })),
+      contractValidationCount: bundle.contractValidations.length,
+    },
+    decisions: {
+      draftReview: draft.draftReview,
+      phaseThreeDecision: draft.phaseThreeDecision,
+      studentLaunchDecision: {
+        decision: studentLaunchDecision.decision || "unreviewed",
+        reviewedAt: studentLaunchDecision.reviewedAt || null,
+        reviewedBy: studentLaunchDecision.reviewedBy || "",
+      },
+      previewReview: {
+        outcome: previewReview.outcome || "not_recorded",
+        reviewedAt: previewReview.reviewedAt || null,
+        reviewedBy: previewReview.reviewedBy || "",
+      },
+      publicReleaseDecision: {
+        decision: publicReleaseDecision.decision || "unreviewed",
+        reviewedAt: publicReleaseDecision.reviewedAt || null,
+        reviewedBy: publicReleaseDecision.reviewedBy || "",
+      },
+    },
+    publishReadiness: {
+      status: publishGateStatus,
+      blockers,
+      nextAction: publicVisible
+        ? "Lesson is public. Monitor learner feedback and outcomes."
+        : blockers.length === 0
+          ? "Final publish endpoint is available for this single package."
+          : "Resolve blockers before public publish.",
+    },
+    costGuardrail: "Read-only release audit snapshot. No public publish, no TTS, no rendered video, no paid visual generation, and no batch production is performed by this audit.",
+  };
+}
+
+function findForbiddenLearnerPayloadKeys(value: any, pathName = ""): string[] {
+  const forbiddenKeys = [
+    "qaResults",
+    "generationRuns",
+    "contractValidations",
+    "releaseAuditEvents",
+    "sourceArchiveFiles",
+    "sourceArchiveImports",
+    "sourceRegistry",
+    "taxonomySnapshot",
+    "manifest",
+    "adminNotes",
+    "internalNotes",
+    "csrfToken",
+    "learnerKey",
+    "previewKey",
+    "publishEndpoint",
+    "releaseAuditEndpoint",
+  ];
+  if (!value || typeof value !== "object") return [];
+  const matches: string[] = [];
+  if (Array.isArray(value)) {
+    value.forEach((item, index) => {
+      matches.push(...findForbiddenLearnerPayloadKeys(item, `${pathName}[${index}]`));
+    });
+    return matches;
+  }
+  for (const [key, nested] of Object.entries(value)) {
+    const currentPath = pathName ? `${pathName}.${key}` : key;
+    if (forbiddenKeys.includes(key)) matches.push(currentPath);
+    matches.push(...findForbiddenLearnerPayloadKeys(nested, currentPath));
+  }
+  return matches;
+}
+
+function topicProductionStudentReleaseSanity(bundle: LessonBundle) {
+  const learner = learnerLessonPayload(bundle, null);
+  const summary = studentLessonSummary(bundle);
+  const assessmentBridge = learner.package.assessmentBridge || {};
+  const guidedNotesSlides = learner.slides.filter((slide: any) => Boolean(String(slide.guidedNotes || "").trim())).length;
+  const rationaleCount = learner.practiceItems.filter((item: any) => Boolean(String(item.rationale || "").trim())).length;
+  const optionsReadyCount = learner.practiceItems.filter((item: any) => Array.isArray(item.options) && item.options.length >= 2).length;
+  const slideCitationCount = learner.slides.reduce((total: number, slide: any) => total + (Array.isArray(slide.citations) ? slide.citations.length : 0), 0);
+  const forbiddenKeysFound = findForbiddenLearnerPayloadKeys(learner);
+  const checks = [
+    {
+      key: "public_visibility",
+      label: "Public lesson URL is live",
+      passed: learner.package.status === "published",
+      detail: learner.package.status === "published" ? `/lessons/${learner.package.id}` : `status ${learner.package.status}`,
+    },
+    {
+      key: "student_topic_labels",
+      label: "Topic has learner-facing weak topic, NCLEX, and CJM labels",
+      passed: Boolean(assessmentBridge.weakTopic && assessmentBridge.nclexCategory && assessmentBridge.cjmStep),
+      detail: `${assessmentBridge.weakTopic || "missing"} / ${assessmentBridge.nclexCategory || "missing"} / ${assessmentBridge.cjmStep || "missing"}`,
+    },
+    {
+      key: "slide_deck",
+      label: "Student deck has at least five slides",
+      passed: learner.slides.length >= 5 && learner.deck.slideCount === learner.slides.length,
+      detail: `${learner.slides.length} slide(s)`,
+    },
+    {
+      key: "guided_notes",
+      label: "Guided notes are available in the deck",
+      passed: guidedNotesSlides >= Math.min(5, learner.slides.length),
+      detail: `${guidedNotesSlides} slide(s) with guided notes`,
+    },
+    {
+      key: "practice_and_rationale",
+      label: "Practice item includes options, answer, and rationale",
+      passed: learner.practiceItems.length >= 1 && optionsReadyCount >= 1 && rationaleCount >= 1,
+      detail: `${learner.practiceItems.length} item(s), ${rationaleCount} rationale(s)`,
+    },
+    {
+      key: "citations",
+      label: "Citations and source-backed trust signals are present",
+      passed: learner.citations.length >= 1 && learner.sources.length >= 1 && slideCitationCount >= 1,
+      detail: `${learner.citations.length} citation(s), ${learner.sources.length} source(s), ${slideCitationCount} slide citation link(s)`,
+    },
+    {
+      key: "learner_events",
+      label: "Completion and feedback event endpoints are available",
+      passed: Boolean(learner.package.id),
+      detail: `/api/lessons/${learner.package.id}/events and /api/lessons/${learner.package.id}/feedback`,
+    },
+    {
+      key: "admin_safe_payload",
+      label: "Learner payload excludes admin-only internals",
+      passed: forbiddenKeysFound.length === 0 && learner.package.reviewSummary === null,
+      detail: forbiddenKeysFound.length ? forbiddenKeysFound.join(", ") : "no forbidden keys found",
+    },
+  ];
+  const failCount = checks.filter((check) => !check.passed).length;
+
+  return {
+    generatedAt: new Date().toISOString(),
+    phase: "phase_18_public_student_release_sanity",
+    package: {
+      id: learner.package.id,
+      title: learner.package.title,
+      topic: learner.package.topic,
+      status: learner.package.status,
+      publicLessonUrl: `/lessons/${learner.package.id}`,
+    },
+    summary: {
+      status: failCount === 0 ? "pass" : "blocked",
+      passCount: checks.length - failCount,
+      failCount,
+    },
+    studentLabels: {
+      subject: summary.subject,
+      weakTopic: assessmentBridge.weakTopic || summary.weakTopic || "",
+      atiCategory: assessmentBridge.atiCategory || summary.atiCategory || null,
+      nclexCategory: assessmentBridge.nclexCategory || summary.nclexCategory || null,
+      cjmStep: assessmentBridge.cjmStep || summary.cjmStep || null,
+      tags: summary.tags || [],
+    },
+    publicContentInventory: {
+      slideCount: learner.slides.length,
+      guidedNotesSlides,
+      practiceItemCount: learner.practiceItems.length,
+      rationaleCount,
+      citationCount: learner.citations.length,
+      sourceCount: learner.sources.length,
+    },
+    checks,
+    adminSafety: {
+      forbiddenKeysFound,
+      reviewSummaryIncluded: learner.package.reviewSummary !== null,
+      publicResponseTopLevelKeys: Object.keys(learner),
+    },
+    learnerActions: {
+      lessonUrl: `/lessons/${learner.package.id}`,
+      eventEndpoint: `/api/lessons/${learner.package.id}/events`,
+      feedbackEndpoint: `/api/lessons/${learner.package.id}/feedback`,
+      supportedSignals: ["lesson_opened", "slide_viewed", "practice_attempted", "lesson_completed", "feedback_submitted", "lesson_saved"],
+    },
+    sampleContent: {
+      slideTitles: learner.slides.slice(0, 5).map((slide: any) => slide.title),
+      practicePreview: learner.practiceItems[0]
+        ? {
+          stem: learner.practiceItems[0].stem,
+          rationalePreview: String(learner.practiceItems[0].rationale || "").slice(0, 220),
+        }
+        : null,
+      citationLabels: learner.citations.slice(0, 5).map((citation: any) => citation.citationLabel),
+    },
+    costGuardrail: "Read-only student release sanity check. No new AI generation, public publish, TTS, rendered video, paid visual generation, or batch production is performed by this audit.",
+  };
+}
+
+function topicProductionNextBuildRows(rows: any[]) {
+  return rows.filter((row) => topicProductionNextBuildDecisions.has(row.review?.decision));
+}
+
+async function topicProductionMatrixPayload() {
+  await ensureLessonBuilderTables();
+  await loadTopicProductionReviewOverrides();
+
+  const packages = await db.select().from(lessonPackages).orderBy(desc(lessonPackages.updatedAt)).limit(75);
+  const packageRows = [];
+  for (const pkg of packages) {
+    const bundle = await findPackageBundle(pkg.id);
+    if (bundle) packageRows.push(topicProductionRowFromBundle(bundle));
+  }
+
+  let blockRows: ReturnType<typeof topicProductionRowFromContentBlock>[] = [];
+  try {
+    const packagedTopics = new Set(packageRows.map((row) => compactTopicKey(row.topic)));
+    const blocks = await db.select().from(contentBlocks).orderBy(desc(contentBlocks.updatedAt)).limit(150);
+    blockRows = blocks
+      .filter((block) => !packagedTopics.has(compactTopicKey(block.category || block.title)))
+      .slice(0, 75)
+      .map(topicProductionRowFromContentBlock);
+    blockRows = topicProductionRollupRows(blockRows);
+  } catch (error) {
+    console.warn("Topic production matrix content-block rows unavailable:", error);
+  }
+
+  const candidateRows = topicProductionPhaseTwoCandidateRows([...packageRows, ...blockRows]);
+  const rows = [...packageRows, ...blockRows, ...candidateRows].map(topicProductionDecoratedRow);
+  return {
+    rows,
+    summary: summarizeTopicProductionRows(rows),
+    driveProject: topicProductionDriveProjectPayload(rows),
+    airtableTracker: topicProductionAirtableTrackerPayload(),
+    phaseOneCheckpoint: topicProductionPhaseOneCheckpoint(rows),
+    generatedAt: new Date().toISOString(),
+  };
+}
+
 async function recordReleaseAuditEvent(
   packageId: string,
   eventType: string,
@@ -4828,7 +8987,11 @@ async function lessonBuilderReleaseReadiness() {
   };
 }
 
-function learnerLessonPayload(bundle: LessonBundle, assignmentContext?: { assignment: any; learner: any } | null) {
+function learnerLessonPayload(
+  bundle: LessonBundle,
+  assignmentContext?: { assignment: any; learner: any } | null,
+  options: { controlledPreview?: boolean } = {}
+) {
   const citationsBySlide = new Map<string, any[]>();
   const citationsByItem = new Map<string, any[]>();
   const assessmentBridge = bundle.package.manifest?.assessmentBridge
@@ -4886,6 +9049,7 @@ function learnerLessonPayload(bundle: LessonBundle, assignmentContext?: { assign
           citations: bundle.citations.length,
         },
       },
+      reviewSummary: options.controlledPreview ? topicProductionPreviewReviewSummary(bundle) : null,
     },
     assignment: assignmentContext ? {
       id: assignmentContext.assignment.id,
@@ -4951,10 +9115,21 @@ function uniqueStudentStrings(values: Array<string | null | undefined>) {
 }
 
 function studentAssessmentBridge(bundle: LessonBundle) {
-  return bundle.package.manifest?.assessmentBridge
+  const bridge = bundle.package.manifest?.assessmentBridge
     || bundle.package.taxonomySnapshot?.assessmentBridge
     || bundle.package.deckModel?.assessmentBridge
     || null;
+  if (bridge?.weakTopic || bridge?.nclexCategory || bridge?.cjmStep) return bridge;
+
+  return {
+    status: "derived_from_lesson_tags",
+    weakTopic: bundle.package.topic || "Clinical judgment",
+    atiCategory: bundle.sources.find((source) => source.subject)?.subject || null,
+    nclexCategory: bundle.slides.find((slide) => slide.nclexCategory)?.nclexCategory || null,
+    cjmStep: bundle.slides.find((slide) => slide.cjmStep)?.cjmStep || null,
+    sourceTitle: bundle.sources[0]?.title || null,
+    note: "Derived from published lesson tags for learner display.",
+  };
 }
 
 function studentSourceLabels(bundle: LessonBundle) {
@@ -5103,13 +9278,13 @@ async function studentProgressPayload(sessionId: string) {
   }
 
   const lessonStates = [];
-  for (const [packageId, lessonEvents] of eventsByPackage.entries()) {
+  for (const [packageId, lessonEvents] of Array.from(eventsByPackage.entries())) {
     const bundle = await findPackageBundle(packageId);
     if (!bundle || bundle.package.status !== "published") continue;
 
     const summary = studentLessonSummary(bundle);
     const newestEvent = lessonEvents[0];
-    const eventsOfType = (type: string) => lessonEvents.filter((event) => event.eventType === type);
+    const eventsOfType = (type: string) => lessonEvents.filter((event: any) => event.eventType === type);
     const savedEvents = eventsOfType("lesson_saved");
     const openedEvents = eventsOfType("lesson_opened");
     const completedEvents = eventsOfType("lesson_completed");
@@ -5130,7 +9305,7 @@ async function studentProgressPayload(sessionId: string) {
       openedAt: learnerEventIso(openedEvents[openedEvents.length - 1]?.createdAt),
       completedAt: learnerEventIso(completedEvents[0]?.createdAt),
       lastActivityAt: learnerEventIso(newestEvent?.createdAt),
-      viewedSlides: new Set(lessonEvents.filter((event) => event.eventType === "slide_viewed").map((event) => event.slideId).filter(Boolean)).size,
+      viewedSlides: new Set(lessonEvents.filter((event: any) => event.eventType === "slide_viewed").map((event: any) => event.slideId).filter(Boolean)).size,
       practiceAttempts: practiceEvents.length,
       feedbackSubmitted: feedbackEvents.length,
       lastPracticeResult: lastPractice ? {
@@ -6507,6 +10682,1139 @@ function renderFacultyReviewCertificateHtml(bundle: LessonBundle, review: any) {
 }
 
 export function registerLessonBuilderRoutes(app: Express) {
+  app.get("/api/admin/topic-production-matrix", requireAdminSession, async (_req: AdminAuthRequest, res: Response) => {
+    try {
+      res.json(await topicProductionMatrixPayload());
+    } catch (error) {
+      console.error("Topic production matrix load error:", error);
+      res.status(500).json({ error: "Failed to load topic production matrix" });
+    }
+  });
+
+  app.get("/api/admin/topic-production-matrix/airtable-tracker-contract", requireAdminSession, async (_req: AdminAuthRequest, res: Response) => {
+    res.json({
+      generatedAt: new Date().toISOString(),
+      tracker: topicProductionAirtableTrackerPayload(),
+    });
+  });
+
+  app.post("/api/admin/topic-production-matrix/phase-one/queue", requireAdminSession, validateCSRFToken, async (req: AdminAuthRequest, res: Response) => {
+    try {
+      const payload = await topicProductionMatrixPayload();
+      const topics = (payload.phaseOneCheckpoint?.topics || []).filter((topic: any) => topic.found);
+      const review: TopicProductionReview = {
+        decision: "build_lesson",
+        reviewerNotes: String(req.body?.reviewerNotes || "Phase 1 starter topic queued for the $100-$250 review checkpoint.").trim(),
+        reviewedAt: new Date().toISOString(),
+        reviewedBy: req.adminUser?.email || "admin",
+      };
+
+      for (const topic of topics) {
+        if (topic.sourceType === "lesson_package") {
+          await ensureLessonBuilderTables();
+          const [pkg] = await db.select().from(lessonPackages).where(eq(lessonPackages.id, topic.rowId)).limit(1);
+          if (!pkg) continue;
+          await db.update(lessonPackages).set({
+            manifest: {
+              ...(pkg.manifest || {}),
+              topicProductionReview: review,
+            },
+            updatedAt: new Date(),
+          }).where(eq(lessonPackages.id, topic.rowId));
+        } else if (topic.sourceType === "content_block") {
+          await saveTopicProductionReview(topic.sourceType, topic.rowId, review, {
+            phase: "phase_1_queue",
+            topic: topic.topic,
+            subject: topic.subject,
+          });
+        }
+      }
+
+      const nextPayload = await topicProductionMatrixPayload();
+      const nextRows = topicProductionNextBuildRows(nextPayload.rows);
+      const [approvedSources, packages] = await Promise.all([
+        db.select().from(sourceRegistry).where(eq(sourceRegistry.approvalStatus, "approved")).orderBy(desc(sourceRegistry.updatedAt)),
+        db.select().from(lessonPackages).orderBy(desc(lessonPackages.updatedAt)).limit(75),
+      ]);
+      const draftBundles = (await Promise.all(packages.map((pkg) => findPackageBundle(pkg.id)))).filter(Boolean);
+      res.json({
+        success: true,
+        queuedCount: topics.length,
+        phaseOneCheckpoint: nextPayload.phaseOneCheckpoint,
+        packets: topicProductionBuildPackets(nextRows, approvedSources, draftBundles),
+      });
+    } catch (error) {
+      console.error("Topic production phase one queue error:", error);
+      res.status(500).json({ error: "Failed to queue Phase 1 starter topics" });
+    }
+  });
+
+  app.patch("/api/admin/topic-production-matrix/drafts/:packageId/review", requireAdminSession, validateCSRFToken, async (req: AdminAuthRequest, res: Response) => {
+    try {
+      await ensureLessonBuilderTables();
+      const parsed = topicProductionDraftReviewSchema.parse(req.body || {});
+      const [pkg] = await db.select().from(lessonPackages).where(eq(lessonPackages.id, req.params.packageId)).limit(1);
+      if (!pkg) return res.status(404).json({ error: "Lesson package not found" });
+
+      const draftReview = {
+        decision: parsed.decision,
+        reviewerNotes: parsed.reviewerNotes.trim(),
+        reviewedAt: new Date().toISOString(),
+        reviewedBy: req.adminUser?.email || "admin",
+      };
+      const manifest = {
+        ...(pkg.manifest || {}),
+        topicProductionDraftReview: draftReview,
+      };
+      await db.update(lessonPackages).set({ manifest, updatedAt: new Date() }).where(eq(lessonPackages.id, req.params.packageId));
+      const bundle = await findPackageBundle(req.params.packageId);
+      res.json({
+        success: true,
+        draftReview,
+        package: bundle?.package || { ...pkg, manifest },
+        draftPackage: bundle ? topicProductionDraftSummary(bundle) : null,
+      });
+    } catch (error) {
+      console.error("Topic production draft review save error:", error);
+      res.status(500).json({ error: "Failed to save topic production draft review" });
+    }
+  });
+
+  app.patch("/api/admin/topic-production-matrix/drafts/:packageId/phase-3-decision", requireAdminSession, validateCSRFToken, async (req: AdminAuthRequest, res: Response) => {
+    try {
+      await ensureLessonBuilderTables();
+      const parsed = topicProductionPhaseThreeDecisionSchema.parse(req.body || {});
+      const [pkg] = await db.select().from(lessonPackages).where(eq(lessonPackages.id, req.params.packageId)).limit(1);
+      if (!pkg) return res.status(404).json({ error: "Lesson package not found" });
+
+      const phaseThreeDecision = {
+        decision: parsed.decision,
+        reviewerNotes: parsed.reviewerNotes.trim(),
+        reviewedAt: new Date().toISOString(),
+        reviewedBy: req.adminUser?.email || "admin",
+      };
+      const manifest = {
+        ...(pkg.manifest || {}),
+        topicProductionPhaseThreeDecision: phaseThreeDecision,
+      };
+      await db.update(lessonPackages).set({ manifest, updatedAt: new Date() }).where(eq(lessonPackages.id, req.params.packageId));
+      const bundle = await findPackageBundle(req.params.packageId);
+      res.json({
+        success: true,
+        phaseThreeDecision,
+        package: bundle?.package || { ...pkg, manifest },
+        draftPackage: bundle ? topicProductionDraftSummary(bundle) : null,
+      });
+    } catch (error) {
+      console.error("Topic production Phase 3 decision save error:", error);
+      res.status(500).json({ error: "Failed to save Phase 3 production decision" });
+    }
+  });
+
+  app.patch("/api/admin/topic-production-matrix/drafts/:packageId/student-launch-decision", requireAdminSession, validateCSRFToken, async (req: AdminAuthRequest, res: Response) => {
+    try {
+      await ensureLessonBuilderTables();
+      const parsed = topicProductionStudentLaunchDecisionSchema.parse(req.body || {});
+      const [pkg] = await db.select().from(lessonPackages).where(eq(lessonPackages.id, req.params.packageId)).limit(1);
+      if (!pkg) return res.status(404).json({ error: "Lesson package not found" });
+      const bundle = await findPackageBundle(req.params.packageId);
+      const draftSummary = bundle ? topicProductionDraftSummary(bundle) : null;
+      const blockers = [
+        !draftSummary?.nextSpendApproved ? "Phase 2 draft is not approved for next checkpoint" : "",
+        !draftSummary?.phaseThreeDecision?.decision || draftSummary.phaseThreeDecision.decision === "unreviewed" ? "Phase 3 production decision is not recorded" : "",
+        Number(draftSummary?.slideCount || 0) < 5 ? "Lesson deck is too small for student review" : "",
+        Number(draftSummary?.itemCount || 0) < 1 ? "Practice item is missing" : "",
+        Number(draftSummary?.citationCount || 0) < 1 ? "Citations are missing" : "",
+        Number(draftSummary?.failCount || 0) > 0 ? "QA has failures" : "",
+      ].filter(Boolean);
+
+      if (parsed.decision === "approve_student_preview" && blockers.length) {
+        return res.status(400).json({ error: "Student preview is blocked", blockers });
+      }
+
+      const studentLaunchDecision = {
+        decision: parsed.decision,
+        reviewerNotes: parsed.reviewerNotes.trim(),
+        reviewedAt: new Date().toISOString(),
+        reviewedBy: req.adminUser?.email || "admin",
+        previewKey: parsed.decision === "approve_student_preview"
+          ? topicProductionPreviewKey((pkg.manifest as any)?.topicProductionStudentLaunchDecision?.previewKey)
+          : null,
+        previewReview: (pkg.manifest as any)?.topicProductionStudentLaunchDecision?.previewReview || null,
+      };
+      const manifest = {
+        ...(pkg.manifest || {}),
+        topicProductionStudentLaunchDecision: studentLaunchDecision,
+      };
+      await db.update(lessonPackages).set({ manifest, updatedAt: new Date() }).where(eq(lessonPackages.id, req.params.packageId));
+      const updatedBundle = await findPackageBundle(req.params.packageId);
+      res.json({
+        success: true,
+        studentLaunchDecision,
+        package: updatedBundle?.package || { ...pkg, manifest },
+        draftPackage: updatedBundle ? topicProductionDraftSummary(updatedBundle) : null,
+      });
+    } catch (error) {
+      console.error("Topic production student launch decision save error:", error);
+      res.status(500).json({ error: "Failed to save student launch decision" });
+    }
+  });
+
+  app.patch("/api/admin/topic-production-matrix/media-work-orders/:workOrderId/review", requireAdminSession, validateCSRFToken, async (req: AdminAuthRequest, res: Response) => {
+    try {
+      const workOrderId = req.params.workOrderId;
+      const payload = await topicProductionMatrixPayload();
+      const currentRows = topicProductionMediaWorkOrderRows(payload.rows);
+      const current = currentRows.find((row) => row["Work Order ID"] === workOrderId);
+      if (!current) return res.status(404).json({ error: "Media work order not found" });
+
+      const parsed = topicProductionMediaWorkOrderReviewSchema.parse(req.body || {});
+      const review: TopicProductionMediaWorkOrderReview = {
+        decision: parsed.decision,
+        reviewerNotes: parsed.reviewerNotes.trim(),
+        reviewedAt: new Date().toISOString(),
+        reviewedBy: req.adminUser?.email || "admin",
+      };
+
+      await saveTopicProductionMediaWorkOrderReview(workOrderId, review, {
+        phase: "phase_4_media_work_order_review",
+        topic: current["Topic"],
+        estimatedDollarBudget: current["Estimated Dollar Budget"],
+        estimatedTokenBudget: current["Estimated Token Budget"],
+      });
+
+      const refreshedPayload = await topicProductionMatrixPayload();
+      const refreshedRows = topicProductionMediaWorkOrderRows(refreshedPayload.rows);
+      const row = refreshedRows.find((candidate) => candidate["Work Order ID"] === workOrderId) || null;
+      res.json({ success: true, review, row });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid media work order review decision", details: error.errors });
+      }
+      console.error("Topic production media work order review error:", error);
+      res.status(500).json({ error: "Failed to save media work order review" });
+    }
+  });
+
+  app.patch("/api/admin/topic-production-matrix/media-scaffold-pack/:workOrderId/review", requireAdminSession, validateCSRFToken, async (req: AdminAuthRequest, res: Response) => {
+    try {
+      const workOrderId = req.params.workOrderId;
+      const payload = await topicProductionMatrixPayload();
+      const currentRows = topicProductionMediaScaffoldPackRows(payload.rows);
+      const current = currentRows.find((row) => row["Approved Work Order ID"] === workOrderId);
+      if (!current) return res.status(404).json({ error: "Media scaffold row not found" });
+
+      const parsed = topicProductionMediaScaffoldReviewSchema.parse(req.body || {});
+      const review: TopicProductionMediaScaffoldReview = {
+        decision: parsed.decision,
+        reviewerNotes: parsed.reviewerNotes.trim(),
+        reviewedAt: new Date().toISOString(),
+        reviewedBy: req.adminUser?.email || "admin",
+      };
+
+      await saveTopicProductionMediaScaffoldReview(workOrderId, review, {
+        phase: "phase_4_media_scaffold_review",
+        topic: current["Topic"],
+        estimatedDollarBudget: current["Estimated Dollar Budget"],
+        estimatedTokenBudget: current["Estimated Token Budget"],
+      });
+
+      const refreshedPayload = await topicProductionMatrixPayload();
+      const refreshedRows = topicProductionMediaScaffoldPackRows(refreshedPayload.rows);
+      const row = refreshedRows.find((candidate) => candidate["Approved Work Order ID"] === workOrderId) || null;
+      res.json({ success: true, review, row });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid media scaffold review decision", details: error.errors });
+      }
+      console.error("Topic production media scaffold review error:", error);
+      res.status(500).json({ error: "Failed to save media scaffold review" });
+    }
+  });
+
+  app.patch("/api/admin/topic-production-matrix/media-text-draft-pack/:workOrderId/review", requireAdminSession, validateCSRFToken, async (req: AdminAuthRequest, res: Response) => {
+    try {
+      const workOrderId = req.params.workOrderId;
+      const payload = await topicProductionMatrixPayload();
+      const currentRows = topicProductionMediaTextDraftPackRows(payload.rows);
+      const current = currentRows.find((row) => row["Approved Work Order ID"] === workOrderId);
+      if (!current) return res.status(404).json({ error: "Media text draft row not found" });
+
+      const parsed = topicProductionMediaTextDraftReviewSchema.parse(req.body || {});
+      const review: TopicProductionMediaTextDraftReview = {
+        decision: parsed.decision,
+        reviewerNotes: parsed.reviewerNotes.trim(),
+        reviewedAt: new Date().toISOString(),
+        reviewedBy: req.adminUser?.email || "admin",
+      };
+
+      await saveTopicProductionMediaTextDraftReview(workOrderId, review, {
+        phase: "phase_5_media_text_draft_review",
+        topic: current["Topic"],
+        draftMode: current["Draft Mode"],
+      });
+
+      const refreshedPayload = await topicProductionMatrixPayload();
+      const refreshedRows = topicProductionMediaTextDraftPackRows(refreshedPayload.rows);
+      const row = refreshedRows.find((candidate) => candidate["Approved Work Order ID"] === workOrderId) || null;
+      res.json({ success: true, review, row });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid media text draft review decision", details: error.errors });
+      }
+      console.error("Topic production media text draft review error:", error);
+      res.status(500).json({ error: "Failed to save media text draft review" });
+    }
+  });
+
+  app.patch("/api/admin/topic-production-matrix/package-review-blueprint/:workOrderId/review", requireAdminSession, validateCSRFToken, async (req: AdminAuthRequest, res: Response) => {
+    try {
+      const workOrderId = req.params.workOrderId;
+      const payload = await topicProductionMatrixPayload();
+      const currentRows = topicProductionPackageReviewBlueprintRows(payload.rows);
+      const current = currentRows.find((row) => row["Approved Work Order ID"] === workOrderId);
+      if (!current) return res.status(404).json({ error: "Package review blueprint row not found" });
+
+      const parsed = topicProductionPackageReviewBlueprintSchema.parse(req.body || {});
+      const review: TopicProductionPackageReviewBlueprintReview = {
+        decision: parsed.decision,
+        reviewerNotes: parsed.reviewerNotes.trim(),
+        reviewedAt: new Date().toISOString(),
+        reviewedBy: req.adminUser?.email || "admin",
+      };
+
+      await saveTopicProductionPackageReviewBlueprint(workOrderId, review, {
+        phase: "phase_8_package_review_blueprint_decision",
+        topic: current["Topic"],
+        lessonPackageTitle: current["Lesson Package Title"],
+      });
+
+      const refreshedPayload = await topicProductionMatrixPayload();
+      const refreshedRows = topicProductionPackageReviewBlueprintRows(refreshedPayload.rows);
+      const row = refreshedRows.find((candidate) => candidate["Approved Work Order ID"] === workOrderId) || null;
+      res.json({ success: true, review, row });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid package review blueprint decision", details: error.errors });
+      }
+      console.error("Topic production package review blueprint error:", error);
+      res.status(500).json({ error: "Failed to save package review blueprint" });
+    }
+  });
+
+  app.patch("/api/admin/topic-production-matrix/:sourceType/:id/review", requireAdminSession, validateCSRFToken, async (req: AdminAuthRequest, res: Response) => {
+    try {
+      const sourceType = req.params.sourceType;
+      const id = req.params.id;
+      if (!["lesson_package", "content_block", "topic_candidate"].includes(sourceType)) {
+        return res.status(400).json({ error: "Unsupported topic production source type" });
+      }
+
+      const parsed = topicProductionReviewSchema.parse(req.body || {});
+      const review: TopicProductionReview = {
+        decision: parsed.decision,
+        reviewerNotes: parsed.reviewerNotes.trim(),
+        reviewedAt: new Date().toISOString(),
+        reviewedBy: req.adminUser?.email || "admin",
+      };
+
+      if (sourceType === "lesson_package") {
+        await ensureLessonBuilderTables();
+        const [pkg] = await db.select().from(lessonPackages).where(eq(lessonPackages.id, id)).limit(1);
+        if (!pkg) return res.status(404).json({ error: "Lesson package not found" });
+        const manifest = {
+          ...(pkg.manifest || {}),
+          topicProductionReview: review,
+        };
+        await db.update(lessonPackages).set({ manifest, updatedAt: new Date() }).where(eq(lessonPackages.id, id));
+      } else {
+        await saveTopicProductionReview(sourceType, id, review, {
+          phase: "topic_production_review",
+        });
+      }
+
+      const payload = await topicProductionMatrixPayload();
+      const row = payload.rows.find((candidate: any) => candidate.sourceType === sourceType && candidate.id === id) || null;
+      res.json({ success: true, review, row });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid review decision", details: error.errors });
+      }
+      console.error("Topic production review save error:", error);
+      res.status(500).json({ error: "Failed to save topic production review" });
+    }
+  });
+
+  app.get("/api/admin/topic-production-matrix/export", requireAdminSession, async (req: AdminAuthRequest, res: Response) => {
+    try {
+      const format = String(req.query.format || "csv").toLowerCase();
+      const payload = await topicProductionMatrixPayload();
+      const rows = topicProductionAirtableRows(payload.rows);
+
+      if (format === "json") {
+        res.setHeader("Content-Disposition", `attachment; filename="topic-production-airtable-queue.json"`);
+        return res.json({
+          generatedAt: payload.generatedAt,
+          summary: payload.summary,
+          airtableReady: true,
+          rows,
+        });
+      }
+
+      res.setHeader("Content-Type", "text/csv; charset=utf-8");
+      res.setHeader("Content-Disposition", `attachment; filename="topic-production-airtable-queue.csv"`);
+      return res.send(topicProductionAirtableCsv(payload.rows));
+    } catch (error) {
+      console.error("Topic production matrix export error:", error);
+      res.status(500).json({ error: "Failed to export topic production matrix" });
+    }
+  });
+
+  app.get("/api/admin/topic-production-matrix/human-review-pack", requireAdminSession, async (req: AdminAuthRequest, res: Response) => {
+    try {
+      const format = String(req.query.format || "json").toLowerCase();
+      const payload = await topicProductionMatrixPayload();
+      const records = topicProductionHumanReviewPackRows(payload.rows);
+
+      if (format === "csv") {
+        res.setHeader("Content-Type", "text/csv; charset=utf-8");
+        res.setHeader("Content-Disposition", `attachment; filename="phase-3-human-review-pack.csv"`);
+        return res.send(topicProductionHumanReviewPackCsv(payload.rows));
+      }
+
+      res.setHeader("Content-Disposition", `attachment; filename="phase-3-human-review-pack.json"`);
+      return res.json({
+        generatedAt: payload.generatedAt,
+        queue: "phase_3_human_review_pack",
+        budgetWindow: "$100-$500",
+        count: records.length,
+        reviewOptions: ["approve_mapping", "needs_edit", "hold"],
+        costGuardrail: "Review placement first. Do not spend on AI polish, visuals, audio, or video until each row has an explicit review decision.",
+        records,
+      });
+    } catch (error) {
+      console.error("Topic production human review pack error:", error);
+      res.status(500).json({ error: "Failed to export human review pack" });
+    }
+  });
+
+  app.get("/api/admin/topic-production-matrix/media-pilot-pack", requireAdminSession, async (req: AdminAuthRequest, res: Response) => {
+    try {
+      const format = String(req.query.format || "json").toLowerCase();
+      const payload = await topicProductionMatrixPayload();
+      const records = topicProductionMediaPilotPackRows(payload.rows);
+
+      if (format === "csv") {
+        res.setHeader("Content-Type", "text/csv; charset=utf-8");
+        res.setHeader("Content-Disposition", `attachment; filename="phase-4-media-pilot-pack.csv"`);
+        return res.send(topicProductionMediaPilotPackCsv(payload.rows));
+      }
+
+      res.setHeader("Content-Disposition", `attachment; filename="phase-4-media-pilot-pack.json"`);
+      return res.json({
+        generatedAt: payload.generatedAt,
+        queue: "phase_4_media_pilot_pack",
+        budgetWindow: "$100-$500",
+        count: records.length,
+        nextAllowedSpend: records.length ? "Plan one approved topic only; media generation still requires explicit approval." : "Approve one Phase 3 placement before planning media.",
+        costGuardrail: "This pack organizes where approved content belongs. It does not generate visuals, audio, video, or batch lesson media.",
+        records,
+      });
+    } catch (error) {
+      console.error("Topic production media pilot pack error:", error);
+      res.status(500).json({ error: "Failed to export media pilot pack" });
+    }
+  });
+
+  app.get("/api/admin/topic-production-matrix/media-work-orders", requireAdminSession, async (req: AdminAuthRequest, res: Response) => {
+    try {
+      const format = String(req.query.format || "json").toLowerCase();
+      const payload = await topicProductionMatrixPayload();
+      const records = topicProductionMediaWorkOrderRows(payload.rows);
+      const estimatedTokens = topicProductionMediaWorkOrderLineItems.reduce((sum, item) => sum + item.tokens, 0);
+      const estimatedDollars = topicProductionMediaWorkOrderLineItems.reduce((sum, item) => sum + item.dollars, 0);
+
+      if (format === "csv") {
+        res.setHeader("Content-Type", "text/csv; charset=utf-8");
+        res.setHeader("Content-Disposition", `attachment; filename="phase-4-media-work-orders.csv"`);
+        return res.send(topicProductionMediaWorkOrderCsv(payload.rows));
+      }
+
+      res.setHeader("Content-Disposition", `attachment; filename="phase-4-media-work-orders.json"`);
+      return res.json({
+        generatedAt: payload.generatedAt,
+        queue: "phase_4_media_work_orders",
+        budgetWindow: "$100-$500",
+        costBasis: "2,500 tokens = $100; $0.04 per token planning rate.",
+        estimatedTokensPerTopic: estimatedTokens,
+        estimatedDollarsPerTopic: estimatedDollars,
+        approvalStatus: "manual_approval_required",
+        count: records.length,
+        costGuardrail: "This is a dollarized work order only. It does not run AI generation, visuals, TTS, audio, video, or batch production.",
+        records,
+      });
+    } catch (error) {
+      console.error("Topic production media work order error:", error);
+      res.status(500).json({ error: "Failed to export media work orders" });
+    }
+  });
+
+  app.get("/api/admin/topic-production-matrix/media-scaffold-pack", requireAdminSession, async (req: AdminAuthRequest, res: Response) => {
+    try {
+      const format = String(req.query.format || "json").toLowerCase();
+      const payload = await topicProductionMatrixPayload();
+      const records = topicProductionMediaScaffoldPackRows(payload.rows);
+
+      if (format === "csv") {
+        res.setHeader("Content-Type", "text/csv; charset=utf-8");
+        res.setHeader("Content-Disposition", `attachment; filename="phase-4-media-scaffold-pack.csv"`);
+        return res.send(topicProductionMediaScaffoldPackCsv(payload.rows));
+      }
+
+      res.setHeader("Content-Disposition", `attachment; filename="phase-4-media-scaffold-pack.json"`);
+      return res.json({
+        generatedAt: payload.generatedAt,
+        queue: "phase_4_media_scaffold_pack",
+        budgetWindow: "$100-$500",
+        count: records.length,
+        prerequisite: "A Phase 4 work order must be reviewed as approve_single_topic_scaffold.",
+        costGuardrail: "Deterministic scaffold only. No AI generation call, no TTS, no rendered video, no paid visual generation.",
+        records,
+      });
+    } catch (error) {
+      console.error("Topic production media scaffold pack error:", error);
+      res.status(500).json({ error: "Failed to export media scaffold pack" });
+    }
+  });
+
+  app.get("/api/admin/topic-production-matrix/media-text-draft-pack", requireAdminSession, async (req: AdminAuthRequest, res: Response) => {
+    try {
+      const format = String(req.query.format || "json").toLowerCase();
+      const payload = await topicProductionMatrixPayload();
+      const records = topicProductionMediaTextDraftPackRows(payload.rows);
+
+      if (format === "csv") {
+        res.setHeader("Content-Type", "text/csv; charset=utf-8");
+        res.setHeader("Content-Disposition", `attachment; filename="phase-5-media-text-draft-pack.csv"`);
+        return res.send(topicProductionMediaTextDraftPackCsv(payload.rows));
+      }
+
+      res.setHeader("Content-Disposition", `attachment; filename="phase-5-media-text-draft-pack.json"`);
+      return res.json({
+        generatedAt: payload.generatedAt,
+        queue: "phase_5_media_text_draft_pack",
+        budgetWindow: "$100-$500 text-draft checkpoint",
+        count: records.length,
+        prerequisite: "A Phase 4 scaffold must be reviewed as approve_ai_draft_checkpoint.",
+        costGuardrail: "Text-draft checkpoint only. No TTS, no rendered video, no paid visual generation, and no batch generation.",
+        records,
+      });
+    } catch (error) {
+      console.error("Topic production media text draft pack error:", error);
+      res.status(500).json({ error: "Failed to export media text draft pack" });
+    }
+  });
+
+  app.get("/api/admin/topic-production-matrix/package-assembly-pack", requireAdminSession, async (req: AdminAuthRequest, res: Response) => {
+    try {
+      const format = String(req.query.format || "json").toLowerCase();
+      const payload = await topicProductionMatrixPayload();
+      const records = topicProductionPackageAssemblyPackRows(payload.rows);
+
+      if (format === "csv") {
+        res.setHeader("Content-Type", "text/csv; charset=utf-8");
+        res.setHeader("Content-Disposition", `attachment; filename="phase-6-package-assembly-pack.csv"`);
+        return res.send(topicProductionPackageAssemblyPackCsv(payload.rows));
+      }
+
+      res.setHeader("Content-Disposition", `attachment; filename="phase-6-package-assembly-pack.json"`);
+      return res.json({
+        generatedAt: payload.generatedAt,
+        queue: "phase_6_package_assembly_pack",
+        budgetWindow: "$100-$500 package assembly checkpoint",
+        count: records.length,
+        prerequisite: "A Phase 5 text draft must be reviewed as approve_package_assembly_checkpoint.",
+        costGuardrail: "Package assembly checkpoint only. No TTS, no rendered video, no paid visual generation, no batch generation, and no public publish without review.",
+        records,
+      });
+    } catch (error) {
+      console.error("Topic production package assembly pack error:", error);
+      res.status(500).json({ error: "Failed to export package assembly pack" });
+    }
+  });
+
+  app.get("/api/admin/topic-production-matrix/package-review-blueprint", requireAdminSession, async (req: AdminAuthRequest, res: Response) => {
+    try {
+      const format = String(req.query.format || "json").toLowerCase();
+      const payload = await topicProductionMatrixPayload();
+      const records = topicProductionPackageReviewBlueprintRows(payload.rows);
+
+      if (format === "csv") {
+        res.setHeader("Content-Type", "text/csv; charset=utf-8");
+        res.setHeader("Content-Disposition", `attachment; filename="phase-7-package-review-blueprint.csv"`);
+        return res.send(topicProductionPackageReviewBlueprintCsv(payload.rows));
+      }
+
+      res.setHeader("Content-Disposition", `attachment; filename="phase-7-package-review-blueprint.json"`);
+      return res.json({
+        generatedAt: payload.generatedAt,
+        queue: "phase_7_package_review_blueprint",
+        budgetWindow: "$100-$500 review-blueprint checkpoint",
+        count: records.length,
+        prerequisite: "A Phase 6 package assembly row must exist from an approved Phase 5 text draft.",
+        costGuardrail: "Blueprint checkpoint only. No package publish, no TTS, no rendered video, no paid visual generation, and no batch generation.",
+        records,
+      });
+    } catch (error) {
+      console.error("Topic production package review blueprint error:", error);
+      res.status(500).json({ error: "Failed to export package review blueprint" });
+    }
+  });
+
+  app.get("/api/admin/topic-production-matrix/review-package-builds", requireAdminSession, async (req: AdminAuthRequest, res: Response) => {
+    try {
+      const format = String(req.query.format || "json").toLowerCase();
+      const payload = await topicProductionMatrixPayload();
+      const records = topicProductionReviewPackageBuildRows(payload.rows);
+
+      if (format === "csv") {
+        res.setHeader("Content-Type", "text/csv; charset=utf-8");
+        res.setHeader("Content-Disposition", `attachment; filename="phase-9-review-package-builds.csv"`);
+        return res.send(topicProductionReviewPackageBuildCsv(payload.rows));
+      }
+
+      if (format === "zip") {
+        const zipBuffer = await topicProductionReviewPackageBuildZip(payload.rows);
+        res.setHeader("Content-Type", "application/zip");
+        res.setHeader("Content-Disposition", `attachment; filename="phase-9-review-package-builds.zip"`);
+        return res.send(zipBuffer);
+      }
+
+      res.setHeader("Content-Disposition", `attachment; filename="phase-9-review-package-builds.json"`);
+      return res.json({
+        generatedAt: payload.generatedAt,
+        queue: "phase_9_review_package_builds",
+        budgetWindow: "$100-$500 deterministic review-package checkpoint",
+        count: records.length,
+        prerequisite: "A Phase 8 blueprint decision must be approve_review_package_build.",
+        costGuardrail: "Review package build only. No public publish, no TTS, no rendered video, no paid visual generation, and no batch generation.",
+        records,
+      });
+    } catch (error) {
+      console.error("Topic production review package build error:", error);
+      res.status(500).json({ error: "Failed to export review package builds" });
+    }
+  });
+
+  app.post("/api/admin/topic-production-matrix/review-package-builds/:workOrderId/promote", requireAdminSession, validateCSRFToken, async (req: AdminAuthRequest, res: Response) => {
+    try {
+      await ensureLessonBuilderTables();
+      const workOrderId = decodeURIComponent(req.params.workOrderId || "");
+      const payload = await topicProductionMatrixPayload();
+      const records = topicProductionReviewPackageBuildRows(payload.rows);
+      const record = records.find((candidate) => String(candidate["Approved Work Order ID"] || "") === workOrderId);
+      if (!record) {
+        return res.status(404).json({
+          error: "No approved Phase 9 review package build found for this work order",
+          prerequisite: "Approve the Phase 8 blueprint build gate first.",
+        });
+      }
+
+      const promotion = await promoteTopicProductionReviewPackageDraft(record as Record<string, any>, req.session.adminUser?.userId);
+      const bundle = promotion.bundle;
+      if (!bundle) return res.status(500).json({ error: "Review package draft could not be loaded after promotion" });
+
+      return res.json({
+        created: promotion.created,
+        package: bundle.package,
+        bundle,
+        promotion: {
+          phase: "phase_10_unpublished_lesson_builder_draft",
+          workOrderId,
+          publishStatus: "not_published",
+          mediaStatus: "not_started",
+          costGuardrail: "Unpublished Lesson Builder draft only. No public publish, no TTS, no rendered video, no paid visual generation, and no batch generation.",
+          lessonBuilderUrl: `/admin/lesson-builder?tab=review&packageId=${bundle.package.id}`,
+        },
+      });
+    } catch (error) {
+      console.error("Topic production review package promotion error:", error);
+      res.status(500).json({ error: "Failed to promote review package draft" });
+    }
+  });
+
+  app.post("/api/admin/topic-production-matrix/review-package-builds/:workOrderId/creator-qa", requireAdminSession, validateCSRFToken, async (req: AdminAuthRequest, res: Response) => {
+    try {
+      await ensureLessonBuilderTables();
+      const workOrderId = decodeURIComponent(req.params.workOrderId || "");
+      const result = await runTopicProductionCreatorQaGate(workOrderId, req.session.adminUser?.userId);
+      if (!result?.bundle) {
+        return res.status(409).json({
+          error: "No promoted unpublished draft found for this work order",
+          prerequisite: "Promote the Phase 9 review package into Lesson Builder before running creator QA.",
+        });
+      }
+
+      return res.json({
+        package: result.bundle.package,
+        bundle: result.bundle,
+        qa: result.qa,
+        validation: result.validation,
+        creatorQaGate: result.creatorQaGate,
+      });
+    } catch (error) {
+      console.error("Topic production creator QA gate error:", error);
+      res.status(500).json({ error: "Failed to run creator QA gate" });
+    }
+  });
+
+  app.patch("/api/admin/topic-production-matrix/review-package-builds/:workOrderId/controlled-preview-decision", requireAdminSession, validateCSRFToken, async (req: AdminAuthRequest, res: Response) => {
+    try {
+      await ensureLessonBuilderTables();
+      const workOrderId = decodeURIComponent(req.params.workOrderId || "");
+      const parsed = topicProductionStudentLaunchDecisionSchema.parse(req.body || {});
+      const result = await saveTopicProductionControlledPreviewDecision(
+        workOrderId,
+        parsed.decision,
+        parsed.reviewerNotes,
+        req.adminUser?.email || req.session.adminUser?.userId || "admin"
+      );
+      if (!result) {
+        return res.status(409).json({
+          error: "No QA-ready promoted draft found for this work order",
+          prerequisite: "Promote the review package and run creator QA before opening controlled preview.",
+        });
+      }
+      if (result.blocked) {
+        return res.status(400).json({ error: "Controlled preview is blocked", blockers: result.blockers });
+      }
+
+      return res.json({
+        success: true,
+        package: result.bundle?.package,
+        bundle: result.bundle,
+        studentLaunchDecision: result.studentLaunchDecision,
+        controlledPreviewDecision: result.controlledPreviewDecision,
+      });
+    } catch (error) {
+      console.error("Topic production controlled preview decision save error:", error);
+      res.status(500).json({ error: "Failed to save controlled preview decision" });
+    }
+  });
+
+  app.patch("/api/admin/topic-production-matrix/review-package-builds/:workOrderId/preview-review", requireAdminSession, validateCSRFToken, async (req: AdminAuthRequest, res: Response) => {
+    try {
+      await ensureLessonBuilderTables();
+      const workOrderId = decodeURIComponent(req.params.workOrderId || "");
+      const parsed = topicProductionPreviewReviewAdminSchema.parse(req.body || {});
+      const result = await saveTopicProductionControlledPreviewReview(
+        workOrderId,
+        parsed.outcome,
+        parsed.reviewerNotes,
+        req.adminUser?.email || req.session.adminUser?.userId || "admin"
+      );
+      if (!result) {
+        return res.status(409).json({
+          error: "No controlled preview draft found for this work order",
+          prerequisite: "Approve controlled preview before recording preview review outcome.",
+        });
+      }
+      if (result.blocked) {
+        return res.status(400).json({ error: "Controlled preview review is blocked", blockers: result.blockers });
+      }
+
+      return res.json({
+        recorded: true,
+        package: result.bundle?.package,
+        bundle: result.bundle,
+        previewReview: result.previewReview,
+        controlledPreviewReview: result.controlledPreviewReview,
+        reviewSummary: result.reviewSummary,
+      });
+    } catch (error) {
+      console.error("Topic production controlled preview review save error:", error);
+      res.status(500).json({ error: "Failed to record controlled preview review" });
+    }
+  });
+
+  app.patch("/api/admin/topic-production-matrix/review-package-builds/:workOrderId/public-release-decision", requireAdminSession, validateCSRFToken, async (req: AdminAuthRequest, res: Response) => {
+    try {
+      await ensureLessonBuilderTables();
+      const workOrderId = decodeURIComponent(req.params.workOrderId || "");
+      const parsed = topicProductionPublicReleaseDecisionSchema.parse(req.body || {});
+      const result = await saveTopicProductionPublicReleaseDecision(
+        workOrderId,
+        parsed.decision,
+        parsed.reviewerNotes,
+        req.adminUser?.email || req.session.adminUser?.userId || "admin"
+      );
+      if (!result) {
+        return res.status(409).json({
+          error: "No release candidate found for this work order",
+          prerequisite: "Complete controlled preview review before recording a public release decision.",
+        });
+      }
+      if (result.blocked) {
+        return res.status(400).json({ error: "Public release decision is blocked", blockers: result.blockers });
+      }
+
+      return res.json({
+        recorded: true,
+        package: result.bundle?.package,
+        bundle: result.bundle,
+        publicReleaseDecision: result.publicReleaseDecision,
+        publicReleaseGate: result.publicReleaseGate,
+      });
+    } catch (error) {
+      console.error("Topic production public release decision save error:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid public release decision", details: error.errors });
+      }
+      res.status(500).json({ error: "Failed to save public release decision" });
+    }
+  });
+
+  app.patch("/api/admin/topic-production-matrix/drafts/:packageId/public-release-decision", requireAdminSession, validateCSRFToken, async (req: AdminAuthRequest, res: Response) => {
+    try {
+      await ensureLessonBuilderTables();
+      const packageId = decodeURIComponent(req.params.packageId || "");
+      const parsed = topicProductionPublicReleaseDecisionSchema.parse(req.body || {});
+      const result = await saveTopicProductionPublicReleaseDecisionForPackage(
+        packageId,
+        parsed.decision,
+        parsed.reviewerNotes,
+        req.adminUser?.email || req.session.adminUser?.userId || "admin"
+      );
+      if (!result) {
+        return res.status(409).json({
+          error: "No release candidate found for this package",
+          prerequisite: "Complete controlled preview review before recording a public release decision.",
+        });
+      }
+      if (result.blocked) {
+        return res.status(400).json({ error: "Public release decision is blocked", blockers: result.blockers });
+      }
+
+      return res.json({
+        recorded: true,
+        package: result.bundle?.package,
+        bundle: result.bundle,
+        publicReleaseDecision: result.publicReleaseDecision,
+        publicReleaseGate: result.publicReleaseGate,
+      });
+    } catch (error) {
+      console.error("Topic production draft public release decision save error:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid public release decision", details: error.errors });
+      }
+      res.status(500).json({ error: "Failed to save draft public release decision" });
+    }
+  });
+
+  app.get("/api/admin/topic-production-matrix/next-build-export", requireAdminSession, async (req: AdminAuthRequest, res: Response) => {
+    try {
+      const format = String(req.query.format || "csv").toLowerCase();
+      const payload = await topicProductionMatrixPayload();
+      const nextRows = topicProductionNextBuildRows(payload.rows);
+      const rows = topicProductionAirtableRows(nextRows);
+
+      if (format === "json") {
+        res.setHeader("Content-Disposition", `attachment; filename="approved-next-build-queue.json"`);
+        return res.json({
+          generatedAt: payload.generatedAt,
+          queue: "approved_next_build",
+          includedDecisions: Array.from(topicProductionNextBuildDecisions),
+          count: rows.length,
+          rows,
+        });
+      }
+
+      res.setHeader("Content-Type", "text/csv; charset=utf-8");
+      res.setHeader("Content-Disposition", `attachment; filename="approved-next-build-queue.csv"`);
+      return res.send(topicProductionAirtableCsv(nextRows));
+    } catch (error) {
+      console.error("Topic production next-build export error:", error);
+      res.status(500).json({ error: "Failed to export approved next-build queue" });
+    }
+  });
+
+  app.get("/api/admin/topic-production-matrix/build-packets", requireAdminSession, async (req: AdminAuthRequest, res: Response) => {
+    try {
+      const format = String(req.query.format || "json").toLowerCase();
+      const payload = await topicProductionMatrixPayload();
+      const nextRows = topicProductionNextBuildRows(payload.rows);
+      const approvedSources = await db.select().from(sourceRegistry).where(eq(sourceRegistry.approvalStatus, "approved"));
+      const recentDraftPackages = await db
+        .select()
+        .from(lessonPackages)
+        .where(sql`${lessonPackages.title} ILIKE ${"%Template Draft%"}`)
+        .orderBy(desc(lessonPackages.updatedAt))
+        .limit(25);
+      const draftBundles = (await Promise.all(recentDraftPackages.map((pkg) => findPackageBundle(pkg.id)))).filter(Boolean);
+      const packets = topicProductionBuildPackets(nextRows, approvedSources, draftBundles);
+
+      if (format === "csv") {
+        res.setHeader("Content-Type", "text/csv; charset=utf-8");
+        res.setHeader("Content-Disposition", `attachment; filename="approved-build-packets.csv"`);
+        return res.send(topicProductionBuildPacketsCsv(nextRows, approvedSources, draftBundles));
+      }
+
+      res.setHeader("Content-Disposition", `attachment; filename="approved-build-packets.json"`);
+      return res.json({
+        generatedAt: payload.generatedAt,
+        queue: "approved_build_packets",
+        count: packets.length,
+        packets,
+      });
+    } catch (error) {
+      console.error("Topic production build-packet export error:", error);
+      res.status(500).json({ error: "Failed to export approved build packets" });
+    }
+  });
+
+  app.get("/api/admin/topic-production-matrix/draft-review-pack", requireAdminSession, async (req: AdminAuthRequest, res: Response) => {
+    try {
+      const format = String(req.query.format || "json").toLowerCase();
+      const payload = await topicProductionMatrixPayload();
+      const nextRows = topicProductionNextBuildRows(payload.rows);
+      const approvedSources = await db.select().from(sourceRegistry).where(eq(sourceRegistry.approvalStatus, "approved"));
+      const recentDraftPackages = await db
+        .select()
+        .from(lessonPackages)
+        .where(sql`${lessonPackages.title} ILIKE ${"%Template Draft%"}`)
+        .orderBy(desc(lessonPackages.updatedAt))
+        .limit(25);
+      const draftBundles = (await Promise.all(recentDraftPackages.map((pkg) => findPackageBundle(pkg.id)))).filter(Boolean);
+      const packets = topicProductionBuildPackets(nextRows, approvedSources, draftBundles);
+      const rows = topicProductionDraftReviewRows(packets);
+
+      if (format === "csv") {
+        res.setHeader("Content-Type", "text/csv; charset=utf-8");
+        res.setHeader("Content-Disposition", `attachment; filename="phase-2-draft-quality-review.csv"`);
+        return res.send(topicProductionDraftReviewCsv(nextRows, approvedSources, draftBundles));
+      }
+
+      res.setHeader("Content-Disposition", `attachment; filename="phase-2-draft-quality-review.json"`);
+      return res.json({
+        generatedAt: payload.generatedAt,
+        queue: "phase_2_draft_quality_review",
+        costGuardrail: "Human review only. Do not run paid polish/audio/video until a review decision is recorded.",
+        count: rows.length,
+        records: rows,
+      });
+    } catch (error) {
+      console.error("Topic production draft review pack error:", error);
+      res.status(500).json({ error: "Failed to export draft quality review pack" });
+    }
+  });
+
+  app.get("/api/admin/topic-production-matrix/next-spend-queue", requireAdminSession, async (req: AdminAuthRequest, res: Response) => {
+    try {
+      const format = String(req.query.format || "json").toLowerCase();
+      const payload = await topicProductionMatrixPayload();
+      const nextRows = topicProductionNextBuildRows(payload.rows);
+      const approvedSources = await db.select().from(sourceRegistry).where(eq(sourceRegistry.approvalStatus, "approved"));
+      const recentDraftPackages = await db
+        .select()
+        .from(lessonPackages)
+        .where(sql`${lessonPackages.title} ILIKE ${"%Template Draft%"}`)
+        .orderBy(desc(lessonPackages.updatedAt))
+        .limit(25);
+      const draftBundles = (await Promise.all(recentDraftPackages.map((pkg) => findPackageBundle(pkg.id)))).filter(Boolean);
+      const packets = topicProductionNextSpendPackets(nextRows, approvedSources, draftBundles);
+
+      if (format === "csv") {
+        res.setHeader("Content-Type", "text/csv; charset=utf-8");
+        res.setHeader("Content-Disposition", `attachment; filename="approved-next-spend-polish.csv"`);
+        return res.send(topicProductionNextSpendCsv(nextRows, approvedSources, draftBundles));
+      }
+
+      res.setHeader("Content-Disposition", `attachment; filename="approved-next-spend-polish.json"`);
+      return res.json({
+        generatedAt: payload.generatedAt,
+        queue: "approved_next_spend_polish",
+        budgetWindow: "$100-$250",
+        count: packets.length,
+        packets,
+      });
+    } catch (error) {
+      console.error("Topic production next-spend queue error:", error);
+      res.status(500).json({ error: "Failed to export approved next-spend queue" });
+    }
+  });
+
+  app.get("/api/admin/topic-production-matrix/shorts-workflow", requireAdminSession, async (req: AdminAuthRequest, res: Response) => {
+    try {
+      const format = String(req.query.format || "json").toLowerCase();
+      const payload = await topicProductionMatrixPayload();
+      const nextRows = topicProductionNextBuildRows(payload.rows);
+      const approvedSources = await db.select().from(sourceRegistry).where(eq(sourceRegistry.approvalStatus, "approved"));
+      const recentDraftPackages = await db
+        .select()
+        .from(lessonPackages)
+        .where(sql`${lessonPackages.title} ILIKE ${"%Template Draft%"}`)
+        .orderBy(desc(lessonPackages.updatedAt))
+        .limit(25);
+      const draftBundles = (await Promise.all(recentDraftPackages.map((pkg) => findPackageBundle(pkg.id)))).filter(Boolean);
+      const packets = topicProductionNextSpendPackets(nextRows, approvedSources, draftBundles);
+      const records = topicProductionShortsWorkflowRows(packets);
+
+      if (format === "csv") {
+        res.setHeader("Content-Type", "text/csv; charset=utf-8");
+        res.setHeader("Content-Disposition", `attachment; filename="phase-3-shorts-airtable.csv"`);
+        return res.send(topicProductionShortsWorkflowCsv(nextRows, approvedSources, draftBundles));
+      }
+
+      res.setHeader("Content-Disposition", `attachment; filename="phase-3-shorts-airtable.json"`);
+      return res.json({
+        generatedAt: payload.generatedAt,
+        queue: "phase_3_shorts_airtable_handoff",
+        budgetWindow: "$100-$250",
+        count: records.length,
+        records,
+      });
+    } catch (error) {
+      console.error("Topic production shorts workflow export error:", error);
+      res.status(500).json({ error: "Failed to export Phase 3 shorts workflow" });
+    }
+  });
+
+  app.get("/api/admin/topic-production-matrix/phase-3-handoff", requireAdminSession, async (req: AdminAuthRequest, res: Response) => {
+    try {
+      const format = String(req.query.format || "json").toLowerCase();
+      const payload = await topicProductionMatrixPayload();
+      const nextRows = topicProductionNextBuildRows(payload.rows);
+      const approvedSources = await db.select().from(sourceRegistry).where(eq(sourceRegistry.approvalStatus, "approved"));
+      const recentDraftPackages = await db
+        .select()
+        .from(lessonPackages)
+        .where(sql`${lessonPackages.title} ILIKE ${"%Template Draft%"}`)
+        .orderBy(desc(lessonPackages.updatedAt))
+        .limit(25);
+      const draftBundles = (await Promise.all(recentDraftPackages.map((pkg) => findPackageBundle(pkg.id)))).filter(Boolean);
+      const packets = topicProductionNextSpendPackets(nextRows, approvedSources, draftBundles);
+      const records = topicProductionPhaseThreeHandoffRows(packets);
+
+      if (format === "csv") {
+        res.setHeader("Content-Type", "text/csv; charset=utf-8");
+        res.setHeader("Content-Disposition", `attachment; filename="phase-3-production-handoff.csv"`);
+        return res.send(topicProductionPhaseThreeHandoffCsv(nextRows, approvedSources, draftBundles));
+      }
+
+      res.setHeader("Content-Disposition", `attachment; filename="phase-3-production-handoff.json"`);
+      return res.json({
+        generatedAt: payload.generatedAt,
+        queue: "phase_3_production_handoff",
+        budgetWindow: "$100-$250",
+        nextAllowedSpend: "One polish pass or one short planning pass per accepted topic.",
+        costGuardrail: "No batch generation, no full video production, and no paid audio until each row is reviewed.",
+        count: records.length,
+        records,
+      });
+    } catch (error) {
+      console.error("Topic production Phase 3 handoff export error:", error);
+      res.status(500).json({ error: "Failed to export Phase 3 production handoff" });
+    }
+  });
+
+  app.get("/api/admin/topic-production-matrix/student-launch-readiness", requireAdminSession, async (req: AdminAuthRequest, res: Response) => {
+    try {
+      const format = String(req.query.format || "json").toLowerCase();
+      const payload = await topicProductionMatrixPayload();
+      const nextRows = topicProductionNextBuildRows(payload.rows);
+      const approvedSources = await db.select().from(sourceRegistry).where(eq(sourceRegistry.approvalStatus, "approved"));
+      const recentDraftPackages = await db
+        .select()
+        .from(lessonPackages)
+        .where(sql`${lessonPackages.title} ILIKE ${"%Template Draft%"}`)
+        .orderBy(desc(lessonPackages.updatedAt))
+        .limit(25);
+      const draftBundles = (await Promise.all(recentDraftPackages.map((pkg) => findPackageBundle(pkg.id)))).filter(Boolean);
+      const packets = topicProductionNextSpendPackets(nextRows, approvedSources, draftBundles);
+      const records = topicProductionStudentLaunchReadinessRows(packets);
+
+      if (format === "csv") {
+        res.setHeader("Content-Type", "text/csv; charset=utf-8");
+        res.setHeader("Content-Disposition", `attachment; filename="student-launch-readiness.csv"`);
+        return res.send(topicProductionStudentLaunchReadinessCsv(nextRows, approvedSources, draftBundles));
+      }
+
+      res.setHeader("Content-Disposition", `attachment; filename="student-launch-readiness.json"`);
+      return res.json({
+        generatedAt: payload.generatedAt,
+        queue: "student_launch_readiness",
+        costGuardrail: "No broad public launch, video/audio, or batch production until this gate is approved.",
+        count: records.length,
+        records,
+      });
+    } catch (error) {
+      console.error("Topic production student launch readiness export error:", error);
+      res.status(500).json({ error: "Failed to export student launch readiness" });
+    }
+  });
+
+  app.get("/api/admin/topic-production-matrix/publish-readiness", requireAdminSession, async (req: AdminAuthRequest, res: Response) => {
+    try {
+      const format = String(req.query.format || "json").toLowerCase();
+      const payload = await topicProductionMatrixPayload();
+      const nextRows = topicProductionNextBuildRows(payload.rows);
+      const approvedSources = await db.select().from(sourceRegistry).where(eq(sourceRegistry.approvalStatus, "approved"));
+      const recentDraftPackages = await db
+        .select()
+        .from(lessonPackages)
+        .where(sql`${lessonPackages.title} ILIKE ${"%Template Draft%"}`)
+        .orderBy(desc(lessonPackages.updatedAt))
+        .limit(25);
+      const draftBundles = (await Promise.all(recentDraftPackages.map((pkg) => findPackageBundle(pkg.id)))).filter(Boolean);
+      const packets = topicProductionNextSpendPackets(nextRows, approvedSources, draftBundles);
+      const records = topicProductionPublishReadinessRows(packets);
+
+      if (format === "csv") {
+        res.setHeader("Content-Type", "text/csv; charset=utf-8");
+        res.setHeader("Content-Disposition", `attachment; filename="publish-readiness.csv"`);
+        return res.send(topicProductionPublishReadinessCsv(nextRows, approvedSources, draftBundles));
+      }
+
+      res.setHeader("Content-Disposition", `attachment; filename="publish-readiness.json"`);
+      return res.json({
+        generatedAt: payload.generatedAt,
+        queue: "final_publish_readiness",
+        costGuardrail: "Publishing uses existing package artifacts; no paid video/audio or batch production is part of this gate.",
+        count: records.length,
+        records,
+      });
+    } catch (error) {
+      console.error("Topic production publish readiness export error:", error);
+      res.status(500).json({ error: "Failed to export publish readiness" });
+    }
+  });
+
+  app.get("/api/admin/topic-production-matrix/drafts/:packageId/release-audit-snapshot", requireAdminSession, async (req: AdminAuthRequest, res: Response) => {
+    try {
+      await ensureLessonBuilderTables();
+      const packageId = decodeURIComponent(req.params.packageId || "");
+      const bundle = await findPackageBundle(packageId);
+      if (!bundle) return res.status(404).json({ error: "Package not found" });
+      return res.json(topicProductionReleaseAuditSnapshot(bundle));
+    } catch (error) {
+      console.error("Topic production release audit snapshot error:", error);
+      res.status(500).json({ error: "Failed to load release audit snapshot" });
+    }
+  });
+
+  app.get("/api/admin/topic-production-matrix/drafts/:packageId/student-release-sanity", requireAdminSession, async (req: AdminAuthRequest, res: Response) => {
+    try {
+      await ensureLessonBuilderTables();
+      const packageId = decodeURIComponent(req.params.packageId || "");
+      const bundle = await findPackageBundle(packageId);
+      if (!bundle) return res.status(404).json({ error: "Package not found" });
+      return res.json(topicProductionStudentReleaseSanity(bundle));
+    } catch (error) {
+      console.error("Topic production student release sanity error:", error);
+      res.status(500).json({ error: "Failed to load student release sanity report" });
+    }
+  });
+
   app.get("/api/student/home", async (_req: Request, res: Response) => {
     try {
       await ensureLessonBuilderTables();
@@ -6533,7 +11841,8 @@ export function registerLessonBuilderRoutes(app: Express) {
     try {
       await ensureLessonBuilderTables();
       const bundle = await findPackageBundle(req.params.id);
-      if (!bundle || bundle.package.status !== "published") {
+      const previewKey = typeof req.query.previewKey === "string" ? req.query.previewKey : "";
+      if (!bundle || !topicProductionPreviewAllowed(bundle.package, previewKey)) {
         return res.status(404).json({ error: "Lesson not found" });
       }
       res.json({ lesson: studentLessonSummary(bundle), generatedAt: new Date().toISOString() });
@@ -6575,9 +11884,11 @@ export function registerLessonBuilderRoutes(app: Express) {
     try {
       await ensureLessonBuilderTables();
       const bundle = await findPackageBundle(req.params.id);
-      if (!bundle || bundle.package.status !== "published") {
+      const previewKey = typeof req.query.previewKey === "string" ? req.query.previewKey : "";
+      if (!bundle || !topicProductionPreviewAllowed(bundle.package, previewKey)) {
         return res.status(404).json({ error: "Lesson not found" });
       }
+      const controlledPreview = Boolean(previewKey && bundle.package.status !== "published");
 
       const assignmentQuery = assignmentQuerySchema.parse({
         assignmentId: req.query.assignmentId,
@@ -6595,7 +11906,7 @@ export function registerLessonBuilderRoutes(app: Express) {
         return res.status(404).json({ error: "Assignment link not found" });
       }
 
-      res.json(learnerLessonPayload(bundle, assignmentContext));
+      res.json(learnerLessonPayload(bundle, assignmentContext, { controlledPreview }));
     } catch (error) {
       console.error("Learner lesson load error:", error);
       res.status(500).json({ error: "Failed to load lesson" });
@@ -6681,7 +11992,7 @@ export function registerLessonBuilderRoutes(app: Express) {
       await ensureLessonBuilderTables();
       const data = learnerEventSchema.parse(req.body || {});
       const bundle = await findPackageBundle(req.params.id);
-      if (!bundle || bundle.package.status !== "published") {
+      if (!bundle || !topicProductionPreviewAllowed(bundle.package, data.previewKey)) {
         return res.status(404).json({ error: "Lesson not found" });
       }
       const assignmentContext = await findAssignmentLearner(req.params.id, data.assignmentId, data.assignmentLearnerId, data.learnerKey);
@@ -6723,12 +12034,54 @@ export function registerLessonBuilderRoutes(app: Express) {
     }
   });
 
+  app.post("/api/lessons/:id/preview-review", async (req: Request, res: Response) => {
+    try {
+      await ensureLessonBuilderTables();
+      const data = topicProductionPreviewReviewSchema.parse(req.body || {});
+      const bundle = await findPackageBundle(req.params.id);
+      const expectedPreviewKey = (bundle?.package.manifest as any)?.topicProductionStudentLaunchDecision?.previewKey;
+      if (!bundle || !expectedPreviewKey || expectedPreviewKey !== data.previewKey) {
+        return res.status(404).json({ error: "Lesson not found" });
+      }
+
+      const previewReview = {
+        outcome: data.outcome,
+        reviewerNotes: data.reviewerNotes.trim(),
+        reviewedAt: new Date().toISOString(),
+        reviewedBy: "controlled_preview_reviewer",
+      };
+      const existingDecision = (bundle.package.manifest as any)?.topicProductionStudentLaunchDecision || {};
+      const manifest = {
+        ...(bundle.package.manifest || {}),
+        topicProductionStudentLaunchDecision: {
+          ...existingDecision,
+          previewKey: existingDecision.previewKey || data.previewKey,
+          previewReview,
+        },
+      };
+
+      await db.update(lessonPackages).set({ manifest, updatedAt: new Date() }).where(eq(lessonPackages.id, req.params.id));
+      const updatedBundle = await findPackageBundle(req.params.id);
+      res.json({
+        recorded: true,
+        previewReview,
+        reviewSummary: updatedBundle ? topicProductionPreviewReviewSummary(updatedBundle) : null,
+      });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid preview review", details: error.errors });
+      }
+      console.error("Controlled preview review save error:", error);
+      res.status(500).json({ error: "Failed to record preview review" });
+    }
+  });
+
   app.post("/api/lessons/:id/feedback", async (req: Request, res: Response) => {
     try {
       await ensureLessonBuilderTables();
       const data = learnerFeedbackSchema.parse(req.body || {});
       const bundle = await findPackageBundle(req.params.id);
-      if (!bundle || bundle.package.status !== "published") {
+      if (!bundle || !topicProductionPreviewAllowed(bundle.package, data.previewKey)) {
         return res.status(404).json({ error: "Lesson not found" });
       }
       const assignmentContext = await findAssignmentLearner(req.params.id, data.assignmentId, data.assignmentLearnerId, data.learnerKey);
@@ -7855,6 +13208,15 @@ export function registerLessonBuilderRoutes(app: Express) {
   app.post("/api/admin/lesson-builder/packages/:id/publish", requireAdminSession, async (req: AdminAuthRequest, res: Response) => {
     try {
       await ensureLessonBuilderTables();
+      const publishConfirmation = publicPublishConfirmationSchema.safeParse(req.body || {});
+      if (!publishConfirmation.success) {
+        return res.status(400).json({
+          error: "Publish confirmation required",
+          requiredConfirmationText: publicPublishConfirmationText,
+          details: publishConfirmation.error.errors,
+        });
+      }
+
       const qa = await runQaForPackage(req.params.id);
       const validation = await validateLessonContract(req.params.id, "harrity");
       if (qa.qaSummary.failCount > 0 || validation.validationSummary.failCount > 0) {
@@ -7870,9 +13232,13 @@ export function registerLessonBuilderRoutes(app: Express) {
       await recordReleaseAuditEvent(req.params.id, "package_published", "Package published after QA and contract validation passed.", {
         qaSummary: qa.qaSummary,
         validationSummary: validation.validationSummary,
+        publishConfirmation: {
+          confirmed: true,
+          confirmationText: publicPublishConfirmationText,
+        },
       }, req.session.adminUser?.userId);
 
-      res.json({ package: published, qa });
+      res.json({ package: published, qa, publishConfirmation: { confirmed: true } });
     } catch (error) {
       console.error("Lesson builder publish error:", error);
       res.status(500).json({ error: "Failed to publish lesson package" });

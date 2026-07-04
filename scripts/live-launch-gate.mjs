@@ -7,6 +7,8 @@ const checks = [
   ["Secret scan", ["scripts/live-launch-secret-scan.mjs"]],
   ["Archive dry run", ["scripts/live-launch-archive.mjs"]],
   ["Live launch preflight", ["scripts/live-launch-preflight.mjs"]],
+  ["Launch surface typecheck", ["scripts/launch-surface-typecheck.mjs"]],
+  ["Launch surface smoke", ["scripts/launch-surface-smoke.mjs"]],
   ["Lesson Builder release smoke", ["scripts/lesson-builder-release-smoke.mjs"]],
   ["Commit plan", ["scripts/live-launch-commit-plan.mjs"]],
 ];
@@ -45,4 +47,3 @@ for (const [label, args] of checks) {
 }
 
 console.log("PASS all live launch gates passed");
-

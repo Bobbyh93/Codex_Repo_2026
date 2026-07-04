@@ -58,7 +58,7 @@ export function JobStatusCard({ jobId, compact = false, onComplete, onError }: J
   const { toast } = useToast();
 
   const { data: job, isLoading, refetch } = useJobQuery(jobId, {
-    refetchInterval: job?.status === "processing" ? 2000 : false,
+    refetchInterval: 2000,
   });
 
   useEffect(() => {
@@ -144,13 +144,15 @@ export function JobStatusCard({ jobId, compact = false, onComplete, onError }: J
   };
 
   if (compact) {
+    const stageKey = job.stage || job.status;
+
     return (
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            {stageIcons[job.stage || job.status] || getStatusIcon()}
+            {stageIcons[stageKey] || getStatusIcon()}
             <span className="text-xs text-muted-foreground">
-              {stageDescriptions[job.stage || job.status] || job.stage}
+              {stageDescriptions[stageKey] || stageKey}
             </span>
           </div>
           {job.progress > 0 && <span className="text-xs font-medium">{job.progress}%</span>}
@@ -183,7 +185,7 @@ export function JobStatusCard({ jobId, compact = false, onComplete, onError }: J
           <div className="space-y-2">
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">
-                {stageDescriptions[job.stage] || job.stage}
+                {stageDescriptions[job.stage || job.status] || job.stage || job.status}
               </span>
               <span className="font-medium">{job.progress}%</span>
             </div>

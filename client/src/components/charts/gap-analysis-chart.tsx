@@ -204,7 +204,7 @@ export default function GapAnalysisChart({ data, onTopicClick, className = "" }:
               color: 'rgb(107, 114, 128)',
               font: {
                 size: 11,
-                weight: '500'
+                weight: 500
               }
             },
             title: {
@@ -230,7 +230,7 @@ export default function GapAnalysisChart({ data, onTopicClick, className = "" }:
               color: 'rgb(107, 114, 128)',
               font: {
                 size: 10,
-                weight: '500'
+                weight: 500
               }
             },
             title: {

@@ -3,6 +3,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import AdminLayout from "@/components/admin/admin-layout";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,6 +20,7 @@ import {
   AlertTriangle,
   BookOpenCheck,
   CheckCircle2,
+  CircleDashed,
   ClipboardCheck,
   Copy,
   Download,
@@ -40,6 +42,8 @@ import {
   Sparkles,
   XCircle,
 } from "lucide-react";
+
+const PUBLISH_CONFIRMATION_TEXT = "I understand this makes the lesson public";
 
 type SourceRecord = {
   id: string;
@@ -831,6 +835,34 @@ function renderVisibleContent(content: Record<string, any>) {
   });
 }
 
+function handoffTokens(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .split(/\s+/)
+    .filter((token) => token.length >= 4 && !["source", "lesson", "guide", "package"].includes(token));
+}
+
+function topicProductionSourceScore(source: SourceRecord, handoff: { topic: string; concept: string; nursingSubject: string; sourceId: string }) {
+  const haystack = [source.id, source.title, source.subject, source.sourceType].filter(Boolean).join(" ").toLowerCase();
+  const rawNeedles = [handoff.topic, handoff.concept, handoff.nursingSubject, handoff.sourceId.replace(/^source:/i, "")].filter(Boolean).join(" ");
+  const tokens = Array.from(new Set(handoffTokens(rawNeedles)));
+  const tokenScore = tokens.reduce((score, token) => score + (haystack.includes(token) ? 1 : 0), 0);
+  const topicSlug = handoff.topic.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+  const titleSlug = source.title.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+  const exactBonus = topicSlug && (titleSlug.includes(topicSlug) || topicSlug.includes(titleSlug)) ? 4 : 0;
+  const readinessBonus = source.approvalStatus === "approved" && source.ingestionStatus === "ready" ? 2 : 0;
+  return tokenScore + exactBonus + readinessBonus;
+}
+
+function findTopicProductionSource(sources: SourceRecord[], handoff: { topic: string; concept: string; nursingSubject: string; sourceId: string } | null) {
+  if (!handoff) return null;
+  return sources
+    .map((source) => ({ source, score: topicProductionSourceScore(source, handoff) }))
+    .filter((candidate) => candidate.score >= 4)
+    .sort((a, b) => b.score - a.score)[0]?.source || null;
+}
+
 export default function LessonBuilder() {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("sources");
@@ -884,6 +916,13 @@ export default function LessonBuilder() {
     includeGuidedNotes: true,
     generationMode: "agent_assisted",
   });
+  const [topicProductionHandoff, setTopicProductionHandoff] = useState<{
+    topic: string;
+    concept: string;
+    nursingSubject: string;
+    sourceType: string;
+    sourceId: string;
+  } | null>(null);
   const [generationModeTouched, setGenerationModeTouched] = useState(false);
   const [editingSlideId, setEditingSlideId] = useState("");
   const [slideEditForm, setSlideEditForm] = useState({
@@ -1079,6 +1118,36 @@ export default function LessonBuilder() {
     () => sources.filter((source) => selectedSourceIds.includes(source.id)),
     [sources, selectedSourceIds]
   );
+  const topicProductionMatchedSource = useMemo(
+    () => findTopicProductionSource(visibleSources, topicProductionHandoff),
+    [topicProductionHandoff, visibleSources]
+  );
+  const topicProductionGenerateChecks = useMemo(() => {
+    if (!topicProductionHandoff) return [];
+    return [
+      {
+        label: "Source truth matched",
+        ready: Boolean(topicProductionMatchedSource),
+        detail: topicProductionMatchedSource?.title || "Choose an approved source before generating.",
+      },
+      {
+        label: "Source selected",
+        ready: selectedSourceIds.length > 0,
+        detail: selectedSourceIds.length > 0 ? `${selectedSourceIds.length} source selected` : "No source selected.",
+      },
+      {
+        label: "Template mode",
+        ready: lessonForm.generationMode === "template",
+        detail: "Keeps this first pass deterministic and low-cost.",
+      },
+      {
+        label: "Guided notes included",
+        ready: lessonForm.includeGuidedNotes,
+        detail: "Required for the student study pack.",
+      },
+    ];
+  }, [lessonForm.generationMode, lessonForm.includeGuidedNotes, selectedSourceIds.length, topicProductionHandoff, topicProductionMatchedSource]);
+  const topicProductionReadyToGenerate = !topicProductionHandoff || topicProductionGenerateChecks.every((check) => check.ready);
 
   const stats = {
     approvedSources: sources.filter((source) => source.approvalStatus === "approved").length,
@@ -1136,10 +1205,67 @@ export default function LessonBuilder() {
   );
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const packageId = params.get("packageId") || "";
+    if (packageId) {
+      setSelectedPackageId(packageId);
+      setActiveTab(params.get("tab") || "review");
+    }
+
+    if (params.get("from") !== "topic-production") return;
+
+    const topic = params.get("topic") || "";
+    const concept = params.get("concept") || "";
+    const nursingSubject = params.get("subject") || "";
+    const weakTopic = params.get("weakTopic") || "";
+    const nclexCategory = params.get("nclexCategory") || "";
+    const cjmStep = params.get("cjmStep") || "";
+    const slideCount = Number(params.get("slideCount") || 8);
+    const generationMode = params.get("generationMode") === "agent_assisted" ? "agent_assisted" : "template";
+
+    setLessonForm((current) => ({
+      ...current,
+      title: params.get("title") || current.title,
+      topic: topic || current.topic,
+      audience: params.get("audience") || current.audience,
+      slideCount: Number.isFinite(slideCount) ? slideCount : current.slideCount,
+      generationMode,
+      includeGuidedNotes: true,
+    }));
+    setGenerationModeTouched(true);
+    setMappingRows([
+      ...(topic ? [{ taxonomy: "Review Topic", code: "", label: topic, confidence: 0.95 }] : []),
+      ...(concept ? [{ taxonomy: "Concept", code: "", label: concept, confidence: 0.9 }] : []),
+      ...(nursingSubject ? [{ taxonomy: "Nursing Subject", code: "", label: nursingSubject, confidence: 0.9 }] : []),
+      ...(weakTopic ? [{ taxonomy: "Weak Topic", code: "", label: weakTopic, confidence: 0.85 }] : []),
+      ...(nclexCategory ? [{ taxonomy: "NCLEX", code: "", label: nclexCategory, confidence: 0.85 }] : []),
+      ...(cjmStep ? [{ taxonomy: "CJM", code: "", label: cjmStep, confidence: 0.85 }] : []),
+      ...defaultMappingRows,
+    ]);
+    setTopicProductionHandoff({
+      topic,
+      concept,
+      nursingSubject,
+      sourceType: params.get("sourceType") || "",
+      sourceId: params.get("sourceId") || "",
+    });
+    if (!packageId) {
+      setActiveTab("generate");
+    }
+  }, []);
+
+  useEffect(() => {
     if (!generationModeTouched && agentStatusQuery.data?.configured) {
       setLessonForm((current) => ({ ...current, generationMode: "agent_assisted" }));
     }
   }, [agentStatusQuery.data?.configured, generationModeTouched]);
+
+  useEffect(() => {
+    if (!topicProductionHandoff || !topicProductionMatchedSource) return;
+    setSelectedSourceIds((ids) => (ids.length > 0 ? ids : [topicProductionMatchedSource.id]));
+    setSelectedSourceDetailId((current) => current || topicProductionMatchedSource.id);
+    setSelectedMappingSourceId((current) => current || topicProductionMatchedSource.id);
+  }, [topicProductionHandoff?.sourceId, topicProductionMatchedSource?.id]);
 
   useEffect(() => {
     setEditingSlideId("");
@@ -1554,7 +1680,10 @@ export default function LessonBuilder() {
 
   const publishMutation = useMutation({
     mutationFn: async () => {
-      const response = await apiRequest("POST", `/api/admin/lesson-builder/packages/${selectedPackageId}/publish`);
+      const response = await apiRequest("POST", `/api/admin/lesson-builder/packages/${selectedPackageId}/publish`, {
+        confirmPublicPublish: true,
+        confirmationText: PUBLISH_CONFIRMATION_TEXT,
+      });
       return response.json();
     },
     onSuccess: () => {
@@ -3163,6 +3292,21 @@ export default function LessonBuilder() {
           </TabsContent>
 
           <TabsContent value="generate" className="space-y-4">
+            {topicProductionHandoff ? (
+              <Alert>
+                <ClipboardCheck className="h-4 w-4" />
+                <AlertDescription>
+                  Opened from Topic Production for <span className="font-medium">{topicProductionHandoff.topic}</span>
+                  {topicProductionHandoff.concept ? ` / ${topicProductionHandoff.concept}` : ""}
+                  {topicProductionHandoff.nursingSubject ? ` / ${topicProductionHandoff.nursingSubject}` : ""}. Template mode is preselected as the low-cost first pass. Select source truth before generating.
+                  <div className="mt-2 text-xs">
+                    {topicProductionMatchedSource
+                      ? `Matched source truth: ${topicProductionMatchedSource.title}`
+                      : "No matching source truth selected yet. Choose an approved source before generating."}
+                  </div>
+                </AlertDescription>
+              </Alert>
+            ) : null}
             <div className="grid gap-4 xl:grid-cols-[420px_minmax(0,1fr)]">
               <Card>
                 <CardHeader>
@@ -3240,9 +3384,38 @@ export default function LessonBuilder() {
                     />
                     <Label>Include guided notes in the package model</Label>
                   </div>
+                  {topicProductionHandoff ? (
+                    <div className="rounded-md border bg-slate-50 p-3">
+                      <div className="text-sm font-semibold text-slate-950">Low-cost generation checkpoint</div>
+                      <div className="mt-3 space-y-2">
+                        {topicProductionGenerateChecks.map((check) => (
+                          <div key={check.label} className="flex items-start gap-2 text-sm">
+                            {check.ready ? (
+                              <CheckCircle2 className="mt-0.5 h-4 w-4 flex-none text-emerald-600" />
+                            ) : (
+                              <CircleDashed className="mt-0.5 h-4 w-4 flex-none text-slate-400" />
+                            )}
+                            <div>
+                              <div className="font-medium text-slate-900">{check.label}</div>
+                              <div className="text-xs text-slate-600">{check.detail}</div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      {!topicProductionReadyToGenerate ? (
+                        <p className="mt-3 text-xs font-medium text-slate-600">
+                          Stop here until every checkpoint is ready. This prevents accidental spend before source and review context are aligned.
+                        </p>
+                      ) : (
+                        <p className="mt-3 text-xs font-medium text-emerald-700">
+                          Ready for the deterministic first pass. Review output before spending on richer AI/video production.
+                        </p>
+                      )}
+                    </div>
+                  ) : null}
                   <Button
                     className="w-full"
-                    disabled={selectedSourceIds.length === 0 || generateMutation.isPending}
+                    disabled={selectedSourceIds.length === 0 || generateMutation.isPending || !topicProductionReadyToGenerate}
                     onClick={() => generateMutation.mutate()}
                   >
                     <Play className="mr-2 h-4 w-4" />

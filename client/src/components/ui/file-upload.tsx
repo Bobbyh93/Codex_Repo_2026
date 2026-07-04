@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { FileText, Upload, CheckCircle, AlertCircle, Loader2, Eye, FileCheck, Zap } from "lucide-react";
 import { useAuth } from "@/contexts/auth-context";
 import { cn } from "@/lib/utils";
+import { rememberLastUploadedReport } from "@/lib/student-session";
 
 interface FileUploadProps {
   onUploadSuccess?: (reportId: string, uploadData?: any) => void;
@@ -144,6 +145,7 @@ export default function FileUpload({ onUploadSuccess }: FileUploadProps) {
         title: "Analysis Complete",
         description: `Your assessment has been processed successfully. Found ${data.topicsFound} topics to review.`,
       });
+      rememberLastUploadedReport(data);
       
       // Invalidate queries to refresh data
       if (isAuthenticated) {

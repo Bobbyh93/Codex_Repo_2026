@@ -32,6 +32,18 @@ The local and live pilot runtimes have passed or support the launch gates below:
 - Render environment checklist: see `LIVE_RENDER_ENVIRONMENT_CHECKLIST.md` for required Render keys, secret handling, Neon URL rules, and first deploy verification.
 - One-command launch gate: `npm run gate:live-launch` passed; it runs source manifest, secret scan, archive dry run, preflight, release smoke, and commit plan.
 
+Final local MVP closeout on July 4, 2026:
+
+- Local preview target: `http://127.0.0.1:5055`.
+- Live launch preflight: 25 passed, 0 warnings, 0 failures.
+- Launch-surface typecheck: passed, with 315 legacy diagnostics still documented outside the focused launch surface.
+- Launch-surface smoke: 12 passed, 0 failures.
+- Production build: frontend Vite build passed and server bundle passed.
+- Topic-production launch smoke: 145 checks, 0 failures; published learner entry `/lessons/pkg-1783201330271` in preview.
+- Lesson Builder release smoke against local preview: 36 passed, 0 warnings, 0 failures, including health, public student home/library, pilot request queue, release readiness, source normalization, Assessment Bridge, learner events, progress/study pack, public lesson page, and Harrity export readiness with 12 files.
+- GitHub Actions launch workflow now runs the cheap launch-surface typecheck and smoke before live-launch preflight.
+- No paid AI/media generation, TTS, rendered video, or broad batch production was triggered during this closeout.
+
 ## Live Pilot Completion Gap
 
 Live signed-in smoke on Render has been run against package `bf472933-fdb6-4e67-b893-491c00c7bcd4`:

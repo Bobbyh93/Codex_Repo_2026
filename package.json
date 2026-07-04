@@ -19,6 +19,9 @@
     "manifest:live-launch-source": "node scripts/live-launch-source-manifest.mjs",
     "scan:live-launch-secrets": "node scripts/live-launch-secret-scan.mjs",
     "smoke:lesson-builder": "node scripts/lesson-builder-release-smoke.mjs",
+    "smoke:launch-surfaces": "node scripts/launch-surface-smoke.mjs",
+    "smoke:topic-production": "node scripts/topic-production-launch-smoke.mjs",
+    "check:launch": "node scripts/launch-surface-typecheck.mjs",
     "check": "tsc",
     "db:push": "drizzle-kit push",
     "test": "vitest run"

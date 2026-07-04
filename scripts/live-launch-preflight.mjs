@@ -73,8 +73,19 @@ record(
 );
 record(
   "package scripts ready",
-  Boolean(packageJson?.scripts?.build && packageJson?.scripts?.start && packageJson?.scripts?.["smoke:lesson-builder"] && packageJson?.scripts?.["archive:live-launch"] && packageJson?.scripts?.["gate:live-launch"] && packageJson?.scripts?.["plan:live-launch-commit"] && packageJson?.scripts?.["remote:live-launch"] && packageJson?.scripts?.["manifest:live-launch-source"] && packageJson?.scripts?.["scan:live-launch-secrets"] && packageJson?.scripts?.["db:push"]),
-  "requires build, start, smoke:lesson-builder, archive:live-launch, gate:live-launch, plan:live-launch-commit, remote:live-launch, manifest:live-launch-source, scan:live-launch-secrets, db:push"
+  Boolean(packageJson?.scripts?.build
+    && packageJson?.scripts?.start
+    && packageJson?.scripts?.["check:launch"]
+    && packageJson?.scripts?.["smoke:launch-surfaces"]
+    && packageJson?.scripts?.["smoke:lesson-builder"]
+    && packageJson?.scripts?.["archive:live-launch"]
+    && packageJson?.scripts?.["gate:live-launch"]
+    && packageJson?.scripts?.["plan:live-launch-commit"]
+    && packageJson?.scripts?.["remote:live-launch"]
+    && packageJson?.scripts?.["manifest:live-launch-source"]
+    && packageJson?.scripts?.["scan:live-launch-secrets"]
+    && packageJson?.scripts?.["db:push"]),
+  "requires build, start, check:launch, smoke:launch-surfaces, smoke:lesson-builder, archive:live-launch, gate:live-launch, plan:live-launch-commit, remote:live-launch, manifest:live-launch-source, scan:live-launch-secrets, db:push"
 );
 
 record("render.yaml present", existsSync(renderPath), renderPath);
@@ -91,7 +102,7 @@ record(
     "type: web",
     "runtime: node",
     "region: oregon",
-    "buildCommand: npm ci && npm run build",
+    "buildCommand: npm ci --include=dev && npm run build",
     "startCommand: npm run start",
     "healthCheckPath: /health",
   ]),
@@ -104,9 +115,11 @@ record(
     "npm run manifest:live-launch-source",
     "npm run scan:live-launch-secrets",
     "npm run build",
+    "npm run check:launch",
+    "npm run smoke:launch-surfaces",
     "npm run preflight:live-launch",
   ]),
-  "workflow installs clean dependencies, checks deploy source, scans secrets, builds, and runs preflight"
+  "workflow installs clean dependencies, checks deploy source, scans secrets, builds, runs launch checks, and runs preflight"
 );
 record(
   "render blueprint secret placeholders",
@@ -187,10 +200,12 @@ record(
     "Repository Candidates Checked",
     "Bobbyh93/Codex_Repo_2026",
     "HarrityTeam/chatrepo09262025",
-    "Confirmation Needed",
-    "After Confirmation",
+    "Selected Target",
+    "Current pushed source",
+    "Push Safety",
+    "Remote Setup",
   ]),
-  "target decision doc records checked repos, recommendation, confirmation need, and remote setup commands"
+  "target decision doc records checked repos, selected target, pushed source, push safety, and remote setup commands"
 );
 record(
   "Render environment checklist present",
