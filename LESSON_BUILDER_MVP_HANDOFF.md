@@ -15,6 +15,7 @@ The DB-backed Lesson Builder path is functional locally and is the live Render p
 - Data Chunker Pro on the local workstation is the designated preprocessing path for large textbook and chapter PDFs: use it to create RAG-ready chunk files/folders, then register those outputs into NurseStudy with source provenance, approval state, and citation policy.
 - Packages support edit, rebuild artifacts, QA, contract validation, publish, learner view, and Harrity zip export.
 - Packages can carry an assessment bridge: weak topic, ATI category, NCLEX category, CJM step, and evidence source.
+- Admins can run `AI Map Weak Topic` on a package to attach the assessment bridge with confidence, rationale, source evidence, and agent mode while preserving the existing student APIs.
 - Published learner lessons are available at `/lessons/:id`.
 - Student lesson discovery and workspace APIs are available at `/api/student/home`, `/api/student/lessons`, `/api/student/lessons/:id/summary`, `/api/student/progress?sessionId=...`, and `/api/student/study-pack?sessionId=...`; they derive from published Lesson Builder packages and learner events, and exclude admin-only QA/source-management internals.
 - `/lessons/:id` now supports `Save lesson`, `Back to library`, `Study path`, shared browser-session progress, `lesson_saved` learner events, completion status, practice events, feedback, guided notes, rationales, and citations.

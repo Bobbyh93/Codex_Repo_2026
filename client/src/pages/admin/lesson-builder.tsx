@@ -951,6 +951,7 @@ export default function LessonBuilder() {
     note: "Manual pilot bridge from assessment gap to learner lesson package.",
     officialPilotPackage: true,
   });
+  const [latestAiBridgeMapping, setLatestAiBridgeMapping] = useState<Record<string, any> | null>(null);
 
   const healthQuery = useQuery<LessonBuilderHealth>({
     queryKey: ["/api/admin/lesson-builder/health"],
@@ -1104,6 +1105,7 @@ export default function LessonBuilder() {
       || detailQuery.data.package.deckModel?.assessmentBridge
       || null
     : null;
+  const aiBridgeDisplay = latestAiBridgeMapping || currentAssessmentBridge;
   const latestReview = detailQuery.data?.reviews?.[0];
   const latestFacultyReview = detailQuery.data?.reviews?.find((review) => review.reviewerRole !== "ai_reviewer");
   const latestFacultyRubric = latestFacultyReview?.metadata?.rubricSummary || detailQuery.data?.package.manifest?.facultyReview?.rubricSummary || null;
@@ -1142,6 +1144,7 @@ export default function LessonBuilder() {
   useEffect(() => {
     setEditingSlideId("");
     setEditingItemId("");
+    setLatestAiBridgeMapping(null);
   }, [selectedPackageId]);
 
   useEffect(() => {
@@ -1472,6 +1475,42 @@ export default function LessonBuilder() {
     },
     onError: (error: any) => {
       toast({ title: "Bridge save failed", description: error?.message || "Check the weak topic fields.", variant: "destructive" });
+    },
+  });
+
+  const aiAssessmentBridgeMutation = useMutation({
+    mutationFn: async () => {
+      if (!selectedPackageId) throw new Error("Select a package first.");
+      const response = await apiRequest("POST", `/api/admin/lesson-builder/packages/${selectedPackageId}/ai-assessment-bridge`, {});
+      return response.json();
+    },
+    onSuccess: (data) => {
+      const bridge = data.assessmentBridge || data.aiMapping || {};
+      setLatestAiBridgeMapping(data.aiMapping || bridge);
+      setAssessmentBridgeForm((current) => ({
+        ...current,
+        weakTopic: bridge.weakTopic || current.weakTopic,
+        atiCategory: bridge.atiCategory || current.atiCategory,
+        nclexCategory: bridge.nclexCategory || current.nclexCategory,
+        cjmStep: bridge.cjmStep || current.cjmStep,
+        note: bridge.rationale || bridge.note || current.note,
+      }));
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/packages"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/packages", selectedPackageId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/health"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/release-readiness"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/pilot-launch/summary"] });
+      toast({
+        title: "AI weak topic mapped",
+        description: `${bridge.weakTopic || "Weak topic"} (${Math.round(Number(bridge.confidence || 0) * 100)}% confidence).`,
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "AI mapping failed",
+        description: error?.message || "The existing bridge was preserved.",
+        variant: "destructive",
+      });
     },
   });
 
@@ -3465,11 +3504,39 @@ export default function LessonBuilder() {
                             onChange={(event) => setAssessmentBridgeForm({ ...assessmentBridgeForm, note: event.target.value })}
                           />
                         </div>
-                        <Button onClick={() => assessmentBridgeMutation.mutate()} disabled={assessmentBridgeMutation.isPending || assessmentBridgeForm.weakTopic.trim().length < 2}>
-                          <Save className="mr-2 h-4 w-4" />
-                          Save Bridge
-                        </Button>
+                        <div className="flex flex-wrap gap-2">
+                          <Button
+                            variant="outline"
+                            onClick={() => aiAssessmentBridgeMutation.mutate()}
+                            disabled={aiAssessmentBridgeMutation.isPending || !selectedPackageId || !aiReady}
+                          >
+                            {aiAssessmentBridgeMutation.isPending ? <RefreshCw className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+                            AI Map Weak Topic
+                          </Button>
+                          <Button onClick={() => assessmentBridgeMutation.mutate()} disabled={assessmentBridgeMutation.isPending || assessmentBridgeForm.weakTopic.trim().length < 2}>
+                            <Save className="mr-2 h-4 w-4" />
+                            Save Bridge
+                          </Button>
+                        </div>
                       </div>
+                      {aiBridgeDisplay?.confidence || aiBridgeDisplay?.rationale ? (
+                        <div className="mt-3 rounded-md border border-emerald-100 bg-emerald-50 p-3 text-sm text-emerald-900">
+                          <div className="flex flex-wrap items-center gap-2 font-medium">
+                            <Sparkles className="h-4 w-4" />
+                            AI mapping
+                            {typeof aiBridgeDisplay.confidence === "number" ? (
+                              <Badge variant="outline">{Math.round(aiBridgeDisplay.confidence * 100)}% confidence</Badge>
+                            ) : null}
+                            {aiBridgeDisplay.agentMode ? <Badge variant="outline">{String(aiBridgeDisplay.agentMode).replace(/_/g, " ")}</Badge> : null}
+                          </div>
+                          {aiBridgeDisplay.rationale ? <div className="mt-1">{aiBridgeDisplay.rationale}</div> : null}
+                          {Array.isArray(aiBridgeDisplay.sourceEvidence) && aiBridgeDisplay.sourceEvidence.length > 0 ? (
+                            <div className="mt-2 text-xs text-emerald-800">
+                              Evidence: {aiBridgeDisplay.sourceEvidence.join("; ")}
+                            </div>
+                          ) : null}
+                        </div>
+                      ) : null}
                     </div>
 
                     <div className="grid gap-4 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">

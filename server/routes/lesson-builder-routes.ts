@@ -175,7 +175,21 @@ const assessmentBridgeSchema = z.object({
   cjmStep: z.string().trim().max(200).optional().default(""),
   sourceId: z.string().trim().optional().default(""),
   note: z.string().trim().max(2000).optional().default(""),
+  confidence: z.number().min(0).max(1).optional(),
+  rationale: z.string().trim().max(1200).optional().default(""),
+  sourceEvidence: z.array(z.string().trim().min(2).max(240)).max(6).optional().default([]),
+  agentMode: z.string().trim().max(80).optional().default(""),
   officialPilotPackage: z.boolean().default(true),
+});
+
+const aiAssessmentBridgeSchema = z.object({
+  weakTopic: z.string().trim().min(2).max(200),
+  atiCategory: z.string().trim().max(200).optional().default(""),
+  nclexCategory: z.string().trim().max(200).optional().default(""),
+  cjmStep: z.string().trim().max(200).optional().default(""),
+  confidence: z.number().min(0).max(1).default(0.7),
+  rationale: z.string().trim().min(8).max(1200),
+  sourceEvidence: z.array(z.string().trim().min(2).max(240)).max(6).default([]),
 });
 
 const generateSchema = z.object({
@@ -3049,6 +3063,165 @@ async function requestAgentLessonDraft({
   }
 }
 
+function sourceWeakTopicHints(bundle: LessonBundle) {
+  return uniqueText(bundle.sources.flatMap((source) => {
+    const normalization = source.metadata?.normalization || {};
+    return [
+      ...(Array.isArray(normalization.weakTopics) ? normalization.weakTopics : []),
+      ...(Array.isArray(normalization.atiCategories) ? normalization.atiCategories : []),
+      source.subject,
+      source.title,
+    ];
+  })).slice(0, 12);
+}
+
+function buildAssessmentBridgePromptPayload(bundle: LessonBundle) {
+  const currentBridge = bundle.package.manifest?.assessmentBridge
+    || bundle.package.taxonomySnapshot?.assessmentBridge
+    || bundle.package.deckModel?.assessmentBridge
+    || null;
+  return {
+    task: "Map this published nursing lesson package to one student remediation weak topic.",
+    requiredJsonShape: {
+      weakTopic: "concise student-facing remediation topic",
+      atiCategory: "best ATI category if inferable, otherwise empty string",
+      nclexCategory: "best NCLEX category if inferable, otherwise empty string",
+      cjmStep: "best clinical judgment step if inferable, otherwise empty string",
+      confidence: "number from 0 to 1",
+      rationale: "one concise sentence explaining the mapping",
+      sourceEvidence: "array of short evidence labels from lesson slides/items/citations",
+    },
+    constraints: {
+      noInventedClinicalClaims: true,
+      useOnlyProvidedLessonData: true,
+      preferStudentFriendlyWeakTopic: true,
+      oneMappingOnly: true,
+    },
+    lesson: {
+      id: bundle.package.id,
+      title: bundle.package.title,
+      topic: bundle.package.topic,
+      audience: bundle.package.audience,
+      currentBridge,
+      sourceWeakTopicHints: sourceWeakTopicHints(bundle),
+    },
+    slides: bundle.slides.slice(0, 12).map((slide) => ({
+      slideNumber: slide.slideNumber,
+      title: slide.title,
+      nclexCategory: slide.nclexCategory,
+      cjmStep: slide.cjmStep,
+      nursingProcess: slide.nursingProcess,
+      bloomLevel: slide.bloomLevel,
+      visibleContent: textSnippet(JSON.stringify(slide.visibleContent || {}), 420),
+    })),
+    practiceItems: bundle.items.slice(0, 3).map((item) => ({
+      stem: item.stem,
+      rationale: textSnippet(item.rationale || "", 420),
+      difficulty: item.difficulty,
+      tags: item.tags || {},
+    })),
+    citations: bundle.citations.slice(0, 8).map((citation) => ({
+      label: citation.citationLabel,
+      sourceId: citation.sourceId,
+      slideId: citation.slideId,
+      itemId: citation.itemId,
+    })),
+  };
+}
+
+async function requestWorkspaceAgentAssessmentBridge(endpoint: string, prompt: string, bundle: LessonBundle, signal: AbortSignal) {
+  const apiKey = lessonBuilderWorkspaceAgentApiKey();
+  if (!apiKey) {
+    throw new Error("NURSING_CURRICULUM_AGENT_API_KEY is not configured for the workspace lesson-agent endpoint.");
+  }
+
+  const response = await fetch(endpoint, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      input: prompt,
+      metadata: {
+        agentId: lessonBuilderAgentId(),
+        feature: "ai_assessment_bridge",
+        packageId: bundle.package.id,
+      },
+    }),
+    signal,
+  });
+
+  if (!response.ok) {
+    const body = await response.text().catch(() => "");
+    throw new Error(`Agent mapping request failed with ${response.status}${body ? `: ${textSnippet(body, 240)}` : ""}`);
+  }
+
+  const responsePayload = await response.json();
+  const text = responseTextFromAgentPayload(responsePayload);
+  if (!text) throw new Error("Agent mapping response did not include text output.");
+  return text;
+}
+
+async function requestOpenAiAssessmentBridge(prompt: string, signal: AbortSignal) {
+  const apiKey = lessonBuilderOpenAiApiKey();
+  if (!apiKey) {
+    throw new Error("OPENAI_API_KEY is not configured for direct AI weak-topic mapping.");
+  }
+
+  const openai = new OpenAI({ apiKey });
+  const response = await openai.chat.completions.create(
+    {
+      model: process.env.NURSING_CURRICULUM_AGENT_MODEL || "gpt-4o-mini",
+      messages: [
+        {
+          role: "system",
+          content: "You map nursing lesson packages to ATI/NCLEX remediation weak topics. Return only strict JSON. Do not include markdown.",
+        },
+        {
+          role: "user",
+          content: prompt,
+        },
+      ],
+      response_format: { type: "json_object" },
+      max_completion_tokens: 900,
+    },
+    { signal },
+  );
+
+  return response.choices[0]?.message?.content || "";
+}
+
+async function generateAiAssessmentBridge(bundle: LessonBundle) {
+  const health = lessonBuilderAgentStatus();
+  if (!health.aiReady) {
+    throw new Error("AI weak-topic mapping is unavailable because no server-side AI agent or OpenAI key is configured.");
+  }
+
+  const endpoint = lessonBuilderAgentEndpoint();
+  const useWorkspaceEndpoint = Boolean(endpoint && lessonBuilderWorkspaceAgentApiKey());
+  const promptPayload = buildAssessmentBridgePromptPayload(bundle);
+  const prompt = `Return only valid JSON for this NurseStudy weak-topic mapping request.\n\n${JSON.stringify(promptPayload)}`;
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 30_000);
+
+  try {
+    const text = useWorkspaceEndpoint
+      ? await requestWorkspaceAgentAssessmentBridge(endpoint, prompt, bundle, controller.signal)
+      : await requestOpenAiAssessmentBridge(prompt, controller.signal);
+    if (!text) throw new Error("AI weak-topic mapper returned an empty response.");
+
+    const parsed = aiAssessmentBridgeSchema.parse(parseAgentJson(text));
+    return {
+      ...parsed,
+      agentMode: useWorkspaceEndpoint ? "workspace_agent" : "openai_chat_completions",
+      generatedAt: new Date().toISOString(),
+    };
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 async function buildGenerationDrafts({
   data,
   sources,
@@ -3734,6 +3907,10 @@ async function attachAssessmentBridge(packageId: string, data: z.infer<typeof as
     sourceId: selectedSource?.id || null,
     sourceTitle: selectedSource?.title || null,
     note: data.note || "",
+    confidence: typeof data.confidence === "number" ? data.confidence : null,
+    rationale: data.rationale || "",
+    sourceEvidence: Array.isArray(data.sourceEvidence) ? data.sourceEvidence : [],
+    agentMode: data.agentMode || null,
     attachedAt,
     attachedBy: actorId || null,
   };
@@ -3773,6 +3950,9 @@ async function attachAssessmentBridge(packageId: string, data: z.infer<typeof as
       nclexCategory: assessmentBridge.nclexCategory,
       cjmStep: assessmentBridge.cjmStep,
       sourceId: assessmentBridge.sourceId,
+      confidence: assessmentBridge.confidence,
+      agentMode: assessmentBridge.agentMode,
+      sourceEvidence: assessmentBridge.sourceEvidence,
       officialPilotPackage: data.officialPilotPackage,
     },
     actorId
@@ -7177,6 +7357,68 @@ export function registerLessonBuilderRoutes(app: Express) {
       }
       console.error("Lesson builder assessment bridge error:", error);
       res.status(500).json({ error: "Failed to attach assessment bridge" });
+    }
+  });
+
+  app.post("/api/admin/lesson-builder/packages/:id/ai-assessment-bridge", requireAdminSession, async (req: AdminAuthRequest, res: Response) => {
+    try {
+      await ensureLessonBuilderTables();
+      const bundle = await findPackageBundle(req.params.id);
+      if (!bundle) return res.status(404).json({ error: "Lesson package not found" });
+
+      const aiMapping = await generateAiAssessmentBridge(bundle);
+      const existingPilot = Boolean((bundle.package.manifest || {}).pilot?.officialPackage ?? true);
+      const bridgedBundle = await attachAssessmentBridge(req.params.id, {
+        weakTopic: aiMapping.weakTopic,
+        atiCategory: aiMapping.atiCategory,
+        nclexCategory: aiMapping.nclexCategory,
+        cjmStep: aiMapping.cjmStep,
+        sourceId: "",
+        confidence: aiMapping.confidence,
+        rationale: aiMapping.rationale,
+        sourceEvidence: aiMapping.sourceEvidence,
+        agentMode: aiMapping.agentMode,
+        note: `AI mapped weak topic: ${aiMapping.rationale}`,
+        officialPilotPackage: existingPilot,
+      }, req.session.adminUser?.userId);
+      if (!bridgedBundle) return res.status(404).json({ error: "Lesson package not found" });
+
+      await recordReleaseAuditEvent(
+        req.params.id,
+        "ai_assessment_bridge_mapped",
+        `AI mapped weak topic: ${aiMapping.weakTopic}.`,
+        {
+          weakTopic: aiMapping.weakTopic,
+          atiCategory: aiMapping.atiCategory,
+          nclexCategory: aiMapping.nclexCategory,
+          cjmStep: aiMapping.cjmStep,
+          confidence: aiMapping.confidence,
+          agentMode: aiMapping.agentMode,
+          sourceEvidence: aiMapping.sourceEvidence,
+        },
+        req.session.adminUser?.userId
+      );
+
+      res.json({
+        package: bridgedBundle.package,
+        assessmentBridge: bridgedBundle.package.manifest?.assessmentBridge,
+        aiMapping,
+        bundle: bridgedBundle,
+      });
+    } catch (error) {
+      const credentialIssue = classifyAgentCredentialIssue(error);
+      if (credentialIssue) {
+        lastAgentCredentialIssue = credentialIssue;
+      }
+      const message = sanitizeAgentError(error);
+      const status = /unavailable|not configured|missing/i.test(message) ? 409 : credentialIssue ? 401 : 502;
+      console.error("Lesson builder AI assessment bridge error:", message);
+      res.status(status).json({
+        error: "AI weak-topic mapping failed",
+        detail: message,
+        aiMode: lessonBuilderAgentStatus().aiMode,
+        existingBridgePreserved: true,
+      });
     }
   });
 

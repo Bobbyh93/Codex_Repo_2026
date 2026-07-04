@@ -2159,6 +2159,68 @@ function previewAssessmentBridge(detail) {
     || null;
 }
 
+function attachPreviewAssessmentBridge(detail, data = {}) {
+  const selectedSource = data.sourceId
+    ? (detail.sources || []).find((source) => source.id === data.sourceId)
+    : null;
+  const attachedAt = nowIso();
+  const assessmentBridge = {
+    status: "ready",
+    weakTopic: data.weakTopic || detail.package.topic || "Clinical judgment",
+    atiCategory: data.atiCategory || null,
+    nclexCategory: data.nclexCategory || detail.slides?.find((slide) => slide.nclexCategory)?.nclexCategory || null,
+    cjmStep: data.cjmStep || detail.slides?.find((slide) => slide.cjmStep)?.cjmStep || null,
+    sourceId: selectedSource?.id || null,
+    sourceTitle: selectedSource?.title || null,
+    note: data.note || "",
+    confidence: typeof data.confidence === "number" ? data.confidence : null,
+    rationale: data.rationale || "",
+    sourceEvidence: Array.isArray(data.sourceEvidence) ? data.sourceEvidence : [],
+    agentMode: data.agentMode || null,
+    attachedAt,
+    attachedBy: "local-preview",
+  };
+  detail.package.manifest = {
+    ...(detail.package.manifest || {}),
+    assessmentBridge,
+    pilot: {
+      ...((detail.package.manifest || {}).pilot || {}),
+      officialPackage: Boolean(data.officialPilotPackage ?? true),
+      officialPackageSetAt: attachedAt,
+    },
+  };
+  detail.package.taxonomySnapshot = {
+    ...(detail.package.taxonomySnapshot || {}),
+    assessmentBridge,
+  };
+  detail.package.deckModel = {
+    ...(detail.package.deckModel || {}),
+    assessmentBridge,
+  };
+  detail.package.updatedAt = attachedAt;
+  return assessmentBridge;
+}
+
+function previewAiAssessmentBridge(detail) {
+  const slide = detail.slides?.find((candidate) => candidate.nclexCategory || candidate.cjmStep) || detail.slides?.[0] || {};
+  const item = detail.items?.[0] || {};
+  const weakTopic = detail.package.topic || slide.title || "Clinical judgment";
+  return {
+    weakTopic,
+    atiCategory: slide.nclexCategory || item.tags?.nclexCategory || "Psychosocial Integrity",
+    nclexCategory: slide.nclexCategory || item.tags?.nclexCategory || "Psychosocial Integrity",
+    cjmStep: slide.cjmStep || item.tags?.cjmStep || "Analyze Cues",
+    confidence: 0.82,
+    rationale: `Local preview mapped this lesson to ${weakTopic} using slide, item, and citation labels without spending live AI credits.`,
+    sourceEvidence: uniquePreviewStrings([
+      slide.title,
+      item.stem,
+      ...(detail.citations || []).map((citation) => citation.citationLabel),
+    ]).slice(0, 4),
+    agentMode: lessonBuilderAgentStatus().aiMode || "local_preview",
+  };
+}
+
 function previewSourceLabels(detail) {
   return uniquePreviewStrings([
     ...(detail.sources || []).map((source) => source.title),
@@ -3069,6 +3131,27 @@ async function handleApi(req, res, url) {
   if (detailMatch && req.method === "GET") {
     const detail = packageDetails.get(detailMatch[1]);
     return detail ? sendJson(res, 200, detail) : notFound(res);
+  }
+
+  const assessmentBridgeMatch = url.pathname.match(/^\/api\/admin\/lesson-builder\/packages\/([^/]+)\/assessment-bridge$/);
+  if (assessmentBridgeMatch && req.method === "POST") {
+    const detail = packageDetails.get(assessmentBridgeMatch[1]);
+    if (!detail) return notFound(res);
+    const assessmentBridge = attachPreviewAssessmentBridge(detail, await readJson(req));
+    return sendJson(res, 200, { package: detail.package, assessmentBridge, bundle: detail });
+  }
+
+  const aiAssessmentBridgeMatch = url.pathname.match(/^\/api\/admin\/lesson-builder\/packages\/([^/]+)\/ai-assessment-bridge$/);
+  if (aiAssessmentBridgeMatch && req.method === "POST") {
+    const detail = packageDetails.get(aiAssessmentBridgeMatch[1]);
+    if (!detail) return notFound(res);
+    const aiMapping = previewAiAssessmentBridge(detail);
+    const assessmentBridge = attachPreviewAssessmentBridge(detail, {
+      ...aiMapping,
+      note: `AI mapped weak topic: ${aiMapping.rationale}`,
+      officialPilotPackage: Boolean(detail.package.manifest?.pilot?.officialPackage ?? true),
+    });
+    return sendJson(res, 200, { package: detail.package, assessmentBridge, aiMapping, bundle: detail });
   }
 
   const slideEditMatch = url.pathname.match(/^\/api\/admin\/lesson-builder\/packages\/([^/]+)\/slides\/([^/]+)$/);
