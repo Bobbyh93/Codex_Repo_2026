@@ -280,10 +280,14 @@ const learnerEventSchema = z.object({
   assignmentId: z.string().trim().min(1).optional(),
   assignmentLearnerId: z.string().trim().min(1).optional(),
   learnerKey: z.string().trim().min(8).optional(),
-  eventType: z.enum(["lesson_opened", "slide_viewed", "practice_viewed", "practice_attempted", "lesson_completed"]),
+  eventType: z.enum(["lesson_opened", "slide_viewed", "practice_viewed", "practice_attempted", "lesson_completed", "lesson_saved"]),
   slideId: z.string().optional(),
   itemId: z.string().optional(),
   payload: z.record(z.any()).default({}),
+});
+
+const studentSessionQuerySchema = z.object({
+  sessionId: z.string().trim().min(8).max(120),
 });
 
 const learnerFeedbackSchema = z.object({
@@ -4892,6 +4896,195 @@ function studentHomePayload(lessons: Array<ReturnType<typeof studentLessonSummar
   };
 }
 
+function learnerEventIso(value: unknown) {
+  if (!value) return null;
+  const date = new Date(value as any);
+  return Number.isNaN(date.getTime()) ? null : date.toISOString();
+}
+
+function learnerEventPayload(event: any) {
+  return event?.payload && typeof event.payload === "object" ? event.payload : {};
+}
+
+async function studentProgressPayload(sessionId: string) {
+  const events = await db
+    .select()
+    .from(lessonLearnerEvents)
+    .where(eq(lessonLearnerEvents.sessionId, sessionId))
+    .orderBy(desc(lessonLearnerEvents.createdAt))
+    .limit(1000);
+
+  const eventsByPackage = new Map<string, any[]>();
+  for (const event of events) {
+    if (!event.packageId) continue;
+    const existing = eventsByPackage.get(event.packageId) || [];
+    existing.push(event);
+    eventsByPackage.set(event.packageId, existing);
+  }
+
+  const lessonStates = [];
+  for (const [packageId, lessonEvents] of eventsByPackage.entries()) {
+    const bundle = await findPackageBundle(packageId);
+    if (!bundle || bundle.package.status !== "published") continue;
+
+    const summary = studentLessonSummary(bundle);
+    const newestEvent = lessonEvents[0];
+    const eventsOfType = (type: string) => lessonEvents.filter((event) => event.eventType === type);
+    const savedEvents = eventsOfType("lesson_saved");
+    const openedEvents = eventsOfType("lesson_opened");
+    const completedEvents = eventsOfType("lesson_completed");
+    const practiceEvents = eventsOfType("practice_attempted");
+    const feedbackEvents = eventsOfType("feedback_submitted");
+    const lastPractice = practiceEvents[0];
+    const lastPracticePayload = learnerEventPayload(lastPractice);
+
+    lessonStates.push({
+      packageId,
+      lesson: summary,
+      learnerUrl: summary.learnerUrl,
+      status: completedEvents.length ? "completed" : openedEvents.length || savedEvents.length ? "in_progress" : "not_started",
+      saved: savedEvents.length > 0,
+      opened: openedEvents.length > 0,
+      completed: completedEvents.length > 0,
+      savedAt: learnerEventIso(savedEvents[0]?.createdAt),
+      openedAt: learnerEventIso(openedEvents[openedEvents.length - 1]?.createdAt),
+      completedAt: learnerEventIso(completedEvents[0]?.createdAt),
+      lastActivityAt: learnerEventIso(newestEvent?.createdAt),
+      viewedSlides: new Set(lessonEvents.filter((event) => event.eventType === "slide_viewed").map((event) => event.slideId).filter(Boolean)).size,
+      practiceAttempts: practiceEvents.length,
+      feedbackSubmitted: feedbackEvents.length,
+      lastPracticeResult: lastPractice ? {
+        itemId: lastPractice.itemId || null,
+        selectedAnswer: lastPracticePayload.selectedAnswer || null,
+        correctAnswer: lastPracticePayload.correctAnswer || null,
+        isCorrect: typeof lastPracticePayload.isCorrect === "boolean" ? lastPracticePayload.isCorrect : null,
+        difficulty: lastPracticePayload.difficulty || null,
+        attemptedAt: learnerEventIso(lastPractice.createdAt),
+      } : null,
+      latestFeedback: feedbackEvents[0] ? {
+        rating: learnerEventPayload(feedbackEvents[0]).rating || null,
+        comment: learnerEventPayload(feedbackEvents[0]).comment || "",
+        submittedAt: learnerEventIso(feedbackEvents[0].createdAt),
+      } : null,
+    });
+  }
+
+  lessonStates.sort((a, b) => String(b.lastActivityAt || "").localeCompare(String(a.lastActivityAt || "")));
+
+  const touchedLessonIds = new Set(lessonStates.map((state) => state.packageId));
+  const completedLessonIds = new Set(lessonStates.filter((state) => state.completed).map((state) => state.packageId));
+  const interestTags = new Set<string>();
+  for (const state of lessonStates) {
+    [
+      state.lesson.weakTopic,
+      state.lesson.nclexCategory,
+      state.lesson.cjmStep,
+      state.lesson.subject,
+      ...(state.lesson.tags || []),
+    ].filter(Boolean).forEach((tag) => interestTags.add(String(tag).toLowerCase()));
+  }
+
+  const allLessons = await publishedStudentLessonSummaries(75);
+  const recommendedLessons = allLessons
+    .filter((lesson) => !completedLessonIds.has(lesson.id))
+    .map((lesson) => {
+      const tags = [
+        lesson.weakTopic,
+        lesson.nclexCategory,
+        lesson.cjmStep,
+        lesson.subject,
+        ...(lesson.tags || []),
+      ].filter(Boolean).map((tag) => String(tag).toLowerCase());
+      const score = tags.reduce((total, tag) => total + (interestTags.has(tag) ? 1 : 0), 0);
+      return { lesson, score, touched: touchedLessonIds.has(lesson.id) };
+    })
+    .sort((a, b) => b.score - a.score || Number(a.touched) - Number(b.touched))
+    .map((entry) => entry.lesson)
+    .slice(0, 6);
+
+  return {
+    generatedAt: new Date().toISOString(),
+    sessionId,
+    totals: {
+      recentLessons: lessonStates.length,
+      openedLessons: lessonStates.filter((state) => state.opened).length,
+      savedLessons: lessonStates.filter((state) => state.saved).length,
+      completedLessons: lessonStates.filter((state) => state.completed).length,
+      viewedSlides: lessonStates.reduce((total, state) => total + state.viewedSlides, 0),
+      practiceAttempts: lessonStates.reduce((total, state) => total + state.practiceAttempts, 0),
+      feedbackSubmitted: lessonStates.reduce((total, state) => total + state.feedbackSubmitted, 0),
+    },
+    continueLesson: lessonStates.find((state) => !state.completed) || lessonStates[0] || null,
+    recentLessons: lessonStates.slice(0, 10),
+    savedLessons: lessonStates.filter((state) => state.saved),
+    completedLessons: lessonStates.filter((state) => state.completed),
+    recommendedLessons,
+    emptyState: lessonStates.length === 0 ? {
+      title: "Your study path is ready when you start.",
+      detail: "Open a published lesson, save it, answer a practice item, or mark it complete to build your workspace.",
+    } : null,
+  };
+}
+
+async function studentStudyPackPayload(sessionId: string) {
+  const progress = await studentProgressPayload(sessionId);
+  const activeLessonIds = uniqueStudentStrings([
+    ...progress.savedLessons.map((state: any) => state.packageId),
+    ...progress.recentLessons.map((state: any) => state.packageId),
+    ...progress.completedLessons.map((state: any) => state.packageId),
+  ]).slice(0, 12);
+
+  const lessons = [];
+  for (const packageId of activeLessonIds) {
+    const bundle = await findPackageBundle(packageId);
+    if (!bundle || bundle.package.status !== "published") continue;
+    const learnerPayload = learnerLessonPayload(bundle);
+    lessons.push({
+      summary: studentLessonSummary(bundle),
+      guidedNotes: learnerPayload.slides
+        .filter((slide) => String(slide.guidedNotes || "").trim())
+        .map((slide) => ({
+          slideId: slide.id,
+          slideNumber: slide.slideNumber,
+          title: slide.title,
+          guidedNotes: slide.guidedNotes,
+          retrievalPrompt: slide.retrievalPrompt || null,
+          nclexCategory: slide.nclexCategory || null,
+          cjmStep: slide.cjmStep || null,
+          citations: slide.citations,
+        })),
+      practiceItems: learnerPayload.practiceItems.map((item) => ({
+        id: item.id,
+        stem: item.stem,
+        correctAnswer: item.correctAnswer,
+        rationale: item.rationale,
+        difficulty: item.difficulty || null,
+        tags: item.tags || {},
+        citations: item.citations,
+        lessonUrl: `/lessons/${packageId}`,
+      })),
+      citations: learnerPayload.citations,
+      sourceLabels: learnerPayload.sources.map((source) => source.title),
+    });
+  }
+
+  return {
+    generatedAt: new Date().toISOString(),
+    sessionId,
+    lessons,
+    totals: {
+      lessons: lessons.length,
+      guidedNotes: lessons.reduce((total, lesson) => total + lesson.guidedNotes.length, 0),
+      practiceItems: lessons.reduce((total, lesson) => total + lesson.practiceItems.length, 0),
+      citations: lessons.reduce((total, lesson) => total + lesson.citations.length, 0),
+    },
+    emptyState: lessons.length === 0 ? {
+      title: "No study pack yet.",
+      detail: "Save or open a lesson to collect guided notes, rationales, and citations here.",
+    } : null,
+  };
+}
+
 async function generateLessonPackageFromData(data: z.infer<typeof generateSchema>, createdBy?: string) {
   let generationRunId: string | undefined;
   try {
@@ -6167,6 +6360,34 @@ export function registerLessonBuilderRoutes(app: Express) {
     } catch (error) {
       console.error("Student lesson summary load error:", error);
       res.status(500).json({ error: "Failed to load lesson summary" });
+    }
+  });
+
+  app.get("/api/student/progress", async (req: Request, res: Response) => {
+    try {
+      await ensureLessonBuilderTables();
+      const query = studentSessionQuerySchema.parse({ sessionId: req.query.sessionId });
+      res.json(await studentProgressPayload(query.sessionId));
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "A valid student session id is required", details: error.errors });
+      }
+      console.error("Student progress load error:", error);
+      res.status(500).json({ error: "Failed to load student progress" });
+    }
+  });
+
+  app.get("/api/student/study-pack", async (req: Request, res: Response) => {
+    try {
+      await ensureLessonBuilderTables();
+      const query = studentSessionQuerySchema.parse({ sessionId: req.query.sessionId });
+      res.json(await studentStudyPackPayload(query.sessionId));
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "A valid student session id is required", details: error.errors });
+      }
+      console.error("Student study pack load error:", error);
+      res.status(500).json({ error: "Failed to load study pack" });
     }
   });
 

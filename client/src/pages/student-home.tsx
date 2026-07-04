@@ -2,11 +2,13 @@ import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   ArrowRight,
+  BookMarked,
   BookOpenCheck,
   CheckCircle2,
   ClipboardList,
   FileText,
   GraduationCap,
+  ListChecks,
   Search,
   ShieldCheck,
   Target,
@@ -15,6 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { getStudentSessionId } from "@/lib/student-session";
 
 type StudentLessonSummary = {
   id: string;
@@ -63,10 +66,39 @@ type StudentHomeResponse = {
   trustSignals: string[];
 };
 
+type StudentProgressResponse = {
+  totals: {
+    recentLessons: number;
+    savedLessons: number;
+    completedLessons: number;
+    practiceAttempts: number;
+    feedbackSubmitted: number;
+  };
+  continueLesson: {
+    lesson: StudentLessonSummary;
+    learnerUrl: string;
+    lastActivityAt?: string | null;
+  } | null;
+  savedLessons: Array<{
+    packageId: string;
+    lesson: StudentLessonSummary;
+    learnerUrl: string;
+  }>;
+  emptyState?: { title: string; detail: string } | null;
+};
+
 async function fetchStudentHome(): Promise<StudentHomeResponse> {
   const response = await fetch("/api/student/home", { credentials: "include" });
   if (!response.ok) {
     throw new Error("Student lesson library is temporarily unavailable.");
+  }
+  return response.json();
+}
+
+async function fetchStudentProgress(sessionId: string): Promise<StudentProgressResponse> {
+  const response = await fetch(`/api/student/progress?sessionId=${encodeURIComponent(sessionId)}`, { credentials: "include" });
+  if (!response.ok) {
+    throw new Error("Student progress is temporarily unavailable.");
   }
   return response.json();
 }
@@ -152,13 +184,21 @@ export default function StudentHome() {
   const [nclexCategory, setNclexCategory] = useState("all");
   const [cjmStep, setCjmStep] = useState("all");
   const [subject, setSubject] = useState("all");
+  const studentSessionId = useMemo(() => getStudentSessionId(), []);
 
   const homeQuery = useQuery<StudentHomeResponse>({
     queryKey: ["/api/student/home"],
     queryFn: fetchStudentHome,
   });
 
+  const progressQuery = useQuery<StudentProgressResponse>({
+    queryKey: ["/api/student/progress", studentSessionId],
+    enabled: Boolean(studentSessionId),
+    queryFn: () => fetchStudentProgress(studentSessionId),
+  });
+
   const home = homeQuery.data;
+  const progress = progressQuery.data;
   const lessons = home?.lessons || [];
   const featuredLesson = home?.featuredLesson || lessons[0] || null;
   const learningSteps = [
@@ -211,7 +251,8 @@ export default function StudentHome() {
           </a>
           <nav className="flex flex-wrap items-center gap-2 text-sm">
             <a href="#library" className="rounded-md px-3 py-2 text-slate-700 hover:bg-slate-100">Lessons</a>
-            <a href="/study-guide" className="rounded-md px-3 py-2 text-slate-700 hover:bg-slate-100">Study Guide</a>
+            <a href="/student/progress" className="rounded-md px-3 py-2 text-slate-700 hover:bg-slate-100">Study Path</a>
+            <a href="/student/study-pack" className="rounded-md px-3 py-2 text-slate-700 hover:bg-slate-100">Study Pack</a>
             <a href="/pilot-request" className="rounded-md px-3 py-2 text-slate-500 hover:bg-slate-100">Pilot Request</a>
             <a href="/admin/login" className="rounded-md border border-slate-200 px-3 py-2 text-slate-700 hover:bg-slate-100">Creator Login</a>
           </nav>
@@ -235,7 +276,14 @@ export default function StudentHome() {
               </p>
             </div>
             <div className="flex flex-wrap gap-3">
-              {featuredLesson ? (
+              {progress?.continueLesson ? (
+                <a href={progress.continueLesson.learnerUrl}>
+                  <Button size="lg">
+                    Continue learning
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </a>
+              ) : featuredLesson ? (
                 <a href={featuredLesson.learnerUrl}>
                   <Button size="lg">
                     Start learning
@@ -245,6 +293,9 @@ export default function StudentHome() {
               ) : null}
               <a href="#library">
                 <Button size="lg" variant="outline">Browse lessons</Button>
+              </a>
+              <a href="/student/study-pack">
+                <Button size="lg" variant="outline">Open study pack</Button>
               </a>
             </div>
             <div className="grid gap-3 sm:grid-cols-4">
@@ -262,7 +313,65 @@ export default function StudentHome() {
             </div>
           </div>
 
-          <div>
+          <div className="space-y-3">
+            <Card className="rounded-md border-blue-200 bg-blue-50">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between gap-3">
+                  <CardTitle className="flex items-center gap-2 text-base text-blue-950">
+                    <ListChecks className="h-4 w-4" />
+                    My Study Path
+                  </CardTitle>
+                  <a href="/student/progress" className="text-xs font-medium text-blue-800 hover:underline">View all</a>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {progressQuery.isLoading ? (
+                  <p className="text-sm text-blue-900">Checking your study progress...</p>
+                ) : progress?.continueLesson ? (
+                  <div className="rounded-md border border-blue-200 bg-white p-3">
+                    <div className="text-xs font-semibold uppercase text-blue-700">Continue</div>
+                    <div className="mt-1 font-semibold text-slate-950">{progress.continueLesson.lesson.title}</div>
+                    <a href={progress.continueLesson.learnerUrl}>
+                      <Button size="sm" className="mt-3">
+                        Open lesson
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                      </Button>
+                    </a>
+                  </div>
+                ) : (
+                  <div className="rounded-md border border-blue-200 bg-white p-3">
+                    <div className="font-semibold text-slate-950">{progress?.emptyState?.title || "Start your path"}</div>
+                    <p className="mt-1 text-sm leading-6 text-slate-600">
+                      {progress?.emptyState?.detail || "Save a lesson or complete a practice item to build your study workspace."}
+                    </p>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-4 gap-2 text-center text-xs">
+                  <div className="rounded-md bg-white p-2">
+                    <BookMarked className="mx-auto mb-1 h-4 w-4 text-blue-700" />
+                    <div className="font-semibold text-slate-950">{progress?.totals.savedLessons || 0}</div>
+                    <div className="text-slate-500">Saved</div>
+                  </div>
+                  <div className="rounded-md bg-white p-2">
+                    <CheckCircle2 className="mx-auto mb-1 h-4 w-4 text-emerald-700" />
+                    <div className="font-semibold text-slate-950">{progress?.totals.completedLessons || 0}</div>
+                    <div className="text-slate-500">Done</div>
+                  </div>
+                  <div className="rounded-md bg-white p-2">
+                    <ClipboardList className="mx-auto mb-1 h-4 w-4 text-amber-700" />
+                    <div className="font-semibold text-slate-950">{progress?.totals.practiceAttempts || 0}</div>
+                    <div className="text-slate-500">Practice</div>
+                  </div>
+                  <div className="rounded-md bg-white p-2">
+                    <FileText className="mx-auto mb-1 h-4 w-4 text-slate-700" />
+                    <div className="font-semibold text-slate-950">{progress?.totals.feedbackSubmitted || 0}</div>
+                    <div className="text-slate-500">Notes</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
             {homeQuery.isLoading ? (
               <Card className="rounded-md">
                 <CardContent className="p-6 text-slate-600">Loading published lessons...</CardContent>
@@ -332,19 +441,19 @@ export default function StudentHome() {
           </div>
 
           <div className="mb-6 grid gap-3 md:grid-cols-4">
-            <select value={weakTopic} onChange={(event) => setWeakTopic(event.target.value)} className="h-10 rounded-md border border-slate-200 bg-white px-3 text-sm">
+            <select value={weakTopic} onChange={(event) => setWeakTopic(event.target.value)} className="h-10 w-full min-w-0 rounded-md border border-slate-200 bg-white px-3 text-sm">
               <option value="all">All weak topics</option>
               {filters.weakTopics.map((option) => <option key={option} value={option}>{option}</option>)}
             </select>
-            <select value={nclexCategory} onChange={(event) => setNclexCategory(event.target.value)} className="h-10 rounded-md border border-slate-200 bg-white px-3 text-sm">
+            <select value={nclexCategory} onChange={(event) => setNclexCategory(event.target.value)} className="h-10 w-full min-w-0 rounded-md border border-slate-200 bg-white px-3 text-sm">
               <option value="all">All NCLEX categories</option>
               {filters.nclexCategories.map((option) => <option key={option} value={option}>{option}</option>)}
             </select>
-            <select value={cjmStep} onChange={(event) => setCjmStep(event.target.value)} className="h-10 rounded-md border border-slate-200 bg-white px-3 text-sm">
+            <select value={cjmStep} onChange={(event) => setCjmStep(event.target.value)} className="h-10 w-full min-w-0 rounded-md border border-slate-200 bg-white px-3 text-sm">
               <option value="all">All CJM steps</option>
               {filters.cjmSteps.map((option) => <option key={option} value={option}>{option}</option>)}
             </select>
-            <select value={subject} onChange={(event) => setSubject(event.target.value)} className="h-10 rounded-md border border-slate-200 bg-white px-3 text-sm">
+            <select value={subject} onChange={(event) => setSubject(event.target.value)} className="h-10 w-full min-w-0 rounded-md border border-slate-200 bg-white px-3 text-sm">
               <option value="all">All subjects</option>
               {filters.subjects.map((option) => <option key={option} value={option}>{option}</option>)}
             </select>

@@ -332,6 +332,29 @@ async function run() {
     );
 
     const lessonSignalSession = `student-smoke-${Date.now()}`;
+    const emptyProgress = await request(`/api/student/progress?sessionId=${encodeURIComponent(lessonSignalSession)}`);
+    record(
+      "student progress starts empty",
+      emptyProgress.status === 200
+        && isJson(emptyProgress)
+        && emptyProgress.payload?.totals?.recentLessons === 0,
+      `status ${emptyProgress.status}, recent ${emptyProgress.payload?.totals?.recentLessons ?? "missing"}`
+    );
+
+    const lessonSaved = await request(`/api/lessons/${latestPackageId}/events`, {
+      method: "POST",
+      json: {
+        sessionId: lessonSignalSession,
+        eventType: "lesson_saved",
+        payload: { source: "student_workspace_smoke" },
+      },
+    });
+    record(
+      "student lesson save records",
+      lessonSaved.status === 200 && isJson(lessonSaved) && lessonSaved.payload?.recorded === true,
+      `status ${lessonSaved.status}, recorded ${String(lessonSaved.payload?.recorded)}`
+    );
+
     const lessonEvent = await request(`/api/lessons/${latestPackageId}/events`, {
       method: "POST",
       json: {
@@ -344,6 +367,43 @@ async function run() {
       "student lesson event records",
       lessonEvent.status === 200 && isJson(lessonEvent) && lessonEvent.payload?.recorded === true,
       `status ${lessonEvent.status}, recorded ${String(lessonEvent.payload?.recorded)}`
+    );
+
+    const practiceItem = Array.isArray(learnerApi.payload?.practiceItems) ? learnerApi.payload.practiceItems[0] : null;
+    if (practiceItem?.id) {
+      const practiceAttempt = await request(`/api/lessons/${latestPackageId}/events`, {
+        method: "POST",
+        json: {
+          sessionId: lessonSignalSession,
+          eventType: "practice_attempted",
+          itemId: practiceItem.id,
+          payload: {
+            selectedAnswer: practiceItem.correctAnswer,
+            correctAnswer: practiceItem.correctAnswer,
+            isCorrect: true,
+            difficulty: practiceItem.difficulty || null,
+          },
+        },
+      });
+      record(
+        "student practice attempt records",
+        practiceAttempt.status === 200 && isJson(practiceAttempt) && practiceAttempt.payload?.recorded === true,
+        `status ${practiceAttempt.status}, recorded ${String(practiceAttempt.payload?.recorded)}`
+      );
+    }
+
+    const lessonComplete = await request(`/api/lessons/${latestPackageId}/events`, {
+      method: "POST",
+      json: {
+        sessionId: lessonSignalSession,
+        eventType: "lesson_completed",
+        payload: { source: "student_workspace_smoke" },
+      },
+    });
+    record(
+      "student completion records",
+      lessonComplete.status === 200 && isJson(lessonComplete) && lessonComplete.payload?.recorded === true,
+      `status ${lessonComplete.status}, recorded ${String(lessonComplete.payload?.recorded)}`
     );
 
     const lessonFeedback = await request(`/api/lessons/${latestPackageId}/feedback`, {
@@ -361,11 +421,48 @@ async function run() {
       `status ${lessonFeedback.status}, recorded ${String(lessonFeedback.payload?.recorded)}`
     );
 
+    const studentProgress = await request(`/api/student/progress?sessionId=${encodeURIComponent(lessonSignalSession)}`);
+    record(
+      "student progress reflects activity",
+      studentProgress.status === 200
+        && isJson(studentProgress)
+        && studentProgress.payload?.totals?.savedLessons >= 1
+        && studentProgress.payload?.totals?.completedLessons >= 1
+        && studentProgress.payload?.totals?.practiceAttempts >= (practiceItem?.id ? 1 : 0)
+        && studentProgress.payload?.totals?.feedbackSubmitted >= 1,
+      `status ${studentProgress.status}, saved ${studentProgress.payload?.totals?.savedLessons ?? "missing"}, completed ${studentProgress.payload?.totals?.completedLessons ?? "missing"}`
+    );
+
+    const studentStudyPack = await request(`/api/student/study-pack?sessionId=${encodeURIComponent(lessonSignalSession)}`);
+    record(
+      "student study pack compiles",
+      studentStudyPack.status === 200
+        && isJson(studentStudyPack)
+        && studentStudyPack.payload?.totals?.lessons >= 1
+        && studentStudyPack.payload?.totals?.guidedNotes >= 1
+        && studentStudyPack.payload?.totals?.citations >= 1,
+      `status ${studentStudyPack.status}, lessons ${studentStudyPack.payload?.totals?.lessons ?? "missing"}, notes ${studentStudyPack.payload?.totals?.guidedNotes ?? "missing"}`
+    );
+
     const learnerPage = await request(`/lessons/${latestPackageId}`);
     record(
       "published learner page",
       learnerPage.status === 200 && String(learnerPage.contentType).includes("text/html"),
       `status ${learnerPage.status}, content-type ${learnerPage.contentType || "missing"}`
+    );
+
+    const progressPage = await request("/student/progress");
+    record(
+      "student progress page",
+      progressPage.status === 200 && String(progressPage.contentType).includes("text/html"),
+      `status ${progressPage.status}, content-type ${progressPage.contentType || "missing"}`
+    );
+
+    const studyPackPage = await request("/student/study-pack");
+    record(
+      "student study pack page",
+      studyPackPage.status === 200 && String(studyPackPage.contentType).includes("text/html"),
+      `status ${studyPackPage.status}, content-type ${studyPackPage.contentType || "missing"}`
     );
 
     const exportStatus = await request(`/api/admin/lesson-builder/packages/${latestPackageId}/export-status?profile=harrity`);

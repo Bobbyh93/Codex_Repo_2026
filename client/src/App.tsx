@@ -62,6 +62,8 @@ import LessonPackage from "@/pages/lesson-package";
 import LearnerAssignment from "@/pages/learner-assignment";
 import PublicLaunch from "@/pages/public-launch";
 import StudentHome from "@/pages/student-home";
+import StudentProgress from "@/pages/student-progress";
+import StudentStudyPack from "@/pages/student-study-pack";
 
 function AdminProtectedRoute({ component: Component, ...props }: { component: any; [key: string]: any }) {
   const [authState, setAuthState] = useState<"checking" | "authenticated" | "denied">("checking");
@@ -197,6 +199,8 @@ function Router() {
     >
       <Switch>
         <Route path="/" component={StudentHome} />
+        <Route path="/student/progress" component={StudentProgress} />
+        <Route path="/student/study-pack" component={StudentStudyPack} />
         <Route path="/student" component={StudentHome} />
         <Route path="/pilot-request" component={PublicLaunch} />
         <Route path="/public-launch" component={PublicLaunch} />

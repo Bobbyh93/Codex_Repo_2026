@@ -3,15 +3,18 @@ import { useQuery } from "@tanstack/react-query";
 import { useRoute } from "wouter";
 import {
   BookOpenCheck,
+  Bookmark,
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
   FileText,
   GraduationCap,
+  ListChecks,
   Quote,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { getSavedLessonIds, getStudentSessionId, rememberSavedLesson } from "@/lib/student-session";
 
 type LessonCitation = {
   id: string;
@@ -160,21 +163,6 @@ function CitationList({ citations }: { citations: LessonCitation[] }) {
   );
 }
 
-function getLearnerSessionId(lessonId: string) {
-  const key = `nursestudy.lesson.${lessonId}.session`;
-  try {
-    const existing = window.localStorage.getItem(key);
-    if (existing) return existing;
-    const generated = typeof window.crypto?.randomUUID === "function"
-      ? window.crypto.randomUUID()
-      : `lesson-${Date.now()}-${Math.random().toString(16).slice(2)}`;
-    window.localStorage.setItem(key, generated);
-    return generated;
-  } catch {
-    return `lesson-${Date.now()}-${Math.random().toString(16).slice(2)}`;
-  }
-}
-
 async function postLessonSignal(lessonId: string, path: "events" | "feedback", body: Record<string, any>) {
   try {
     await fetch(`/api/lessons/${lessonId}/${path}`, {
@@ -198,6 +186,7 @@ export default function LessonPackage() {
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const [sessionId, setSessionId] = useState("");
   const [lessonCompleted, setLessonCompleted] = useState(false);
+  const [lessonSaved, setLessonSaved] = useState(false);
   const [feedbackRating, setFeedbackRating] = useState("helpful");
   const [feedbackComment, setFeedbackComment] = useState("");
   const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
@@ -244,7 +233,8 @@ export default function LessonPackage() {
 
   useEffect(() => {
     if (!lessonId) return;
-    setSessionId(getLearnerSessionId(lessonId));
+    setSessionId(getStudentSessionId());
+    setLessonSaved(getSavedLessonIds().has(lessonId));
   }, [lessonId]);
 
   useEffect(() => {
@@ -338,6 +328,22 @@ export default function LessonPackage() {
     });
   };
 
+  const saveLesson = async () => {
+    if (!lessonId || !sessionId || lessonSaved) return;
+    setLessonSaved(true);
+    rememberSavedLesson(lessonId);
+    await postLessonSignal(lessonId, "events", {
+      sessionId,
+      ...assignmentSignal,
+      eventType: "lesson_saved",
+      slideId: currentSlide?.id,
+      payload: {
+        title: lesson?.package.title,
+        weakTopic: lesson?.package.assessmentBridge?.weakTopic || null,
+      },
+    });
+  };
+
   const submitFeedback = async () => {
     if (!lessonId || !sessionId || feedbackSubmitted) return;
     await postLessonSignal(lessonId, "feedback", {
@@ -391,11 +397,22 @@ export default function LessonPackage() {
           <div className="flex flex-wrap items-center gap-2">
             <Button variant="outline" size="sm" onClick={() => { window.location.href = "/student"; }}>
               <ChevronLeft className="mr-1 h-4 w-4" />
-              Library
+              Back to library
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => { window.location.href = "/student/progress"; }}>
+              <ListChecks className="mr-1 h-4 w-4" />
+              Study path
+            </Button>
+            <Button variant={lessonSaved ? "default" : "outline"} size="sm" onClick={saveLesson} disabled={lessonSaved}>
+              <Bookmark className="mr-1 h-4 w-4" />
+              {lessonSaved ? "Saved" : "Save lesson"}
             </Button>
             <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-100">
               <CheckCircle2 className="mr-1 h-3.5 w-3.5" />
               Published
+            </Badge>
+            <Badge variant={lessonCompleted ? "default" : "outline"} className={lessonCompleted ? "bg-blue-600 text-white" : ""}>
+              {lessonCompleted ? "Completed" : "In progress"}
             </Badge>
             <Badge variant="outline">{slides.length} slides</Badge>
             <Badge variant="outline">{lesson.practiceItems.length} practice item</Badge>

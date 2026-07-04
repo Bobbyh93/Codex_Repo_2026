@@ -7,6 +7,7 @@ The DB-backed Lesson Builder path is functional locally and is the live Render p
 - Public-launch MFP acceptance is now recorded in `PUBLIC_LAUNCH_MFP_ACCEPTANCE.md`: internal pilot is accepted as the baseline, the public scope is a controlled visitor/capture entry plus the protected admin/learner workflow, and Replit/NursesBrain/Data Chunker/Drive assets remain supporting systems unless promoted through source approval.
 - The public root now centers the nursing student learning interface: lesson library, featured published lesson, topic filters, guided notes, quizzes, rationales, citations, progress-friendly lesson structure, and source-backed study materials.
 - Public pilot request review is optional operations support at `/pilot-request` and `/admin/pilot-requests`, not the main product surface.
+- Student Study Workspace v1 adds anonymous browser-session progress without accounts: saved lessons, recent lessons, completed lessons, practice attempts, feedback counts, and a guided study pack.
 - Admin Knowledge Base upload creates persisted document chunks.
 - Approved sources can generate a Harrity web lesson package.
 - Source detail now includes a NursesBrain-style normalization step for table/crosswalk signals, taxonomy hints, official pilot source status, and weak-topic metadata.
@@ -14,7 +15,8 @@ The DB-backed Lesson Builder path is functional locally and is the live Render p
 - Packages support edit, rebuild artifacts, QA, contract validation, publish, learner view, and Harrity zip export.
 - Packages can carry an assessment bridge: weak topic, ATI category, NCLEX category, CJM step, and evidence source.
 - Published learner lessons are available at `/lessons/:id`.
-- Student lesson discovery APIs are available at `/api/student/home`, `/api/student/lessons`, and `/api/student/lessons/:id/summary`; they derive from published Lesson Builder packages and exclude admin-only QA/source-management internals.
+- Student lesson discovery and workspace APIs are available at `/api/student/home`, `/api/student/lessons`, `/api/student/lessons/:id/summary`, `/api/student/progress?sessionId=...`, and `/api/student/study-pack?sessionId=...`; they derive from published Lesson Builder packages and learner events, and exclude admin-only QA/source-management internals.
+- `/lessons/:id` now supports `Save lesson`, `Back to library`, `Study path`, shared browser-session progress, `lesson_saved` learner events, completion status, practice events, feedback, guided notes, rationales, and citations.
 - Assignment links now open a token-gated learner assignment dashboard at `/lesson-assignments/:assignmentId/learner/:learnerId`, with safe progress, next action, lesson preview, completion, feedback, source labels, and a clean handoff into `/lessons/:id`.
 - Faculty reviewers can record package decisions: comment, changes requested, approved for pilot, or approved for release.
 - Premium faculty review now includes a scored 5-criterion rubric for clinical accuracy, source traceability, NCLEX/CJM alignment, learner experience, and assessment quality.
@@ -140,6 +142,7 @@ Use a direct Neon connection string only for migration/admin commands, not app r
 - Pilot Launch Console is the preferred admin entry point for the internal cohort launch; use the broader Lesson Builder tabs for source/package debugging and audit drill-down.
 - `/admin/pilot-requests` is the focused queue for controlled public MFP requests. Use it to qualify and follow up on interested programs; the primary public surface is now the student lesson library at `/`.
 - The student home/library filters published lessons by weak topic, NCLEX category, CJM step, and subject, then opens `/lessons/:id` for the learner-safe deck, guided notes, practice, rationale, citations, feedback, and completion signals.
+- The student workspace at `/student/progress` summarizes anonymous browser progress and recommends next lessons; `/student/study-pack` compiles guided notes, practice rationales, and citation labels from saved/opened/completed published lessons.
 - Google Drive decks and Pearson Sites dashboards are related supporting assets. They are registered for provenance and workflow-pattern reuse, but they should not replace approved nursing source documents.
 - MNN Drive assets are the strongest next package-import candidate because they already carry chapter folders, decks, manifests, QA, validation, source JSON, taxonomy JSON, and notes-pass structure.
 - OpenAI workspace agents are related production operators. Use direct OpenAI Chat Completions for live Render generation until a selected Builder Agent API channel is created, published, and stored server-side.
@@ -173,6 +176,7 @@ Use a direct Neon connection string only for migration/admin commands, not app r
 - Record one AI-reviewed `approved_for_pilot` decision for internal launch; add human faculty review only for the premium release workflow.
 - For premium release workflow, complete the faculty rubric, save the faculty decision, and open the faculty review certificate/report for the handoff packet.
 - Open the learner lesson, mark complete, submit feedback, and confirm learner signals appear in admin package detail.
+- Save a public lesson, attempt practice, mark complete, submit feedback, then verify `/student/progress` and `/student/study-pack` update for the same browser session.
 - Open the learner assignment dashboard from a copied cohort link, confirm progress and next action render, then continue into the learner lesson.
 - Export Harrity bundle and verify required files are present.
 - Open the Pilot Launch Console, confirm all readiness steps pass, and export Pilot Evidence for the program-director handoff.

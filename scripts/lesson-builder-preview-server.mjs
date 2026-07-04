@@ -237,6 +237,7 @@ const kbChunks = [];
 const kbJobs = [];
 const extractedTables = [];
 const mapperContentBlocks = [];
+const previewStudentEvents = [];
 const pilotRequests = [
   {
     id: "pilot-request-preview-1",
@@ -2226,6 +2227,172 @@ function previewStudentHomePayload() {
   };
 }
 
+function previewEventsForSession(sessionId) {
+  return previewStudentEvents
+    .filter((event) => event.sessionId === sessionId)
+    .sort((a, b) => String(b.createdAt || "").localeCompare(String(a.createdAt || "")));
+}
+
+function previewStudentProgressPayload(sessionId) {
+  const events = previewEventsForSession(sessionId);
+  const eventsByPackage = new Map();
+  for (const event of events) {
+    const existing = eventsByPackage.get(event.packageId) || [];
+    existing.push(event);
+    eventsByPackage.set(event.packageId, existing);
+  }
+
+  const lessonStates = Array.from(eventsByPackage.entries()).map(([packageId, lessonEvents]) => {
+    const detail = packageDetails.get(packageId);
+    if (!detail || detail.package.status !== "published") return null;
+    const summary = previewLessonSummary(detail);
+    const eventsOfType = (type) => lessonEvents.filter((event) => event.eventType === type);
+    const savedEvents = eventsOfType("lesson_saved");
+    const openedEvents = eventsOfType("lesson_opened");
+    const completedEvents = eventsOfType("lesson_completed");
+    const practiceEvents = eventsOfType("practice_attempted");
+    const feedbackEvents = eventsOfType("feedback_submitted");
+    const lastPractice = practiceEvents[0];
+    return {
+      packageId,
+      lesson: summary,
+      learnerUrl: summary.learnerUrl,
+      status: completedEvents.length ? "completed" : openedEvents.length || savedEvents.length ? "in_progress" : "not_started",
+      saved: savedEvents.length > 0,
+      opened: openedEvents.length > 0,
+      completed: completedEvents.length > 0,
+      savedAt: savedEvents[0]?.createdAt || null,
+      openedAt: openedEvents[openedEvents.length - 1]?.createdAt || null,
+      completedAt: completedEvents[0]?.createdAt || null,
+      lastActivityAt: lessonEvents[0]?.createdAt || null,
+      viewedSlides: new Set(lessonEvents.filter((event) => event.eventType === "slide_viewed").map((event) => event.slideId).filter(Boolean)).size,
+      practiceAttempts: practiceEvents.length,
+      feedbackSubmitted: feedbackEvents.length,
+      lastPracticeResult: lastPractice ? {
+        itemId: lastPractice.itemId || null,
+        selectedAnswer: lastPractice.payload?.selectedAnswer || null,
+        correctAnswer: lastPractice.payload?.correctAnswer || null,
+        isCorrect: typeof lastPractice.payload?.isCorrect === "boolean" ? lastPractice.payload.isCorrect : null,
+        difficulty: lastPractice.payload?.difficulty || null,
+        attemptedAt: lastPractice.createdAt,
+      } : null,
+      latestFeedback: feedbackEvents[0] ? {
+        rating: feedbackEvents[0].payload?.rating || null,
+        comment: feedbackEvents[0].payload?.comment || "",
+        submittedAt: feedbackEvents[0].createdAt,
+      } : null,
+    };
+  }).filter(Boolean);
+
+  lessonStates.sort((a, b) => String(b.lastActivityAt || "").localeCompare(String(a.lastActivityAt || "")));
+  const touchedLessonIds = new Set(lessonStates.map((state) => state.packageId));
+  const completedLessonIds = new Set(lessonStates.filter((state) => state.completed).map((state) => state.packageId));
+  const interestTags = new Set();
+  for (const state of lessonStates) {
+    [
+      state.lesson.weakTopic,
+      state.lesson.nclexCategory,
+      state.lesson.cjmStep,
+      state.lesson.subject,
+      ...(state.lesson.tags || []),
+    ].filter(Boolean).forEach((tag) => interestTags.add(String(tag).toLowerCase()));
+  }
+
+  const recommendedLessons = previewPublishedLessons()
+    .map(previewLessonSummary)
+    .filter((lesson) => !completedLessonIds.has(lesson.id))
+    .map((lesson) => {
+      const tags = [lesson.weakTopic, lesson.nclexCategory, lesson.cjmStep, lesson.subject, ...(lesson.tags || [])]
+        .filter(Boolean)
+        .map((tag) => String(tag).toLowerCase());
+      const score = tags.reduce((total, tag) => total + (interestTags.has(tag) ? 1 : 0), 0);
+      return { lesson, score, touched: touchedLessonIds.has(lesson.id) };
+    })
+    .sort((a, b) => b.score - a.score || Number(a.touched) - Number(b.touched))
+    .map((entry) => entry.lesson)
+    .slice(0, 6);
+
+  return {
+    generatedAt: nowIso(),
+    sessionId,
+    totals: {
+      recentLessons: lessonStates.length,
+      openedLessons: lessonStates.filter((state) => state.opened).length,
+      savedLessons: lessonStates.filter((state) => state.saved).length,
+      completedLessons: lessonStates.filter((state) => state.completed).length,
+      viewedSlides: lessonStates.reduce((total, state) => total + state.viewedSlides, 0),
+      practiceAttempts: lessonStates.reduce((total, state) => total + state.practiceAttempts, 0),
+      feedbackSubmitted: lessonStates.reduce((total, state) => total + state.feedbackSubmitted, 0),
+    },
+    continueLesson: lessonStates.find((state) => !state.completed) || lessonStates[0] || null,
+    recentLessons: lessonStates.slice(0, 10),
+    savedLessons: lessonStates.filter((state) => state.saved),
+    completedLessons: lessonStates.filter((state) => state.completed),
+    recommendedLessons,
+    emptyState: lessonStates.length === 0 ? {
+      title: "Your study path is ready when you start.",
+      detail: "Open a published lesson, save it, answer a practice item, or mark it complete to build your workspace.",
+    } : null,
+  };
+}
+
+function previewStudentStudyPackPayload(sessionId) {
+  const progress = previewStudentProgressPayload(sessionId);
+  const activeLessonIds = Array.from(new Set([
+    ...progress.savedLessons.map((state) => state.packageId),
+    ...progress.recentLessons.map((state) => state.packageId),
+    ...progress.completedLessons.map((state) => state.packageId),
+  ])).slice(0, 12);
+  const lessons = activeLessonIds.map((packageId) => {
+    const detail = packageDetails.get(packageId);
+    if (!detail || detail.package.status !== "published") return null;
+    const learnerPayload = previewLearnerPayload(detail);
+    return {
+      summary: previewLessonSummary(detail),
+      guidedNotes: learnerPayload.slides
+        .filter((slide) => compactText(slide.guidedNotes || ""))
+        .map((slide) => ({
+          slideId: slide.id,
+          slideNumber: slide.slideNumber,
+          title: slide.title,
+          guidedNotes: slide.guidedNotes,
+          retrievalPrompt: slide.retrievalPrompt || null,
+          nclexCategory: slide.nclexCategory || null,
+          cjmStep: slide.cjmStep || null,
+          citations: slide.citations,
+        })),
+      practiceItems: learnerPayload.practiceItems.map((item) => ({
+        id: item.id,
+        stem: item.stem,
+        correctAnswer: item.correctAnswer,
+        rationale: item.rationale,
+        difficulty: item.difficulty || null,
+        tags: item.tags || {},
+        citations: item.citations,
+        lessonUrl: `/lessons/${packageId}`,
+      })),
+      citations: learnerPayload.citations,
+      sourceLabels: learnerPayload.sources.map((source) => source.title),
+    };
+  }).filter(Boolean);
+
+  return {
+    generatedAt: nowIso(),
+    sessionId,
+    lessons,
+    totals: {
+      lessons: lessons.length,
+      guidedNotes: lessons.reduce((total, lesson) => total + lesson.guidedNotes.length, 0),
+      practiceItems: lessons.reduce((total, lesson) => total + lesson.practiceItems.length, 0),
+      citations: lessons.reduce((total, lesson) => total + lesson.citations.length, 0),
+    },
+    emptyState: lessons.length === 0 ? {
+      title: "No study pack yet.",
+      detail: "Save or open a lesson to collect guided notes, rationales, and citations here.",
+    } : null,
+  };
+}
+
 function previewLearnerPayload(detail) {
   const citationsBySlide = new Map();
   const citationsByItem = new Map();
@@ -2351,6 +2518,22 @@ async function handleApi(req, res, url) {
     return sendJson(res, 200, { lesson: previewLessonSummary(detail), generatedAt: nowIso() });
   }
 
+  if (url.pathname === "/api/student/progress" && req.method === "GET") {
+    const sessionId = compactText(url.searchParams.get("sessionId") || "");
+    if (sessionId.length < 8) {
+      return sendJson(res, 400, { error: "A valid student session id is required" });
+    }
+    return sendJson(res, 200, previewStudentProgressPayload(sessionId));
+  }
+
+  if (url.pathname === "/api/student/study-pack" && req.method === "GET") {
+    const sessionId = compactText(url.searchParams.get("sessionId") || "");
+    if (sessionId.length < 8) {
+      return sendJson(res, 400, { error: "A valid student session id is required" });
+    }
+    return sendJson(res, 200, previewStudentStudyPackPayload(sessionId));
+  }
+
   const publicLessonMatch = url.pathname.match(/^\/api\/lessons\/([^/]+)$/);
   if (publicLessonMatch && req.method === "GET") {
     const detail = packageDetails.get(publicLessonMatch[1]);
@@ -2363,9 +2546,24 @@ async function handleApi(req, res, url) {
     const detail = packageDetails.get(publicLessonSignalMatch[1]);
     if (!detail || detail.package.status !== "published") return notFound(res);
     const body = await readJson(req);
+    const eventType = publicLessonSignalMatch[2] === "feedback" ? "feedback_submitted" : compactText(body.eventType || "lesson_opened");
+    const sessionId = compactText(body.sessionId || makeId("session"));
+    const event = {
+      id: makeId("learner-event"),
+      packageId: publicLessonSignalMatch[1],
+      sessionId,
+      eventType,
+      slideId: body.slideId || null,
+      itemId: body.itemId || null,
+      payload: publicLessonSignalMatch[2] === "feedback"
+        ? { ...(body.payload || {}), rating: body.rating || null, comment: body.comment || "" }
+        : body.payload || {},
+      createdAt: nowIso(),
+    };
+    previewStudentEvents.unshift(event);
     return sendJson(res, 200, {
-      eventId: makeId("learner-event"),
-      sessionId: body.sessionId || makeId("session"),
+      eventId: event.id,
+      sessionId,
       recorded: true,
       preview: true,
     });
