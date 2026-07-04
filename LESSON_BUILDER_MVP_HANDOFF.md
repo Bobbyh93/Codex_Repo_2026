@@ -9,6 +9,7 @@ The DB-backed Lesson Builder path is functional locally and is the live Render p
 - Public pilot request review is optional operations support at `/pilot-request` and `/admin/pilot-requests`, not the main product surface.
 - Student Study Workspace v1 adds anonymous browser-session progress without accounts: saved lessons, recent lessons, completed lessons, practice attempts, feedback counts, and a guided study pack.
 - Admin Knowledge Base upload creates persisted document chunks.
+- PowerPoint decks (`.pptx`) can be imported through Knowledge Base and Content Import. The extractor preserves numeric slide order, visible slide text, and speaker notes; Knowledge Base imports become chunked source material, while Content Import creates slide-level content blocks for Content Mapper review.
 - Approved sources can generate a Harrity web lesson package.
 - Source detail now includes a NursesBrain-style normalization step for table/crosswalk signals, taxonomy hints, official pilot source status, and weak-topic metadata.
 - Data Chunker Pro on the local workstation is the designated preprocessing path for large textbook and chapter PDFs: use it to create RAG-ready chunk files/folders, then register those outputs into NurseStudy with source provenance, approval state, and citation policy.

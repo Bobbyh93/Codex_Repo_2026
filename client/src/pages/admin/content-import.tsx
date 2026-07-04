@@ -28,7 +28,7 @@ interface ColumnMapping {
 }
 
 interface ImportConfig {
-  fileType: 'csv' | 'markdown' | 'html' | 'text' | 'pdf' | 'docx';
+  fileType: 'csv' | 'markdown' | 'html' | 'text' | 'pdf' | 'docx' | 'pptx';
   mappings: ColumnMapping[];
   options: {
     skipDuplicates: boolean;
@@ -89,6 +89,9 @@ export default function ContentImport() {
     } else if (extension === 'docx' || extension === 'doc') {
       await parseDOCXPreview(file);
       setImportConfig(prev => ({ ...prev, fileType: 'docx' }));
+    } else if (extension === 'pptx') {
+      await parsePPTXPreview(file);
+      setImportConfig(prev => ({ ...prev, fileType: 'pptx' }));
     } else {
       await parseTextPreview(file);
       setImportConfig(prev => ({ ...prev, fileType: 'text' }));
@@ -137,23 +140,33 @@ export default function ContentImport() {
   };
 
   const parsePDFPreview = async (file: File) => {
-    // For PDF files, we can't easily preview in browser
-    // Just show file info
-    setPreview([
-      { info: `PDF file: ${file.name}` },
-      { info: `Size: ${(file.size / 1024).toFixed(2)} KB` },
-      { info: 'PDF will be processed on server for text extraction' }
-    ]);
+    setPreview([{
+      content: [
+        `PDF file: ${file.name}`,
+        `Size: ${(file.size / 1024).toFixed(2)} KB`,
+        'PDF text will be extracted on the server for content mapping.'
+      ].join('\n')
+    }]);
   };
 
   const parseDOCXPreview = async (file: File) => {
-    // For DOCX files, we can't easily preview in browser
-    // Just show file info
-    setPreview([
-      { info: `Word document: ${file.name}` },
-      { info: `Size: ${(file.size / 1024).toFixed(2)} KB` },
-      { info: 'Document will be processed on server for text extraction' }
-    ]);
+    setPreview([{
+      content: [
+        `Word document: ${file.name}`,
+        `Size: ${(file.size / 1024).toFixed(2)} KB`,
+        'Document text will be extracted on the server for content mapping.'
+      ].join('\n')
+    }]);
+  };
+
+  const parsePPTXPreview = async (file: File) => {
+    setPreview([{
+      content: [
+        `PowerPoint deck: ${file.name}`,
+        `Size: ${(file.size / 1024).toFixed(2)} KB`,
+        'Slides and speaker notes will be extracted on the server as slide-level content blocks.'
+      ].join('\n')
+    }]);
   };
 
   const suggestTargetField = (columnName: string): string => {
@@ -175,6 +188,7 @@ export default function ContentImport() {
       'text/plain': ['.txt'],
       'application/pdf': ['.pdf'],
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
+      'application/vnd.openxmlformats-officedocument.presentationml.presentation': ['.pptx'],
       'application/msword': ['.doc']
     },
     multiple: false
@@ -291,7 +305,7 @@ export default function ContentImport() {
                     <Upload className="h-12 w-12 mx-auto mb-3 text-gray-400" />
                     <p className="font-medium">Drop file here or click to browse</p>
                     <p className="text-sm text-gray-500 mt-1">
-                      CSV, Markdown, HTML, Text, PDF, or Word documents
+                      CSV, Markdown, HTML, Text, PDF, Word, or PowerPoint files
                     </p>
                   </>
                 )}
@@ -308,6 +322,7 @@ export default function ContentImport() {
                     {importConfig.fileType === 'text' && <Type className="h-4 w-4" />}
                     {importConfig.fileType === 'pdf' && <FileImage className="h-4 w-4" />}
                     {importConfig.fileType === 'docx' && <FileText className="h-4 w-4" />}
+                    {importConfig.fileType === 'pptx' && <FileImage className="h-4 w-4" />}
                     <Badge variant="outline">{importConfig.fileType.toUpperCase()}</Badge>
                   </div>
                 </div>

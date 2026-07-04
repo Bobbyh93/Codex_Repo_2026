@@ -615,12 +615,45 @@ function parseXmlText(xml) {
       .replace(/&lt;/g, "<")
       .replace(/&gt;/g, ">")
       .replace(/&quot;/g, "\"")
-      .replace(/&#39;/g, "'"),
+      .replace(/&apos;/g, "'")
+      .replace(/&#39;/g, "'")
+      .replace(/&#x([0-9a-f]+);/gi, (_, hex) => String.fromCodePoint(parseInt(hex, 16)))
+      .replace(/&#(\d+);/g, (_, decimal) => String.fromCodePoint(parseInt(decimal, 10))),
   );
 }
 
 async function extractOfficeText(buffer, type) {
   const zip = await JSZip.loadAsync(buffer);
+  if (type === "pptx") {
+    const slidePattern = /^ppt\/slides\/slide(\d+)\.xml$/;
+    const notesPattern = /^ppt\/notesSlides\/notesSlide(\d+)\.xml$/;
+    const partNumber = (name, pattern) => Number(name.match(pattern)?.[1] || Number.MAX_SAFE_INTEGER);
+    const files = Object.values(zip.files);
+    const notesByNumber = new Map(
+      files
+        .filter((file) => !file.dir && notesPattern.test(file.name))
+        .map((file) => [partNumber(file.name, notesPattern), file]),
+    );
+    const slideFiles = files
+      .filter((file) => !file.dir && slidePattern.test(file.name))
+      .sort((a, b) => partNumber(a.name, slidePattern) - partNumber(b.name, slidePattern));
+    const slideText = [];
+
+    for (const slideFile of slideFiles) {
+      const slideNumber = partNumber(slideFile.name, slidePattern);
+      const visibleText = parseXmlText(await slideFile.async("text"));
+      const notesFile = notesByNumber.get(slideNumber);
+      const notesText = notesFile ? parseXmlText(await notesFile.async("text")) : "";
+      slideText.push([
+        `Slide ${slideNumber}`,
+        visibleText ? `Visible slide text: ${visibleText}` : "",
+        notesText ? `Speaker notes: ${notesText}` : "",
+      ].filter(Boolean).join(". "));
+    }
+
+    return compactText(slideText.join(" "));
+  }
+
   const patterns = type === "pptx"
     ? [/^ppt\/slides\/slide\d+\.xml$/]
     : type === "docx"

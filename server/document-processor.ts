@@ -26,9 +26,8 @@ import { Readable } from "stream";
 import * as crypto from "crypto";
 import * as mammoth from "mammoth";
 import pdfParse from "pdf-parse";
-import JSZip from "jszip";
-import * as xml2js from "xml2js";
 import { validateServerFile, type FileValidationResult } from "@shared/file-validation";
+import { extractPptxContent } from "./pptx-extractor";
 // @ts-ignore - pdf-table-extractor types may not be available
 import pdfTableExtractor from "pdf-table-extractor";
 
@@ -403,38 +402,21 @@ export class DocumentProcessor {
         break;
         
       case "pptx":
-        // Use JSZip to extract text from PPTX
-        const zip = await JSZip.loadAsync(file.buffer);
-        const slideTexts: string[] = [];
-        
-        // Find all slide files
-        const slideFiles = Object.keys(zip.files)
-          .filter(name => name.match(/ppt\/slides\/slide\d+\.xml$/))
-          .sort();
-        
-        // Extract text from each slide
-        for (const slideName of slideFiles) {
-          const slideXml = await zip.file(slideName)?.async("string");
-          if (slideXml) {
-            // Parse XML and extract text
-            const parser = new xml2js.Parser({ explicitArray: false });
-            try {
-              const result = await parser.parseStringPromise(slideXml);
-              const slideText = this.extractTextFromXml(result);
-              if (slideText) {
-                slideTexts.push(slideText);
-              }
-            } catch (parseError) {
-              console.warn(`Failed to parse slide ${slideName}:`, parseError);
-            }
-          }
-        }
-        
-        text = slideTexts.join("\n\n");
-        pageCount = slideTexts.length;
+        const pptxContent = await extractPptxContent(file.buffer);
+        text = pptxContent.text;
+        pageCount = pptxContent.slideCount;
         metadata = {
           ...TextProcessor.extractMetadata(text),
-          slideCount: pageCount
+          slideCount: pptxContent.slideCount,
+          speakerNotesCount: pptxContent.speakerNotesCount,
+          slides: pptxContent.slides.map((slide) => ({
+            slideNumber: slide.slideNumber,
+            title: slide.title,
+            hasVisibleText: Boolean(slide.text),
+            hasSpeakerNotes: Boolean(slide.notes),
+            sourcePath: slide.sourcePath,
+            notesPath: slide.notesPath,
+          }))
         };
         break;
         
@@ -454,31 +436,6 @@ export class DocumentProcessor {
       type,
       extractedAt: new Date()
     };
-  }
-
-  /**
-   * Extract text from XML recursively
-   */
-  private static extractTextFromXml(obj: any): string {
-    const texts: string[] = [];
-    
-    const extractRecursive = (node: any) => {
-      if (typeof node === 'string') {
-        texts.push(node);
-      } else if (Array.isArray(node)) {
-        node.forEach(extractRecursive);
-      } else if (typeof node === 'object' && node !== null) {
-        // Look for text nodes in PowerPoint XML structure
-        if (node['a:t']) {
-          extractRecursive(node['a:t']);
-        }
-        // Recursively search all properties
-        Object.values(node).forEach(extractRecursive);
-      }
-    };
-    
-    extractRecursive(obj);
-    return texts.join(' ').trim();
   }
 
   /**

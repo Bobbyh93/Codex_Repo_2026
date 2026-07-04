@@ -8,6 +8,7 @@ import { Readable } from "stream";
 import { analyzeNursingContent, batchAnalyzeContent } from "./ai-content-analyzer";
 import mammoth from "mammoth";
 import { requireAdminSession, validateCSRFToken } from "./admin-auth-session";
+import { extractPptxContent } from "./pptx-extractor";
 
 const router = Router();
 
@@ -22,6 +23,7 @@ const contentFileFilter = (req: any, file: Express.Multer.File, cb: multer.FileF
     'text/html': ['html', 'htm'],
     'application/pdf': ['pdf'],
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['docx'],
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation': ['pptx'],
     'application/msword': ['doc']
   };
 
@@ -32,7 +34,7 @@ const contentFileFilter = (req: any, file: Express.Multer.File, cb: multer.FileF
   
   if (!allowedExtensions) {
     console.warn(`[Security] Rejected content import: Invalid MIME type ${file.mimetype} from IP ${req.ip}`);
-    return cb(new Error('Invalid file type. Allowed formats: CSV, TXT, MD, HTML, DOC, DOCX'));
+    return cb(new Error('Invalid file type. Allowed formats: CSV, TXT, MD, HTML, DOC, DOCX, PPTX'));
   }
 
   // Check if extension matches MIME type
@@ -158,6 +160,10 @@ router.post("/content/import", upload.single("file"), async (req, res) => {
       failedCount = results.failed;
     } else if (fileType === 'docx') {
       const results = await processDOCX(req.file.buffer, options);
+      processedCount = results.processed;
+      failedCount = results.failed;
+    } else if (fileType === 'pptx') {
+      const results = await processPPTX(req.file.buffer, req.file.originalname, options);
       processedCount = results.processed;
       failedCount = results.failed;
     }
@@ -462,6 +468,59 @@ async function processDOCX(buffer: Buffer, options: any) {
     return { processed, failed };
   } catch (error) {
     console.error("DOCX processing error:", error);
+    return { processed: 0, failed: 1 };
+  }
+}
+
+// Process PPTX slide decks into slide-level content blocks
+async function processPPTX(buffer: Buffer, fileName: string, options: any) {
+  try {
+    const deck = await extractPptxContent(buffer);
+    if (deck.slides.length === 0) {
+      return { processed: 0, failed: 0 };
+    }
+
+    let processed = 0;
+    let failed = 0;
+
+    for (const slide of deck.slides) {
+      const content = [
+        slide.text ? `Visible slide text: ${slide.text}` : "",
+        slide.notes ? `Speaker notes: ${slide.notes}` : "",
+      ].filter(Boolean).join("\n\n");
+
+      if (!content.trim()) continue;
+
+      try {
+        const tags = options?.tags
+          ? options.tags.split(',').map((t: string) => t.trim()).filter(Boolean)
+          : options?.autoTag
+            ? await extractTags(content)
+            : [];
+
+        await db.insert(contentBlocks).values({
+          content,
+          contentType: 'slide_deck',
+          sourceType: 'pptx',
+          source: fileName,
+          title: `Slide ${slide.slideNumber}: ${slide.title}`,
+          description: slide.notes
+            ? `PowerPoint slide ${slide.slideNumber} with speaker notes`
+            : `PowerPoint slide ${slide.slideNumber}`,
+          category: options?.category || 'Slide Deck',
+          tags: Array.from(new Set([...tags, 'pptx', 'slide-deck'])),
+          keywords: [slide.title, fileName].filter(Boolean),
+        });
+        processed++;
+      } catch (error) {
+        failed++;
+        console.error("PPTX slide processing error:", error);
+      }
+    }
+
+    return { processed, failed };
+  } catch (error) {
+    console.error("PPTX processing error:", error);
     return { processed: 0, failed: 1 };
   }
 }
