@@ -275,3 +275,57 @@ Result:
 Next action:
 
 - Review `ops/NEXT_ASSET_APPROVAL_PACKET.md`, approve or hold exactly one row, then record that decision in `/admin/topic-production` before opening next-spend or media queues.
+
+## 2026-07-10 06:26 UTC - Drive Sync Safety Check
+
+Scope: Check whether the new ops packet can be safely synced to Google Drive.
+
+Actions:
+
+- Verified live hourly ops still passes.
+- Confirmed existing Drive files for `NEXT_ASSET_APPROVAL_PACKET.md`, `HOURLY_WORK_JOBS.md`, and `WORK_LOG.md`.
+- Attempted Drive update/upload through the connector.
+- Recorded the Drive sync status in `ops/DRIVE_SYNC_STATUS.md`.
+
+Evidence:
+
+- Drive project: `NursePrep Platform Development`.
+- Drive location visibility: `access_not_verified`.
+- Connector rejected file replacement/upload because it would transfer local project ops content to an unverified external Drive location.
+- Git remains the authoritative sync surface for the ops packet.
+
+Result:
+
+- No automatic Drive overwrite/upload will be retried without explicit user approval.
+- Local ops artifacts remain committed and available in the repository.
+
+Next action:
+
+- Continue hourly work from Git-backed ops files. If Drive sync is required, approve the exact file transfer after reviewing destination and contents.
+
+## 2026-07-10 06:51 UTC - Export Control-Plane Report
+
+Scope: Tighten the lesson export package so launch QA evidence travels with downloaded artifacts.
+
+Actions:
+
+- Added `control_plane_report.json` to generated export ZIP/status artifacts in production route code.
+- Mirrored the same export behavior in the DB-free preview server.
+- Extended the release smoke assertion to require `control_plane_report.json` in export status file lists.
+
+Evidence:
+
+- Launch-surface typecheck: passed; `315` legacy diagnostics remain outside launch surface.
+- Server index no-write bundle check: passed.
+- Preview server syntax check: passed.
+- Release smoke script syntax check: passed.
+- Live hourly ops check: passed with `0` failures.
+
+Result:
+
+- Exported lesson packages now include the control-plane report as a downloadable QA artifact.
+- This strengthens launch handoff without changing public student behavior or approving any media spend.
+
+Next action:
+
+- After the next deploy, run the release smoke or export-status check against the live app to confirm `control_plane_report.json` is visible in live export status.

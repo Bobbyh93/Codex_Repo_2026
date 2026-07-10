@@ -472,6 +472,8 @@ async function run() {
         && isJson(exportStatus)
         && exportStatus.payload?.status === "ready"
         && exportStatus.payload?.includesDeckModel === true
+        && Array.isArray(exportStatus.payload?.files)
+        && exportStatus.payload.files.includes("control_plane_report.json")
         && Array.isArray(exportStatus.payload?.missingRequiredFiles)
         && exportStatus.payload.missingRequiredFiles.length === 0,
       `status ${exportStatus.status}, export ${exportStatus.payload?.status || "unknown"}, files ${exportStatus.payload?.fileCount || 0}`

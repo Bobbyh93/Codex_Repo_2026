@@ -5762,6 +5762,23 @@ function buildPackageArtifactPayloads(detail, profile = "harrity") {
   ];
 }
 
+function buildControlPlaneArtifactPayload(detail, profile = "harrity") {
+  return {
+    artifactKey: "control_plane_report",
+    artifactType: "json",
+    fileName: "control_plane_report.json",
+    mimeType: "application/json",
+    contentJson: buildLessonControlPlaneReport(detail, profile),
+  };
+}
+
+function buildPackageExportArtifactPayloads(detail, profile = "harrity") {
+  return [
+    ...buildPackageArtifactPayloads(detail, profile),
+    buildControlPlaneArtifactPayload(detail, profile),
+  ];
+}
+
 function replacePackageRows(collection, packageId, nextRows) {
   for (let index = collection.length - 1; index >= 0; index -= 1) {
     if (collection[index].packageId === packageId) collection.splice(index, 1);
@@ -6433,7 +6450,7 @@ function csv(headers, rows) {
 async function exportZip(detail, profile = "harrity") {
   const zip = new JSZip();
   validateLessonContract(detail, profile);
-  for (const artifact of buildPackageArtifactPayloads(detail, profile)) {
+  for (const artifact of buildPackageExportArtifactPayloads(detail, profile)) {
     zip.file(artifact.fileName, serializeArtifactContent(artifact));
   }
   return zip.generateAsync({ type: "nodebuffer" });
@@ -8580,7 +8597,7 @@ async function handleApi(req, res, url) {
     const detail = packageDetails.get(exportStatusMatch[1]);
     if (!detail) return notFound(res);
     const profile = url.searchParams.get("profile") || "harrity";
-    const artifacts = buildPackageArtifactPayloads(detail, profile);
+    const artifacts = buildPackageExportArtifactPayloads(detail, profile);
     const fileNames = artifacts.map((artifact) => artifact.fileName);
     const missingRequiredFiles = harrityRequiredExportFiles.filter((fileName) => !fileNames.includes(fileName));
     const controlPlane = buildLessonControlPlaneReport(detail, profile);

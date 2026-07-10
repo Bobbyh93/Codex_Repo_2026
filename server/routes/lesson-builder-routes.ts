@@ -8563,6 +8563,23 @@ function buildPackageArtifactPayloads(bundle: LessonBundle, profile = "harrity")
   ];
 }
 
+function buildControlPlaneArtifactPayload(bundle: LessonBundle, profile = "harrity"): PackageArtifactPayload {
+  return {
+    artifactKey: "control_plane_report",
+    artifactType: "json",
+    fileName: "control_plane_report.json",
+    mimeType: "application/json",
+    contentJson: buildLessonControlPlaneReport(bundle, profile),
+  };
+}
+
+function buildPackageExportArtifactPayloads(bundle: LessonBundle, profile = "harrity"): PackageArtifactPayload[] {
+  return [
+    ...buildPackageArtifactPayloads(bundle, profile),
+    buildControlPlaneArtifactPayload(bundle, profile),
+  ];
+}
+
 async function persistPackageArtifacts(bundle: LessonBundle, profile = "harrity") {
   const artifacts = buildPackageArtifactPayloads(bundle, profile);
   await db.delete(lessonPackageArtifacts).where(eq(lessonPackageArtifacts.packageId, bundle.package.id));
@@ -8589,7 +8606,7 @@ async function persistPackageArtifacts(bundle: LessonBundle, profile = "harrity"
 
 async function buildExportZip(bundle: LessonBundle, profile = "harrity") {
   const zip = new JSZip();
-  const artifacts = buildPackageArtifactPayloads(bundle, profile);
+  const artifacts = buildPackageExportArtifactPayloads(bundle, profile);
   for (const artifact of artifacts) {
     zip.file(artifact.fileName, serializeArtifactContent(artifact));
   }
@@ -13647,7 +13664,7 @@ export function registerLessonBuilderRoutes(app: Express) {
       const bundle = await findPackageBundle(req.params.id);
       if (!bundle) return res.status(404).json({ error: "Lesson package not found" });
 
-      const artifacts = buildPackageArtifactPayloads(bundle, profile);
+      const artifacts = buildPackageExportArtifactPayloads(bundle, profile);
       const generatedFiles = artifacts.map((artifact) => artifact.fileName).sort();
       const missingRequiredFiles = harrityRequiredExportFiles.filter((fileName) => !generatedFiles.includes(fileName));
       const persistedFiles = bundle.artifacts.map((artifact) => artifact.fileName).sort();
