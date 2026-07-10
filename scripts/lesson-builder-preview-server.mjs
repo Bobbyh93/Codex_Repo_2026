@@ -1762,6 +1762,8 @@ function topicProductionInferredSubjectFromText(text) {
   if (/maternal|newborn|postpartum|contraception|pregnan|labor|fetal|reproductive|family planning/.test(lower)) return "Maternal-Newborn";
   if (/therapeutic communication|psychosocial|mental health|anxiety|de-escalation|psychiatric/.test(lower)) return "Mental Health Nursing";
   if (/asthma|pediatric|paediatric|child|children|infant|growth|development/.test(lower)) return "Pediatrics";
+  if (/basic care|comfort|catheter|urine|urinary|incontinence|hearing|sensory/.test(lower)) return "Fundamentals";
+  if (/\bclient\b|\bnurse\b|clinical decision/.test(lower)) return "Medical-Surgical";
   if (/concept.*curriculum|curriculum.*concept|data hub/.test(lower)) return "Curriculum Planning";
   if (/lesson[_\s-]*builder|harrity[_\s-]*builder|skill[_\s-]*overview|improvement[_\s-]*spec/.test(lower)) return "Builder Operations";
   return "";
@@ -1785,7 +1787,8 @@ function topicProductionInferredNclexCategoryFromText(text, concept = "") {
   const lower = `${text} ${concept}`.toLowerCase();
   if (/therapeutic communication|psychosocial|mental health|anxiety|de-escalation/.test(lower)) return "Psychosocial Integrity";
   if (/contraception|family planning|newborn|growth|development|health promotion|teaching/.test(lower)) return "Health Promotion and Maintenance";
-  if (/asthma|oxygen|respiratory|airway|postpartum complication|hemorrhage|infection/.test(lower)) return "Physiological Integrity";
+  if (/asthma|oxygen|respiratory|airway|postpartum complication|hemorrhage|infection|basic care|comfort|catheter|urine|urinary|incontinence/.test(lower)) return "Physiological Integrity";
+  if (/clinical decision|prioriti[sz]ation|delegation|assignment/.test(lower)) return "Safe and Effective Care Environment";
   if (/curriculum|lesson[_\s-]*builder|harrity[_\s-]*builder|production workflow|builder operations/.test(lower)) return "Safe and Effective Care Environment";
   if (/safety|infection control/.test(lower)) return "Safe and Effective Care Environment";
   return "";
@@ -1931,8 +1934,8 @@ function topicProductionRowFromDetail(detail) {
     assessmentBridge.weakTopic,
     topicProductionMeta.weakTopic,
     taxonomySnapshot.weakTopic,
-    itemTags,
-    topicProductionInferredWeakTopicFromText(rowText, concept)
+    topicProductionInferredWeakTopicFromText(rowText, concept),
+    itemTags
   );
   const nclexCategory = firstString(
     assessmentBridge.nclexCategory,
