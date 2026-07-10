@@ -24,6 +24,14 @@ const steps = [
     name: "review_dashboard",
     script: "scripts/ops-review-dashboard.mjs",
   },
+  {
+    name: "schedule_export",
+    script: "scripts/hourly-cadence-export.mjs",
+  },
+  {
+    name: "wbs_export",
+    script: "scripts/launch-wbs-export.mjs",
+  },
 ];
 
 function runScript(step) {
@@ -64,6 +72,8 @@ function buildHistoryRecord(results) {
     liveMutation: dashboard.currentReview?.liveMutation === true,
     queueCounts: Object.fromEntries(Object.entries(dashboard.live?.queueSummary || {}).map(([key, value]) => [key, value?.count ?? null])),
     spendGuard: dashboard.spendGuard || null,
+    wbsPath: "ops/LAUNCH_WBS.json",
+    cadencePath: "ops/HOURLY_CADENCE.json",
     steps: results.map((result) => ({
       name: result.name,
       ok: result.ok,

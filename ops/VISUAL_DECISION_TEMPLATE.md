@@ -1,6 +1,6 @@
 # Visual Decision Template
 
-Generated: 2026-07-10T07:15:43.730Z
+Generated: 2026-07-10T07:19:56.235Z
 Budget: $0-$50 review only
 
 This decision record does not generate visuals, approve spend, publish lessons, or mutate live app data.

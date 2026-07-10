@@ -490,3 +490,31 @@ Result:
 Next action:
 
 - Use `ops/HOURLY_CADENCE.ics` for calendar import if needed, then continue with the visual decision review before opening any spend/media queue.
+
+## 2026-07-10 07:20 UTC - Launch WBS Export
+
+Scope: Connect the hourly work loop to a concrete launch work breakdown structure with evidence, budget caps, owners, and next actions.
+
+Actions:
+
+- Added `scripts/launch-wbs-export.mjs`.
+- Added `npm run ops:wbs`.
+- Wired WBS and cadence refresh into `npm run ops:hourly-run`.
+- Generated `ops/LAUNCH_WBS.md` and `ops/LAUNCH_WBS.json`.
+
+Evidence:
+
+- WBS script syntax check passed.
+- Hourly runner completed with the new `schedule_export` and `wbs_export` steps.
+- WBS export contains 8 work packages.
+- WBS summary reports `0` failed live checks, `0` mapping gaps, `74` asset gaps, and spend guard `ok`.
+- Launch-surface typecheck passed; legacy diagnostics remain outside the launch surface.
+- Production client and server builds passed.
+
+Result:
+
+- The launch work is now mapped into evidence-backed packages: live health, student surface, topic mapping, lesson assets, no-spend visual decisions, Airtable/shorts handoff, Calendar/Drive records, and deployment proof.
+
+Next action:
+
+- Use `ops/LAUNCH_WBS.md` as the first planning surface before selecting the next hourly packet.

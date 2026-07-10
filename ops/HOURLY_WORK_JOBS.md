@@ -55,6 +55,13 @@ Risks/blockers:
 - `ops/HOURLY_CADENCE.json`
 - `ops/HOURLY_CADENCE.ics`
 
+`npm run ops:wbs` exports the launch work breakdown structure:
+
+- `ops/LAUNCH_WBS.md`
+- `ops/LAUNCH_WBS.json`
+
+The WBS ties live health, student surface, content mapping, lesson assets, no-spend visual decisions, Airtable/shorts handoff, Calendar/Drive records, and deployment proof to concrete evidence files and budget caps.
+
 `npm run ops:hourly-check` verifies the live app health, student home, admin login, topic-production matrix, and the non-mutating launch queues:
 
 - next-spend polish queue
