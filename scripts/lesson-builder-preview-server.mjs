@@ -1762,7 +1762,8 @@ function topicProductionInferredSubjectFromText(text) {
   if (/maternal|newborn|postpartum|contraception|pregnan|labor|fetal|reproductive|family planning/.test(lower)) return "Maternal-Newborn";
   if (/therapeutic communication|psychosocial|mental health|anxiety|de-escalation|psychiatric/.test(lower)) return "Mental Health Nursing";
   if (/asthma|pediatric|paediatric|child|children|infant|growth|development/.test(lower)) return "Pediatrics";
-  if (/basic care|comfort|catheter|urine|urinary|incontinence|hearing|sensory/.test(lower)) return "Fundamentals";
+  if (/medicat|haloperidol|diuretic|amphetamine|subcutaneous|injection|needle|iv team|intravenous|\biv\b|metaboli|tolerance|orthostatic|extrapyramidal|\beps\b/.test(lower)) return "Pharmacology";
+  if (/basic care|comfort|catheter|urine|urinary|incontinence|hearing|sensory|ng tube|nasogastric|enteral|feeding tube|tube feeding/.test(lower)) return "Fundamentals";
   if (/\bclient\b|\bnurse\b|clinical decision/.test(lower)) return "Medical-Surgical";
   if (/concept.*curriculum|curriculum.*concept|data hub/.test(lower)) return "Curriculum Planning";
   if (/lesson[_\s-]*builder|harrity[_\s-]*builder|skill[_\s-]*overview|improvement[_\s-]*spec/.test(lower)) return "Builder Operations";
@@ -1776,6 +1777,11 @@ function topicProductionInferredWeakTopicFromText(text, concept = "") {
   if (/newborn|neonate/.test(lower)) return "Newborn assessment";
   if (/therapeutic communication|communication priority|psychosocial/.test(lower)) return "Therapeutic communication";
   if (/asthma|wheez|bronchodilator/.test(lower)) return "Asthma";
+  if (/subcutaneous|injection|needle|iv team|intravenous|\biv\b/.test(lower)) return "Medication administration";
+  if (/haloperidol|schizophrenia|extrapyramidal|\beps\b|orthostatic/.test(lower)) return "Antipsychotic adverse effects";
+  if (/diuretic|hyperglycemia|adverse effect|adverse reaction|medication adverse/.test(lower)) return "Medication adverse effects";
+  if (/metaboli|medication tolerance|drug tolerance|therapeutic effect.*decrease|decrease.*therapeutic effect/.test(lower)) return "Medication metabolism";
+  if (/ng tube|nasogastric|enteral|feeding tube|tube feeding|instill.*feeding/.test(lower)) return "Enteral tube feeding";
   if (/emergency|prioriti[sz]ation|triage/.test(lower)) return "Emergency prioritization";
   if (/gas exchange|oxygen|respiratory|airway/.test(lower)) return "Respiratory compromise";
   if (/reproductive|maternal|pregnan|labor|fetal/.test(lower)) return "Reproductive health";
@@ -1784,7 +1790,7 @@ function topicProductionInferredWeakTopicFromText(text, concept = "") {
 }
 
 function topicProductionIsBroadWeakTopicLabel(value) {
-  return /^(physiological integrity|safe and effective care environment|health promotion and maintenance|psychosocial integrity|basic care and comfort|clinical decision making)$/i.test(String(value || "").trim());
+  return /^(physiological integrity|safe and effective care environment|health promotion and maintenance|psychosocial integrity|basic care and comfort|clinical decision making|pathophysiology and disease management|medication administration and safety)$/i.test(String(value || "").trim());
 }
 
 function topicProductionFirstSpecificWeakTopic(...values) {
@@ -1801,6 +1807,8 @@ function topicProductionFirstSpecificWeakTopic(...values) {
 function topicProductionInferredNclexCategoryFromText(text, concept = "") {
   const lower = `${text} ${concept}`.toLowerCase();
   if (/therapeutic communication|psychosocial|mental health|anxiety|de-escalation/.test(lower)) return "Psychosocial Integrity";
+  if (/medicat|haloperidol|diuretic|amphetamine|subcutaneous|injection|needle|iv team|intravenous|\biv\b|metaboli|tolerance|orthostatic|extrapyramidal|\beps\b/.test(lower)) return "Pharmacological and Parenteral Therapies";
+  if (/basic care|comfort|catheter|urine|urinary|incontinence|hearing|sensory|ng tube|nasogastric|enteral|feeding tube|tube feeding/.test(lower)) return "Basic Care and Comfort";
   if (/contraception|family planning|newborn|growth|development|health promotion|teaching/.test(lower)) return "Health Promotion and Maintenance";
   if (/asthma|oxygen|respiratory|airway|postpartum complication|hemorrhage|infection|basic care|comfort|catheter|urine|urinary|incontinence/.test(lower)) return "Physiological Integrity";
   if (/clinical decision|prioriti[sz]ation|delegation|assignment/.test(lower)) return "Safe and Effective Care Environment";
