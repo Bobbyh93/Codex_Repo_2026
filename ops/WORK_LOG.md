@@ -192,3 +192,33 @@ Next action:
 Risks/blockers:
 
 - Contraception still carries persisted `Physiological Integrity` as NCLEX category on one package row; weak-topic and subject are now correct. Human/content review should decide whether to override the stored bridge or leave the original category evidence.
+
+## 2026-07-10 06:17 UTC - Launch Mapping Close-Out
+
+Scope: Finish the launch-critical topic-production mapping layer and deploy it live.
+
+Actions:
+
+- Added final deterministic mapping rules for medication, IV/subcutaneous injection, medication adverse effects, medication metabolism, antipsychotic adverse effects, and enteral tube-feeding rows.
+- Mirrored the same mapping rules into the DB-free preview server.
+- Committed and pushed `fbddad7` (`Complete topic matrix medication mapping`) to `codex/pilot-launch-console` and `main`.
+
+Evidence:
+
+- Launch-surface typecheck: passed; `315` legacy diagnostics remain outside launch surface.
+- Server index no-write bundle check: passed.
+- Preview server syntax check: passed.
+- Frontend Vite production build: passed.
+- Temporary preview topic matrix probe: `0` missing subject, weak topic, NCLEX category, or CJM step.
+- Live smoke after Render deploy: health, student home, topic-production page, admin login, and topic-production matrix all passed.
+- Live topic-production matrix: `77` rows, `77` mapped rows, `0` needs mapping.
+- Live missing audit after deploy: concept `0`, nursing subject `0`, weak topic `0`, NCLEX category `0`, CJM step `0`, source evidence `0`.
+
+Result:
+
+- The launch taxonomy/mapping layer is closed out for MVP.
+- The remaining launch bottleneck is content asset completion: `68` rows still need slide deck/study guide/quiz assets and `74` rows need visuals.
+
+Next action:
+
+- Begin the next low-cost launch packet with visual prompts/diagrams for the first review-ready package rows, starting with the featured contraception and therapeutic communication packages.
