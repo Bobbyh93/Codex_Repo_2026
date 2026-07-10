@@ -258,6 +258,41 @@ type SourceDetail = {
   }>;
 };
 
+type ControlPlaneReport = {
+  packageId: string;
+  profile: string;
+  generatedAt: string;
+  hardRule: string;
+  status: string;
+  summary?: {
+    status: string;
+    checkCount: number;
+    passCount: number;
+    warningCount: number;
+    failCount: number;
+    generatedAt?: string;
+  };
+  checks?: Array<{
+    key: string;
+    label: string;
+    status: string;
+    severity: string;
+    detail: string;
+  }>;
+  blockers?: Array<{
+    key: string;
+    label: string;
+    severity: string;
+    detail: string;
+  }>;
+  warnings?: Array<{
+    key: string;
+    label: string;
+    severity: string;
+    detail: string;
+  }>;
+};
+
 type ExportStatus = {
   packageId: string;
   profile: string;
@@ -277,6 +312,7 @@ type ExportStatus = {
     createdAt?: string;
     payload?: Record<string, any>;
   } | null;
+  controlPlane?: ControlPlaneReport;
 };
 
 type PilotEvidenceReport = {
@@ -1686,11 +1722,14 @@ export default function LessonBuilder() {
       });
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/packages"] });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/packages", selectedPackageId] });
       refreshLaunchQueries();
-      toast({ title: "Package published", description: "The lesson package passed QA and is marked published." });
+      toast({
+        title: "Package published",
+        description: `QA, contract, and Build Package 1 control plane passed (${data.controlPlane?.summary?.passCount || 0}/${data.controlPlane?.summary?.checkCount || 0}).`,
+      });
     },
   });
 
@@ -1849,7 +1888,7 @@ export default function LessonBuilder() {
       refreshLaunchQueries();
       toast({
         title: data.reviewStatus === "ready_to_publish" ? "Artifacts rebuilt" : "Rebuild found blockers",
-        description: `${data.qa?.qaSummary?.failCount || 0} QA fail, ${data.validation?.validationSummary?.failCount || 0} contract fail.`,
+        description: `${data.qa?.qaSummary?.failCount || 0} QA fail, ${data.validation?.validationSummary?.failCount || 0} contract fail, ${data.controlPlane?.summary?.failCount || 0} control-plane fail.`,
         variant: data.reviewStatus === "ready_to_publish" ? undefined : "destructive",
       });
     },
@@ -1865,7 +1904,16 @@ export default function LessonBuilder() {
 
   const exportPackage = async () => {
     if (!selectedPackageId) return;
-    await exportStatusQuery.refetch();
+    const statusResult = await exportStatusQuery.refetch();
+    const controlPlane = statusResult.data?.controlPlane;
+    if ((controlPlane?.summary?.failCount || 0) > 0) {
+      toast({
+        title: "Export blocked",
+        description: `Build Package 1 control plane has ${controlPlane?.summary?.failCount || 0} blocker(s). Rebuild artifacts and resolve the listed blockers first.`,
+        variant: "destructive",
+      });
+      return;
+    }
     window.location.href = `/api/admin/lesson-builder/packages/${selectedPackageId}/export?profile=harrity`;
     window.setTimeout(() => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/lesson-builder/packages", selectedPackageId] });
@@ -4282,6 +4330,24 @@ export default function LessonBuilder() {
                                 ) : null}
                               </div>
                             )}
+                            {exportStatusQuery.data?.controlPlane ? (
+                              <div className="mt-2 rounded-md border bg-white p-2 text-xs text-slate-600">
+                                <div className="flex flex-wrap items-center gap-2">
+                                  <StatusBadge value={exportStatusQuery.data.controlPlane.status === "passed" ? "pass" : exportStatusQuery.data.controlPlane.status === "blocked" ? "fail" : "warn"} />
+                                  <span className="font-medium text-slate-900">Build Package 1 control plane</span>
+                                  <span>{exportStatusQuery.data.controlPlane.summary?.passCount || 0}/{exportStatusQuery.data.controlPlane.summary?.checkCount || 0} checks pass</span>
+                                </div>
+                                <div className="mt-1 font-mono text-[11px] text-slate-500">{exportStatusQuery.data.controlPlane.hardRule}</div>
+                                <div className="mt-1">
+                                  Blockers: {exportStatusQuery.data.controlPlane.summary?.failCount || 0}; warnings: {exportStatusQuery.data.controlPlane.summary?.warningCount || 0}
+                                </div>
+                                {(exportStatusQuery.data.controlPlane.blockers || []).slice(0, 3).map((blocker) => (
+                                  <div key={blocker.key} className="mt-1 text-red-700">
+                                    {blocker.label}: {blocker.detail}
+                                  </div>
+                                ))}
+                              </div>
+                            ) : null}
                             <div className="mt-2 flex flex-wrap gap-1">
                               {(detailQuery.data.artifacts || []).length === 0 ? (
                                 <span className="text-xs text-slate-500">No artifacts persisted yet.</span>

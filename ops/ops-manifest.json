@@ -1,0 +1,62 @@
+{
+  "project": "NurseStudy Harrity Lesson Builder",
+  "statusDate": "2026-07-10",
+  "timezone": "America/Los_Angeles",
+  "costModel": {
+    "tokensPer100Dollars": 2500,
+    "defaultPacketCapDollars": 100,
+    "defaultMilestoneCapDollars": 500
+  },
+  "localArtifacts": [
+    "ops/HARRITY_MVP_WBS.md",
+    "ops/HOURLY_WORK_JOBS.md",
+    "ops/WORK_LOG.md"
+  ],
+  "drive": {
+    "requestedProjectUrl": "https://drive.google.com/drive/project/1c0Ayvgi8Av0c8M4SdOrwvHGhieXz553k?usp=drive_link",
+    "requestedProjectId": "1c0Ayvgi8Av0c8M4SdOrwvHGhieXz553k",
+    "connectorNote": "The Drive connector rejected the /drive/project URL shape. Drive search found a NurseStudy folder for ops upload.",
+    "nurseStudyFolderUrl": "https://drive.google.com/drive/folders/1KdXInoLd1bwPGCWR9KRPlBsi2tQsUUW4",
+    "nurseStudyFolderId": "1KdXInoLd1bwPGCWR9KRPlBsi2tQsUUW4",
+    "uploadedFiles": [
+      {
+        "localPath": "ops/HARRITY_MVP_WBS.md",
+        "driveUrl": "https://drive.google.com/file/d/1UQ9d60uO6kAO5MElpGua4_pNgZ62BMH2/view?usp=drivesdk"
+      },
+      {
+        "localPath": "ops/HOURLY_WORK_JOBS.md",
+        "driveUrl": "https://drive.google.com/file/d/1J6RLbuW4vinWE9nk54qcFMSuDGwol_W-/view?usp=drivesdk"
+      }
+    ],
+    "localOnlyFiles": [
+      {
+        "localPath": "ops/WORK_LOG.md",
+        "reason": "Google Drive rejected uploading the work log as a higher-risk external transfer of private workspace data."
+      },
+      {
+        "localPath": "ops/ops-manifest.json",
+        "reason": "Kept local after work-log upload was rejected."
+      }
+    ]
+  },
+  "calendar": {
+    "cadence": "Hourly work packets, weekdays by default",
+    "firstCycleDate": "2026-07-10",
+    "blocks": [
+      "09:00-09:25 Health check and route triage",
+      "10:00-10:45 Topic mapping packet",
+      "11:00-11:45 Package build packet",
+      "12:00-12:25 QA/export check",
+      "13:00-13:45 Airtable/shorts tracker packet",
+      "14:00-14:25 Log, Drive sync, next queue"
+    ],
+    "calendarEventId": "93cs15hcaodpv33m4ga5htufvc",
+    "calendarEventUrl": "https://www.google.com/calendar/event?eid=OTNjczE1aGNhb2RwdjMzbTRnYTVodHVmdmMgcmhhcnJpdHkud29ya0Bt",
+    "calendarEventNote": "Created as transparent/private because the target window was already busy on the primary calendar.",
+    "recurrence": "RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR;COUNT=10"
+  },
+  "liveProduct": {
+    "url": "https://nursestudy-lesson-builder.onrender.com",
+    "localPreview": "http://127.0.0.1:5055"
+  }
+}

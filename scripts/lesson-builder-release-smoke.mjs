@@ -476,6 +476,18 @@ async function run() {
         && exportStatus.payload.missingRequiredFiles.length === 0,
       `status ${exportStatus.status}, export ${exportStatus.payload?.status || "unknown"}, files ${exportStatus.payload?.fileCount || 0}`
     );
+    const controlPlane = exportStatus.payload?.controlPlane || {};
+    record(
+      "Build Package 1 control-plane report available",
+      exportStatus.status === 200
+        && isJson(exportStatus)
+        && controlPlane.hardRule === "NO CKM -> NO TAXONOMY -> NO LESSON BUILD"
+        && Array.isArray(controlPlane.checks)
+        && controlPlane.checks.length >= 8
+        && controlPlane.summary?.checkCount === controlPlane.checks.length
+        && controlPlane.status !== "blocked",
+      `status ${controlPlane.status || "missing"}, checks ${controlPlane.checks?.length || 0}`
+    );
   }
 
   console.log("Checks:");

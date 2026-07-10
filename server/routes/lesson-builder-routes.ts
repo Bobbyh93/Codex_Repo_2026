@@ -4703,7 +4703,7 @@ function topicProductionAirtableTrackerPayload() {
 }
 
 function topicProductionIsGenericLabel(value: string) {
-  return /^(imported source|source|knowledge source|mapped nursing content|slide deck import)$/i.test(String(value || "").trim());
+  return /^(imported source|source|knowledge source|mapped nursing content|slide deck import|uploaded file intake|learner-facing contract.*|.*qa gates.*|.*package manifest.*|builder operations)$/i.test(String(value || "").trim());
 }
 
 function topicProductionHumanizeLabel(value: string) {
@@ -4740,6 +4740,53 @@ function topicProductionBlockText(block: any) {
   ].filter(Boolean).join(" ");
 }
 
+function topicProductionMappingText(...values: any[]) {
+  return compactText(values.flatMap((value) => Array.isArray(value) ? value : [value]).filter(Boolean).join(" "));
+}
+
+function topicProductionInferredSubjectFromText(text: string) {
+  const lower = text.toLowerCase();
+  if (/maternal|newborn|postpartum|contraception|pregnan|labor|fetal|reproductive|family planning/.test(lower)) return "Maternal-Newborn";
+  if (/therapeutic communication|psychosocial|mental health|anxiety|de-escalation|psychiatric/.test(lower)) return "Mental Health Nursing";
+  if (/asthma|pediatric|paediatric|child|children|infant|growth|development/.test(lower)) return "Pediatrics";
+  if (/concept.*curriculum|curriculum.*concept|data hub/.test(lower)) return "Curriculum Planning";
+  if (/lesson[_\s-]*builder|harrity[_\s-]*builder|skill[_\s-]*overview|improvement[_\s-]*spec/.test(lower)) return "Builder Operations";
+  return "";
+}
+
+function topicProductionInferredWeakTopicFromText(text: string, concept = "") {
+  const lower = `${text} ${concept}`.toLowerCase();
+  if (/contraception|family planning|birth control/.test(lower)) return "Contraception";
+  if (/postpartum|post[-\s]?birth/.test(lower)) return "Postpartum complications";
+  if (/newborn|neonate/.test(lower)) return "Newborn assessment";
+  if (/therapeutic communication|communication priority|psychosocial/.test(lower)) return "Therapeutic communication";
+  if (/asthma|wheez|bronchodilator/.test(lower)) return "Asthma";
+  if (/emergency|prioriti[sz]ation|triage/.test(lower)) return "Emergency prioritization";
+  if (/gas exchange|oxygen|respiratory|airway/.test(lower)) return "Respiratory compromise";
+  if (/reproductive|maternal|pregnan|labor|fetal/.test(lower)) return "Reproductive health";
+  if (concept && !topicProductionIsGenericLabel(concept)) return concept;
+  return "";
+}
+
+function topicProductionInferredNclexCategoryFromText(text: string, concept = "") {
+  const lower = `${text} ${concept}`.toLowerCase();
+  if (/therapeutic communication|psychosocial|mental health|anxiety|de-escalation/.test(lower)) return "Psychosocial Integrity";
+  if (/contraception|family planning|newborn|growth|development|health promotion|teaching/.test(lower)) return "Health Promotion and Maintenance";
+  if (/asthma|oxygen|respiratory|airway|postpartum complication|hemorrhage|infection/.test(lower)) return "Physiological Integrity";
+  if (/curriculum|lesson[_\s-]*builder|harrity[_\s-]*builder|production workflow|builder operations/.test(lower)) return "Safe and Effective Care Environment";
+  if (/safety|infection control/.test(lower)) return "Safe and Effective Care Environment";
+  return "";
+}
+
+function topicProductionInferredCjmStepFromText(text: string) {
+  const lower = text.toLowerCase();
+  if (/priority cue|analy[sz]e|interpret|compare|cluster/.test(lower)) return "Analyze Cues";
+  if (/assessment|recognize|identify|observe|finding/.test(lower)) return "Recognize Cues";
+  if (/teaching|intervention|administer|take action|implement/.test(lower)) return "Take Action";
+  if (/evaluate|response|outcome/.test(lower)) return "Evaluate Outcomes";
+  return "Analyze Cues";
+}
+
 function topicProductionInferredBlockTopic(block: any) {
   const text = topicProductionBlockText(block);
   const lower = text.toLowerCase();
@@ -4767,12 +4814,7 @@ function topicProductionInferredBlockConcept(block: any) {
 function topicProductionInferredBlockSubject(block: any) {
   const existing = firstString(block.nursingSpecialty, block.sourceType === "pptx" ? "Slide deck import" : "");
   if (existing && !topicProductionIsGenericLabel(existing)) return existing;
-  const lower = topicProductionBlockText(block).toLowerCase();
-  if (/maternal|newborn|postpartum|contraception|pregnan|labor|fetal/.test(lower)) return "Maternal-Newborn";
-  if (/asthma|pediatric|paediatric|child|children|infant/.test(lower)) return "Pediatrics";
-  if (/concept.*curriculum|curriculum.*concept|data hub/.test(lower)) return "Curriculum Planning";
-  if (/lesson[_\s-]*builder|harrity[_\s-]*builder|skill[_\s-]*overview|improvement[_\s-]*spec/.test(lower)) return "Builder Operations";
-  return "";
+  return topicProductionInferredSubjectFromText(topicProductionBlockText(block));
 }
 
 function artifactMatches(artifact: any, pattern: RegExp) {
@@ -4856,12 +4898,46 @@ function topicProductionRowFromBundle(bundle: LessonBundle) {
     assessmentBridge.weakTopic,
     itemTags
   );
-  const specialty = firstString(
+  const rowText = topicProductionMappingText(
+    pkg.topic,
+    pkg.title,
+    concept,
+    topicProductionMeta.weakTopic,
+    (taxonomySnapshot as any).weakTopic,
+    assessmentBridge.weakTopic,
+    bundle.sources.map((source) => [source.title, source.subject]),
+    bundle.slides.map((slide) => [slide.title, slide.nclexCategory, slide.cjmStep]),
+    bundle.items.map((item) => [item.stem, item.rationale, safeJsonText(item.tags)])
+  );
+  const rawSpecialty = firstString(
     topicProductionMeta.nursingSubject,
     taxonomySnapshot.nursingSpecialty,
     taxonomySnapshot.subject,
     bundle.sources.map((source) => source.subject),
     assessmentBridge.atiCategory
+  );
+  const specialty = rawSpecialty && !topicProductionIsGenericLabel(rawSpecialty)
+    ? rawSpecialty
+    : topicProductionInferredSubjectFromText(rowText);
+  const weakTopic = firstString(
+    assessmentBridge.weakTopic,
+    topicProductionMeta.weakTopic,
+    (taxonomySnapshot as any).weakTopic,
+    itemTags,
+    topicProductionInferredWeakTopicFromText(rowText, concept)
+  );
+  const nclexCategory = firstString(
+    assessmentBridge.nclexCategory,
+    topicProductionMeta.nclexCategory,
+    taxonomySnapshot.nclexCategory,
+    bundle.slides.map((slide) => slide.nclexCategory),
+    topicProductionInferredNclexCategoryFromText(rowText, concept)
+  );
+  const cjmStep = firstString(
+    assessmentBridge.cjmStep,
+    topicProductionMeta.cjmStep,
+    bundle.slides.map((slide) => slide.cjmStep),
+    topicProductionInferredCjmStepFromText(rowText)
   );
   const sourceEvidence = firstString(
     assessmentBridge.sourceEvidence,
@@ -4891,9 +4967,9 @@ function topicProductionRowFromBundle(bundle: LessonBundle) {
     packageStatus: pkg.status,
     concept,
     nursingSubject: specialty,
-    weakTopic: assessmentBridge.weakTopic || topicProductionMeta.weakTopic || "",
-    nclexCategory: assessmentBridge.nclexCategory || topicProductionMeta.nclexCategory || taxonomySnapshot.nclexCategory || firstString(bundle.slides.map((slide) => slide.nclexCategory)),
-    cjmStep: assessmentBridge.cjmStep || topicProductionMeta.cjmStep || firstString(bundle.slides.map((slide) => slide.cjmStep)),
+    weakTopic,
+    nclexCategory,
+    cjmStep,
     sourceEvidence,
     review: manifest.topicProductionReview,
     assets,
@@ -4916,6 +4992,10 @@ function topicProductionRowFromContentBlock(block: any) {
   const inferredTopic = topicProductionInferredBlockTopic(block);
   const concept = topicProductionInferredBlockConcept(block);
   const specialty = topicProductionInferredBlockSubject(block);
+  const rowText = topicProductionMappingText(inferredTopic, concept, specialty, topicProductionBlockText(block));
+  const weakTopic = topicProductionInferredWeakTopicFromText(rowText, concept);
+  const nclexCategory = topicProductionInferredNclexCategoryFromText(rowText, concept);
+  const cjmStep = topicProductionInferredCjmStepFromText(rowText);
   const assets = {
     mapping: Boolean(concept && specialty),
     slideDeck: false,
@@ -4938,9 +5018,9 @@ function topicProductionRowFromContentBlock(block: any) {
     packageStatus: "not_generated",
     concept,
     nursingSubject: specialty,
-    weakTopic: "",
-    nclexCategory: "",
-    cjmStep: "",
+    weakTopic,
+    nclexCategory,
+    cjmStep,
     sourceEvidence: block.source || "",
     assets,
     missing,
@@ -8498,6 +8578,266 @@ function contractGate(validationKey: string, validationName: string, passed: boo
     status: passed ? "pass" : warn ? "warn" : "fail",
     details,
     evidence,
+  };
+}
+
+type ControlPlaneCheckStatus = "pass" | "warn" | "fail";
+type ControlPlaneCheckSeverity = "low" | "medium" | "high";
+
+function controlPlaneCheck(
+  key: string,
+  label: string,
+  passed: boolean,
+  detail: string,
+  evidence: Record<string, any> = {},
+  severity: ControlPlaneCheckSeverity = "high",
+  warn = false
+) {
+  const status: ControlPlaneCheckStatus = passed ? "pass" : warn ? "warn" : "fail";
+  return {
+    key,
+    label,
+    status,
+    severity,
+    detail,
+    evidence,
+  };
+}
+
+function safeJsonText(value: unknown) {
+  try {
+    return JSON.stringify(value ?? {});
+  } catch {
+    return "";
+  }
+}
+
+function collectPlaceholderFindings(value: unknown, path = "$", findings: string[] = []) {
+  if (findings.length >= 25) return findings;
+
+  if (typeof value === "string") {
+    if (/\b(TODO|TBD|PLACEHOLDER|FIXME|LOREM IPSUM)\b/i.test(value)) {
+      findings.push(`${path}: ${value.slice(0, 100)}`);
+    }
+    return findings;
+  }
+
+  if (Array.isArray(value)) {
+    value.forEach((entry, index) => collectPlaceholderFindings(entry, `${path}[${index}]`, findings));
+    return findings;
+  }
+
+  if (value && typeof value === "object") {
+    Object.entries(value as Record<string, unknown>).forEach(([key, entry]) => {
+      collectPlaceholderFindings(entry, `${path}.${key}`, findings);
+    });
+  }
+
+  return findings;
+}
+
+function buildLessonControlPlaneReport(bundle: LessonBundle, profile = "harrity") {
+  const { package: pkg, sources, slides, items, citations, qaResults, contractValidations } = bundle;
+  const generatedArtifacts = buildPackageArtifactPayloads(bundle, profile);
+  const generatedFiles = generatedArtifacts.map((artifact) => artifact.fileName).sort();
+  const persistedFiles = bundle.artifacts.map((artifact) => artifact.fileName).sort();
+  const allFileNames = new Set([...generatedFiles, ...persistedFiles]);
+  const packageSourceIds: string[] = Array.isArray(pkg.sourceIds) ? pkg.sourceIds.map(String) : [];
+  const loadedSourceIds = new Set(sources.map((source) => source.id));
+  const missingLoadedSources = packageSourceIds.filter((sourceId) => !loadedSourceIds.has(sourceId));
+  const slidesWithCitations = new Set(citations.filter((citation) => citation.slideId).map((citation) => citation.slideId));
+  const itemCitationIds = new Set(citations.filter((citation) => citation.itemId).map((citation) => citation.itemId));
+  const knownSourceIds = new Set(sources.map((source) => source.id));
+  const citationsUseKnownSources = citations.every((citation) => {
+    return Boolean(citation.documentId || citation.chunkId || (citation.sourceId && knownSourceIds.has(citation.sourceId)));
+  });
+  const failedQa = qaResults.filter((result) => result.status === "fail");
+  const failedContracts = contractValidations.filter((result) => result.status === "fail");
+  const manifestContractStatus = String((pkg.manifest as Record<string, any> | null)?.contractValidation?.status || "");
+  const hasContractEvidence = contractValidations.length > 0 || Boolean(manifestContractStatus);
+  const taxonomySnapshotReady = Object.keys(pkg.taxonomySnapshot || {}).length > 0;
+  const slideTaxonomyReady = slides.length > 0 && slides.every((slide) => slide.nclexCategory && slide.cjmStep && slide.bloomLevel);
+  const slideNumbers = slides.map((slide) => slide.slideNumber);
+  const duplicateSlideNumbers = slideNumbers.filter((slideNumber, index) => slideNumbers.indexOf(slideNumber) !== index);
+  const placeholderFindings = collectPlaceholderFindings({
+    package: {
+      title: pkg.title,
+      topic: pkg.topic,
+      taxonomySnapshot: pkg.taxonomySnapshot,
+      deckModel: pkg.deckModel,
+      manifest: pkg.manifest,
+    },
+    slides: slides.map((slide) => ({
+      id: slide.id,
+      title: slide.title,
+      visibleContent: slide.visibleContent,
+      speakerNotes: slide.speakerNotes,
+      guidedNotes: slide.guidedNotes,
+      retrievalPrompt: slide.retrievalPrompt,
+    })),
+    items: items.map((item) => ({
+      id: item.id,
+      stem: item.stem,
+      options: item.options,
+      correctAnswer: item.correctAnswer,
+      rationale: item.rationale,
+      tags: item.tags,
+    })),
+    artifacts: generatedArtifacts.map((artifact) => ({
+      fileName: artifact.fileName,
+      contentJson: artifact.contentJson,
+      contentText: artifact.contentText,
+    })),
+  });
+  const exportedText = [
+    safeJsonText(pkg.manifest),
+    safeJsonText(pkg.deckModel),
+    generatedArtifacts.map((artifact) => serializeArtifactContent(artifact)).join("\n"),
+  ].join("\n").toLowerCase();
+  const rawLeakTerms = ["chunks/", "tagged_chunks/", "\\chunks\\", "\\tagged_chunks\\"];
+  const rawInputLeaks = rawLeakTerms.filter((term) => exportedText.includes(term));
+  const missingRequiredFiles = harrityRequiredExportFiles.filter((fileName) => !generatedFiles.includes(fileName));
+  const audioFileNames = Array.from(allFileNames).filter((fileName) => /\.(mp3|wav|m4a|aac|ogg)$/i.test(fileName));
+  const claimsRenderedAudio = /\b(audio|tts|voice|mp3|wav)\b/.test(exportedText)
+    && /\b(rendered|bound|inserted|verified|complete|completed)\b/.test(exportedText);
+
+  const checks = [
+    controlPlaneCheck(
+      "source_inventory_gate",
+      "Source Inventory Gate",
+      sources.length > 0 && missingLoadedSources.length === 0,
+      missingLoadedSources.length === 0
+        ? `${sources.length} source(s) loaded for ${packageSourceIds.length} package source id(s).`
+        : `Missing loaded source records: ${missingLoadedSources.join(", ")}.`,
+      { packageSourceIds, loadedSourceIds: Array.from(loadedSourceIds), missingLoadedSources }
+    ),
+    controlPlaneCheck(
+      "ckm_contract_gate",
+      "CKM / Control Contract Gate",
+      hasContractEvidence && failedContracts.length === 0 && manifestContractStatus !== "blocked",
+      hasContractEvidence
+        ? `${contractValidations.length} contract validation row(s); manifest contract status ${manifestContractStatus || "row-backed"}.`
+        : "Run Harrity contract validation before treating the package as control-plane ready.",
+      {
+        validationCount: contractValidations.length,
+        failedValidationKeys: failedContracts.map((result) => result.validationKey),
+        manifestContractStatus: manifestContractStatus || null,
+      }
+    ),
+    controlPlaneCheck(
+      "taxonomy_gate_0_equivalent",
+      "Taxonomy Gate 0 Equivalent",
+      slideTaxonomyReady,
+      slideTaxonomyReady
+        ? `${slides.length} slide(s) carry NCLEX, CJM, and Bloom alignment.`
+        : "Every slide must carry NCLEX category, CJM step, and Bloom level before lesson build/export.",
+      { taxonomySnapshotReady, slideCount: slides.length }
+    ),
+    controlPlaneCheck(
+      "lesson_ingest_queue_equivalent",
+      "Lesson Ingest Queue Equivalent",
+      slides.length > 0 && slidesWithCitations.size >= slides.length && citationsUseKnownSources,
+      `${slidesWithCitations.size}/${slides.length} slide(s) have citation-backed source traceability; citation source references are ${citationsUseKnownSources ? "recognized" : "not fully recognized"}.`,
+      { slideCount: slides.length, citedSlideCount: slidesWithCitations.size, citationCount: citations.length }
+    ),
+    controlPlaneCheck(
+      "practice_item_traceability",
+      "Practice Item Traceability",
+      items.length > 0 && items.every((item) => item.correctAnswer && item.rationale && ((item.tags as any)?.nclexCategory || (item.tags as any)?.cjmStep) && (itemCitationIds.has(item.id) || citations.length > 0)),
+      `${items.length} practice item(s) checked for answer, rationale, taxonomy tags, and citation linkage.`,
+      { itemCount: items.length, citedItemCount: itemCitationIds.size }
+    ),
+    controlPlaneCheck(
+      "stage_isolation",
+      "Stage Isolation",
+      rawInputLeaks.length === 0,
+      rawInputLeaks.length === 0
+        ? "Lesson build/export artifacts do not reference raw chunks or tagged chunk directories."
+        : `Exported package leaks raw input paths: ${rawInputLeaks.join(", ")}.`,
+      { forbiddenTerms: rawLeakTerms, rawInputLeaks }
+    ),
+    controlPlaneCheck(
+      "stable_slide_ids",
+      "Stable Slide IDs",
+      slides.length > 0 && slides.every((slide) => slide.id && slide.packageId === pkg.id && Number.isFinite(slide.slideNumber)) && duplicateSlideNumbers.length === 0,
+      duplicateSlideNumbers.length === 0
+        ? `${slides.length} slide id(s) and slide number(s) are stable.`
+        : `Duplicate slide numbers found: ${duplicateSlideNumbers.join(", ")}.`,
+      { slideCount: slides.length, duplicateSlideNumbers }
+    ),
+    controlPlaneCheck(
+      "final_qa_gate",
+      "Final QA Gate",
+      qaResults.length > 0 && failedQa.length === 0,
+      qaResults.length > 0
+        ? `${failedQa.length} failing QA gate(s) across ${qaResults.length} QA result(s).`
+        : "Run package QA before final export.",
+      { qaResultCount: qaResults.length, failedQaGateKeys: failedQa.map((result) => result.gateKey) }
+    ),
+    controlPlaneCheck(
+      "export_manifest_gate",
+      "Export Manifest Gate",
+      missingRequiredFiles.length === 0 && generatedFiles.includes("package_manifest.json"),
+      missingRequiredFiles.length === 0
+        ? `${harrityRequiredExportFiles.length} required export file(s) are generated, including package_manifest.json.`
+        : `Missing required export files: ${missingRequiredFiles.join(", ")}.`,
+      { requiredFiles: harrityRequiredExportFiles, generatedFiles, persistedFiles, missingRequiredFiles }
+    ),
+    controlPlaneCheck(
+      "placeholder_blocker",
+      "Placeholder Blocker",
+      placeholderFindings.length === 0,
+      placeholderFindings.length === 0
+        ? "No blocking placeholder terms were found in package, lesson, or generated artifact payloads."
+        : `${placeholderFindings.length} placeholder finding(s) need replacement before release.`,
+      { placeholderFindings },
+      "medium"
+    ),
+    controlPlaneCheck(
+      "media_truthfulness",
+      "Media Truthfulness",
+      !claimsRenderedAudio || audioFileNames.length > 0,
+      !claimsRenderedAudio
+        ? "No rendered-audio completion claim is present."
+        : `${audioFileNames.length} rendered audio file(s) found for rendered-audio claims.`,
+      { claimsRenderedAudio, audioFileNames },
+      "medium"
+    ),
+  ];
+
+  const blockers = checks.filter((check) => check.status === "fail").map((check) => ({
+    key: check.key,
+    label: check.label,
+    severity: check.severity,
+    detail: check.detail,
+  }));
+  const warnings = checks.filter((check) => check.status === "warn").map((check) => ({
+    key: check.key,
+    label: check.label,
+    severity: check.severity,
+    detail: check.detail,
+  }));
+
+  const status = blockers.length > 0 ? "blocked" : warnings.length > 0 ? "needs_attention" : "passed";
+  const generatedAt = new Date().toISOString();
+
+  return {
+    packageId: pkg.id,
+    profile,
+    generatedAt,
+    hardRule: "NO CKM -> NO TAXONOMY -> NO LESSON BUILD",
+    status,
+    summary: {
+      status,
+      checkCount: checks.length,
+      passCount: checks.filter((check) => check.status === "pass").length,
+      warningCount: warnings.length,
+      failCount: blockers.length,
+      generatedAt,
+    },
+    checks,
+    blockers,
+    warnings,
   };
 }
 
@@ -13189,19 +13529,36 @@ export function registerLessonBuilderRoutes(app: Express) {
       const validation = await validateLessonContract(req.params.id, profile);
       const bundle = await findPackageBundle(req.params.id);
       if (!bundle) return res.status(404).json({ error: "Lesson package not found" });
+      const controlPlane = buildLessonControlPlaneReport(bundle, profile);
+      const blocked = validation.validationSummary.failCount > 0 || qa.qaSummary.failCount > 0 || controlPlane.summary.failCount > 0;
 
       res.json({
         package: bundle.package,
         qa,
         validation,
+        controlPlane,
         artifacts: validation.artifacts,
-        reviewStatus: validation.validationSummary.failCount > 0 || qa.qaSummary.failCount > 0
+        reviewStatus: blocked
           ? (bundle.package.status === "needs_republish" ? "needs_republish" : "blocked")
           : (bundle.package.status === "published" ? "published" : "ready_to_publish"),
       });
     } catch (error) {
       console.error("Lesson builder artifact rebuild error:", error);
       res.status(500).json({ error: "Failed to rebuild lesson package artifacts" });
+    }
+  });
+
+  app.get("/api/admin/lesson-builder/packages/:id/control-plane-report", requireAdminSession, async (req: AdminAuthRequest, res: Response) => {
+    try {
+      await ensureLessonBuilderTables();
+      const profile = typeof req.query.profile === "string" ? req.query.profile : "harrity";
+      const bundle = await findPackageBundle(req.params.id);
+      if (!bundle) return res.status(404).json({ error: "Lesson package not found" });
+
+      res.json(buildLessonControlPlaneReport(bundle, profile));
+    } catch (error) {
+      console.error("Lesson builder control-plane report error:", error);
+      res.status(500).json({ error: "Failed to inspect lesson package control plane" });
     }
   });
 
@@ -13222,6 +13579,17 @@ export function registerLessonBuilderRoutes(app: Express) {
       if (qa.qaSummary.failCount > 0 || validation.validationSummary.failCount > 0) {
         return res.status(400).json({ error: "Package has failing QA or contract gates", qa, validation });
       }
+      const bundle = await findPackageBundle(req.params.id);
+      if (!bundle) return res.status(404).json({ error: "Lesson package not found" });
+      const controlPlane = buildLessonControlPlaneReport(bundle, "harrity");
+      if (controlPlane.summary.failCount > 0) {
+        return res.status(400).json({
+          error: "Package has failing Build Package 1 control-plane gates",
+          qa,
+          validation,
+          controlPlane,
+        });
+      }
 
       const [published] = await db.update(lessonPackages).set({
         status: "published",
@@ -13232,13 +13600,14 @@ export function registerLessonBuilderRoutes(app: Express) {
       await recordReleaseAuditEvent(req.params.id, "package_published", "Package published after QA and contract validation passed.", {
         qaSummary: qa.qaSummary,
         validationSummary: validation.validationSummary,
+        controlPlaneSummary: controlPlane.summary,
         publishConfirmation: {
           confirmed: true,
           confirmationText: publicPublishConfirmationText,
         },
       }, req.session.adminUser?.userId);
 
-      res.json({ package: published, qa, publishConfirmation: { confirmed: true } });
+      res.json({ package: published, qa, validation, controlPlane, publishConfirmation: { confirmed: true } });
     } catch (error) {
       console.error("Lesson builder publish error:", error);
       res.status(500).json({ error: "Failed to publish lesson package" });
@@ -13257,6 +13626,7 @@ export function registerLessonBuilderRoutes(app: Express) {
       const missingRequiredFiles = harrityRequiredExportFiles.filter((fileName) => !generatedFiles.includes(fileName));
       const persistedFiles = bundle.artifacts.map((artifact) => artifact.fileName).sort();
       const latestExportAudit = bundle.releaseAuditEvents.find((event) => event.eventType === "harrity_export_downloaded") || null;
+      const controlPlane = buildLessonControlPlaneReport(bundle, profile);
 
       res.json({
         packageId: req.params.id,
@@ -13271,6 +13641,7 @@ export function registerLessonBuilderRoutes(app: Express) {
         missingRequiredFiles,
         includesDeckModel: generatedFiles.includes("deck_model.json"),
         latestExportAudit,
+        controlPlane,
       });
     } catch (error) {
       console.error("Lesson builder export status error:", error);
@@ -13353,6 +13724,13 @@ export function registerLessonBuilderRoutes(app: Express) {
       await validateLessonContract(req.params.id, profile);
       bundle = await findPackageBundle(req.params.id);
       if (!bundle) return res.status(404).json({ error: "Lesson package not found" });
+      const controlPlane = buildLessonControlPlaneReport(bundle, profile);
+      if (controlPlane.summary.failCount > 0) {
+        return res.status(400).json({
+          error: "Package has failing Build Package 1 control-plane gates",
+          controlPlane,
+        });
+      }
 
       const buffer = await buildExportZip(bundle, profile);
       const fileName = `${bundle.package.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "lesson-package"}.zip`;
@@ -13364,6 +13742,7 @@ export function registerLessonBuilderRoutes(app: Express) {
         requiredFiles: harrityRequiredExportFiles,
         missingRequiredFiles: harrityRequiredExportFiles.filter((requiredFile) => !bundle.artifacts.some((artifact) => artifact.fileName === requiredFile)),
         includesDeckModel: bundle.artifacts.some((artifact) => artifact.fileName === "deck_model.json"),
+        controlPlaneSummary: controlPlane.summary,
       }, req.session.adminUser?.userId);
 
       res.setHeader("Content-Type", "application/zip");
