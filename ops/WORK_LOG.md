@@ -222,3 +222,29 @@ Result:
 Next action:
 
 - Begin the next low-cost launch packet with visual prompts/diagrams for the first review-ready package rows, starting with the featured contraception and therapeutic communication packages.
+
+## 2026-07-10 06:21 UTC - Hourly Launch Queue Coverage
+
+Scope: Extend the hourly ops check from basic route health into launch queue verification.
+
+Actions:
+
+- Added non-mutating queue checks to `scripts/hourly-ops-check.mjs` for next-spend polish, Airtable/shorts workflow, media work orders, student launch readiness, and final publish readiness.
+- Updated the hourly job plan so the next packets focus on asset approval and queue activation instead of completed mapping work.
+
+Evidence:
+
+- Live hourly check passed with `0` failed checks.
+- Live route checks passed for health, student home, topic-production page, admin login, and topic-production matrix.
+- Live launch queue checks all returned HTTP `200`.
+- Queue counts are currently `0`, which means no rows are explicitly approved for the next spend/shorts/media/publish step yet.
+- Topic matrix remains at `77` rows, `0` needs mapping, and `74` needs assets.
+
+Result:
+
+- The hourly job now separates a real route failure from an empty approval queue.
+- The next launch action is operationally clear: approve or hold the first 1-2 `needs_assets` package rows before spending on visuals, shorts, audio, video, or batch generation.
+
+Next action:
+
+- Use `/admin/topic-production` to approve one featured row for the next asset packet, then let the queue checks prove the handoff into shorts/media/review workflow.

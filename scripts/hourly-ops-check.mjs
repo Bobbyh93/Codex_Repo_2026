@@ -99,6 +99,28 @@ function summarizeTopicMatrix(rows) {
   return { missing, nextAssetRows, nextMappingRows };
 }
 
+function queueCount(payload) {
+  if (!payload || typeof payload !== "object") return 0;
+  if (Number.isFinite(Number(payload.count))) return Number(payload.count);
+  if (Array.isArray(payload.records)) return payload.records.length;
+  if (Array.isArray(payload.packets)) return payload.packets.length;
+  if (Array.isArray(payload.rows)) return payload.rows.length;
+  return 0;
+}
+
+function summarizeQueue(result, label) {
+  const payload = result?.payload || {};
+  return {
+    label,
+    ok: result?.status === 200,
+    status: result?.status || 0,
+    queue: payload.queue || label,
+    budgetWindow: payload.budgetWindow || "",
+    costGuardrail: payload.costGuardrail || "",
+    count: queueCount(payload),
+  };
+}
+
 async function main() {
   const checks = [];
 
@@ -136,7 +158,36 @@ async function main() {
     rows: rows.length,
   });
 
+  const queueRequests = login.status === 200
+    ? await Promise.all([
+      request("/api/admin/topic-production-matrix/next-spend-queue?format=json"),
+      request("/api/admin/topic-production-matrix/shorts-workflow?format=json"),
+      request("/api/admin/topic-production-matrix/media-work-orders?format=json"),
+      request("/api/admin/topic-production-matrix/student-launch-readiness?format=json"),
+      request("/api/admin/topic-production-matrix/publish-readiness?format=json"),
+    ])
+    : [];
+  const assetQueues = queueRequests.length
+    ? {
+      nextSpend: summarizeQueue(queueRequests[0], "approved_next_spend_polish"),
+      shortsWorkflow: summarizeQueue(queueRequests[1], "phase_3_shorts_airtable_handoff"),
+      mediaWorkOrders: summarizeQueue(queueRequests[2], "phase_4_media_work_orders"),
+      studentLaunchReadiness: summarizeQueue(queueRequests[3], "student_launch_readiness"),
+      publishReadiness: summarizeQueue(queueRequests[4], "publish_readiness"),
+    }
+    : null;
+
+  for (const [name, queue] of Object.entries(assetQueues || {})) {
+    checks.push({
+      name,
+      ok: queue.ok,
+      status: queue.status,
+      count: queue.count,
+    });
+  }
+
   const failed = checks.filter((check) => !check.ok);
+  const anyApprovedAssetQueue = Object.values(assetQueues || {}).some((queue) => queue.count > 0);
   const result = {
     generatedAt: new Date().toISOString(),
     baseUrl,
@@ -145,9 +196,12 @@ async function main() {
     topicMatrix: matrix.payload?.summary || null,
     driveProject: matrix.payload?.driveProject?.id || null,
     topicAudit: topicSummary,
+    assetQueues,
     nextPacket: topicSummary?.nextMappingRows?.length
       ? "Map weakTopic, NCLEX category, and CJM step for the first 3-5 nextMappingRows."
-      : "Review visuals for the first needs_assets package rows.",
+      : anyApprovedAssetQueue
+        ? "Work the approved next-spend/shorts/media queue rows under the recorded cost guardrails."
+        : "Approve 1-2 needs_assets package rows before spending on visuals, shorts, audio, video, or batch generation.",
   };
 
   console.log(JSON.stringify(result, null, 2));

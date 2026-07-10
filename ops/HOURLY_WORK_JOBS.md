@@ -9,9 +9,9 @@ First scheduled cycle: Friday, 2026-07-10
 
 | Time | Job | Budget cap | Output |
 | --- | --- | ---: | --- |
-| 09:00-09:25 | Health check and route triage | $50 | Live status note |
-| 10:00-10:45 | Topic mapping packet | $100 | 3-5 mapped topics or blocker |
-| 11:00-11:45 | Package build packet | $100 | 1 student-ready draft package |
+| 09:00-09:25 | Health check and launch queue triage | $50 | Live status note with queue counts |
+| 10:00-10:45 | Asset approval packet | $100 | 1-2 rows approved or held with reason |
+| 11:00-11:45 | Package build packet | $100 | 1 student-ready draft package or visual/study-guide packet |
 | 12:00-12:25 | QA/export check | $50 | Smoke result and issue list |
 | 13:00-13:45 | Airtable/shorts tracker packet | $100 | Tracker rows or sync contract |
 | 14:00-14:25 | Log, Drive sync, next queue | $50 | Updated work log and next packet |
@@ -39,11 +39,23 @@ Risks/blockers:
 ## Next 6 Packets
 
 1. Live health plus admin topic-production verification.
-2. Audit required mapping fields across current topic matrix.
-3. Select one pediatrics or maternal/newborn topic for package-quality review.
-4. Confirm each selected topic has study guide, slide deck, visuals plan, and quiz item.
-5. Define Airtable viral shorts tracker fields and one sample linked row.
+2. Confirm the topic matrix still has `0` mapping gaps.
+3. Review the first 1-2 `needs_assets` package rows and choose approve/hold before spending.
+4. Confirm the approved row has a study guide, slide deck, visuals plan, quiz item, and citations.
+5. Verify next-spend, Airtable shorts, media work-order, student launch, and publish-readiness queues.
 6. Sync WBS/log artifacts to Drive and schedule the next daily cadence.
+
+## Hourly Automation Coverage
+
+`npm run ops:hourly-check` verifies the live app health, student home, admin login, topic-production matrix, and the non-mutating launch queues:
+
+- next-spend polish queue
+- Airtable/shorts workflow queue
+- media work-order queue
+- student-launch readiness queue
+- final publish-readiness queue
+
+An empty queue with HTTP `200` means no row has been explicitly approved for that next paid/review step yet; it is not a route failure.
 
 ## Quality Gate Per Packet
 
@@ -53,4 +65,3 @@ Each packet must answer:
 - Where is the proof?
 - What did it cost?
 - What is the next smallest useful move?
-
