@@ -518,3 +518,33 @@ Result:
 Next action:
 
 - Use `ops/LAUNCH_WBS.md` as the first planning surface before selecting the next hourly packet.
+
+## 2026-07-10 07:24 UTC - Drive and Calendar Sync Packet
+
+Scope: Prepare a safe external sync handoff for Google Drive and Google Calendar without writing to unverified external destinations.
+
+Actions:
+
+- Added `scripts/external-sync-packet.mjs`.
+- Added `npm run ops:sync-packet`.
+- Wired `sync_packet` into `npm run ops:hourly-run`.
+- Generated `ops/EXTERNAL_SYNC_PACKET.md` and `ops/EXTERNAL_SYNC_PACKET.json`.
+- Updated `ops/DRIVE_SYNC_STATUS.md` with the sync-packet rule.
+
+Evidence:
+
+- Sync packet script syntax check passed.
+- Hourly runner completed with the new `sync_packet` step.
+- External sync packet lists 11 candidate files and 6 calendar events.
+- Drive status is `held_unverified_destination`, so connector writes remain blocked until explicitly verified and approved.
+- Launch-surface typecheck passed; legacy diagnostics remain outside the launch surface.
+- Production client and server builds passed.
+
+Result:
+
+- Drive and Calendar are now represented in the hourly ops system as explicit, reviewable sync targets rather than implicit manual tasks.
+- No Drive, Calendar, AI media, or spend-side mutation was performed.
+
+Next action:
+
+- Verify the Drive destination and approve the exact file/event sync list before any connector write.

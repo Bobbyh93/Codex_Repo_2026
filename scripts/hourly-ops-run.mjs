@@ -32,6 +32,10 @@ const steps = [
     name: "wbs_export",
     script: "scripts/launch-wbs-export.mjs",
   },
+  {
+    name: "sync_packet",
+    script: "scripts/external-sync-packet.mjs",
+  },
 ];
 
 function runScript(step) {
@@ -74,6 +78,7 @@ function buildHistoryRecord(results) {
     spendGuard: dashboard.spendGuard || null,
     wbsPath: "ops/LAUNCH_WBS.json",
     cadencePath: "ops/HOURLY_CADENCE.json",
+    syncPacketPath: "ops/EXTERNAL_SYNC_PACKET.json",
     steps: results.map((result) => ({
       name: result.name,
       ok: result.ok,

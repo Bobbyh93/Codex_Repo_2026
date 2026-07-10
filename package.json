@@ -29,6 +29,7 @@
     "ops:review-dashboard": "node scripts/ops-review-dashboard.mjs",
     "ops:schedule": "node scripts/hourly-cadence-export.mjs",
     "ops:wbs": "node scripts/launch-wbs-export.mjs",
+    "ops:sync-packet": "node scripts/external-sync-packet.mjs",
     "check:launch": "node scripts/launch-surface-typecheck.mjs",
     "check": "tsc",
     "db:push": "drizzle-kit push",

@@ -62,6 +62,13 @@ Risks/blockers:
 
 The WBS ties live health, student surface, content mapping, lesson assets, no-spend visual decisions, Airtable/shorts handoff, Calendar/Drive records, and deployment proof to concrete evidence files and budget caps.
 
+`npm run ops:sync-packet` exports the external sync packet:
+
+- `ops/EXTERNAL_SYNC_PACKET.md`
+- `ops/EXTERNAL_SYNC_PACKET.json`
+
+This packet lists the exact files and calendar events that are safe to sync after explicit approval, and keeps Drive/Calendar writes held when the destination is not verified.
+
 `npm run ops:hourly-check` verifies the live app health, student home, admin login, topic-production matrix, and the non-mutating launch queues:
 
 - next-spend polish queue
