@@ -4770,6 +4770,21 @@ function topicProductionInferredWeakTopicFromText(text: string, concept = "") {
   return "";
 }
 
+function topicProductionIsBroadWeakTopicLabel(value: string) {
+  return /^(physiological integrity|safe and effective care environment|health promotion and maintenance|psychosocial integrity|basic care and comfort|clinical decision making)$/i.test(String(value || "").trim());
+}
+
+function topicProductionFirstSpecificWeakTopic(...values: any[]) {
+  const flattened = values.flatMap((value) => Array.isArray(value) ? value : [value]);
+  for (const value of flattened) {
+    if (typeof value !== "string" || !value.trim()) continue;
+    const candidate = value.trim();
+    if (topicProductionIsGenericLabel(candidate) || topicProductionIsBroadWeakTopicLabel(candidate)) continue;
+    return candidate;
+  }
+  return "";
+}
+
 function topicProductionInferredNclexCategoryFromText(text: string, concept = "") {
   const lower = `${text} ${concept}`.toLowerCase();
   if (/therapeutic communication|psychosocial|mental health|anxiety|de-escalation/.test(lower)) return "Psychosocial Integrity";
@@ -4922,7 +4937,7 @@ function topicProductionRowFromBundle(bundle: LessonBundle) {
   const specialty = rawSpecialty && !topicProductionIsGenericLabel(rawSpecialty)
     ? rawSpecialty
     : topicProductionInferredSubjectFromText(rowText);
-  const weakTopic = firstString(
+  const weakTopic = topicProductionFirstSpecificWeakTopic(
     assessmentBridge.weakTopic,
     topicProductionMeta.weakTopic,
     (taxonomySnapshot as any).weakTopic,
@@ -4930,17 +4945,17 @@ function topicProductionRowFromBundle(bundle: LessonBundle) {
     itemTags
   );
   const nclexCategory = firstString(
+    topicProductionInferredNclexCategoryFromText(rowText, concept),
     assessmentBridge.nclexCategory,
     topicProductionMeta.nclexCategory,
     taxonomySnapshot.nclexCategory,
-    bundle.slides.map((slide) => slide.nclexCategory),
-    topicProductionInferredNclexCategoryFromText(rowText, concept)
+    bundle.slides.map((slide) => slide.nclexCategory)
   );
   const cjmStep = firstString(
+    topicProductionInferredCjmStepFromText(rowText),
     assessmentBridge.cjmStep,
     topicProductionMeta.cjmStep,
-    bundle.slides.map((slide) => slide.cjmStep),
-    topicProductionInferredCjmStepFromText(rowText)
+    bundle.slides.map((slide) => slide.cjmStep)
   );
   const sourceEvidence = firstString(
     assessmentBridge.sourceEvidence,
