@@ -356,3 +356,30 @@ Result:
 Next action:
 
 - Review `ops/VISUAL_REVIEW_PACKET.md`. If approved, record that approval in `/admin/topic-production` and only then move the row into next-spend/media queues.
+
+## 2026-07-10 06:59 UTC - Visual Decision Template
+
+Scope: Add a local decision-capture step for the first visual review packet.
+
+Actions:
+
+- Added `scripts/visual-decision-template.mjs`.
+- Added `npm run ops:visual-decision`.
+- Generated `ops/VISUAL_DECISION_TEMPLATE.md` and `ops/VISUAL_DECISION_TEMPLATE.json`.
+
+Evidence:
+
+- Visual decision script syntax check passed.
+- Generated decision topic: `Contraception priority cues and patient teaching`.
+- Decision status defaults to `pending`.
+- Allowed statuses are `approve_visual_planning`, `needs_revision`, and `hold_no_spend`.
+- Live mutation is explicitly recorded as `false`.
+
+Result:
+
+- The next approval step is now auditable without changing live data or opening spend queues.
+- A reviewer can choose approve/revise/hold, then the live app decision can be recorded deliberately.
+
+Next action:
+
+- Use `ops/VISUAL_DECISION_TEMPLATE.md` to record the human decision. Only after approval should `/admin/topic-production` be updated and downstream queues activated.

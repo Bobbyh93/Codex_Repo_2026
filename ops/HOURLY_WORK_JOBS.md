@@ -71,6 +71,13 @@ This packet selects the first reviewable `needs_assets` rows, records missing as
 
 This packet turns the first selected approval row into a concrete visual plan with diagram type, visual elements, accessibility notes, and approve/revise/hold options. It is review-only and does not generate images or update live decisions.
 
+`npm run ops:visual-decision` creates a local decision template:
+
+- `ops/VISUAL_DECISION_TEMPLATE.md`
+- `ops/VISUAL_DECISION_TEMPLATE.json`
+
+This template records the pending approve/revise/hold choice for the current visual packet. It does not mutate the live app; the live `/admin/topic-production` decision should be recorded only after the reviewer chooses.
+
 ## Quality Gate Per Packet
 
 Each packet must answer:
