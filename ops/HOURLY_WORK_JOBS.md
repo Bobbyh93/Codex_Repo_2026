@@ -87,6 +87,8 @@ This template records the pending approve/revise/hold choice for the current vis
 
 This dashboard runs the live hourly check and summarizes the current asset packet, visual packet, decision template, and queue state. Use it as the first file to open during hourly review.
 
+The dashboard also includes a spend guard. If the visual decision is still pending and any next-spend, shorts, media work-order, student-launch, or publish queue opens, treat the packet as blocked until the decision is reviewed.
+
 ## Quality Gate Per Packet
 
 Each packet must answer:

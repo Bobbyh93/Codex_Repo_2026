@@ -63,6 +63,7 @@ function buildHistoryRecord(results) {
     decisionStatus: dashboard.currentReview?.decisionStatus || "",
     liveMutation: dashboard.currentReview?.liveMutation === true,
     queueCounts: Object.fromEntries(Object.entries(dashboard.live?.queueSummary || {}).map(([key, value]) => [key, value?.count ?? null])),
+    spendGuard: dashboard.spendGuard || null,
     steps: results.map((result) => ({
       name: result.name,
       ok: result.ok,
@@ -85,6 +86,7 @@ function main() {
     currentTopic: history.currentTopic,
     decisionStatus: history.decisionStatus,
     liveMutation: history.liveMutation,
+    spendGuard: history.spendGuard?.status || "missing",
     historyPath,
     steps: results.map((result) => result.name),
   }, null, 2));

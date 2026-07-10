@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-10T07:06:39.035Z",
+  "generatedAt": "2026-07-10T07:09:59.522Z",
   "source": {
     "hourlyScript": "scripts/hourly-ops-check.mjs",
     "assetPacketPath": "ops/NEXT_ASSET_APPROVAL_PACKET.json",
@@ -144,6 +144,11 @@
     "decisionStatus": "pending",
     "decisionReviewer": "",
     "liveMutation": false
+  },
+  "spendGuard": {
+    "status": "ok",
+    "openQueues": [],
+    "message": "No spend/media queue is open while decision is pending."
   },
   "nextAction": "Review VISUAL_DECISION_TEMPLATE and choose approve_visual_planning, needs_revision, or hold_no_spend."
 }

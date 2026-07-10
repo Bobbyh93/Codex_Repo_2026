@@ -437,3 +437,29 @@ Result:
 Next action:
 
 - Run `npm run ops:hourly-run` at the next scheduled block, then review `ops/OPS_REVIEW_DASHBOARD.md` for the current decision.
+
+## 2026-07-10 07:10 UTC - Launch Closeout Spend Guard
+
+Scope: Close the launch ops loop with an explicit no-spend guard before pushing the functional MFP state.
+
+Actions:
+
+- Added a spend/media queue guard to the ops review dashboard.
+- Added the guard result to the hourly append-only history record.
+- Regenerated the hourly ops packet from live app checks.
+
+Evidence:
+
+- Script syntax checks passed for `ops-review-dashboard` and `hourly-ops-run`.
+- Hourly runner completed with `0` failed live checks.
+- Topic matrix remains `77` rows, `0` mapping gaps, and `74` asset gaps.
+- All guarded queues are empty: next spend, shorts workflow, media work orders, student launch readiness, and publish readiness.
+- Spend guard status is `ok`: no spend/media queue is open while the visual decision is pending.
+
+Result:
+
+- Launch-functional features remain live and checked, while paid media/AI production stays blocked until the first visual decision is reviewed.
+
+Next action:
+
+- Review `ops/VISUAL_DECISION_TEMPLATE.md` for the contraception visual packet, then approve, revise, or hold before opening any paid/media queue.

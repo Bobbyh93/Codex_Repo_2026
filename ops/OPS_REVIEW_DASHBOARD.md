@@ -1,6 +1,6 @@
 # Ops Review Dashboard
 
-Generated: 2026-07-10T07:06:39.035Z
+Generated: 2026-07-10T07:09:59.522Z
 Live app: https://nursestudy-lesson-builder.onrender.com
 
 ## Live Status
@@ -29,6 +29,12 @@ Live app: https://nursestudy-lesson-builder.onrender.com
 - Visual type: comparison table plus cue-to-teaching flow
 - Decision: pending
 - Live mutation performed: no
+
+## Spend Guard
+
+- Status: ok
+- Open guarded queues: 0
+- Message: No spend/media queue is open while decision is pending.
 
 ## Next Action
 

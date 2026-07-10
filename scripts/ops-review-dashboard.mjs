@@ -25,6 +25,39 @@ function queueLine(queue) {
   return `${queue.ok ? "ok" : "fail"} / HTTP ${queue.status} / ${queue.count} queued`;
 }
 
+function buildSpendGuard(queues, decisionStatus) {
+  const guardedQueues = [
+    "nextSpend",
+    "shortsWorkflow",
+    "mediaWorkOrders",
+    "studentLaunchReadiness",
+    "publishReadiness",
+  ];
+  const openQueues = guardedQueues
+    .map((name) => ({
+      name,
+      count: Number(queues?.[name]?.count || 0),
+    }))
+    .filter((queue) => queue.count > 0);
+  const decisionPending = decisionStatus === "pending" || decisionStatus === "missing";
+
+  if (decisionPending && openQueues.length > 0) {
+    return {
+      status: "attention",
+      openQueues,
+      message: "Spend/media queue is non-empty while visual decision remains pending. Review VISUAL_DECISION_TEMPLATE before spending.",
+    };
+  }
+
+  return {
+    status: "ok",
+    openQueues,
+    message: decisionPending
+      ? "No spend/media queue is open while decision is pending."
+      : "Spend/media queue guard passed for the recorded visual decision.",
+  };
+}
+
 function buildDashboard(hourly, assetPacket, visualPacket, decisionTemplate) {
   const selectedAssetRow = assetPacket?.rows?.[0] || null;
   const selectedVisualRow = visualPacket?.selectedRow || null;
@@ -33,6 +66,7 @@ function buildDashboard(hourly, assetPacket, visualPacket, decisionTemplate) {
   const missing = hourly.topicAudit?.missing || {};
   const queues = hourly.assetQueues || {};
   const decisionStatus = decision.status || "missing";
+  const spendGuard = buildSpendGuard(queues, decisionStatus);
   const nextAction = decisionStatus === "approve_visual_planning"
     ? "Record the approval in /admin/topic-production, then run hourly check to confirm next-spend/media queue movement."
     : decisionStatus === "needs_revision"
@@ -77,6 +111,7 @@ function buildDashboard(hourly, assetPacket, visualPacket, decisionTemplate) {
       decisionReviewer: decision.reviewer || "",
       liveMutation: decisionTemplate?.liveMutation?.performed === true,
     },
+    spendGuard,
     nextAction,
   };
 }
@@ -118,6 +153,12 @@ function markdown(dashboard) {
     `- Decision: ${current.decisionStatus}`,
     `- Live mutation performed: ${current.liveMutation ? "yes" : "no"}`,
     "",
+    "## Spend Guard",
+    "",
+    `- Status: ${dashboard.spendGuard.status}`,
+    `- Open guarded queues: ${dashboard.spendGuard.openQueues.length}`,
+    `- Message: ${dashboard.spendGuard.message}`,
+    "",
     "## Next Action",
     "",
     dashboard.nextAction,
@@ -153,6 +194,7 @@ function main() {
     needsAssets: dashboard.live.needsAssets,
     currentTopic: dashboard.currentReview.visualTopic || dashboard.currentReview.assetTopic,
     decision: dashboard.currentReview.decisionStatus,
+    spendGuard: dashboard.spendGuard.status,
     jsonPath,
     markdownPath,
   }, null, 2));
