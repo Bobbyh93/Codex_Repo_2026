@@ -147,3 +147,48 @@ Next action:
 Risks/blockers:
 
 - This packet touched files that already had uncommitted lesson-builder changes. Do not commit blindly without reviewing the combined diff.
+
+## 2026-07-10 10:05 PT - Deployed topic mapper and control-plane candidate
+
+Budget cap: $100  
+Actual estimate: focused validation/deploy, no paid AI/media generation  
+WBS: WBS-1 Live Product Health, WBS-2 Topic Catalog Backbone, WBS-6 Hourly Operating Cadence  
+Scope: Review the mixed release candidate, deploy the hourly ops/control-plane/topic-mapper work, and verify live impact.
+
+Actions:
+
+- Reviewed the mixed diff as one coherent release candidate: hourly ops files, Build Package 1 control-plane gates, release-smoke coverage, topic-production deterministic mapping.
+- Ran production frontend build.
+- Ran server bundle check.
+- Ran launch-surface typecheck.
+- Committed and pushed:
+  - `7532812` Add hourly ops checks and topic control gates
+  - `4d791a0` Refine topic matrix weak-topic inference
+  - `3508bba` Prefer specific topic labels in production matrix
+- Pushed the same commits to `main` for Render deployment.
+
+Evidence:
+
+- Frontend Vite production build: passed.
+- Server index no-write bundle check: passed.
+- Launch-surface typecheck: passed; `315` legacy diagnostics remain outside launch surface.
+- Temporary preview matrix probe after mapper patch: `0` missing subject, weak topic, NCLEX category, or CJM step.
+- Live topic-production matrix after deploy: `77` rows.
+- Live matrix summary after deploy: `3` ready, `6` needs mapping, `68` needs assets.
+- Live mapping asset count improved to `71` mapped rows.
+- Live missing audit after deploy: nursing subject `6`, weak topic `0`, NCLEX category `4`, CJM step `0`.
+- Live contraception row now has subject `Maternal-Newborn` and weak topic `Contraception`.
+
+Result:
+
+- The broad mapping bottleneck is mostly cleared in production.
+- Remaining catalog work is narrower: review the last 6 mapping rows and then convert source/content rows into package assets.
+
+Next action:
+
+- Review the 6 remaining mapping rows, especially generic ATI/source snippets, and decide whether they should become Fundamentals/Medical-Surgical package candidates or stay source-only.
+- Then start the next $50-$100 packet: visual plan for the featured contraception package.
+
+Risks/blockers:
+
+- Contraception still carries persisted `Physiological Integrity` as NCLEX category on one package row; weak-topic and subject are now correct. Human/content review should decide whether to override the stored bridge or leave the original category evidence.
