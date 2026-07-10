@@ -1,0 +1,149 @@
+{
+  "generatedAt": "2026-07-10T07:03:18.078Z",
+  "source": {
+    "hourlyScript": "scripts/hourly-ops-check.mjs",
+    "assetPacketPath": "ops/NEXT_ASSET_APPROVAL_PACKET.json",
+    "visualPacketPath": "ops/VISUAL_REVIEW_PACKET.json",
+    "decisionTemplatePath": "ops/VISUAL_DECISION_TEMPLATE.json"
+  },
+  "live": {
+    "baseUrl": "https://nursestudy-lesson-builder.onrender.com",
+    "failedChecks": 0,
+    "checks": [
+      {
+        "name": "health",
+        "ok": true,
+        "status": 200
+      },
+      {
+        "name": "student-home",
+        "ok": true,
+        "status": 200,
+        "featuredLesson": "110ac866-8f55-463e-ac84-e0bc67d13ba3"
+      },
+      {
+        "name": "topic-production-page",
+        "ok": true,
+        "status": 200
+      },
+      {
+        "name": "admin-login",
+        "ok": true,
+        "status": 200
+      },
+      {
+        "name": "topic-production-matrix",
+        "ok": true,
+        "status": 200,
+        "rows": 77
+      },
+      {
+        "name": "nextSpend",
+        "ok": true,
+        "status": 200,
+        "count": 0
+      },
+      {
+        "name": "shortsWorkflow",
+        "ok": true,
+        "status": 200,
+        "count": 0
+      },
+      {
+        "name": "mediaWorkOrders",
+        "ok": true,
+        "status": 200,
+        "count": 0
+      },
+      {
+        "name": "studentLaunchReadiness",
+        "ok": true,
+        "status": 200,
+        "count": 0
+      },
+      {
+        "name": "publishReadiness",
+        "ok": true,
+        "status": 200,
+        "count": 0
+      }
+    ],
+    "totalTopics": 77,
+    "ready": 3,
+    "needsMapping": 0,
+    "needsAssets": 74,
+    "missing": {
+      "concept": 0,
+      "nursingSubject": 0,
+      "weakTopic": 0,
+      "nclexCategory": 0,
+      "cjmStep": 0,
+      "sourceEvidence": 0,
+      "slideDeck": 68,
+      "studyGuide": 68,
+      "visuals": 74,
+      "quiz": 68
+    },
+    "queueSummary": {
+      "nextSpend": {
+        "label": "approved_next_spend_polish",
+        "ok": true,
+        "status": 200,
+        "queue": "approved_next_spend_polish",
+        "budgetWindow": "$100-$250",
+        "costGuardrail": "",
+        "count": 0
+      },
+      "shortsWorkflow": {
+        "label": "phase_3_shorts_airtable_handoff",
+        "ok": true,
+        "status": 200,
+        "queue": "phase_3_shorts_airtable_handoff",
+        "budgetWindow": "$100-$250",
+        "costGuardrail": "",
+        "count": 0
+      },
+      "mediaWorkOrders": {
+        "label": "phase_4_media_work_orders",
+        "ok": true,
+        "status": 200,
+        "queue": "phase_4_media_work_orders",
+        "budgetWindow": "$100-$500",
+        "costGuardrail": "This is a dollarized work order only. It does not run AI generation, visuals, TTS, audio, video, or batch production.",
+        "count": 0
+      },
+      "studentLaunchReadiness": {
+        "label": "student_launch_readiness",
+        "ok": true,
+        "status": 200,
+        "queue": "student_launch_readiness",
+        "budgetWindow": "",
+        "costGuardrail": "No broad public launch, video/audio, or batch production until this gate is approved.",
+        "count": 0
+      },
+      "publishReadiness": {
+        "label": "publish_readiness",
+        "ok": true,
+        "status": 200,
+        "queue": "final_publish_readiness",
+        "budgetWindow": "",
+        "costGuardrail": "Publishing uses existing package artifacts; no paid video/audio or batch production is part of this gate.",
+        "count": 0
+      }
+    }
+  },
+  "currentReview": {
+    "assetTopic": "Contraception priority cues and patient teaching",
+    "visualTopic": "Contraception priority cues and patient teaching",
+    "subject": "Maternal-Newborn",
+    "weakTopic": "Contraception",
+    "missingLabels": [
+      "Visuals"
+    ],
+    "visualType": "comparison table plus cue-to-teaching flow",
+    "decisionStatus": "pending",
+    "decisionReviewer": "",
+    "liveMutation": false
+  },
+  "nextAction": "Review VISUAL_DECISION_TEMPLATE and choose approve_visual_planning, needs_revision, or hold_no_spend."
+}

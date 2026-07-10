@@ -78,6 +78,13 @@ This packet turns the first selected approval row into a concrete visual plan wi
 
 This template records the pending approve/revise/hold choice for the current visual packet. It does not mutate the live app; the live `/admin/topic-production` decision should be recorded only after the reviewer chooses.
 
+`npm run ops:review-dashboard` creates the single-file review dashboard:
+
+- `ops/OPS_REVIEW_DASHBOARD.md`
+- `ops/OPS_REVIEW_DASHBOARD.json`
+
+This dashboard runs the live hourly check and summarizes the current asset packet, visual packet, decision template, and queue state. Use it as the first file to open during hourly review.
+
 ## Quality Gate Per Packet
 
 Each packet must answer:

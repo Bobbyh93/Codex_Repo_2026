@@ -383,3 +383,30 @@ Result:
 Next action:
 
 - Use `ops/VISUAL_DECISION_TEMPLATE.md` to record the human decision. Only after approval should `/admin/topic-production` be updated and downstream queues activated.
+
+## 2026-07-10 07:02 UTC - Ops Review Dashboard
+
+Scope: Consolidate live status, asset packet, visual packet, and decision template into one hourly review surface.
+
+Actions:
+
+- Added `scripts/ops-review-dashboard.mjs`.
+- Added `npm run ops:review-dashboard`.
+- Generated `ops/OPS_REVIEW_DASHBOARD.md` and `ops/OPS_REVIEW_DASHBOARD.json`.
+
+Evidence:
+
+- Dashboard script syntax check passed.
+- Dashboard generation ran the live hourly check successfully.
+- Dashboard reports `0` failed checks, `77` topic rows, `0` needs mapping, `74` needs assets, and `0` queued next-spend/media/publish rows.
+- Current review topic is `Contraception priority cues and patient teaching`.
+- Current decision remains `pending`; live mutation is `false`.
+
+Result:
+
+- The hourly reviewer can start from one dashboard instead of opening the live check, asset packet, visual packet, and decision template separately.
+- The next action remains review-only until a human chooses approve/revise/hold.
+
+Next action:
+
+- Open `ops/OPS_REVIEW_DASHBOARD.md`, then use `ops/VISUAL_DECISION_TEMPLATE.md` to record the contraception visual decision.

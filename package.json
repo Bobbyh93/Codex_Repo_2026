@@ -25,6 +25,7 @@
     "ops:asset-packet": "node scripts/asset-approval-packet.mjs",
     "ops:visual-packet": "node scripts/visual-review-packet.mjs",
     "ops:visual-decision": "node scripts/visual-decision-template.mjs",
+    "ops:review-dashboard": "node scripts/ops-review-dashboard.mjs",
     "check:launch": "node scripts/launch-surface-typecheck.mjs",
     "check": "tsc",
     "db:push": "drizzle-kit push",
