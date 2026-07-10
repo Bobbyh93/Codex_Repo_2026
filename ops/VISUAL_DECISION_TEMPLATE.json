@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-07-10T07:09:51.827Z",
+  "generatedAt": "2026-07-10T07:15:43.730Z",
   "sourcePacketPath": "ops/VISUAL_REVIEW_PACKET.json",
-  "sourcePacketGeneratedAt": "2026-07-10T07:09:51.779Z",
+  "sourcePacketGeneratedAt": "2026-07-10T07:15:43.668Z",
   "budgetWindow": "$0-$50 review only",
   "costGuardrail": "This decision record does not generate visuals, approve spend, publish lessons, or mutate live app data.",
   "row": {

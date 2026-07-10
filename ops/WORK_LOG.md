@@ -463,3 +463,30 @@ Result:
 Next action:
 
 - Review `ops/VISUAL_DECISION_TEMPLATE.md` for the contraception visual packet, then approve, revise, or hold before opening any paid/media queue.
+
+## 2026-07-10 07:16 UTC - Hourly Cadence Export
+
+Scope: Make the hourly development cadence calendar-ready while keeping work in small, reviewable, no-spend packets.
+
+Actions:
+
+- Added `scripts/hourly-cadence-export.mjs`.
+- Added `npm run ops:schedule`.
+- Generated `ops/HOURLY_CADENCE.md`, `ops/HOURLY_CADENCE.json`, and `ops/HOURLY_CADENCE.ics`.
+- Refreshed the hourly ops packet after adding the schedule artifact.
+
+Evidence:
+
+- Schedule script syntax check passed.
+- Schedule export produced 6 daily work blocks with budget caps and command references.
+- Hourly runner completed with `0` failed live checks.
+- Launch-surface typecheck passed; legacy diagnostics remain outside the launch surface.
+- Production client and server builds passed.
+
+Result:
+
+- The work plan is now both human-readable and calendar-importable, with the same spend guard used by the launch dashboard.
+
+Next action:
+
+- Use `ops/HOURLY_CADENCE.ics` for calendar import if needed, then continue with the visual decision review before opening any spend/media queue.
