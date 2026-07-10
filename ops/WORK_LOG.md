@@ -329,3 +329,30 @@ Result:
 Next action:
 
 - After the next deploy, run the release smoke or export-status check against the live app to confirm `control_plane_report.json` is visible in live export status.
+
+## 2026-07-10 06:56 UTC - Visual Review Packet
+
+Scope: Convert the first no-spend asset approval row into a concrete visual review plan.
+
+Actions:
+
+- Added `scripts/visual-review-packet.mjs`.
+- Added `npm run ops:visual-packet`.
+- Generated `ops/VISUAL_REVIEW_PACKET.md` and `ops/VISUAL_REVIEW_PACKET.json` from `ops/NEXT_ASSET_APPROVAL_PACKET.json`.
+
+Evidence:
+
+- Live hourly ops check passed before packet generation.
+- Visual packet script syntax check passed.
+- Generated visual packet topic: `Contraception priority cues and patient teaching`.
+- Visual type: `comparison table plus cue-to-teaching flow`.
+- Review options: `approve_visual_planning`, `needs_revision`, `hold_no_spend`.
+
+Result:
+
+- The first missing visual is now reviewable without spending on AI image generation, paid visuals, audio, video, batch production, or public publish.
+- The next owner decision is concrete: approve the visual planning direction, request revision, or hold.
+
+Next action:
+
+- Review `ops/VISUAL_REVIEW_PACKET.md`. If approved, record that approval in `/admin/topic-production` and only then move the row into next-spend/media queues.

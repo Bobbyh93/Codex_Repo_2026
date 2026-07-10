@@ -1,0 +1,80 @@
+{
+  "generatedAt": "2026-07-10T06:56:11.326Z",
+  "sourcePacketGeneratedAt": "2026-07-10T06:24:36.812Z",
+  "sourcePacketPath": "ops/NEXT_ASSET_APPROVAL_PACKET.json",
+  "budgetWindow": "$0-$50 review only",
+  "costGuardrail": "No paid visuals, AI image generation, TTS, video rendering, batch production, or public publish is performed by this packet.",
+  "selectedRow": {
+    "rank": 1,
+    "id": "110ac866-8f55-463e-ac84-e0bc67d13ba3",
+    "sourceType": "lesson_package",
+    "topic": "Contraception priority cues and patient teaching",
+    "nursingSubject": "Maternal-Newborn",
+    "concept": "Physiological Integrity",
+    "weakTopic": "Contraception",
+    "nclexCategory": "Health Promotion and Maintenance",
+    "cjmStep": "Analyze Cues",
+    "reviewUrl": "https://nursestudy-lesson-builder.onrender.com/admin/topic-production?focus=110ac866-8f55-463e-ac84-e0bc67d13ba3&sourceType=lesson_package",
+    "missingLabels": [
+      "Visuals"
+    ],
+    "readyAssets": [
+      "mapping",
+      "slideDeck",
+      "studyGuide",
+      "quiz",
+      "citations"
+    ]
+  },
+  "visualPlan": {
+    "type": "comparison table plus cue-to-teaching flow",
+    "learnerSurface": "Lesson slide deck, guided study pack, and optional future short/video storyboard.",
+    "belongsIn": "Visual asset queue after creator approval.",
+    "prompt": "Create a clean nursing-student learning visual using a comparison table plus cue-to-teaching flow. Topic: Contraception priority cues and patient teaching. Audience: prelicensure nursing students. Show: Header -> Cue Cluster -> Interpretation -> Safe Action -> Common Trap. Style: simple instructional diagram, high contrast, plain labels, no stock-photo realism, no decorative clutter.",
+    "elements": [
+      {
+        "label": "Header",
+        "content": "Contraception: priority cues and safe nursing action",
+        "purpose": "Names the student task in learner language."
+      },
+      {
+        "label": "Cue Cluster",
+        "content": "3-5 signs, assessment findings, or patient statements that matter for Contraception priority cues and patient teaching.",
+        "purpose": "Helps the student recognize what data belongs together."
+      },
+      {
+        "label": "Interpretation",
+        "content": "One short sentence explaining why the cue cluster matters for Physiological Integrity.",
+        "purpose": "Connects cues to clinical judgment instead of memorization."
+      },
+      {
+        "label": "Safe Action",
+        "content": "One first nursing action and one patient-teaching point for Maternal-Newborn.",
+        "purpose": "Makes the visual useful in practice and NCLEX-style reasoning."
+      },
+      {
+        "label": "Common Trap",
+        "content": "One misconception or distractor path to avoid.",
+        "purpose": "Supports quiz rationale and wrong-answer review."
+      }
+    ],
+    "accessibilityNotes": [
+      "Alt text should summarize the decision path for Contraception, not describe decoration.",
+      "Use text labels in the graphic; do not rely on color alone.",
+      "Keep reading order: cue cluster, interpretation, safe action, common trap.",
+      "Use simple icons only when they reinforce the written label."
+    ],
+    "reviewQuestions": [
+      "Is the clinical framing accurate enough for a first student-facing visual?",
+      "Does this visual clarify the lesson rather than decorate it?",
+      "Does the common trap match the existing quiz rationale?",
+      "Should this be approved for visual production, revised, or held?"
+    ],
+    "approvalOptions": [
+      "approve_visual_planning",
+      "needs_revision",
+      "hold_no_spend"
+    ]
+  },
+  "nextAction": "Human reviewer chooses approve_visual_planning, needs_revision, or hold_no_spend before any visual generation or media spend."
+}

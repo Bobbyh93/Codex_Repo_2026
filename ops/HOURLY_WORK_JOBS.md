@@ -64,6 +64,13 @@ An empty queue with HTTP `200` means no row has been explicitly approved for tha
 
 This packet selects the first reviewable `needs_assets` rows, records missing assets, includes no-spend visual briefs, and gives the reviewer a direct topic-production URL. It does not approve rows, generate paid media, publish lessons, or mutate live data.
 
+`npm run ops:visual-packet` creates the first focused visual review packet:
+
+- `ops/VISUAL_REVIEW_PACKET.md`
+- `ops/VISUAL_REVIEW_PACKET.json`
+
+This packet turns the first selected approval row into a concrete visual plan with diagram type, visual elements, accessibility notes, and approve/revise/hold options. It is review-only and does not generate images or update live decisions.
+
 ## Quality Gate Per Packet
 
 Each packet must answer:
