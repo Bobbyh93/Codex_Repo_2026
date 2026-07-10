@@ -1,6 +1,6 @@
 # NurseStudy Launch WBS
 
-Generated: 2026-07-10T07:24:29.784Z
+Generated: 2026-07-10T07:30:29.693Z
 Live app: https://nursestudy-lesson-builder.onrender.com
 Current topic: Contraception priority cues and patient teaching
 Daily soft cap: $450
@@ -35,13 +35,13 @@ Spend guard: ok
 
 Acceptance: Live health, student home, admin login, topic matrix, and queue checks pass.
 
-Evidence: `ops/OPS_REVIEW_DASHBOARD.json`, `scripts/hourly-ops-check.mjs`
+Evidence: `ops/OPS_REVIEW_DASHBOARD.json`, `ops/BROWSER_QA_PACKET.md`, `scripts/hourly-ops-check.mjs`
 
 ### WBS-2 Student public learning surface
 
 Acceptance: Student home returns a featured lesson and learner-safe lesson data.
 
-Evidence: `GET /api/student/home`, `ops/OPS_REVIEW_DASHBOARD.json`
+Evidence: `GET /api/student/home`, `ops/OPS_REVIEW_DASHBOARD.json`, `ops/BROWSER_QA_PACKET.md`
 
 ### WBS-3 Topic taxonomy and content mapping
 

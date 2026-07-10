@@ -50,6 +50,8 @@ function buildPacket() {
     fileEntry("ops/NEXT_ASSET_APPROVAL_PACKET.md", "No-spend asset approval packet", "Google Drive"),
     fileEntry("ops/VISUAL_REVIEW_PACKET.md", "Visual review plan packet", "Google Drive"),
     fileEntry("ops/VISUAL_DECISION_TEMPLATE.md", "Reviewer decision capture template", "Google Drive"),
+    fileEntry("ops/BROWSER_QA_PACKET.md", "Browser route QA checklist and guardrails", "Google Drive"),
+    fileEntry("ops/BROWSER_QA_PACKET.json", "Machine-readable browser QA route matrix", "Google Drive"),
   ];
 
   const calendarEvents = cadenceBlocks.map((block) => ({

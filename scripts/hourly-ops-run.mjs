@@ -36,6 +36,10 @@ const steps = [
     name: "sync_packet",
     script: "scripts/external-sync-packet.mjs",
   },
+  {
+    name: "browser_qa_packet",
+    script: "scripts/browser-qa-packet.mjs",
+  },
 ];
 
 function runScript(step) {
@@ -79,6 +83,7 @@ function buildHistoryRecord(results) {
     wbsPath: "ops/LAUNCH_WBS.json",
     cadencePath: "ops/HOURLY_CADENCE.json",
     syncPacketPath: "ops/EXTERNAL_SYNC_PACKET.json",
+    browserQaPath: "ops/BROWSER_QA_PACKET.json",
     steps: results.map((result) => ({
       name: result.name,
       ok: result.ok,

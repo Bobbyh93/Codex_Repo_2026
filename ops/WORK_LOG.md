@@ -548,3 +548,34 @@ Result:
 Next action:
 
 - Verify the Drive destination and approve the exact file/event sync list before any connector write.
+
+## 2026-07-10 07:30 UTC - Browser QA Packet
+
+Scope: Add visible-route QA coverage to the hourly launch loop.
+
+Actions:
+
+- Read Browser and frontend testing guidance.
+- Attempted in-app Browser verification against the live NurseStudy app.
+- Browser runtime selected, but a new in-app webview timed out while attaching and no user tab was claimable.
+- Added `scripts/browser-qa-packet.mjs`.
+- Added `npm run ops:browser-qa`.
+- Wired `browser_qa_packet` into `npm run ops:hourly-run`.
+- Generated `ops/BROWSER_QA_PACKET.md` and `ops/BROWSER_QA_PACKET.json`.
+
+Evidence:
+
+- Browser QA packet script syntax check passed.
+- Hourly runner completed with the new `browser_qa_packet` step.
+- Browser QA packet contains 6 visible-route checks and required Browser QA criteria.
+- External sync packet now includes browser QA files.
+- Launch-surface typecheck passed; legacy diagnostics remain outside the launch surface.
+- Production client and server builds passed.
+
+Result:
+
+- Browser QA is now part of the launch ops packet, with public/admin route expectations and guardrails recorded even when the in-app browser attach is unavailable.
+
+Next action:
+
+- Re-run interactive Browser verification when a tab attaches cleanly, then record the rendered evidence in `ops/BROWSER_QA_PACKET` and `ops/WORK_LOG.md`.

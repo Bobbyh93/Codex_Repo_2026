@@ -1,0 +1,81 @@
+{
+  "generatedAt": "2026-07-10T07:30:29.808Z",
+  "baseUrl": "https://nursestudy-lesson-builder.onrender.com",
+  "browser": {
+    "preferredTool": "Codex in-app Browser",
+    "status": "checklist_ready",
+    "note": "Interactive browser verification should be recorded after the in-app Browser tab attaches successfully.",
+    "requiredChecks": [
+      "page identity",
+      "not blank",
+      "no framework overlay",
+      "console health",
+      "screenshot evidence",
+      "interaction proof"
+    ]
+  },
+  "liveEvidence": {
+    "failedChecks": 0,
+    "totalTopics": 77,
+    "needsMapping": 0,
+    "needsAssets": 74,
+    "spendGuard": "ok",
+    "currentTopic": "Contraception priority cues and patient teaching",
+    "currentDecision": "pending"
+  },
+  "routes": [
+    {
+      "pathname": "/",
+      "label": "Student home",
+      "mode": "public",
+      "expected": "Student-facing NurseStudy entry, featured lesson, study path, and topic tiles.",
+      "interaction": "Open featured lesson."
+    },
+    {
+      "pathname": "/student/progress",
+      "label": "Student progress",
+      "mode": "public",
+      "expected": "Session-safe progress dashboard with recent/saved/completed lesson state.",
+      "interaction": "Confirm empty/new-session state is helpful."
+    },
+    {
+      "pathname": "/student/study-pack",
+      "label": "Student study pack",
+      "mode": "public",
+      "expected": "Guided notes, citations, weak-topic labels, and practice/rationale links.",
+      "interaction": "Open a saved/opened lesson study pack when session data exists."
+    },
+    {
+      "pathname": "/admin/topic-production",
+      "label": "Topic production",
+      "mode": "admin",
+      "expected": "Topic matrix with 77 mapped topics, asset gaps, and spend/media queues.",
+      "interaction": "Check current visual decision row before queue changes."
+    },
+    {
+      "pathname": "/admin/content-mapper",
+      "label": "Content mapper",
+      "mode": "admin",
+      "expected": "Task-oriented content block mapper for taxonomy review.",
+      "interaction": "Open first unmapped or imported content block when available."
+    },
+    {
+      "pathname": "/admin/lesson-builder",
+      "label": "Lesson builder",
+      "mode": "admin",
+      "expected": "Generate tab, template/agent-assisted mode, QA/export, publish workflow.",
+      "interaction": "Generate only template/fallback package unless AI spend is approved."
+    }
+  ],
+  "guardrails": [
+    "Public routes must not expose admin-only QA logs, source-management controls, session data, or faculty internals.",
+    "Admin API routes should return 401 without a cookie session; this is expected security behavior, not a smoke failure.",
+    "No next-spend, shorts, media, student-launch, or publish queue should open while the visual decision is pending.",
+    "Browser QA should not submit forms, upload files, publish lessons, or trigger paid AI/media generation without explicit approval."
+  ],
+  "nextAction": "Run Browser verification on the route matrix when the in-app Browser tab attaches, then record findings in WORK_LOG.",
+  "filesOut": {
+    "markdown": "ops/BROWSER_QA_PACKET.md",
+    "json": "ops/BROWSER_QA_PACKET.json"
+  }
+}

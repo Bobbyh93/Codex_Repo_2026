@@ -1,6 +1,6 @@
 # External Sync Packet
 
-Generated: 2026-07-10T07:24:29.845Z
+Generated: 2026-07-10T07:30:29.750Z
 Mode: local_sync_packet
 Live app: https://nursestudy-lesson-builder.onrender.com
 
@@ -37,15 +37,17 @@ Live app: https://nursestudy-lesson-builder.onrender.com
 | --- | --- | ---: | --- | --- |
 | `ops/OPS_REVIEW_DASHBOARD.md` | yes | 1123 | Google Drive | Single-file hourly review status |
 | `ops/OPS_REVIEW_DASHBOARD.json` | yes | 4181 | Google Drive | Machine-readable hourly review status |
-| `ops/LAUNCH_WBS.md` | yes | 3515 | Google Drive | Human-readable WBS with evidence map |
-| `ops/LAUNCH_WBS.json` | yes | 4596 | Google Drive | Machine-readable WBS |
+| `ops/LAUNCH_WBS.md` | yes | 3571 | Google Drive | Human-readable WBS with evidence map |
+| `ops/LAUNCH_WBS.json` | yes | 4668 | Google Drive | Machine-readable WBS |
 | `ops/HOURLY_CADENCE.md` | yes | 1198 | Google Drive | Human-readable hourly schedule |
 | `ops/HOURLY_CADENCE.json` | yes | 1932 | Google Drive | Machine-readable hourly schedule |
 | `ops/HOURLY_CADENCE.ics` | yes | 3769 | Google Calendar | Calendar import file with six work blocks |
-| `ops/WORK_LOG.md` | yes | 23212 | Google Drive | Append-only work log |
+| `ops/WORK_LOG.md` | yes | 24469 | Google Drive | Append-only work log |
 | `ops/NEXT_ASSET_APPROVAL_PACKET.md` | yes | 5241 | Google Drive | No-spend asset approval packet |
 | `ops/VISUAL_REVIEW_PACKET.md` | yes | 2858 | Google Drive | Visual review plan packet |
 | `ops/VISUAL_DECISION_TEMPLATE.md` | yes | 1715 | Google Drive | Reviewer decision capture template |
+| `ops/BROWSER_QA_PACKET.md` | yes | 2439 | Google Drive | Browser route QA checklist and guardrails |
+| `ops/BROWSER_QA_PACKET.json` | yes | 3206 | Google Drive | Machine-readable browser QA route matrix |
 
 ## Calendar Events
 

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-10T07:24:29.845Z",
+  "generatedAt": "2026-07-10T07:30:29.750Z",
   "mode": "local_sync_packet",
   "liveUrl": "https://nursestudy-lesson-builder.onrender.com",
   "drive": {
@@ -112,14 +112,14 @@
     {
       "path": "ops/LAUNCH_WBS.md",
       "exists": true,
-      "bytes": 3515,
+      "bytes": 3571,
       "purpose": "Human-readable WBS with evidence map",
       "target": "Google Drive"
     },
     {
       "path": "ops/LAUNCH_WBS.json",
       "exists": true,
-      "bytes": 4596,
+      "bytes": 4668,
       "purpose": "Machine-readable WBS",
       "target": "Google Drive"
     },
@@ -147,7 +147,7 @@
     {
       "path": "ops/WORK_LOG.md",
       "exists": true,
-      "bytes": 23212,
+      "bytes": 24469,
       "purpose": "Append-only work log",
       "target": "Google Drive"
     },
@@ -170,6 +170,20 @@
       "exists": true,
       "bytes": 1715,
       "purpose": "Reviewer decision capture template",
+      "target": "Google Drive"
+    },
+    {
+      "path": "ops/BROWSER_QA_PACKET.md",
+      "exists": true,
+      "bytes": 2439,
+      "purpose": "Browser route QA checklist and guardrails",
+      "target": "Google Drive"
+    },
+    {
+      "path": "ops/BROWSER_QA_PACKET.json",
+      "exists": true,
+      "bytes": 3206,
+      "purpose": "Machine-readable browser QA route matrix",
       "target": "Google Drive"
     }
   ],

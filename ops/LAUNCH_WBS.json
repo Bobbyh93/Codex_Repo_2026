@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-10T07:24:29.784Z",
+  "generatedAt": "2026-07-10T07:30:29.693Z",
   "liveUrl": "https://nursestudy-lesson-builder.onrender.com",
   "currentTopic": "Contraception priority cues and patient teaching",
   "dailySoftCap": "$450",
@@ -26,6 +26,7 @@
       "budgetCap": "$50/check",
       "evidence": [
         "ops/OPS_REVIEW_DASHBOARD.json",
+        "ops/BROWSER_QA_PACKET.md",
         "scripts/hourly-ops-check.mjs"
       ],
       "acceptance": "Live health, student home, admin login, topic matrix, and queue checks pass.",
@@ -39,7 +40,8 @@
       "budgetCap": "$50/check",
       "evidence": [
         "GET /api/student/home",
-        "ops/OPS_REVIEW_DASHBOARD.json"
+        "ops/OPS_REVIEW_DASHBOARD.json",
+        "ops/BROWSER_QA_PACKET.md"
       ],
       "acceptance": "Student home returns a featured lesson and learner-safe lesson data.",
       "nextAction": "Keep student route smoke in the hourly check."

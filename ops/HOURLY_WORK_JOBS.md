@@ -69,6 +69,13 @@ The WBS ties live health, student surface, content mapping, lesson assets, no-sp
 
 This packet lists the exact files and calendar events that are safe to sync after explicit approval, and keeps Drive/Calendar writes held when the destination is not verified.
 
+`npm run ops:browser-qa` exports the browser QA packet:
+
+- `ops/BROWSER_QA_PACKET.md`
+- `ops/BROWSER_QA_PACKET.json`
+
+This packet lists public/admin route expectations, required browser checks, interaction proof targets, and guardrails for visible QA without triggering publish, upload, or paid media actions.
+
 `npm run ops:hourly-check` verifies the live app health, student home, admin login, topic-production matrix, and the non-mutating launch queues:
 
 - next-spend polish queue
