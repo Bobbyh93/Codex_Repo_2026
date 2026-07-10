@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-07-10T06:56:11.326Z",
-  "sourcePacketGeneratedAt": "2026-07-10T06:24:36.812Z",
+  "generatedAt": "2026-07-10T07:06:30.378Z",
+  "sourcePacketGeneratedAt": "2026-07-10T07:06:30.321Z",
   "sourcePacketPath": "ops/NEXT_ASSET_APPROVAL_PACKET.json",
   "budgetWindow": "$0-$50 review only",
   "costGuardrail": "No paid visuals, AI image generation, TTS, video rendering, batch production, or public publish is performed by this packet.",

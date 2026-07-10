@@ -47,6 +47,8 @@ Risks/blockers:
 
 ## Hourly Automation Coverage
 
+`npm run ops:hourly-run` is the default hourly command. It refreshes asset packet, visual packet, decision template, review dashboard, and appends one line to `ops/OPS_REVIEW_HISTORY.jsonl`.
+
 `npm run ops:hourly-check` verifies the live app health, student home, admin login, topic-production matrix, and the non-mutating launch queues:
 
 - next-spend polish queue

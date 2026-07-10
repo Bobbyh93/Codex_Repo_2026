@@ -410,3 +410,30 @@ Result:
 Next action:
 
 - Open `ops/OPS_REVIEW_DASHBOARD.md`, then use `ops/VISUAL_DECISION_TEMPLATE.md` to record the contraception visual decision.
+
+## 2026-07-10 07:05 UTC - One-Command Hourly Ops Runner
+
+Scope: Make the hourly ops loop repeatable from a single command.
+
+Actions:
+
+- Added `scripts/hourly-ops-run.mjs`.
+- Added `npm run ops:hourly-run`.
+- Ran the hourly runner once.
+- Created `ops/OPS_REVIEW_HISTORY.jsonl` with the first hourly history record.
+
+Evidence:
+
+- Hourly runner syntax check passed.
+- `npm run ops:hourly-run` equivalent executed successfully with `0` failed live checks.
+- Runner refreshed asset packet, visual packet, visual decision template, and ops dashboard.
+- History record reports current topic `Contraception priority cues and patient teaching`, decision `pending`, needs mapping `0`, needs assets `74`, and live mutation `false`.
+
+Result:
+
+- Future hourly work can start with one command and produce both current dashboard files and an append-only history trail.
+- The process remains no-spend and does not mutate live review decisions.
+
+Next action:
+
+- Run `npm run ops:hourly-run` at the next scheduled block, then review `ops/OPS_REVIEW_DASHBOARD.md` for the current decision.

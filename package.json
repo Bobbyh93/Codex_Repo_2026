@@ -22,6 +22,7 @@
     "smoke:launch-surfaces": "node scripts/launch-surface-smoke.mjs",
     "smoke:topic-production": "node scripts/topic-production-launch-smoke.mjs",
     "ops:hourly-check": "node scripts/hourly-ops-check.mjs",
+    "ops:hourly-run": "node scripts/hourly-ops-run.mjs",
     "ops:asset-packet": "node scripts/asset-approval-packet.mjs",
     "ops:visual-packet": "node scripts/visual-review-packet.mjs",
     "ops:visual-decision": "node scripts/visual-decision-template.mjs",
