@@ -57,6 +57,13 @@ Risks/blockers:
 
 An empty queue with HTTP `200` means no row has been explicitly approved for that next paid/review step yet; it is not a route failure.
 
+`npm run ops:asset-packet` creates the no-spend approval packet:
+
+- `ops/NEXT_ASSET_APPROVAL_PACKET.md`
+- `ops/NEXT_ASSET_APPROVAL_PACKET.json`
+
+This packet selects the first reviewable `needs_assets` rows, records missing assets, includes no-spend visual briefs, and gives the reviewer a direct topic-production URL. It does not approve rows, generate paid media, publish lessons, or mutate live data.
+
 ## Quality Gate Per Packet
 
 Each packet must answer:

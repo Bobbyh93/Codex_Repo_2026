@@ -1,0 +1,209 @@
+{
+  "generatedAt": "2026-07-10T06:24:36.812Z",
+  "baseUrl": "https://nursestudy-lesson-builder.onrender.com",
+  "budgetWindow": "$0-$50 review only",
+  "costGuardrail": "No AI generation, paid visuals, TTS, video rendering, batch production, or public publish is performed by this packet.",
+  "matrixSummary": {
+    "totalTopics": 77,
+    "ready": 3,
+    "needsMapping": 0,
+    "needsAssets": 74,
+    "packageRows": 9,
+    "contentBlockRows": 65,
+    "candidateRows": 3,
+    "assetCounts": {
+      "mapping": 77,
+      "slideDeck": 9,
+      "studyGuide": 9,
+      "visuals": 3,
+      "quiz": 9,
+      "citations": 9
+    },
+    "requiredAssets": {
+      "mapping": "Concept + nursing subject",
+      "slideDeck": "Video lesson slide deck",
+      "studyGuide": "Study guide",
+      "visuals": "Visuals",
+      "quiz": "Quiz item",
+      "citations": "Source citations"
+    }
+  },
+  "rows": [
+    {
+      "rank": 1,
+      "id": "110ac866-8f55-463e-ac84-e0bc67d13ba3",
+      "sourceType": "lesson_package",
+      "topic": "Contraception priority cues and patient teaching",
+      "nursingSubject": "Maternal-Newborn",
+      "concept": "Physiological Integrity",
+      "weakTopic": "Contraception",
+      "nclexCategory": "Health Promotion and Maintenance",
+      "cjmStep": "Analyze Cues",
+      "sourceEvidence": "RESPIRATORY NCLEX REVIEW Master Version10.25.pptx",
+      "status": "needs_assets",
+      "packageStatus": "published",
+      "missingLabels": [
+        "Visuals"
+      ],
+      "readyAssets": [
+        "mapping",
+        "slideDeck",
+        "studyGuide",
+        "quiz",
+        "citations"
+      ],
+      "counts": {
+        "slides": 8,
+        "studyGuideSlides": 8,
+        "quizItems": 1,
+        "citations": 9,
+        "artifacts": 12
+      },
+      "reviewUrl": "https://nursestudy-lesson-builder.onrender.com/admin/topic-production?focus=110ac866-8f55-463e-ac84-e0bc67d13ba3&sourceType=lesson_package",
+      "decisionPrompt": "Approve no-spend visual prompt/diagram planning, or hold if the current lesson content needs revision first.",
+      "noSpendVisualBrief": "Create a simple Maternal-Newborn learner visual for Contraception. Show cue -> interpretation -> safe nursing action, tied to Physiological Integrity. Use plain icons, a decision flow, or a comparison table. Avoid decorative stock imagery. Keep it review-only until a human content expert approves the clinical framing.",
+      "recommendedNextAction": "Approve visual planning only, then create one reviewed visual prompt/diagram for this package."
+    },
+    {
+      "rank": 2,
+      "id": "bf472933-fdb6-4e67-b893-491c00c7bcd4",
+      "sourceType": "lesson_package",
+      "topic": "Therapeutic communication priority cues and patient teaching",
+      "nursingSubject": "Mental Health Nursing",
+      "concept": "Therapeutic communication",
+      "weakTopic": "Therapeutic communication",
+      "nclexCategory": "Psychosocial Integrity",
+      "cjmStep": "Analyze Cues",
+      "sourceEvidence": "Therapeutic Communication Pilot Nursing Source",
+      "status": "needs_assets",
+      "packageStatus": "published",
+      "missingLabels": [
+        "Visuals"
+      ],
+      "readyAssets": [
+        "mapping",
+        "slideDeck",
+        "studyGuide",
+        "quiz",
+        "citations"
+      ],
+      "counts": {
+        "slides": 8,
+        "studyGuideSlides": 8,
+        "quizItems": 1,
+        "citations": 9,
+        "artifacts": 12
+      },
+      "reviewUrl": "https://nursestudy-lesson-builder.onrender.com/admin/topic-production?focus=bf472933-fdb6-4e67-b893-491c00c7bcd4&sourceType=lesson_package",
+      "decisionPrompt": "Approve no-spend visual prompt/diagram planning, or hold if the current lesson content needs revision first.",
+      "noSpendVisualBrief": "Create a simple Mental Health Nursing learner visual for Therapeutic communication. Show cue -> interpretation -> safe nursing action, tied to Therapeutic communication. Use plain icons, a decision flow, or a comparison table. Avoid decorative stock imagery. Keep it review-only until a human content expert approves the clinical framing.",
+      "recommendedNextAction": "Approve visual planning only, then create one reviewed visual prompt/diagram for this package."
+    },
+    {
+      "rank": 3,
+      "id": "7bfc6660-e78e-452e-8aff-9366a9851ce3",
+      "sourceType": "lesson_package",
+      "topic": "Therapeutic communication priority cues and patient teaching",
+      "nursingSubject": "Mental Health Nursing",
+      "concept": "Physiological Integrity",
+      "weakTopic": "Therapeutic communication",
+      "nclexCategory": "Psychosocial Integrity",
+      "cjmStep": "Analyze Cues",
+      "sourceEvidence": "Therapeutic Communication Pilot Nursing Source",
+      "status": "needs_assets",
+      "packageStatus": "published",
+      "missingLabels": [
+        "Visuals"
+      ],
+      "readyAssets": [
+        "mapping",
+        "slideDeck",
+        "studyGuide",
+        "quiz",
+        "citations"
+      ],
+      "counts": {
+        "slides": 8,
+        "studyGuideSlides": 8,
+        "quizItems": 1,
+        "citations": 9,
+        "artifacts": 12
+      },
+      "reviewUrl": "https://nursestudy-lesson-builder.onrender.com/admin/topic-production?focus=7bfc6660-e78e-452e-8aff-9366a9851ce3&sourceType=lesson_package",
+      "decisionPrompt": "Approve no-spend visual prompt/diagram planning, or hold if the current lesson content needs revision first.",
+      "noSpendVisualBrief": "Create a simple Mental Health Nursing learner visual for Therapeutic communication. Show cue -> interpretation -> safe nursing action, tied to Physiological Integrity. Use plain icons, a decision flow, or a comparison table. Avoid decorative stock imagery. Keep it review-only until a human content expert approves the clinical framing.",
+      "recommendedNextAction": "Approve visual planning only, then create one reviewed visual prompt/diagram for this package."
+    },
+    {
+      "rank": 4,
+      "id": "48d67d74-5144-42b1-89d4-e56aba5bd8cb",
+      "sourceType": "lesson_package",
+      "topic": "Contraception priority cues and patient teaching",
+      "nursingSubject": "Maternal-Newborn",
+      "concept": "Physiological Integrity",
+      "weakTopic": "Contraception",
+      "nclexCategory": "Health Promotion and Maintenance",
+      "cjmStep": "Analyze Cues",
+      "sourceEvidence": "RESPIRATORY NCLEX REVIEW Master Version10.25.pptx",
+      "status": "needs_assets",
+      "packageStatus": "qa_ready",
+      "missingLabels": [
+        "Visuals"
+      ],
+      "readyAssets": [
+        "mapping",
+        "slideDeck",
+        "studyGuide",
+        "quiz",
+        "citations"
+      ],
+      "counts": {
+        "slides": 8,
+        "studyGuideSlides": 8,
+        "quizItems": 1,
+        "citations": 9,
+        "artifacts": 12
+      },
+      "reviewUrl": "https://nursestudy-lesson-builder.onrender.com/admin/topic-production?focus=48d67d74-5144-42b1-89d4-e56aba5bd8cb&sourceType=lesson_package",
+      "decisionPrompt": "Approve no-spend visual prompt/diagram planning, or hold if the current lesson content needs revision first.",
+      "noSpendVisualBrief": "Create a simple Maternal-Newborn learner visual for Contraception. Show cue -> interpretation -> safe nursing action, tied to Physiological Integrity. Use plain icons, a decision flow, or a comparison table. Avoid decorative stock imagery. Keep it review-only until a human content expert approves the clinical framing.",
+      "recommendedNextAction": "Approve visual planning only, then create one reviewed visual prompt/diagram for this package."
+    },
+    {
+      "rank": 5,
+      "id": "4ba00402-e1cd-4039-8409-ee2ff2afe6f4",
+      "sourceType": "lesson_package",
+      "topic": "Therapeutic communication priority cues and patient teaching",
+      "nursingSubject": "Mental Health Nursing",
+      "concept": "Physiological Integrity",
+      "weakTopic": "Therapeutic communication",
+      "nclexCategory": "Psychosocial Integrity",
+      "cjmStep": "Analyze Cues",
+      "sourceEvidence": "Harrity Lesson Builder Pipeline Contract",
+      "status": "needs_assets",
+      "packageStatus": "qa_ready",
+      "missingLabels": [
+        "Visuals"
+      ],
+      "readyAssets": [
+        "mapping",
+        "slideDeck",
+        "studyGuide",
+        "quiz",
+        "citations"
+      ],
+      "counts": {
+        "slides": 8,
+        "studyGuideSlides": 8,
+        "quizItems": 1,
+        "citations": 9,
+        "artifacts": 12
+      },
+      "reviewUrl": "https://nursestudy-lesson-builder.onrender.com/admin/topic-production?focus=4ba00402-e1cd-4039-8409-ee2ff2afe6f4&sourceType=lesson_package",
+      "decisionPrompt": "Approve no-spend visual prompt/diagram planning, or hold if the current lesson content needs revision first.",
+      "noSpendVisualBrief": "Create a simple Mental Health Nursing learner visual for Therapeutic communication. Show cue -> interpretation -> safe nursing action, tied to Physiological Integrity. Use plain icons, a decision flow, or a comparison table. Avoid decorative stock imagery. Keep it review-only until a human content expert approves the clinical framing.",
+      "recommendedNextAction": "Approve visual planning only, then create one reviewed visual prompt/diagram for this package."
+    }
+  ],
+  "nextAction": "Review these rows in order. Approve exactly one no-spend visual/asset planning step or hold with a reason before opening any paid production queue."
+}

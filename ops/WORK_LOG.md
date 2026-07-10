@@ -248,3 +248,30 @@ Result:
 Next action:
 
 - Use `/admin/topic-production` to approve one featured row for the next asset packet, then let the queue checks prove the handoff into shorts/media/review workflow.
+
+## 2026-07-10 06:24 UTC - No-Spend Asset Approval Packet
+
+Scope: Create a repeatable review packet for the first launch rows that need assets, without mutating live decisions or spending on generation.
+
+Actions:
+
+- Added `scripts/asset-approval-packet.mjs`.
+- Added `npm run ops:asset-packet`.
+- Generated `ops/NEXT_ASSET_APPROVAL_PACKET.md` and `ops/NEXT_ASSET_APPROVAL_PACKET.json` from the live topic-production matrix.
+
+Evidence:
+
+- Script syntax check passed.
+- Live packet generation selected `5` rows.
+- First selected row: `Contraception priority cues and patient teaching`.
+- Each selected row already has mapping, slide deck, study guide, quiz, and citations; the missing asset is `Visuals`.
+- Packet budget guardrail: `$0-$50 review only`; no AI generation, paid visuals, TTS, video rendering, batch production, public publish, or live mutation.
+
+Result:
+
+- The next hourly job can review concrete rows instead of guessing from the full matrix.
+- The live app remains unchanged; this packet is an approval aid only.
+
+Next action:
+
+- Review `ops/NEXT_ASSET_APPROVAL_PACKET.md`, approve or hold exactly one row, then record that decision in `/admin/topic-production` before opening next-spend or media queues.

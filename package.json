@@ -22,6 +22,7 @@
     "smoke:launch-surfaces": "node scripts/launch-surface-smoke.mjs",
     "smoke:topic-production": "node scripts/topic-production-launch-smoke.mjs",
     "ops:hourly-check": "node scripts/hourly-ops-check.mjs",
+    "ops:asset-packet": "node scripts/asset-approval-packet.mjs",
     "check:launch": "node scripts/launch-surface-typecheck.mjs",
     "check": "tsc",
     "db:push": "drizzle-kit push",
