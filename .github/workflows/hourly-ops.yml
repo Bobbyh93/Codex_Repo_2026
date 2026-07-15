@@ -1,17 +1,16 @@
-name: Daily Harrity Workset
+name: Hourly Harrity Ops Check
 
 on:
   workflow_dispatch:
   schedule:
-    # 9:00 AM Pacific during daylight saving time. Adjust if strict wall-clock
-    # scheduling is needed outside PDT.
-    - cron: "0 16 * * *"
+    # Safe hourly status check. This workflow does not call paid AI APIs.
+    - cron: "7 * * * *"
 
 permissions:
   contents: read
 
 jobs:
-  daily-workset:
+  hourly-ops:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
@@ -34,11 +33,18 @@ jobs:
       - name: Generate daily workset
         run: python scripts/create_daily_workset.py --out-dir daily_worksets
 
+      - name: Run hourly ops status
+        run: python scripts/run_hourly_ops.py
+
       - name: Run unit tests
         run: python -m unittest discover -s tests
 
-      - name: Upload generated workset
+      - name: Upload hourly ops artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: harrity-daily-workset
-          path: daily_worksets/
+          name: harrity-hourly-ops
+          path: |
+            daily_worksets/
+            manifests/hourly_ops_status.json
+            manifests/credential_guard_report.json
+            logs/

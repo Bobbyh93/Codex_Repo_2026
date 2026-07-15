@@ -32,6 +32,11 @@ SENSITIVE_NAME_RE = re.compile(
     re.IGNORECASE,
 )
 
+BLOCKING_SENSITIVE_NAME_RE = re.compile(
+    r"(api[-_ ]?key|apikey|credential|private[-_ ]?key)",
+    re.IGNORECASE,
+)
+
 OPENAI_KEY_RE = re.compile(r"\bsk-(?:proj-)?[A-Za-z0-9_-]{20,}\b")
 
 TEXT_SUFFIXES = {
@@ -68,6 +73,7 @@ def should_scan_text(path: Path) -> bool:
 
 def scan_repository(root: Path = ROOT) -> dict[str, object]:
     sensitive_filenames: list[str] = []
+    blocking_sensitive_filenames: list[str] = []
     key_pattern_hits: list[dict[str, object]] = []
     unreadable_files: list[str] = []
 
@@ -75,8 +81,10 @@ def scan_repository(root: Path = ROOT) -> dict[str, object]:
         rel = path.relative_to(root).as_posix()
         if rel not in ALLOWLISTED_SENSITIVE_PATHS and SENSITIVE_NAME_RE.search(path.name):
             sensitive_filenames.append(rel)
-            # Do not open files whose names indicate they may contain raw secrets.
-            continue
+            if BLOCKING_SENSITIVE_NAME_RE.search(path.name):
+                blocking_sensitive_filenames.append(rel)
+                # Do not open files whose names indicate they may contain raw API keys.
+                continue
 
         if not should_scan_text(path):
             continue
@@ -96,13 +104,16 @@ def scan_repository(root: Path = ROOT) -> dict[str, object]:
                 "value_logged": False,
             })
 
-    status = "blocked" if sensitive_filenames or key_pattern_hits or unreadable_files else "pass"
+    status = "blocked" if blocking_sensitive_filenames or key_pattern_hits or unreadable_files else "pass"
     return {
         "checked_at": datetime.now(timezone.utc).isoformat(),
         "status": status,
         "root": str(root),
         "sensitive_filename_count": len(sensitive_filenames),
         "sensitive_filenames": sensitive_filenames,
+        "sensitive_filename_severity": "warning" if sensitive_filenames and not blocking_sensitive_filenames else "blocking" if blocking_sensitive_filenames else "none",
+        "blocking_sensitive_filename_count": len(blocking_sensitive_filenames),
+        "blocking_sensitive_filenames": blocking_sensitive_filenames,
         "key_pattern_hit_count": len(key_pattern_hits),
         "key_pattern_hits": key_pattern_hits,
         "unreadable_file_count": len(unreadable_files),
