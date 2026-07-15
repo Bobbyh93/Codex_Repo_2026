@@ -1,0 +1,10 @@
+{
+  "checked_at": "2026-07-15T01:47:13.697037+00:00",
+  "status": "ready_for_authenticated_probe",
+  "openai_api_key_present": true,
+  "openai_api_key_prefix_plausible": true,
+  "openai_api_key_value_logged": false,
+  "tts_model": "gpt-4o-mini-tts",
+  "tts_voice": "marin",
+  "blockers": []
+}

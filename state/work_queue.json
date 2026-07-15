@@ -1,0 +1,107 @@
+{
+  "version": 1,
+  "selection_policy": "Choose the lowest-priority-number incomplete work package. If blocked, produce dependency checklist instead of claiming execution.",
+  "work_packages": [
+    {
+      "id": "HLB-STATE-001",
+      "title": "Establish persistent GitHub state and daily workset generator",
+      "status": "complete",
+      "priority": 1,
+      "owner": "Codex",
+      "summary": "Create the repository control layer that replaces long scheduled-task prompts with persistent state and deterministic daily work orders.",
+      "acceptance_criteria": [
+        "State JSON files exist for project, queue, QA, release, and pipeline status.",
+        "A validation script verifies required state files and unique work package IDs.",
+        "A daily workset script produces dated JSON and Markdown outputs.",
+        "A GitHub Actions workflow can run validation and generate the workset artifact without committing changes."
+      ],
+      "blockers": [],
+      "outputs": [
+        "state/project_state.json",
+        "state/work_queue.json",
+        "state/qa_state.json",
+        "state/release_state.json",
+        "state/pipeline_state.json",
+        "scripts/validate_state.py",
+        "scripts/create_daily_workset.py",
+        ".github/workflows/daily-workset.yml"
+      ]
+    },
+    {
+      "id": "HLB-TTS-ASSET-VERIFICATION-022",
+      "title": "Verify credential-backed OpenAI TTS assets",
+      "status": "blocked",
+      "priority": 2,
+      "owner": "Codex + OpenAI Platform runtime",
+      "summary": "Execute a two-slide live TTS pilot only after an approved request queue and OPENAI_API_KEY are present in the runner.",
+      "acceptance_criteria": [
+        "Two authentic narration MP3 files decode successfully.",
+        "Every asset maps to one stable slide_id and one frozen request fingerprint.",
+        "No credentials appear in artifacts or logs.",
+        "Request identifiers, model, voice, timestamp, bytes, checksum, codec, and duration are recorded.",
+        "Human review passes pronunciation, intelligibility, pacing, and terminology.",
+        "Only verified audio assets enter the binding manifest."
+      ],
+      "blockers": [
+        "No approved two-slide production TTS request queue is committed.",
+        "No authentic MP3 assets exist for codec, checksum, duration, loudness, silence, or clipping analysis."
+      ],
+      "outputs": [
+        "manifests/tts_execution_report.json",
+        "manifests/audio_manifest.json",
+        "manifests/binding_manifest.json",
+        "qa/tts_asset_verification_report.json"
+      ]
+    },
+    {
+      "id": "HLB-PRODUCTION-PILOT-019",
+      "title": "Run an end-to-end source-grounded production lesson pilot",
+      "status": "blocked",
+      "priority": 3,
+      "owner": "Codex",
+      "summary": "Run a two-to-five-slide nursing lesson through lesson spec, narration, audio, video/deck binding, machine QA, and playback evidence.",
+      "acceptance_criteria": [
+        "Each slide has stable slide_id, speaker notes, TTS text, and source references.",
+        "One verified MP3 maps to each narrated slide.",
+        "Captions match approved TTS text.",
+        "Machine QA passes.",
+        "Browser or LMS playback evidence references the exact final artifact checksum.",
+        "No blocker or major defects remain."
+      ],
+      "blockers": [
+        "Production source package has not been selected.",
+        "Live OpenAI narration is not yet verified.",
+        "Target playback environment has not been selected."
+      ],
+      "outputs": [
+        "lessons/production_pilot/lesson_spec.json",
+        "audio/production_pilot/*.mp3",
+        "video/production_pilot/lesson_video.mp4",
+        "qa/production_pilot_release_report.json"
+      ]
+    },
+    {
+      "id": "SB-WP007-INTEGRATION-API",
+      "title": "SkillBridge enterprise integration and API framework",
+      "status": "pending",
+      "priority": 10,
+      "owner": "Codex",
+      "summary": "Continue the SkillBridge systems integration sequence with OpenAPI, event contracts, webhook contracts, MDM, and integration testing strategy.",
+      "acceptance_criteria": [
+        "OpenAPI 3.1 draft exists for core registry and workflow resources.",
+        "Event contracts preserve correlation_id and schema_version.",
+        "Make/n8n orchestration boundaries are documented.",
+        "FHIR alignment is assessed only where applicable.",
+        "Production blockers remain clearly separated from prototype tasks."
+      ],
+      "blockers": [
+        "Implementation platform and identity provider are not selected.",
+        "Authoritative policy source verification remains incomplete."
+      ],
+      "outputs": [
+        "docs/skillbridge_api_framework.md",
+        "schemas/events/*.schema.json"
+      ]
+    }
+  ]
+}

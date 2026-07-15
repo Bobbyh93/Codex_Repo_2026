@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "overall_status": "blocked_until_execution_context_exists",
+  "gates": [
+    {
+      "gate": "state_files_valid",
+      "status": "pass",
+      "required_evidence": "scripts/validate_state.py passes"
+    },
+    {
+      "gate": "daily_workset_generated",
+      "status": "pass",
+      "required_evidence": "daily_worksets/YYYY-MM-DD.json and .md generated"
+    },
+    {
+      "gate": "openai_tts_live_execution",
+      "status": "ready_for_authenticated_probe",
+      "required_evidence": "Credential-backed MP3 generation report with no secrets serialized"
+    },
+    {
+      "gate": "pptx_audio_binding",
+      "status": "blocked",
+      "required_evidence": "Embedded media, native playback configuration, and PowerPoint playback evidence"
+    },
+    {
+      "gate": "google_slides_audio_binding",
+      "status": "blocked",
+      "required_evidence": "Drive upload, Slides readback, notes parity, and playback evidence"
+    },
+    {
+      "gate": "video_release",
+      "status": "blocked",
+      "required_evidence": "Machine QA and target-player playback evidence against exact checksum"
+    }
+  ]
+}

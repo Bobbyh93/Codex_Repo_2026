@@ -1,0 +1,142 @@
+#!/usr/bin/env python3
+"""Scan repository files for unsafe credential artifacts without reading external secrets."""
+
+from __future__ import annotations
+
+import argparse
+import json
+import re
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Iterable
+
+
+ROOT = Path(__file__).resolve().parents[1]
+DEFAULT_REPORT = ROOT / "manifests" / "credential_guard_report.json"
+
+SKIP_DIRS = {
+    ".git",
+    ".agents",
+    ".codex",
+    "__pycache__",
+    ".pytest_cache",
+}
+
+ALLOWLISTED_SENSITIVE_PATHS = {
+    "scripts/credential_guard.py",
+    "manifests/credential_guard_report.json",
+}
+
+SENSITIVE_NAME_RE = re.compile(
+    r"(api[-_ ]?key|apikey|secret|credential|token|password|private[-_ ]?key)",
+    re.IGNORECASE,
+)
+
+OPENAI_KEY_RE = re.compile(r"\bsk-(?:proj-)?[A-Za-z0-9_-]{20,}\b")
+
+TEXT_SUFFIXES = {
+    ".csv",
+    ".env",
+    ".example",
+    ".json",
+    ".md",
+    ".py",
+    ".toml",
+    ".txt",
+    ".yaml",
+    ".yml",
+}
+
+
+def iter_repo_files(root: Path) -> Iterable[Path]:
+    for path in root.rglob("*"):
+        if not path.is_file():
+            continue
+        if any(part in SKIP_DIRS for part in path.relative_to(root).parts):
+            continue
+        if path.relative_to(root).as_posix() in ALLOWLISTED_SENSITIVE_PATHS:
+            yield path
+            continue
+        yield path
+
+
+def should_scan_text(path: Path) -> bool:
+    if path.name == ".gitignore" or path.name == ".gitattributes":
+        return True
+    return path.suffix.lower() in TEXT_SUFFIXES
+
+
+def scan_repository(root: Path = ROOT) -> dict[str, object]:
+    sensitive_filenames: list[str] = []
+    key_pattern_hits: list[dict[str, object]] = []
+    unreadable_files: list[str] = []
+
+    for path in iter_repo_files(root):
+        rel = path.relative_to(root).as_posix()
+        if rel not in ALLOWLISTED_SENSITIVE_PATHS and SENSITIVE_NAME_RE.search(path.name):
+            sensitive_filenames.append(rel)
+            # Do not open files whose names indicate they may contain raw secrets.
+            continue
+
+        if not should_scan_text(path):
+            continue
+
+        try:
+            text = path.read_text(encoding="utf-8", errors="ignore")
+        except OSError:
+            unreadable_files.append(rel)
+            continue
+
+        for match in OPENAI_KEY_RE.finditer(text):
+            line = text.count("\n", 0, match.start()) + 1
+            key_pattern_hits.append({
+                "file": rel,
+                "line": line,
+                "kind": "openai_key_pattern",
+                "value_logged": False,
+            })
+
+    status = "blocked" if sensitive_filenames or key_pattern_hits or unreadable_files else "pass"
+    return {
+        "checked_at": datetime.now(timezone.utc).isoformat(),
+        "status": status,
+        "root": str(root),
+        "sensitive_filename_count": len(sensitive_filenames),
+        "sensitive_filenames": sensitive_filenames,
+        "key_pattern_hit_count": len(key_pattern_hits),
+        "key_pattern_hits": key_pattern_hits,
+        "unreadable_file_count": len(unreadable_files),
+        "unreadable_files": unreadable_files,
+        "external_secret_files_read": False,
+        "secret_values_logged": False,
+        "notes": [
+            "This scan only inspects repository files.",
+            "Files with secret-like names are reported by path and not opened.",
+            "External key files such as Downloads/openai-api-key.txt are not read.",
+        ],
+    }
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--root", type=Path, default=ROOT)
+    parser.add_argument("--report", type=Path, default=DEFAULT_REPORT)
+    parser.add_argument("--no-write", action="store_true")
+    return parser.parse_args()
+
+
+def main() -> int:
+    args = parse_args()
+    report = scan_repository(args.root)
+
+    if not args.no_write:
+        args.report.parent.mkdir(parents=True, exist_ok=True)
+        args.report.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+        print(f"Wrote {args.report}")
+
+    print(f"Credential guard status: {report['status']}")
+    return 0 if report["status"] == "pass" else 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

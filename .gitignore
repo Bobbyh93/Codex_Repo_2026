@@ -1,0 +1,7 @@
+__pycache__/
+*.py[cod]
+.env
+.env.*
+!.env.example
+*api-key*.txt
+*apikey*.txt
