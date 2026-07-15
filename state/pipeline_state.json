@@ -5,8 +5,10 @@
   "next_stage": "credential_backed_openai_tts_assets",
   "checkpoint_policy": "Each production stage must write a manifest or QA record before downstream stages consume its outputs.",
   "known_execution_context": {
-    "openai_api_key_verified": true,
+    "openai_api_key_verified": false,
     "openai_api_key_setup_flow_opened": true,
+    "openai_api_key_present": true,
+    "openai_authenticated_probe_status": "invalid_api_key",
     "production_source_package_selected": false,
     "live_tts_verified": false,
     "target_playback_environment_selected": false

@@ -1,0 +1,55 @@
+{
+  "version": 1,
+  "run_at": "2026-07-15T02:14:07.566324+00:00",
+  "date": "2026-07-15",
+  "status": "blocked_or_planning_only",
+  "selected_work_package": {
+    "id": "HLB-TTS-ASSET-VERIFICATION-022",
+    "title": "Verify credential-backed OpenAI TTS assets",
+    "status": "blocked",
+    "priority": 2,
+    "owner": "Codex + OpenAI Platform runtime"
+  },
+  "checks": {
+    "credential_guard": {
+      "status": "pass",
+      "external_secret_files_read": false,
+      "secret_values_logged": false
+    },
+    "state_validation": {
+      "status": "pass",
+      "errors": []
+    },
+    "daily_workset": {
+      "status": "blocked_or_planning_only",
+      "active_blocker_count": 7
+    },
+    "nurse_prep_web_app": {
+      "status": "pass",
+      "errors": []
+    }
+  },
+  "cost_guard": {
+    "paid_ai_actions_allowed": false,
+    "max_next_paid_retry_dollars": "0.00",
+    "user_budget_checkpoint_dollars": "100.00",
+    "reason": "OpenAI authenticated probe returned invalid_api_key; do not spend on another live TTS retry until the key is replaced and a cheap runtime probe passes.",
+    "blocked_paid_actions": [
+      "openai_tts_live_execution"
+    ]
+  },
+  "next_actions": [
+    "Do not run live paid OpenAI generation during this hourly cycle.",
+    "Replace and verify OPENAI_API_KEY with a cheap runtime probe before retrying live TTS.",
+    "Resolve or update blockers for HLB-TTS-ASSET-VERIFICATION-022 before downstream binding work.",
+    "Resolve or update blockers for HLB-TTS-ASSET-VERIFICATION-022.",
+    "Commit any missing source manifests, request queues, or QA evidence required by the selected work package.",
+    "Rerun scripts/validate_state.py and scripts/create_daily_workset.py after blockers change."
+  ],
+  "source_files": [
+    "state/work_queue.json",
+    "state/pipeline_state.json",
+    "state/qa_state.json",
+    "manifests/tts_execution_report.json"
+  ]
+}

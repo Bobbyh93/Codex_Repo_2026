@@ -43,7 +43,7 @@
         "Only verified audio assets enter the binding manifest."
       ],
       "blockers": [
-        "No approved two-slide production TTS request queue is committed.",
+        "OpenAI authenticated probe failed with invalid_api_key; replace the local OPENAI_API_KEY and rerun scripts/openai_tts_live_pilot.py --live.",
         "No authentic MP3 assets exist for codec, checksum, duration, loudness, silence, or clipping analysis."
       ],
       "outputs": [
@@ -51,6 +51,29 @@
         "manifests/audio_manifest.json",
         "manifests/binding_manifest.json",
         "qa/tts_asset_verification_report.json"
+      ]
+    },
+    {
+      "id": "NP-WEB-001",
+      "title": "Integrate Nurse Prep EB web app cockpit",
+      "status": "complete",
+      "priority": 2,
+      "owner": "Codex + Build Web Apps",
+      "summary": "Add a dependency-free operations web app that renders the repository's persistent state, QA gates, TTS pilot status, daily workset, and artifact map.",
+      "acceptance_criteria": [
+        "The app renders active work package, blockers, QA gates, runtime status, and artifact outputs.",
+        "The app reads committed repository JSON when served from the repository root.",
+        "The app includes embedded fallback state when JSON fetches are unavailable.",
+        "A validation script verifies referenced app files and required data-source paths.",
+        "GitHub Actions validates the app with the daily workset checks."
+      ],
+      "blockers": [],
+      "outputs": [
+        "apps/nurse-prep-web/index.html",
+        "apps/nurse-prep-web/styles.css",
+        "apps/nurse-prep-web/app.js",
+        "scripts/validate_nurse_prep_web.py",
+        "docs/WEB_APP_INTEGRATION.md"
       ]
     },
     {

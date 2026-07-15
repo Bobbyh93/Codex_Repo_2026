@@ -12,6 +12,9 @@ sys.path.insert(0, str(ROOT / "scripts"))
 from create_daily_workset import build_workset, render_markdown
 from check_openai_runtime import check_runtime
 from credential_guard import scan_repository
+from openai_tts_live_pilot import estimate_mp3_duration_seconds, probable_mp3, validate_queue
+from run_hourly_ops import build_hourly_status, contains_invalid_api_key
+from validate_nurse_prep_web import validate_app
 from validate_state import validate_state
 
 
@@ -48,6 +51,32 @@ class DailyWorksetTests(unittest.TestCase):
         self.assertFalse(report["external_secret_files_read"])
         self.assertFalse(report["secret_values_logged"])
         self.assertEqual(report["status"], "pass")
+
+    def test_tts_request_queue_validates(self) -> None:
+        import json
+
+        queue = json.loads((ROOT / "manifests" / "tts_request_queue.json").read_text(encoding="utf-8"))
+        self.assertEqual(validate_queue(queue), [])
+        self.assertEqual(len(queue["requests"]), 2)
+
+    def test_mp3_probe_rejects_non_mp3(self) -> None:
+        self.assertFalse(probable_mp3(b"not an mp3 response"))
+        self.assertIsNone(estimate_mp3_duration_seconds(b"not an mp3 response"))
+
+    def test_hourly_ops_blocks_paid_retry_after_invalid_key(self) -> None:
+        status = build_hourly_status(ROOT, run_date="2026-07-15")
+        self.assertEqual(status["selected_work_package"]["id"], "HLB-TTS-ASSET-VERIFICATION-022")
+        self.assertEqual(status["checks"]["nurse_prep_web_app"]["status"], "pass")
+        self.assertFalse(status["cost_guard"]["paid_ai_actions_allowed"])
+        self.assertEqual(status["cost_guard"]["max_next_paid_retry_dollars"], "0.00")
+        self.assertIn("openai_tts_live_execution", status["cost_guard"]["blocked_paid_actions"])
+
+    def test_invalid_api_key_detection_is_recursive(self) -> None:
+        self.assertTrue(contains_invalid_api_key({"nested": [{"error": {"code": "invalid_api_key"}}]}))
+        self.assertFalse(contains_invalid_api_key({"nested": [{"error": {"code": "rate_limit_exceeded"}}]}))
+
+    def test_nurse_prep_web_app_validates(self) -> None:
+        self.assertEqual(validate_app(ROOT / "apps" / "nurse-prep-web"), [])
 
 
 if __name__ == "__main__":

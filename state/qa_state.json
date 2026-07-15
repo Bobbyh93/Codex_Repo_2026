@@ -14,7 +14,7 @@
     },
     {
       "gate": "openai_tts_live_execution",
-      "status": "ready_for_authenticated_probe",
+      "status": "blocked",
       "required_evidence": "Credential-backed MP3 generation report with no secrets serialized"
     },
     {
