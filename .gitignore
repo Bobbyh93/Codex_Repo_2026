@@ -18,3 +18,7 @@ server.mvp.*.log
 attached_assets/**/*.env
 attached_assets/documents/*mvp-*.txt
 attached_assets/documents/*mvp-*.txt.metadata.json
+__pycache__/
+*.py[cod]
+*api-key*.txt
+*apikey*.txt

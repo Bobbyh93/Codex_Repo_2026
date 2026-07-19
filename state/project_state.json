@@ -1,0 +1,43 @@
+{
+  "version": 1,
+  "project_id": "harrity-lesson-builder-pipeline",
+  "project_name": "Harrity Lesson Builder Pipeline",
+  "timezone": "America/Los_Angeles",
+  "source_of_truth": "github",
+  "repository": {
+    "owner": "Bobbyh93",
+    "name": "Codex_Repo_2026",
+    "branch": "main"
+  },
+  "chatgpt_projects": [
+    {
+      "name": "Nursing Education Concepts and Topics",
+      "url": "https://chatgpt.com/g/g-p-69def0f95a00819184e951302b7bf3fb-nursing-education-concepts-and-topics/project",
+      "purpose": "Referenced source workspace for nursing education concepts, topics, and lesson-builder context."
+    }
+  ],
+  "openai_platform": {
+    "api_key_name": "Harrity Lesson Builder Pipeline",
+    "setup_flow_opened": true,
+    "runtime_env_var": "OPENAI_API_KEY",
+    "secret_storage_rule": "Never commit API keys or plaintext secret files. Use environment variables or a managed secret store."
+  },
+  "operating_mode": "daily_state_driven_workset",
+  "current_focus": "Replace chat-history-dependent scheduled tasks with persistent GitHub state and bounded daily work orders.",
+  "canonical_stages": [
+    "source_intake",
+    "extraction",
+    "crosswalk_normalization",
+    "ckm_cards",
+    "taxonomy_gate_0",
+    "lesson_ingest_queue",
+    "lesson_spec",
+    "slide_deck_and_speaker_notes",
+    "per_slide_tts",
+    "audio_manifest",
+    "binding_manifest",
+    "machine_qa",
+    "application_playback_evidence",
+    "release_decision"
+  ]
+}

@@ -1,0 +1,68 @@
+{
+  "date": "2026-07-14",
+  "project_id": "harrity-lesson-builder-pipeline",
+  "project_name": "Harrity Lesson Builder Pipeline",
+  "repository": {
+    "owner": "Bobbyh93",
+    "name": "Codex_Repo_2026",
+    "branch": "main"
+  },
+  "status": "blocked_or_planning_only",
+  "active_stage": "tts_asset_verification",
+  "next_stage": "credential_backed_openai_tts_assets",
+  "selected_work_package": {
+    "id": "HLB-TTS-ASSET-VERIFICATION-022",
+    "title": "Verify credential-backed OpenAI TTS assets",
+    "status": "blocked",
+    "priority": 2,
+    "owner": "Codex + OpenAI Platform runtime",
+    "summary": "Execute a two-slide live TTS pilot only after an approved request queue and OPENAI_API_KEY are present in the runner.",
+    "acceptance_criteria": [
+      "Two authentic narration MP3 files decode successfully.",
+      "Every asset maps to one stable slide_id and one frozen request fingerprint.",
+      "No credentials appear in artifacts or logs.",
+      "Request identifiers, model, voice, timestamp, bytes, checksum, codec, and duration are recorded.",
+      "Human review passes pronunciation, intelligibility, pacing, and terminology.",
+      "Only verified audio assets enter the binding manifest."
+    ],
+    "blockers": [
+      "OpenAI authenticated probe failed with invalid_api_key; replace the local OPENAI_API_KEY and rerun scripts/openai_tts_live_pilot.py --live.",
+      "No authentic MP3 assets exist for codec, checksum, duration, loudness, silence, or clipping analysis."
+    ],
+    "outputs": [
+      "manifests/tts_execution_report.json",
+      "manifests/audio_manifest.json",
+      "manifests/binding_manifest.json",
+      "qa/tts_asset_verification_report.json"
+    ]
+  },
+  "active_blockers": [
+    "OpenAI authenticated probe failed with invalid_api_key; replace the local OPENAI_API_KEY and rerun scripts/openai_tts_live_pilot.py --live.",
+    "No authentic MP3 assets exist for codec, checksum, duration, loudness, silence, or clipping analysis.",
+    "openai_tts_live_execution: Credential-backed MP3 generation report with no secrets serialized",
+    "pptx_audio_binding: Embedded media, native playback configuration, and PowerPoint playback evidence",
+    "google_slides_audio_binding: Drive upload, Slides readback, notes parity, and playback evidence",
+    "video_release: Machine QA and target-player playback evidence against exact checksum",
+    "release_state=not_ready: export_pass is not allowed"
+  ],
+  "daily_instructions": [
+    "Do not assume access to prior chat attachments, sandbox files, or generated ZIPs.",
+    "Use committed state and manifests as the source of truth.",
+    "Run scripts/credential_guard.py before any credential-backed OpenAI packet.",
+    "If credentials or production artifacts are missing, write a dependency checklist instead of claiming execution.",
+    "Advance only the selected work package or update its blockers.",
+    "Do not publish, deploy, email, or mutate external systems without explicit approval."
+  ],
+  "recommended_actions": [
+    "Resolve or update blockers for HLB-TTS-ASSET-VERIFICATION-022.",
+    "Commit any missing source manifests, request queues, or QA evidence required by the selected work package.",
+    "Rerun scripts/validate_state.py and scripts/create_daily_workset.py after blockers change."
+  ],
+  "release_hard_stop_rules": [
+    "Do not mark generated files release-ready without machine-readable QA evidence.",
+    "Do not treat copied or renamed PPTX files as audio-bound decks.",
+    "Do not treat Google Drive audio links in notes as native slide audio binding.",
+    "Do not use synthetic or fixture audio as production narration.",
+    "Do not serialize OpenAI API keys or bearer credentials into artifacts."
+  ]
+}

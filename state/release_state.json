@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "release_state": "not_ready",
+  "last_release_candidate": null,
+  "export_pass_allowed": false,
+  "hard_stop_rules": [
+    "Do not mark generated files release-ready without machine-readable QA evidence.",
+    "Do not treat copied or renamed PPTX files as audio-bound decks.",
+    "Do not treat Google Drive audio links in notes as native slide audio binding.",
+    "Do not use synthetic or fixture audio as production narration.",
+    "Do not serialize OpenAI API keys or bearer credentials into artifacts."
+  ],
+  "next_release_path": "video_or_pptx_after_verified_openai_tts_assets"
+}
