@@ -1,0 +1,97 @@
+{
+  "status": "blocked",
+  "queue_id": "HLB-TTS-ASSET-VERIFICATION-022",
+  "checked_at": "2026-07-15T01:53:15.299223+00:00",
+  "live_execution": true,
+  "secret_values_logged": false,
+  "records": [
+    {
+      "slide_id": "S01",
+      "slide_number": 1,
+      "slide_title": "Pipeline Readiness Check",
+      "model": "gpt-4o-mini-tts",
+      "voice": "marin",
+      "response_format": "mp3",
+      "output_file": "audio/tts_asset_verification/S01_pipeline_readiness_check.mp3",
+      "tts_text_sha256": "9166d9c340521efdced9bb342077ffd4da883ea0b9cb872a2259ea5b3e30e63f",
+      "request_fingerprint": "2cb7b8d6e0d03dc45b60bd36075a426db415512df0369f029efceb6c2ee45b90",
+      "source": "openai_live",
+      "credential_logged": false,
+      "status": "failed",
+      "error": {
+        "status": 401,
+        "reason": "Unauthorized",
+        "body": {
+          "error": {
+            "type": "invalid_request_error",
+            "code": "invalid_api_key",
+            "param": null,
+            "message_redacted": true
+          }
+        },
+        "credential_logged": false
+      }
+    },
+    {
+      "slide_id": "S02",
+      "slide_number": 2,
+      "slide_title": "Release Gate Reminder",
+      "model": "gpt-4o-mini-tts",
+      "voice": "marin",
+      "response_format": "mp3",
+      "output_file": "audio/tts_asset_verification/S02_release_gate_reminder.mp3",
+      "tts_text_sha256": "ef0e94bc230207031198f59d35978ab30861a10f56ea178c66e1c9d9eda4afe6",
+      "request_fingerprint": "7e63d7053b354141bf699e8a3e1cd6f4c140d7a7030c472a341b630271e4d40d",
+      "source": "openai_live",
+      "credential_logged": false,
+      "status": "failed",
+      "error": {
+        "status": 401,
+        "reason": "Unauthorized",
+        "body": {
+          "error": {
+            "type": "invalid_request_error",
+            "code": "invalid_api_key",
+            "param": null,
+            "message_redacted": true
+          }
+        },
+        "credential_logged": false
+      }
+    }
+  ],
+  "errors": [
+    {
+      "slide_id": "S01",
+      "error": {
+        "status": 401,
+        "reason": "Unauthorized",
+        "body": {
+          "error": {
+            "type": "invalid_request_error",
+            "code": "invalid_api_key",
+            "param": null,
+            "message_redacted": true
+          }
+        },
+        "credential_logged": false
+      }
+    },
+    {
+      "slide_id": "S02",
+      "error": {
+        "status": 401,
+        "reason": "Unauthorized",
+        "body": {
+          "error": {
+            "type": "invalid_request_error",
+            "code": "invalid_api_key",
+            "param": null,
+            "message_redacted": true
+          }
+        },
+        "credential_logged": false
+      }
+    }
+  ]
+}
