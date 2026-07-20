@@ -10,8 +10,10 @@ import { AppLogger } from "./logger";
  * All steps are guarded so re-running on an already-migrated database is safe.
  */
 export async function setupPgVector(): Promise<void> {
-  const client = await pool.connect();
+  let client: Awaited<ReturnType<typeof pool.connect>> | undefined;
   try {
+    client = await pool.connect();
+
     // 1. Install pgvector extension
     await client.query("CREATE EXTENSION IF NOT EXISTS vector");
     AppLogger.info("pgvector: extension ready");
@@ -62,6 +64,6 @@ export async function setupPgVector(): Promise<void> {
       err instanceof Error ? err : new Error(String(err))
     );
   } finally {
-    client.release();
+    client?.release();
   }
 }
