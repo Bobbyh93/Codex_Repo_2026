@@ -1,0 +1,17 @@
+{
+  "originalName": "nursestudy_pilot_therapeutic_communication_source.txt",
+  "originalSize": 772,
+  "originalMimeType": "application/octet-stream",
+  "validationResult": {
+    "isValid": true,
+    "detectedType": "txt",
+    "errors": [],
+    "warnings": [
+      "MIME type \"application/octet-stream\" does not match detected file type (txt)"
+    ],
+    "size": 772,
+    "actualMimeType": "application/octet-stream"
+  },
+  "securityWarnings": [],
+  "storedAt": "2026-06-26T18:21:38.668Z"
+}

@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Knowledge Base Upload Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        button {
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <h1>Knowledge Base Upload Test - CSRF Token Verification</h1>
+    
+    <div class="test-section">
+        <h2>Step 1: Login</h2>
+        <button id="loginBtn">Login as Admin</button>
+        <div id="loginStatus"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Step 2: Test Upload</h2>
+        <input type="file" id="fileInput" accept=".txt,.pdf,.docx" />
+        <button id="uploadBtn" disabled>Test Upload with CSRF Token</button>
+        <div id="uploadStatus"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test Results</h2>
+        <div id="testResults"></div>
+    </div>
+
+    <script>
+        let csrfToken = null;
+        
+        // Login button
+        document.getElementById('loginBtn').addEventListener('click', async () => {
+            const statusDiv = document.getElementById('loginStatus');
+            statusDiv.innerHTML = '<div class="status info">Logging in...</div>';
+            
+            try {
+                // First login
+                const loginResponse = await fetch('/api/admin/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        email: 'admin@example.com',
+                        password: 'admin123'
+                    })
+                });
+                
+                const loginData = await loginResponse.json();
+                
+                if (loginResponse.ok && loginData.csrfToken) {
+                    csrfToken = loginData.csrfToken;
+                    statusDiv.innerHTML = '<div class="status success">✅ Login successful! CSRF Token obtained.</div>';
+                    document.getElementById('uploadBtn').disabled = false;
+                    
+                    // Also fetch session to ensure token is stored
+                    const sessionResponse = await fetch('/api/admin/session', {
+                        credentials: 'include'
+                    });
+                    const sessionData = await sessionResponse.json();
+                    if (sessionData.csrfToken) {
+                        csrfToken = sessionData.csrfToken;
+                    }
+                } else {
+                    statusDiv.innerHTML = '<div class="status error">❌ Login failed: ' + (loginData.error || 'Unknown error') + '</div>';
+                }
+            } catch (error) {
+                statusDiv.innerHTML = '<div class="status error">❌ Login error: ' + error.message + '</div>';
+            }
+        });
+        
+        // Upload button
+        document.getElementById('uploadBtn').addEventListener('click', async () => {
+            const fileInput = document.getElementById('fileInput');
+            const statusDiv = document.getElementById('uploadStatus');
+            const resultsDiv = document.getElementById('testResults');
+            
+            if (!fileInput.files[0]) {
+                statusDiv.innerHTML = '<div class="status error">Please select a file first</div>';
+                return;
+            }
+            
+            statusDiv.innerHTML = '<div class="status info">Uploading file with CSRF token...</div>';
+            
+            const formData = new FormData();
+            formData.append('document', fileInput.files[0]);
+            
+            try {
+                const uploadResponse = await fetch('/api/admin/knowledge-base/upload', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-Token': csrfToken
+                    },
+                    credentials: 'include',
+                    body: formData
+                });
+                
+                const responseText = await uploadResponse.text();
+                let uploadData;
+                
+                try {
+                    uploadData = JSON.parse(responseText);
+                } catch (e) {
+                    uploadData = { error: responseText };
+                }
+                
+                if (uploadResponse.ok) {
+                    statusDiv.innerHTML = '<div class="status success">✅ Upload successful!</div>';
+                    resultsDiv.innerHTML = `
+                        <div class="status success">
+                            <h3>✅ TEST PASSED: CSRF Token Fix Verified!</h3>
+                            <p>The Knowledge Base upload is working correctly with CSRF token protection.</p>
+                            <p><strong>Job ID:</strong> ${uploadData.jobId || 'N/A'}</p>
+                            <p><strong>Document ID:</strong> ${uploadData.document?.id || 'N/A'}</p>
+                        </div>
+                    `;
+                } else {
+                    const isCSRFError = responseText.toLowerCase().includes('csrf');
+                    statusDiv.innerHTML = '<div class="status error">❌ Upload failed: ' + (uploadData.error || responseText) + '</div>';
+                    
+                    if (isCSRFError) {
+                        resultsDiv.innerHTML = `
+                            <div class="status error">
+                                <h3>❌ TEST FAILED: CSRF Token Issue Detected!</h3>
+                                <p>The upload failed with a CSRF token error.</p>
+                                <p><strong>Error:</strong> ${uploadData.error || responseText}</p>
+                            </div>
+                        `;
+                    } else {
+                        resultsDiv.innerHTML = `
+                            <div class="status error">
+                                <h3>Upload failed (not CSRF related)</h3>
+                                <p><strong>Error:</strong> ${uploadData.error || responseText}</p>
+                            </div>
+                        `;
+                    }
+                }
+            } catch (error) {
+                statusDiv.innerHTML = '<div class="status error">❌ Upload error: ' + error.message + '</div>';
+                resultsDiv.innerHTML = `
+                    <div class="status error">
+                        <h3>Network Error</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        });
+        
+        // Create a test file if file input is empty
+        document.getElementById('fileInput').addEventListener('change', (e) => {
+            if (!e.target.files[0]) {
+                // Create a default test file
+                const testContent = `Test document for Knowledge Base upload
+                CSRF Token verification test
+                Created at: ${new Date().toISOString()}`;
+                const blob = new Blob([testContent], { type: 'text/plain' });
+                const file = new File([blob], 'test-upload.txt', { type: 'text/plain' });
+                
+                const dt = new DataTransfer();
+                dt.items.add(file);
+                e.target.files = dt.files;
+            }
+        });
+    </script>
+</body>
+</html>

@@ -30,7 +30,7 @@
     {
       "id": "HLB-TTS-ASSET-VERIFICATION-022",
       "title": "Verify credential-backed OpenAI TTS assets",
-      "status": "blocked",
+      "status": "complete",
       "priority": 2,
       "owner": "Codex + OpenAI Platform runtime",
       "summary": "Execute a two-slide live TTS pilot only after an approved request queue and OPENAI_API_KEY are present in the runner.",
@@ -42,15 +42,84 @@
         "Human review passes pronunciation, intelligibility, pacing, and terminology.",
         "Only verified audio assets enter the binding manifest."
       ],
-      "blockers": [
-        "No approved two-slide production TTS request queue is committed.",
-        "No authentic MP3 assets exist for codec, checksum, duration, loudness, silence, or clipping analysis."
-      ],
+      "blockers": [],
       "outputs": [
         "manifests/tts_execution_report.json",
         "manifests/audio_manifest.json",
         "manifests/binding_manifest.json",
         "qa/tts_asset_verification_report.json"
+      ]
+    },
+    {
+      "id": "NP-WEB-001",
+      "title": "Integrate Nurse Prep EB web app cockpit",
+      "status": "complete",
+      "priority": 2,
+      "owner": "Codex + Build Web Apps",
+      "summary": "Add a dependency-free operations web app that renders the repository's persistent state, QA gates, TTS pilot status, daily workset, and artifact map.",
+      "acceptance_criteria": [
+        "The app renders active work package, blockers, QA gates, runtime status, and artifact outputs.",
+        "The app reads committed repository JSON when served from the repository root.",
+        "The app includes embedded fallback state when JSON fetches are unavailable.",
+        "A validation script verifies referenced app files and required data-source paths.",
+        "GitHub Actions validates the app with the daily workset checks."
+      ],
+      "blockers": [],
+      "outputs": [
+        "apps/nurse-prep-web/index.html",
+        "apps/nurse-prep-web/styles.css",
+        "apps/nurse-prep-web/app.js",
+        "scripts/validate_nurse_prep_web.py",
+        "docs/WEB_APP_INTEGRATION.md"
+      ]
+    },
+    {
+      "id": "NP-WEB-002",
+      "title": "Integrate OpenAI TTS production pilot telemetry",
+      "status": "complete",
+      "priority": 2,
+      "owner": "Codex + Build Web Apps + OpenAI Developers",
+      "summary": "Connect the Nurse Prep EB Workbench to the source-grounded production pilot, including live OpenAI MP3 evidence, lesson spec, source manifest, binding manifest, release blockers, and validation checks.",
+      "acceptance_criteria": [
+        "The app renders production pilot status, source grounding, slide count, source count, verified audio count, and binding readiness.",
+        "The app lists per-slide verified OpenAI audio assets without exposing credentials.",
+        "The app surfaces external playback blockers separately from completed audio generation.",
+        "The validator requires production pilot data-source paths, DOM targets, and committed pilot artifacts.",
+        "Documentation identifies the integrated OpenAI TTS pilot artifacts."
+      ],
+      "blockers": [],
+      "outputs": [
+        "apps/nurse-prep-web/index.html",
+        "apps/nurse-prep-web/styles.css",
+        "apps/nurse-prep-web/app.js",
+        "scripts/validate_nurse_prep_web.py",
+        "docs/WEB_APP_INTEGRATION.md",
+        "apps/nurse-prep-web/README.md"
+      ]
+    },
+    {
+      "id": "HLB-PLAYBACK-EVIDENCE-023",
+      "title": "Create production pilot playback evidence gate",
+      "status": "complete",
+      "priority": 3,
+      "owner": "Codex",
+      "summary": "Add a machine-readable playback evidence template, validator, blocked report, and dashboard integration so downstream release review can capture browser, LMS, PowerPoint, or Google Slides playback evidence against exact artifacts.",
+      "acceptance_criteria": [
+        "Playback evidence has a reusable JSON template.",
+        "A validator blocks release until a release path, final artifact checksum, required target players, and playback records are present.",
+        "The production pilot release report consumes playback evidence status.",
+        "The Nurse Prep EB Workbench surfaces playback gate blockers.",
+        "No credential or bearer material can appear in playback evidence."
+      ],
+      "blockers": [],
+      "outputs": [
+        "qa/production_pilot_playback_evidence.template.json",
+        "qa/production_pilot_playback_evidence.json",
+        "qa/production_pilot_playback_report.json",
+        "scripts/validate_playback_evidence.py",
+        "scripts/validate_production_pilot.py",
+        "apps/nurse-prep-web/app.js",
+        "scripts/validate_nurse_prep_web.py"
       ]
     },
     {
@@ -69,13 +138,19 @@
         "No blocker or major defects remain."
       ],
       "blockers": [
-        "Production source package has not been selected.",
-        "Live OpenAI narration is not yet verified.",
-        "Target playback environment has not been selected."
+        "ffmpeg/ffprobe not available, so MP4 assembly and stream QA were not executed.",
+        "Release playback path has not been selected.",
+        "Final artifact path and checksum are not recorded.",
+        "No target-player playback records are recorded."
       ],
       "outputs": [
+        "lessons/production_pilot/source_manifest.json",
         "lessons/production_pilot/lesson_spec.json",
         "audio/production_pilot/*.mp3",
+        "manifests/production_pilot_audio_manifest.json",
+        "manifests/production_pilot_binding_manifest.json",
+        "qa/production_pilot_playback_evidence.json",
+        "qa/production_pilot_playback_report.json",
         "video/production_pilot/lesson_video.mp4",
         "qa/production_pilot_release_report.json"
       ]

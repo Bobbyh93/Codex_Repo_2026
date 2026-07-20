@@ -8,40 +8,50 @@
     "branch": "main"
   },
   "status": "blocked_or_planning_only",
-  "active_stage": "tts_asset_verification",
-  "next_stage": "credential_backed_openai_tts_assets",
+  "active_stage": "production_pilot_media_binding",
+  "next_stage": "deck_or_video_playback_evidence",
   "selected_work_package": {
-    "id": "HLB-TTS-ASSET-VERIFICATION-022",
-    "title": "Verify credential-backed OpenAI TTS assets",
+    "id": "HLB-PRODUCTION-PILOT-019",
+    "title": "Run an end-to-end source-grounded production lesson pilot",
     "status": "blocked",
-    "priority": 2,
-    "owner": "Codex + OpenAI Platform runtime",
-    "summary": "Execute a two-slide live TTS pilot only after an approved request queue and OPENAI_API_KEY are present in the runner.",
+    "priority": 3,
+    "owner": "Codex",
+    "summary": "Run a two-to-five-slide nursing lesson through lesson spec, narration, audio, video/deck binding, machine QA, and playback evidence.",
     "acceptance_criteria": [
-      "Two authentic narration MP3 files decode successfully.",
-      "Every asset maps to one stable slide_id and one frozen request fingerprint.",
-      "No credentials appear in artifacts or logs.",
-      "Request identifiers, model, voice, timestamp, bytes, checksum, codec, and duration are recorded.",
-      "Human review passes pronunciation, intelligibility, pacing, and terminology.",
-      "Only verified audio assets enter the binding manifest."
+      "Each slide has stable slide_id, speaker notes, TTS text, and source references.",
+      "One verified MP3 maps to each narrated slide.",
+      "Captions match approved TTS text.",
+      "Machine QA passes.",
+      "Browser or LMS playback evidence references the exact final artifact checksum.",
+      "No blocker or major defects remain."
     ],
     "blockers": [
-      "No approved two-slide production TTS request queue is committed.",
-      "No authentic MP3 assets exist for codec, checksum, duration, loudness, silence, or clipping analysis."
+      "ffmpeg/ffprobe not available, so MP4 assembly and stream QA were not executed.",
+      "Release playback path has not been selected.",
+      "Final artifact path and checksum are not recorded.",
+      "No target-player playback records are recorded."
     ],
     "outputs": [
-      "manifests/tts_execution_report.json",
-      "manifests/audio_manifest.json",
-      "manifests/binding_manifest.json",
-      "qa/tts_asset_verification_report.json"
+      "lessons/production_pilot/source_manifest.json",
+      "lessons/production_pilot/lesson_spec.json",
+      "audio/production_pilot/*.mp3",
+      "manifests/production_pilot_audio_manifest.json",
+      "manifests/production_pilot_binding_manifest.json",
+      "qa/production_pilot_playback_evidence.json",
+      "qa/production_pilot_playback_report.json",
+      "video/production_pilot/lesson_video.mp4",
+      "qa/production_pilot_release_report.json"
     ]
   },
   "active_blockers": [
-    "No approved two-slide production TTS request queue is committed.",
-    "No authentic MP3 assets exist for codec, checksum, duration, loudness, silence, or clipping analysis.",
+    "ffmpeg/ffprobe not available, so MP4 assembly and stream QA were not executed.",
+    "Release playback path has not been selected.",
+    "Final artifact path and checksum are not recorded.",
+    "No target-player playback records are recorded.",
     "pptx_audio_binding: Embedded media, native playback configuration, and PowerPoint playback evidence",
     "google_slides_audio_binding: Drive upload, Slides readback, notes parity, and playback evidence",
     "video_release: Machine QA and target-player playback evidence against exact checksum",
+    "production_pilot_playback_evidence: qa/production_pilot_playback_report.json reaches playback_pass",
     "release_state=not_ready: export_pass is not allowed"
   ],
   "daily_instructions": [
@@ -53,7 +63,7 @@
     "Do not publish, deploy, email, or mutate external systems without explicit approval."
   ],
   "recommended_actions": [
-    "Resolve or update blockers for HLB-TTS-ASSET-VERIFICATION-022.",
+    "Resolve or update blockers for HLB-PRODUCTION-PILOT-019.",
     "Commit any missing source manifests, request queues, or QA evidence required by the selected work package.",
     "Rerun scripts/validate_state.py and scripts/create_daily_workset.py after blockers change."
   ],

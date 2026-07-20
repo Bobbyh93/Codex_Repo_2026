@@ -1,14 +1,18 @@
 {
   "version": 1,
   "last_completed_stage": "persistent_state_scaffold",
-  "active_stage": "tts_asset_verification",
-  "next_stage": "credential_backed_openai_tts_assets",
+  "active_stage": "production_pilot_media_binding",
+  "next_stage": "deck_or_video_playback_evidence",
   "checkpoint_policy": "Each production stage must write a manifest or QA record before downstream stages consume its outputs.",
   "known_execution_context": {
     "openai_api_key_verified": true,
     "openai_api_key_setup_flow_opened": true,
-    "production_source_package_selected": false,
-    "live_tts_verified": false,
+    "openai_api_key_present": true,
+    "openai_authenticated_probe_status": "pass",
+    "production_source_package_selected": true,
+    "live_tts_verified": true,
+    "playback_evidence_template_created": true,
+    "playback_evidence_status": "blocked",
     "target_playback_environment_selected": false
   }
 }

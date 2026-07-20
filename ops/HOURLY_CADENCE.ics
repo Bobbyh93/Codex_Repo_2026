@@ -1,0 +1,110 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//NurseStudy//Hourly Launch Ops//EN
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:NurseStudy Launch Ops Cadence
+X-WR-TIMEZONE:America/Los_Angeles
+BEGIN:VEVENT
+UID:nursestudy-launch-ops-1@harrity
+DTSTAMP:20260710T073029Z
+DTSTART:20260710T160000Z
+DTEND:20260710T162500Z
+RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR
+SUMMARY:NurseStudy: Health check and launch queue triage
+DESCRIPTION:Budget cap: $50\nOutput: Live status note with queue counts\nC
+ ommand: npm run ops:hourly-check\nLive app: https://nursestudy-lesson-bui
+ lder.onrender.com\nGuardrail: no paid AI/media work unless the current de
+ cision packet is explicitly approved.
+BEGIN:VALARM
+TRIGGER:-PT5M
+ACTION:DISPLAY
+DESCRIPTION:Health check and launch queue triage
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:nursestudy-launch-ops-2@harrity
+DTSTAMP:20260710T073029Z
+DTSTART:20260710T170000Z
+DTEND:20260710T174500Z
+RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR
+SUMMARY:NurseStudy: Asset approval packet
+DESCRIPTION:Budget cap: $100\nOutput: 1-2 rows approved or held with reaso
+ n\nCommand: npm run ops:asset-packet\nLive app: https://nursestudy-lesson
+ -builder.onrender.com\nGuardrail: no paid AI/media work unless the curren
+ t decision packet is explicitly approved.
+BEGIN:VALARM
+TRIGGER:-PT5M
+ACTION:DISPLAY
+DESCRIPTION:Asset approval packet
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:nursestudy-launch-ops-3@harrity
+DTSTAMP:20260710T073029Z
+DTSTART:20260710T180000Z
+DTEND:20260710T184500Z
+RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR
+SUMMARY:NurseStudy: Package build packet
+DESCRIPTION:Budget cap: $100\nOutput: 1 student-ready draft package or vis
+ ual/study-guide packet\nCommand: npm run ops:visual-packet\nLive app: htt
+ ps://nursestudy-lesson-builder.onrender.com\nGuardrail: no paid AI/media 
+ work unless the current decision packet is explicitly approved.
+BEGIN:VALARM
+TRIGGER:-PT5M
+ACTION:DISPLAY
+DESCRIPTION:Package build packet
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:nursestudy-launch-ops-4@harrity
+DTSTAMP:20260710T073029Z
+DTSTART:20260710T190000Z
+DTEND:20260710T192500Z
+RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR
+SUMMARY:NurseStudy: QA/export check
+DESCRIPTION:Budget cap: $50\nOutput: Smoke result and issue list\nCommand:
+  npm run ops:review-dashboard\nLive app: https://nursestudy-lesson-builde
+ r.onrender.com\nGuardrail: no paid AI/media work unless the current decis
+ ion packet is explicitly approved.
+BEGIN:VALARM
+TRIGGER:-PT5M
+ACTION:DISPLAY
+DESCRIPTION:QA/export check
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:nursestudy-launch-ops-5@harrity
+DTSTAMP:20260710T073029Z
+DTSTART:20260710T200000Z
+DTEND:20260710T204500Z
+RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR
+SUMMARY:NurseStudy: Airtable/shorts tracker packet
+DESCRIPTION:Budget cap: $100\nOutput: Tracker rows or sync contract\nComma
+ nd: npm run ops:visual-decision\nLive app: https://nursestudy-lesson-buil
+ der.onrender.com\nGuardrail: no paid AI/media work unless the current dec
+ ision packet is explicitly approved.
+BEGIN:VALARM
+TRIGGER:-PT5M
+ACTION:DISPLAY
+DESCRIPTION:Airtable/shorts tracker packet
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:nursestudy-launch-ops-6@harrity
+DTSTAMP:20260710T073029Z
+DTSTART:20260710T210000Z
+DTEND:20260710T212500Z
+RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR
+SUMMARY:NurseStudy: Log\, Drive sync\, next queue
+DESCRIPTION:Budget cap: $50\nOutput: Updated work log and next packet\nCom
+ mand: npm run ops:hourly-run\nLive app: https://nursestudy-lesson-builder
+ .onrender.com\nGuardrail: no paid AI/media work unless the current decisi
+ on packet is explicitly approved.
+BEGIN:VALARM
+TRIGGER:-PT5M
+ACTION:DISPLAY
+DESCRIPTION:Log\, Drive sync\, next queue
+END:VALARM
+END:VEVENT
+END:VCALENDAR

@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "pilot_id": "therapeutic-communication-pilot",
+  "selected_at": "2026-07-15T02:40:30.211148+00:00",
+  "sources": [
+    {
+      "source_id": "SRC-THERAPEUTIC-COMM-001",
+      "title": "NurseStudy Pilot Therapeutic Communication Source",
+      "path": "attached_assets/documents/1782498098664_7a3df232109ce17b_nursestudy_pilot_therapeutic_communication_source.txt",
+      "sha256": "9cf673fe7da8f45024a8e414f1b192599a7435ba27f0f56f10c411f036f7f380",
+      "approval_status": "approved_for_production_pilot",
+      "source_type": "local_text_source",
+      "metadata": {
+        "originalName": "nursestudy_pilot_therapeutic_communication_source.txt",
+        "originalSize": 772,
+        "originalMimeType": "application/octet-stream",
+        "validationResult": {
+          "isValid": true,
+          "detectedType": "txt",
+          "errors": [],
+          "warnings": [
+            "MIME type \"application/octet-stream\" does not match detected file type (txt)"
+          ],
+          "size": 772,
+          "actualMimeType": "application/octet-stream"
+        },
+        "securityWarnings": [],
+        "storedAt": "2026-06-26T18:21:38.668Z"
+      },
+      "source_excerpt": "Therapeutic communication in nursing requires the nurse to notice patient cues, ask focused open-ended questions, reflect emotion, and avoid false reassurance. When a patient says they are frightened before a procedure, the nurse should acknowledge the feeling, assess understanding, and invite the patient to describe the concern. This supports the clinical judgment steps of recognizing cues, analyzing cues, and taking action. A common testing trap is choosing a response that gives advice or minimizes the concern instead of assessing the patient's meaning.\n\nNCLEX alignment: Psychosocial Integrity; Clinical Judgment Measurement Model: Recognize Cues, Analyze Cues, Take Action, Evaluate Outcomes; Nursing Process: Assessment and Implementation; Bloom level: Apply.\n"
+    }
+  ]
+}

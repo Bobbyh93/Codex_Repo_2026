@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "status": "pilot_audio_pass_playback_blocked",
+  "pilot_id": "therapeutic-communication-pilot",
+  "slide_count": 3,
+  "source_count": 1,
+  "verified_audio_count": 3,
+  "binding_count": 3,
+  "playback_status": "blocked",
+  "release_path": "not_selected",
+  "source_grounded": true,
+  "secret_values_logged": false,
+  "errors": [],
+  "warnings": [],
+  "external_blockers": [
+    "ffmpeg/ffprobe not available, so MP4 assembly and stream QA were not executed.",
+    "Release playback path has not been selected.",
+    "Final artifact path and checksum are not recorded.",
+    "No target-player playback records are recorded."
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "pilot_id": "therapeutic-communication-pilot",
+  "release_path": "not_selected",
+  "final_artifact": {
+    "artifact_type": null,
+    "path": null,
+    "sha256": null
+  },
+  "required_targets": [],
+  "playback_records": [],
+  "notes": [
+    "Playback evidence is pending. Select a release path before recording target-player evidence."
+  ]
+}

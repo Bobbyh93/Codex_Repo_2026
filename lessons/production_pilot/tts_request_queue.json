@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "queue_id": "HLB-PRODUCTION-PILOT-019",
+  "purpose": "Source-grounded production pilot narration for therapeutic communication.",
+  "status": "approved_for_live_tts",
+  "default_model": "gpt-4o-mini-tts",
+  "default_voice": "marin",
+  "response_format": "mp3",
+  "requests": [
+    {
+      "slide_id": "P01",
+      "slide_number": 1,
+      "slide_title": "Notice the Therapeutic Cue",
+      "tts_text": "When a patient says they are frightened before a procedure, first notice the emotional cue. A therapeutic response acknowledges the feeling, assesses understanding, and invites the patient to describe the concern.",
+      "voice": "marin",
+      "instructions": "Speak clearly in a calm nursing educator voice. Maintain a professional pace for student review.",
+      "output_filename": "P01_notice_the_therapeutic_cue.mp3",
+      "approved_for_tts": true,
+      "content_status": "source_grounded",
+      "human_review_status": "approved_for_pilot_generation"
+    },
+    {
+      "slide_id": "P02",
+      "slide_number": 2,
+      "slide_title": "Choose the Best First Response",
+      "tts_text": "Avoid false reassurance and avoid minimizing the concern. Instead, reflect the patient's emotion and clarify meaning. A stronger response invites the patient to say more before the nurse teaches or advises.",
+      "voice": "marin",
+      "instructions": "Speak clearly in a calm nursing educator voice. Maintain a professional pace for student review.",
+      "output_filename": "P02_choose_the_best_first_response.mp3",
+      "approved_for_tts": true,
+      "content_status": "source_grounded",
+      "human_review_status": "approved_for_pilot_generation"
+    },
+    {
+      "slide_id": "P03",
+      "slide_number": 3,
+      "slide_title": "Clinical Judgment Check",
+      "tts_text": "This item aligns to clinical judgment. The nurse recognizes the fear cue, analyzes what it means, takes action by acknowledging and assessing, and evaluates whether the patient can communicate the concern.",
+      "voice": "marin",
+      "instructions": "Speak clearly in a calm nursing educator voice. Maintain a professional pace for student review.",
+      "output_filename": "P03_clinical_judgment_check.mp3",
+      "approved_for_tts": true,
+      "content_status": "source_grounded",
+      "human_review_status": "approved_for_pilot_generation"
+    }
+  ]
+}

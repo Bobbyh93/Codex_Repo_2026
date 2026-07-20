@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "pilot_id": "therapeutic-communication-pilot",
+  "release_path": "not_selected",
+  "final_artifact": {
+    "artifact_type": null,
+    "path": null,
+    "sha256": null
+  },
+  "required_targets": [],
+  "playback_records": [
+    {
+      "target_id": "browser-local-preview",
+      "target_type": "browser",
+      "target_name": "Local browser preview",
+      "status": "pending",
+      "tested_at": null,
+      "tester": null,
+      "operating_system": null,
+      "application": null,
+      "application_version": null,
+      "artifact_sha256": null,
+      "full_playback_completed": false,
+      "narration_audible": false,
+      "captions_visible": null,
+      "captions_synchronized": null,
+      "speaker_notes_preserved": null,
+      "pause_resume_passed": null,
+      "seeking_passed": null,
+      "evidence_reference": null,
+      "defects": []
+    }
+  ]
+}

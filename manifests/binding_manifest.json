@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "status": "ready_for_downstream_binding",
+  "created_at": "2026-07-15T02:26:02.156579+00:00",
+  "bindings": [
+    {
+      "slide_id": "S01",
+      "slide_number": 1,
+      "audio_file": "audio/tts_asset_verification/S01_pipeline_readiness_check.mp3",
+      "audio_sha256": "1b2292cf99897175404363c0971d5c4867b78b98d2b5819150e5098bf19ea28d",
+      "audio_duration_seconds": 12.96,
+      "request_fingerprint": "2cb7b8d6e0d03dc45b60bd36075a426db415512df0369f029efceb6c2ee45b90",
+      "binding_status": "ready_for_downstream_binding"
+    },
+    {
+      "slide_id": "S02",
+      "slide_number": 2,
+      "audio_file": "audio/tts_asset_verification/S02_release_gate_reminder.mp3",
+      "audio_sha256": "c9f8b5f1cac42bdb532b8033c9ecaea331dcbe6d843b84acced8e243731e2750",
+      "audio_duration_seconds": 12.168,
+      "request_fingerprint": "7e63d7053b354141bf699e8a3e1cd6f4c140d7a7030c472a341b630271e4d40d",
+      "binding_status": "ready_for_downstream_binding"
+    }
+  ]
+}

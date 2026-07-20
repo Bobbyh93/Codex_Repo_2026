@@ -18,8 +18,13 @@ SKIP_DIRS = {
     ".git",
     ".agents",
     ".codex",
+    ".worktrees",
     "__pycache__",
     ".pytest_cache",
+}
+
+SKIP_FILES = {
+    ".env",
 }
 
 ALLOWLISTED_SENSITIVE_PATHS = {
@@ -33,6 +38,20 @@ SENSITIVE_NAME_RE = re.compile(
 )
 
 OPENAI_KEY_RE = re.compile(r"\bsk-(?:proj-)?[A-Za-z0-9_-]{20,}\b")
+
+SECRET_CONTAINER_SUFFIXES = {
+    "",
+    ".env",
+    ".json",
+    ".key",
+    ".pem",
+    ".p12",
+    ".pfx",
+    ".toml",
+    ".txt",
+    ".yaml",
+    ".yml",
+}
 
 TEXT_SUFFIXES = {
     ".csv",
@@ -54,6 +73,8 @@ def iter_repo_files(root: Path) -> Iterable[Path]:
             continue
         if any(part in SKIP_DIRS for part in path.relative_to(root).parts):
             continue
+        if path.name in SKIP_FILES or (path.name.startswith(".env.") and path.name != ".env.example"):
+            continue
         if path.relative_to(root).as_posix() in ALLOWLISTED_SENSITIVE_PATHS:
             yield path
             continue
@@ -66,6 +87,10 @@ def should_scan_text(path: Path) -> bool:
     return path.suffix.lower() in TEXT_SUFFIXES
 
 
+def is_secret_container_name(path: Path) -> bool:
+    return SENSITIVE_NAME_RE.search(path.name) is not None and path.suffix.lower() in SECRET_CONTAINER_SUFFIXES
+
+
 def scan_repository(root: Path = ROOT) -> dict[str, object]:
     sensitive_filenames: list[str] = []
     key_pattern_hits: list[dict[str, object]] = []
@@ -73,7 +98,7 @@ def scan_repository(root: Path = ROOT) -> dict[str, object]:
 
     for path in iter_repo_files(root):
         rel = path.relative_to(root).as_posix()
-        if rel not in ALLOWLISTED_SENSITIVE_PATHS and SENSITIVE_NAME_RE.search(path.name):
+        if rel not in ALLOWLISTED_SENSITIVE_PATHS and is_secret_container_name(path):
             sensitive_filenames.append(rel)
             # Do not open files whose names indicate they may contain raw secrets.
             continue

@@ -1,0 +1,17 @@
+{
+  "originalName": "Pharmacology for Nurses (OpenStax).pdf",
+  "originalSize": 47218206,
+  "originalMimeType": "application/pdf",
+  "validationResult": {
+    "isValid": true,
+    "detectedType": "pdf",
+    "errors": [],
+    "warnings": [],
+    "size": 47218206,
+    "actualMimeType": "application/pdf"
+  },
+  "securityWarnings": [
+    "PDF contains form fields"
+  ],
+  "storedAt": "2026-05-10T04:02:10.616Z"
+}

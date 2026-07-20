@@ -1,0 +1,135 @@
+{
+  "generatedAt": "2026-07-10T07:30:29.693Z",
+  "liveUrl": "https://nursestudy-lesson-builder.onrender.com",
+  "currentTopic": "Contraception priority cues and patient teaching",
+  "dailySoftCap": "$450",
+  "hardStop": "$500 unless explicitly approved",
+  "spendGuard": {
+    "status": "ok",
+    "openQueues": [],
+    "message": "No spend/media queue is open while decision is pending."
+  },
+  "summary": {
+    "failedChecks": 0,
+    "totalTopics": 77,
+    "ready": 3,
+    "needsMapping": 0,
+    "needsAssets": 74,
+    "currentDecision": "pending"
+  },
+  "workPackages": [
+    {
+      "id": "WBS-1",
+      "name": "Live product health",
+      "owner": "Ops",
+      "status": "ready",
+      "budgetCap": "$50/check",
+      "evidence": [
+        "ops/OPS_REVIEW_DASHBOARD.json",
+        "ops/BROWSER_QA_PACKET.md",
+        "scripts/hourly-ops-check.mjs"
+      ],
+      "acceptance": "Live health, student home, admin login, topic matrix, and queue checks pass.",
+      "nextAction": "Keep checking hourly."
+    },
+    {
+      "id": "WBS-2",
+      "name": "Student public learning surface",
+      "owner": "Product",
+      "status": "ready",
+      "budgetCap": "$50/check",
+      "evidence": [
+        "GET /api/student/home",
+        "ops/OPS_REVIEW_DASHBOARD.json",
+        "ops/BROWSER_QA_PACKET.md"
+      ],
+      "acceptance": "Student home returns a featured lesson and learner-safe lesson data.",
+      "nextAction": "Keep student route smoke in the hourly check."
+    },
+    {
+      "id": "WBS-3",
+      "name": "Topic taxonomy and content mapping",
+      "owner": "Content Ops",
+      "status": "ready",
+      "budgetCap": "$100/packet",
+      "evidence": [
+        "ops/OPS_REVIEW_DASHBOARD.json",
+        "/admin/topic-production"
+      ],
+      "acceptance": "Every topic has concept, nursing subject, weak topic, NCLEX category, CJM step, and source evidence.",
+      "nextAction": "Protect mapping completeness while asset work continues."
+    },
+    {
+      "id": "WBS-4",
+      "name": "Lesson package assets",
+      "owner": "Content Ops",
+      "status": "in_progress",
+      "budgetCap": "$100/packet before approval",
+      "evidence": [
+        "ops/NEXT_ASSET_APPROVAL_PACKET.md",
+        "ops/VISUAL_REVIEW_PACKET.md"
+      ],
+      "acceptance": "Each launch topic has slide deck, study guide, visuals, quiz, citations, and learner-safe package data.",
+      "nextAction": "Review asset gaps: slide decks 68, study guides 68, visuals 74, quizzes 68."
+    },
+    {
+      "id": "WBS-5",
+      "name": "No-spend visual decision gate",
+      "owner": "Reviewer",
+      "status": "ready_for_decision",
+      "budgetCap": "$0 until approved",
+      "evidence": [
+        "ops/VISUAL_DECISION_TEMPLATE.md",
+        "ops/OPS_REVIEW_DASHBOARD.json"
+      ],
+      "acceptance": "No spend/media queue opens while visual decision is pending.",
+      "nextAction": "Review Contraception priority cues and patient teaching and choose approve, revise, or hold."
+    },
+    {
+      "id": "WBS-6",
+      "name": "Airtable viral shorts handoff",
+      "owner": "Marketing Ops",
+      "status": "held",
+      "budgetCap": "$100-$250 only after approval",
+      "evidence": [
+        "ops/OPS_REVIEW_DASHBOARD.json",
+        "phase_3_shorts_airtable_handoff queue"
+      ],
+      "acceptance": "Only approved topics enter the shorts tracker; no batch production runs before review.",
+      "nextAction": "Keep held until visual decision approval."
+    },
+    {
+      "id": "WBS-7",
+      "name": "Calendar and Drive operating record",
+      "owner": "Ops",
+      "status": "local_ready",
+      "budgetCap": "$0 local artifact",
+      "evidence": [
+        "ops/HOURLY_CADENCE.ics",
+        "ops/HOURLY_CADENCE.md",
+        "ops/WORK_LOG.md"
+      ],
+      "acceptance": "Hourly cadence, work log, and review artifacts are ready for Calendar/Drive sync.",
+      "nextAction": "Import or sync calendar/Drive artifacts only after connector access is available and approved."
+    },
+    {
+      "id": "WBS-8",
+      "name": "Deployment and source control",
+      "owner": "Engineering",
+      "status": "ready",
+      "budgetCap": "$50/check",
+      "evidence": [
+        "git main",
+        "production build",
+        "ops/OPS_REVIEW_HISTORY.jsonl"
+      ],
+      "acceptance": "Build gates pass, commit is pushed, and live smoke confirms deployable launch surface.",
+      "nextAction": "Continue small commits after each verified ops packet."
+    }
+  ],
+  "nextAction": "Review VISUAL_DECISION_TEMPLATE and choose approve_visual_planning, needs_revision, or hold_no_spend.",
+  "files": {
+    "markdown": "ops/LAUNCH_WBS.md",
+    "json": "ops/LAUNCH_WBS.json"
+  }
+}

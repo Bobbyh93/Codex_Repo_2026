@@ -1,0 +1,77 @@
+{
+  "date": "2026-07-15",
+  "project_id": "harrity-lesson-builder-pipeline",
+  "project_name": "Harrity Lesson Builder Pipeline",
+  "repository": {
+    "owner": "Bobbyh93",
+    "name": "Codex_Repo_2026",
+    "branch": "main"
+  },
+  "status": "blocked_or_planning_only",
+  "active_stage": "production_pilot_media_binding",
+  "next_stage": "deck_or_video_playback_evidence",
+  "selected_work_package": {
+    "id": "HLB-PRODUCTION-PILOT-019",
+    "title": "Run an end-to-end source-grounded production lesson pilot",
+    "status": "blocked",
+    "priority": 3,
+    "owner": "Codex",
+    "summary": "Run a two-to-five-slide nursing lesson through lesson spec, narration, audio, video/deck binding, machine QA, and playback evidence.",
+    "acceptance_criteria": [
+      "Each slide has stable slide_id, speaker notes, TTS text, and source references.",
+      "One verified MP3 maps to each narrated slide.",
+      "Captions match approved TTS text.",
+      "Machine QA passes.",
+      "Browser or LMS playback evidence references the exact final artifact checksum.",
+      "No blocker or major defects remain."
+    ],
+    "blockers": [
+      "ffmpeg/ffprobe not available, so MP4 assembly and stream QA were not executed.",
+      "Release playback path has not been selected.",
+      "Final artifact path and checksum are not recorded.",
+      "No target-player playback records are recorded."
+    ],
+    "outputs": [
+      "lessons/production_pilot/source_manifest.json",
+      "lessons/production_pilot/lesson_spec.json",
+      "audio/production_pilot/*.mp3",
+      "manifests/production_pilot_audio_manifest.json",
+      "manifests/production_pilot_binding_manifest.json",
+      "qa/production_pilot_playback_evidence.json",
+      "qa/production_pilot_playback_report.json",
+      "video/production_pilot/lesson_video.mp4",
+      "qa/production_pilot_release_report.json"
+    ]
+  },
+  "active_blockers": [
+    "ffmpeg/ffprobe not available, so MP4 assembly and stream QA were not executed.",
+    "Release playback path has not been selected.",
+    "Final artifact path and checksum are not recorded.",
+    "No target-player playback records are recorded.",
+    "pptx_audio_binding: Embedded media, native playback configuration, and PowerPoint playback evidence",
+    "google_slides_audio_binding: Drive upload, Slides readback, notes parity, and playback evidence",
+    "video_release: Machine QA and target-player playback evidence against exact checksum",
+    "production_pilot_playback_evidence: qa/production_pilot_playback_report.json reaches playback_pass",
+    "release_state=not_ready: export_pass is not allowed"
+  ],
+  "daily_instructions": [
+    "Do not assume access to prior chat attachments, sandbox files, or generated ZIPs.",
+    "Use committed state and manifests as the source of truth.",
+    "Run scripts/credential_guard.py before any credential-backed OpenAI packet.",
+    "If credentials or production artifacts are missing, write a dependency checklist instead of claiming execution.",
+    "Advance only the selected work package or update its blockers.",
+    "Do not publish, deploy, email, or mutate external systems without explicit approval."
+  ],
+  "recommended_actions": [
+    "Resolve or update blockers for HLB-PRODUCTION-PILOT-019.",
+    "Commit any missing source manifests, request queues, or QA evidence required by the selected work package.",
+    "Rerun scripts/validate_state.py and scripts/create_daily_workset.py after blockers change."
+  ],
+  "release_hard_stop_rules": [
+    "Do not mark generated files release-ready without machine-readable QA evidence.",
+    "Do not treat copied or renamed PPTX files as audio-bound decks.",
+    "Do not treat Google Drive audio links in notes as native slide audio binding.",
+    "Do not use synthetic or fixture audio as production narration.",
+    "Do not serialize OpenAI API keys or bearer credentials into artifacts."
+  ]
+}

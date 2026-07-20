@@ -1,0 +1,64 @@
+{
+  "generatedAt": "2026-07-10T07:30:29.635Z",
+  "timezone": "America/Los_Angeles",
+  "firstCycleDate": "2026-07-10",
+  "liveUrl": "https://nursestudy-lesson-builder.onrender.com",
+  "dailySoftCap": "$450",
+  "hardStop": "$500 unless explicitly approved",
+  "guardrail": "No paid AI/media work unless the current decision packet is explicitly approved.",
+  "blocks": [
+    {
+      "time": "09:00",
+      "durationMinutes": 25,
+      "title": "Health check and launch queue triage",
+      "budgetCap": "$50",
+      "output": "Live status note with queue counts",
+      "command": "npm run ops:hourly-check"
+    },
+    {
+      "time": "10:00",
+      "durationMinutes": 45,
+      "title": "Asset approval packet",
+      "budgetCap": "$100",
+      "output": "1-2 rows approved or held with reason",
+      "command": "npm run ops:asset-packet"
+    },
+    {
+      "time": "11:00",
+      "durationMinutes": 45,
+      "title": "Package build packet",
+      "budgetCap": "$100",
+      "output": "1 student-ready draft package or visual/study-guide packet",
+      "command": "npm run ops:visual-packet"
+    },
+    {
+      "time": "12:00",
+      "durationMinutes": 25,
+      "title": "QA/export check",
+      "budgetCap": "$50",
+      "output": "Smoke result and issue list",
+      "command": "npm run ops:review-dashboard"
+    },
+    {
+      "time": "13:00",
+      "durationMinutes": 45,
+      "title": "Airtable/shorts tracker packet",
+      "budgetCap": "$100",
+      "output": "Tracker rows or sync contract",
+      "command": "npm run ops:visual-decision"
+    },
+    {
+      "time": "14:00",
+      "durationMinutes": 25,
+      "title": "Log, Drive sync, next queue",
+      "budgetCap": "$50",
+      "output": "Updated work log and next packet",
+      "command": "npm run ops:hourly-run"
+    }
+  ],
+  "files": {
+    "markdown": "ops/HOURLY_CADENCE.md",
+    "calendar": "ops/HOURLY_CADENCE.ics",
+    "json": "ops/HOURLY_CADENCE.json"
+  }
+}

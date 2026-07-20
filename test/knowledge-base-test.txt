@@ -1,0 +1,10 @@
+This is a test document for the Knowledge Base upload functionality.
+This file is being used to verify that the CSRF token issue has been resolved.
+
+Test content:
+- The CSRF token should be properly included in FormData uploads
+- The X-CSRF-Token header should be present in the request
+- The upload should complete successfully without "CSRF token missing" errors
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. 
+Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.

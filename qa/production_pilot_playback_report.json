@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "status": "blocked",
+  "pilot_id": "therapeutic-communication-pilot",
+  "release_path": "not_selected",
+  "slide_count": 3,
+  "required_targets": [],
+  "passed_targets": [],
+  "errors": [],
+  "warnings": [],
+  "blockers": [
+    "Release playback path has not been selected.",
+    "Final artifact path and checksum are not recorded.",
+    "No target-player playback records are recorded."
+  ],
+  "target_results": [],
+  "secret_values_logged": false
+}

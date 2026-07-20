@@ -1,0 +1,203 @@
+{
+  "generatedAt": "2026-07-10T07:30:29.750Z",
+  "mode": "local_sync_packet",
+  "liveUrl": "https://nursestudy-lesson-builder.onrender.com",
+  "drive": {
+    "projectId": "1c0Ayvgi8Av0c8M4SdOrwvHGhieXz553k",
+    "projectName": "NursePrep Platform Development",
+    "destinationVerified": false,
+    "status": "held_unverified_destination",
+    "rule": "Do not upload or replace Drive files until the destination is explicitly verified and approved."
+  },
+  "calendar": {
+    "timezone": "America/Los_Angeles",
+    "firstCycleDate": "2026-07-10",
+    "eventCount": 6,
+    "importFile": "ops/HOURLY_CADENCE.ics",
+    "status": "ready_for_import_or_connector_create",
+    "events": [
+      {
+        "title": "NurseStudy: Health check and launch queue triage",
+        "timezone": "America/Los_Angeles",
+        "firstCycleDate": "2026-07-10",
+        "localStartTime": "09:00",
+        "durationMinutes": 25,
+        "recurrence": "Weekdays",
+        "budgetCap": "$50",
+        "command": "npm run ops:hourly-check",
+        "guardrail": "No paid AI/media work unless the current decision packet is explicitly approved."
+      },
+      {
+        "title": "NurseStudy: Asset approval packet",
+        "timezone": "America/Los_Angeles",
+        "firstCycleDate": "2026-07-10",
+        "localStartTime": "10:00",
+        "durationMinutes": 45,
+        "recurrence": "Weekdays",
+        "budgetCap": "$100",
+        "command": "npm run ops:asset-packet",
+        "guardrail": "No paid AI/media work unless the current decision packet is explicitly approved."
+      },
+      {
+        "title": "NurseStudy: Package build packet",
+        "timezone": "America/Los_Angeles",
+        "firstCycleDate": "2026-07-10",
+        "localStartTime": "11:00",
+        "durationMinutes": 45,
+        "recurrence": "Weekdays",
+        "budgetCap": "$100",
+        "command": "npm run ops:visual-packet",
+        "guardrail": "No paid AI/media work unless the current decision packet is explicitly approved."
+      },
+      {
+        "title": "NurseStudy: QA/export check",
+        "timezone": "America/Los_Angeles",
+        "firstCycleDate": "2026-07-10",
+        "localStartTime": "12:00",
+        "durationMinutes": 25,
+        "recurrence": "Weekdays",
+        "budgetCap": "$50",
+        "command": "npm run ops:review-dashboard",
+        "guardrail": "No paid AI/media work unless the current decision packet is explicitly approved."
+      },
+      {
+        "title": "NurseStudy: Airtable/shorts tracker packet",
+        "timezone": "America/Los_Angeles",
+        "firstCycleDate": "2026-07-10",
+        "localStartTime": "13:00",
+        "durationMinutes": 45,
+        "recurrence": "Weekdays",
+        "budgetCap": "$100",
+        "command": "npm run ops:visual-decision",
+        "guardrail": "No paid AI/media work unless the current decision packet is explicitly approved."
+      },
+      {
+        "title": "NurseStudy: Log, Drive sync, next queue",
+        "timezone": "America/Los_Angeles",
+        "firstCycleDate": "2026-07-10",
+        "localStartTime": "14:00",
+        "durationMinutes": 25,
+        "recurrence": "Weekdays",
+        "budgetCap": "$50",
+        "command": "npm run ops:hourly-run",
+        "guardrail": "No paid AI/media work unless the current decision packet is explicitly approved."
+      }
+    ]
+  },
+  "currentLaunchState": {
+    "failedChecks": 0,
+    "totalTopics": 77,
+    "needsMapping": 0,
+    "needsAssets": 74,
+    "spendGuard": "ok",
+    "currentTopic": "Contraception priority cues and patient teaching",
+    "currentDecision": "pending",
+    "wbsPackages": 8
+  },
+  "files": [
+    {
+      "path": "ops/OPS_REVIEW_DASHBOARD.md",
+      "exists": true,
+      "bytes": 1123,
+      "purpose": "Single-file hourly review status",
+      "target": "Google Drive"
+    },
+    {
+      "path": "ops/OPS_REVIEW_DASHBOARD.json",
+      "exists": true,
+      "bytes": 4181,
+      "purpose": "Machine-readable hourly review status",
+      "target": "Google Drive"
+    },
+    {
+      "path": "ops/LAUNCH_WBS.md",
+      "exists": true,
+      "bytes": 3571,
+      "purpose": "Human-readable WBS with evidence map",
+      "target": "Google Drive"
+    },
+    {
+      "path": "ops/LAUNCH_WBS.json",
+      "exists": true,
+      "bytes": 4668,
+      "purpose": "Machine-readable WBS",
+      "target": "Google Drive"
+    },
+    {
+      "path": "ops/HOURLY_CADENCE.md",
+      "exists": true,
+      "bytes": 1198,
+      "purpose": "Human-readable hourly schedule",
+      "target": "Google Drive"
+    },
+    {
+      "path": "ops/HOURLY_CADENCE.json",
+      "exists": true,
+      "bytes": 1932,
+      "purpose": "Machine-readable hourly schedule",
+      "target": "Google Drive"
+    },
+    {
+      "path": "ops/HOURLY_CADENCE.ics",
+      "exists": true,
+      "bytes": 3769,
+      "purpose": "Calendar import file with six work blocks",
+      "target": "Google Calendar"
+    },
+    {
+      "path": "ops/WORK_LOG.md",
+      "exists": true,
+      "bytes": 24469,
+      "purpose": "Append-only work log",
+      "target": "Google Drive"
+    },
+    {
+      "path": "ops/NEXT_ASSET_APPROVAL_PACKET.md",
+      "exists": true,
+      "bytes": 5241,
+      "purpose": "No-spend asset approval packet",
+      "target": "Google Drive"
+    },
+    {
+      "path": "ops/VISUAL_REVIEW_PACKET.md",
+      "exists": true,
+      "bytes": 2858,
+      "purpose": "Visual review plan packet",
+      "target": "Google Drive"
+    },
+    {
+      "path": "ops/VISUAL_DECISION_TEMPLATE.md",
+      "exists": true,
+      "bytes": 1715,
+      "purpose": "Reviewer decision capture template",
+      "target": "Google Drive"
+    },
+    {
+      "path": "ops/BROWSER_QA_PACKET.md",
+      "exists": true,
+      "bytes": 2439,
+      "purpose": "Browser route QA checklist and guardrails",
+      "target": "Google Drive"
+    },
+    {
+      "path": "ops/BROWSER_QA_PACKET.json",
+      "exists": true,
+      "bytes": 3206,
+      "purpose": "Machine-readable browser QA route matrix",
+      "target": "Google Drive"
+    }
+  ],
+  "exclusions": [
+    ".env",
+    "database dumps",
+    "learner private data",
+    "admin session data",
+    "raw API keys or service credentials",
+    "paid media outputs generated without approval"
+  ],
+  "nextAction": "Verify the Drive destination, then approve the exact files/events before connector writes.",
+  "filesOut": {
+    "markdown": "ops/EXTERNAL_SYNC_PACKET.md",
+    "json": "ops/EXTERNAL_SYNC_PACKET.json"
+  }
+}

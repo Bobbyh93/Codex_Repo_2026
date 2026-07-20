@@ -1,0 +1,42 @@
+## Final readiness checklist — ship the 1‑Hour Blueprint and start selling
+
+One door. One fast win. One upsell. Make every step increase outcome/likelihood and cut time/effort—the value equation guides scope [$100M Offers, Page 59]. Keep time‑to‑value under 5 minutes—speed sells [$100M Offers, Page 65].
+
+### 1) Promise, names, and guarantee (lock these)
+- Free: “1‑Hour Exam Recovery Blueprint” (on‑page + PDF + email).
+- Paid: “Complete Study Blueprint + Sprint Pack” ($19–39).
+- Guarantee on checkout: “If it doesn’t reveal 3 high‑yield fixes you didn’t know, 7‑day refund.” Guarantees lift perceived likelihood and conversion [$100M Offers, Page 135; $100M Offers, Page 65].
+
+### 2) Product delivery (fast, multi‑format)
+- Deliver the free result instantly on‑page and via PDF/email. Packaging in multiple formats increases consumption and leads [$100M Leads, Page 43].
+- SLA: free <5 minutes; paid same‑day. Shorter perceived delay = more value [$100M Offers, Page 65].
+
+### 3) Upsell contrast (make the paid feel obvious)
+- On the free result page, show locked vs unlocked: 
+  - Free: top 1–2 gaps + 3×20‑min tasks + 5 links.
+  - Paid: full ranked list + 3–5 Sprints + 20–30 links + checklist.
+- Make the contrast huge—premium wins when the decoy is basic [$100M Money Models, Page 49].
+
+### 4) Creative engine (hooks drive sales)
+- Write 50 post‑exam hooks; test 3–5 “meats” (demo/testimonial/explainer). Spend 80% of prep on hooks—ads are made in prep, not recording [$100M Playbook: GOATed Ads, Page 9; $100M Playbook: GOATed Ads, Page 29].
+- Match awareness (problem/solution/product) to widen reach [$100M Playbook: GOATed Ads, Page 11].
+
+### 5) Proof loop (raise believability)
+- Screenshot Real Blueprints, before/after score deltas, and student quotes. Proof directly increases perceived likelihood of success [$100M Offers, Page 65].
+
+### 6) Analytics + KPIs (decide with data)
+- Track: landing_view, upload_complete, mini_view, checkout_open, purchase, full_sent.
+- Benchmarks (first 2–4 weeks): 
+  - Opt‑in ≥30%, Intake ≥50%, Upsell 5–10%, Free result <5 min.
+- If weak: fix hooks first, then tighten the free output clarity—don’t add features [$100M Leads, Page 46].
+
+### 7) Pricing and packaging (simple tests)
+- A/B the paid at $19 vs $29 vs $39 (even split) for 1–2 weeks. Keep the deliverable identical.
+
+### 8) Sequence next (after signal)
+- Once the upsell converts, add “Plan Refill” continuity (weekly Sprint delivery). Build stages in order—simple scales, fancy fails [$100M Money Models, Page 155].
+
+> I built everything by doing more reps. Ship this simple funnel, buy data, and iterate. Winners win because they decide to.
+
+### Call to action
+Rename outputs, add the guarantee, ship the free result in multi‑format under 5 minutes, bolt on the high‑contrast upsell, and launch 50 hooks this week. Then judge by the KPIs—fix hooks and clarity before adding features.

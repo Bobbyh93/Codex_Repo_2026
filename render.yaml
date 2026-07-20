@@ -1,0 +1,37 @@
+services:
+  - type: web
+    name: nursestudy-lesson-builder
+    runtime: node
+    region: oregon
+    buildCommand: npm ci --include=dev && npm run build
+    startCommand: npm run start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false
+      - key: SESSION_SECRET
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: APP_URL
+        sync: false
+      - key: ENABLE_EMAIL_DELIVERY
+        value: "false"
+      - key: SENDGRID_API_KEY
+        sync: false
+      - key: FROM_EMAIL
+        value: noreply@nurseprep.app
+      - key: FROM_NAME
+        value: NursePrep Analytics
+      - key: NURSING_CURRICULUM_AGENT_ID
+        value: agt_69f192d4f1908191baa41586bb0df9ea
+      - key: NURSING_CURRICULUM_AGENT_ENDPOINT
+        sync: false
+      - key: NURSING_CURRICULUM_AGENT_API_KEY
+        sync: false
+      - key: NURSING_CURRICULUM_AGENT_MODEL
+        value: gpt-4o-mini
+      - key: ENABLE_PROFESSIONAL_STUDY_GUIDE
+        value: "false"

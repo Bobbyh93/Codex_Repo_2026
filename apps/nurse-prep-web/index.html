@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Nurse Prep EB Workbench</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="Workspace navigation">
+        <div class="brand-block">
+          <div class="brand-mark">NP</div>
+          <div>
+            <p class="eyebrow">Nurse Prep EB</p>
+            <h1>Workbench</h1>
+          </div>
+        </div>
+        <nav class="nav-list" aria-label="Primary">
+          <a href="#overview" class="active">Overview</a>
+          <a href="#workset">Daily Workset</a>
+          <a href="#queue">Work Queue</a>
+          <a href="#quality">Quality Gates</a>
+          <a href="#productionPilot">Production Pilot</a>
+          <a href="#artifacts">Artifacts</a>
+        </nav>
+        <section class="sidebar-panel">
+          <p class="panel-label">Release State</p>
+          <strong id="releaseState">Loading</strong>
+          <span id="releaseHint">Checking repository state</span>
+        </section>
+      </aside>
+
+      <main class="main">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Pipeline Control</p>
+            <h2 id="projectName">Harrity Lesson Builder Pipeline</h2>
+          </div>
+          <div class="topbar-actions">
+            <button id="refreshButton" type="button" title="Reload repository state">Refresh</button>
+            <a id="repoLink" href="../../README.md">Repo</a>
+          </div>
+        </header>
+
+        <section id="overview" class="metrics-grid" aria-label="Operational metrics">
+          <article class="metric accent-green">
+            <span>Active Package</span>
+            <strong id="activePackage">-</strong>
+            <p id="activePackageTitle">Loading queue</p>
+          </article>
+          <article class="metric accent-gold">
+            <span>Open Blockers</span>
+            <strong id="blockerCount">-</strong>
+            <p id="blockerSummary">Checking blockers</p>
+          </article>
+          <article class="metric accent-coral">
+            <span>Quality Gates</span>
+            <strong id="gateCount">-</strong>
+            <p id="gateSummary">Checking QA</p>
+          </article>
+          <article class="metric accent-blue">
+            <span>Runtime</span>
+            <strong id="runtimeStatus">-</strong>
+            <p id="runtimeSummary">Checking OpenAI status</p>
+          </article>
+        </section>
+
+        <section class="content-grid">
+          <article id="workset" class="panel wide">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Today</p>
+                <h3>Daily Workset</h3>
+              </div>
+              <span id="worksetStatus" class="status-pill">Loading</span>
+            </div>
+            <div id="worksetBody" class="workset-body"></div>
+          </article>
+
+          <article id="quality" class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">QA</p>
+                <h3>Release Gates</h3>
+              </div>
+            </div>
+            <div id="gateList" class="stack-list"></div>
+          </article>
+
+          <article id="queue" class="panel wide">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Execution</p>
+                <h3>Work Queue</h3>
+              </div>
+            </div>
+            <div id="workQueue" class="queue-list"></div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">OpenAI</p>
+                <h3>TTS Pilot</h3>
+              </div>
+            </div>
+            <div id="ttsReport" class="stack-list"></div>
+          </article>
+
+          <article id="productionPilot" class="panel wide">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Source-Grounded</p>
+                <h3>Production Pilot</h3>
+              </div>
+              <span id="productionPilotStatus" class="status-pill">Loading</span>
+            </div>
+            <div id="productionPilotSummary" class="pilot-summary"></div>
+            <div id="productionPilotAssets" class="artifact-grid pilot-assets"></div>
+            <div id="productionPilotBlockers" class="stack-list"></div>
+          </article>
+
+          <article id="artifacts" class="panel wide">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Trace</p>
+                <h3>Artifact Map</h3>
+              </div>
+            </div>
+            <div id="artifactMap" class="artifact-grid"></div>
+          </article>
+        </section>
+      </main>
+    </div>
+    <script src="./app.js" type="module"></script>
+  </body>
+</html>

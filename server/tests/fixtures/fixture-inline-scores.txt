@@ -1,0 +1,56 @@
+ATI Nursing Education
+Comprehensive Predictor Assessment
+Performance Profile Report
+
+Individual Name: JANE DOE  Individual Score: 68.4%
+Student Number: 123456
+Institution: Community College of Nursing
+Assessment Date: 03/15/2024
+
+Overall Performance
+Your score: 68.4%
+National Mean: 71.8%
+Program Mean: 70.2%
+
+NCLEX Client Needs
+Management of Care 62%
+Safety and Infection Control 71%
+Health Promotion and Maintenance 74%
+Psychosocial Integrity 66%
+Basic Care and Comfort 78%
+Pharmacological and Parenteral Therapies 59%
+Reduction of Risk Potential 64%
+Physiological Adaptation 60%
+
+Topics to Review
+
+Management of Care 62%
+Advance Directives (Active Learning Template - Basic Concept)
+Client Rights (Active Learning Template - Basic Concept)
+Informed Consent (Active Learning Template - Nursing Skill)
+Prioritization (3 items)
+Delegation and Supervision (Active Learning Template - Basic Concept)
+
+Safety and Infection Control 71%
+Infection Control Precautions (Active Learning Template - Nursing Skill)
+Surgical Asepsis (Active Learning Template - Nursing Skill)
+
+Pharmacological and Parenteral Therapies 59%
+Medication Administration (2 items)
+Insulin Administration (Active Learning Template - Medication)
+Anticoagulant Therapy (Active Learning Template - Medication)
+IV Fluid Administration (Active Learning Template - Nursing Skill)
+
+Physiological Adaptation 60%
+Heart Failure (Active Learning Template - System Disorder)
+COPD (Active Learning Template - System Disorder)
+Acute Kidney Injury (Active Learning Template - System Disorder)
+Liver Cirrhosis (Active Learning Template - System Disorder)
+
+Reduction of Risk Potential 64%
+Laboratory Values (Active Learning Template - Basic Concept)
+Electrocardiogram Interpretation (Active Learning Template - Basic Concept)
+Post-Operative Care (Active Learning Template - Nursing Skill)
+
+Outcomes
+Please review the following resources to improve your performance.
