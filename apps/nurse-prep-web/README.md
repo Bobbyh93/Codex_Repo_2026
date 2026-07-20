@@ -1,17 +1,7 @@
-# Nurse Prep EB Workbench
+# Open NCLEX Curriculum Workbench
 
-Static operations cockpit for the Harrity/Nurse Prep pipeline state in this repository.
+Dependency-free, read-only execution dashboard for the NurseStudy `NCLEX-RN-2026` curriculum.
 
-Run it from the repository root so the app can read `state/`, `manifests/`, `qa/`, and `daily_worksets/`:
+Run `npm run build:nclex-curriculum` from the repository root to regenerate the Canvas-portable curriculum exports and the sanitized dashboard artifact at `data/execution-status.json`.
 
-```powershell
-python -m http.server 5179
-```
-
-Then open:
-
-```text
-http://localhost:5179/apps/nurse-prep-web/
-```
-
-The app is dependency-free and uses committed JSON artifacts as its data source.
+Serve the repository root and open `/apps/nurse-prep-web/`. The dashboard contains aggregate curriculum-production data only and excludes learner, patient, credential, and unpublished source content.
