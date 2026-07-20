@@ -1,0 +1,83 @@
+{
+  "schemaVersion": "1.0.0",
+  "generatedAt": "2026-07-20T03:00:48.318Z",
+  "frameworkId": "nclex-rn-2026",
+  "release": {
+    "name": "Eight-category exemplar milestone",
+    "stage": "clinical_review",
+    "portableExportsReady": true
+  },
+  "coverage": {
+    "categoriesRepresented": 8,
+    "categoriesTotal": 8,
+    "integratedProcessesRepresented": 6,
+    "integratedProcessesTotal": 6,
+    "clinicalJudgmentFunctionsRepresented": 6,
+    "clinicalJudgmentFunctionsTotal": 6
+  },
+  "production": {
+    "batches": [
+      {
+        "id": "exemplar-eight",
+        "size": 8,
+        "status": "clinical_review",
+        "completedDrafts": 8
+      }
+    ],
+    "fullCurriculum": {
+      "status": "mapping",
+      "approvedPercent": 0,
+      "explicitGapPolicy": true
+    }
+  },
+  "reviewQueue": {
+    "awaitingLicensedRn": 8,
+    "approved": 0
+  },
+  "content": {
+    "exemplarTopics": 8,
+    "objectives": 24,
+    "assessmentItems": 120,
+    "clinicalJudgmentItems": 48,
+    "evidenceSources": 8
+  },
+  "sourceReadiness": {
+    "approvedOerSources": 8,
+    "blockedSources": 0,
+    "proprietaryPolicy": "Aliases and report parsing only; no proprietary ATI prose, rationales, or items."
+  },
+  "quality": {
+    "automatedValidation": "pass",
+    "issues": []
+  },
+  "releaseGates": [
+    {
+      "id": "automated_validation",
+      "label": "Automated curriculum validation",
+      "status": "pass"
+    },
+    {
+      "id": "licensed_rn_review",
+      "label": "Licensed RN faculty approval",
+      "status": "pending"
+    },
+    {
+      "id": "portable_exports",
+      "label": "Canvas-portable export validation",
+      "status": "pass"
+    },
+    {
+      "id": "public_release",
+      "label": "Public curriculum release",
+      "status": "blocked"
+    }
+  ],
+  "exports": [
+    "curriculum-manifest.json",
+    "canvas-outcomes.csv",
+    "qti-exemplar-bank.xml",
+    "nclex-rn-2026.imscc",
+    "pathway-rules.json"
+  ],
+  "privacy": "Contains aggregate curriculum production status only; no learner or patient data."
+}

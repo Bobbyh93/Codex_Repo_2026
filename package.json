@@ -21,6 +21,8 @@
     "smoke:lesson-builder": "node scripts/lesson-builder-release-smoke.mjs",
     "smoke:launch-surfaces": "node scripts/launch-surface-smoke.mjs",
     "smoke:topic-production": "node scripts/topic-production-launch-smoke.mjs",
+    "build:nclex-curriculum": "tsx scripts/build-nclex-curriculum-exports.mjs",
+    "check:nclex-curriculum": "vitest run server/tests/nclex-curriculum.test.ts",
     "ops:hourly-check": "node scripts/hourly-ops-check.mjs",
     "ops:hourly-run": "node scripts/hourly-ops-run.mjs",
     "ops:asset-packet": "node scripts/asset-approval-packet.mjs",

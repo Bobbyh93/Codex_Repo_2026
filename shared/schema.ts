@@ -932,6 +932,113 @@ export const taxonomyTerms = pgTable("taxonomy_terms", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Versioned curriculum graph used by the directed-remediation and Canvas export pipeline.
+// Legacy nursing_topics records remain valid and can be linked through alias nodes.
+export const curriculumFrameworks = pgTable("curriculum_frameworks", {
+  id: varchar("id").primaryKey(),
+  title: text("title").notNull(),
+  version: text("version").notNull(),
+  audience: text("audience").notNull().default("Prelicensure RN"),
+  status: text("status").notNull().default("draft"), // draft, active, retired
+  sourceUri: text("source_uri"),
+  metadata: jsonb("metadata").$type<Record<string, any>>().default({}),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const curriculumNodes = pgTable("curriculum_nodes", {
+  id: varchar("id").primaryKey(),
+  frameworkId: varchar("framework_id").references(() => curriculumFrameworks.id, { onDelete: "cascade" }).notNull(),
+  nodeType: text("node_type").notNull(), // category, integrated_process, ncjmm, concept, topic, subtopic, objective, alias
+  code: text("code").notNull(),
+  label: text("label").notNull(),
+  description: text("description"),
+  blueprintWeight: decimal("blueprint_weight", { precision: 5, scale: 2 }),
+  safetyRisk: text("safety_risk").notNull().default("standard"), // standard, elevated, high
+  releaseStage: text("release_stage").notNull().default("draft"), // draft, clinical_review, approved, export_ready
+  legacyIds: text("legacy_ids").array().default([]),
+  metadata: jsonb("metadata").$type<Record<string, any>>().default({}),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const curriculumEdges = pgTable("curriculum_edges", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  frameworkId: varchar("framework_id").references(() => curriculumFrameworks.id, { onDelete: "cascade" }).notNull(),
+  fromNodeId: varchar("from_node_id").references(() => curriculumNodes.id, { onDelete: "cascade" }).notNull(),
+  toNodeId: varchar("to_node_id").references(() => curriculumNodes.id, { onDelete: "cascade" }).notNull(),
+  relationship: text("relationship").notNull(), // contains, maps_to, prerequisite_for, alias_of
+  weight: decimal("weight", { precision: 5, scale: 4 }),
+  metadata: jsonb("metadata").$type<Record<string, any>>().default({}),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const curriculumObjectiveMappings = pgTable("curriculum_objective_mappings", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  objectiveNodeId: varchar("objective_node_id").references(() => curriculumNodes.id, { onDelete: "cascade" }).notNull(),
+  // These IDs intentionally remain compatibility references because legacy package/item
+  // records can be imported before the curriculum graph is installed.
+  packageId: varchar("package_id"),
+  itemId: varchar("item_id"),
+  mappingType: text("mapping_type").notNull().default("primary"),
+  confidence: decimal("confidence", { precision: 5, scale: 4 }).notNull().default("1"),
+  verifiedBy: text("verified_by"),
+  verifiedAt: timestamp("verified_at"),
+  metadata: jsonb("metadata").$type<Record<string, any>>().default({}),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const curriculumEvidenceSources = pgTable("curriculum_evidence_sources", {
+  id: varchar("id").primaryKey(),
+  frameworkId: varchar("framework_id").references(() => curriculumFrameworks.id, { onDelete: "cascade" }).notNull(),
+  title: text("title").notNull(),
+  publisher: text("publisher").notNull(),
+  license: text("license").notNull(),
+  sourceUri: text("source_uri").notNull(),
+  edition: text("edition"),
+  locator: text("locator"),
+  approvalStatus: text("approval_status").notNull().default("pending"),
+  metadata: jsonb("metadata").$type<Record<string, any>>().default({}),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const curriculumPerformanceEvidence = pgTable("curriculum_performance_evidence", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  learnerKey: text("learner_key").notNull(),
+  objectiveNodeId: varchar("objective_node_id").references(() => curriculumNodes.id, { onDelete: "cascade" }).notNull(),
+  score: decimal("score", { precision: 5, scale: 2 }).notNull(),
+  confidence: decimal("confidence", { precision: 5, scale: 4 }).notNull().default("1"),
+  sourceKind: text("source_kind").notNull(), // generic_csv, ati_alias_report, canvas_outcome, quiz
+  observedAt: timestamp("observed_at").notNull().defaultNow(),
+  metadata: jsonb("metadata").$type<Record<string, any>>().default({}),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const directedRemediationPlans = pgTable("directed_remediation_plans", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  learnerKey: text("learner_key").notNull(),
+  frameworkId: varchar("framework_id").references(() => curriculumFrameworks.id).notNull(),
+  algorithmVersion: text("algorithm_version").notNull(),
+  status: text("status").notNull().default("draft"),
+  inputs: jsonb("inputs").$type<Record<string, any>>().notNull(),
+  recommendations: jsonb("recommendations").$type<any[]>().notNull(),
+  audit: jsonb("audit").$type<Record<string, any>>().notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const curriculumExportJobs = pgTable("curriculum_export_jobs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  frameworkId: varchar("framework_id").references(() => curriculumFrameworks.id).notNull(),
+  exportType: text("export_type").notNull(), // curriculum_json, outcomes_csv, qti, common_cartridge, pathway_rules
+  status: text("status").notNull().default("queued"),
+  artifactUri: text("artifact_uri"),
+  validationSummary: jsonb("validation_summary").$type<Record<string, any>>().default({}),
+  createdAt: timestamp("created_at").defaultNow(),
+  completedAt: timestamp("completed_at"),
+});
+
 export const sourceTaxonomyMappings = pgTable("source_taxonomy_mappings", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   sourceId: varchar("source_id").references(() => sourceRegistry.id, { onDelete: "cascade" }).notNull(),
@@ -949,7 +1056,8 @@ export const lessonPackages = pgTable("lesson_packages", {
   title: text("title").notNull(),
   topic: text("topic").notNull(),
   audience: text("audience").notNull().default("Prelicensure RN"),
-  status: text("status").notNull().default("draft"), // 'draft', 'qa_ready', 'published', 'needs_republish', 'blocked'
+  status: text("status").notNull().default("draft"), // legacy delivery status
+  releaseStage: text("release_stage").notNull().default("draft"), // draft, clinical_review, approved, export_ready
   sourceIds: text("source_ids").array().default([]),
   taxonomySnapshot: jsonb("taxonomy_snapshot").$type<Record<string, any>>().default({}),
   deckModel: jsonb("deck_model").$type<Record<string, any>>().default({}),
