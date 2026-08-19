@@ -6,11 +6,6 @@ import OpenAI from "openai";
 import { z } from "zod";
 import { and, asc, desc, eq, ilike, inArray, sql } from "drizzle-orm";
 import { db } from "../db";
-<<<<<<< HEAD
-import { requireAdminSession, validateCSRFToken, type AdminAuthRequest } from "../admin-auth-session";
-import {
-  contentBlocks,
-=======
 import { buildDirectedRemediationPlan } from "../directed-remediation-engine";
 import {
   canvasOutcomesCsv,
@@ -28,7 +23,6 @@ import {
   curriculumEvidenceSources,
   curriculumFrameworks,
   curriculumNodes,
->>>>>>> 179d0db8715932c65de403dd73682be39ba43277
   documents,
   documentChunks,
   lessonAssignmentLearners,
@@ -51,8 +45,6 @@ import {
   taxonomyTerms,
   topicProductionReviews,
 } from "@shared/schema";
-<<<<<<< HEAD
-=======
 import {
   EXEMPLAR_TOPICS,
   INTEGRATED_PROCESSES,
@@ -61,7 +53,19 @@ import {
   NCLEX_FRAMEWORK_ID,
   buildExemplarPackage,
 } from "@shared/nclex-rn-2026";
->>>>>>> 179d0db8715932c65de403dd73682be39ba43277
+import {
+  defaultGovernanceRecord,
+  currentApprovalMap,
+  evaluateGovernance,
+  governanceApprovalRequestSchema,
+  GOVERNANCE_GATE_ORDER,
+  governanceRecordSchema,
+  governanceUpdateSchema,
+  invalidateApprovals,
+  type GovernanceEvaluation,
+  type GovernanceGate,
+  type GovernanceRecordV1,
+} from "@shared/lesson-governance";
 
 type EvidenceChunk = {
   sourceId?: string | null;
@@ -1312,10 +1316,7 @@ async function ensureLessonBuilderTables() {
       updated_at timestamp DEFAULT now()
     )
   `);
-<<<<<<< HEAD
-=======
   await db.execute(sql`ALTER TABLE lesson_packages ADD COLUMN IF NOT EXISTS release_stage text NOT NULL DEFAULT 'draft'`);
->>>>>>> 179d0db8715932c65de403dd73682be39ba43277
 
   await db.execute(sql`
     CREATE TABLE IF NOT EXISTS lesson_slides (
@@ -1353,8 +1354,6 @@ async function ensureLessonBuilderTables() {
   `);
 
   await db.execute(sql`
-<<<<<<< HEAD
-=======
     CREATE TABLE IF NOT EXISTS curriculum_frameworks (
       id varchar PRIMARY KEY,
       title text NOT NULL,
@@ -1469,7 +1468,6 @@ async function ensureLessonBuilderTables() {
   await db.execute(sql`CREATE INDEX IF NOT EXISTS curriculum_performance_learner_idx ON curriculum_performance_evidence(learner_key, objective_node_id)`);
 
   await db.execute(sql`
->>>>>>> 179d0db8715932c65de403dd73682be39ba43277
     CREATE TABLE IF NOT EXISTS lesson_citations (
       id varchar PRIMARY KEY DEFAULT gen_random_uuid(),
       package_id varchar NOT NULL REFERENCES lesson_packages(id) ON DELETE CASCADE,
@@ -4353,8 +4351,168 @@ async function findPackageBundle(packageId: string): Promise<LessonBundle | null
   return { package: pkg, sources, slides, items, citations, qaResults, generationRuns, artifacts, contractValidations, reviews, assignments, learnerEvents, releaseAuditEvents };
 }
 
-<<<<<<< HEAD
-=======
+function stableJson(value: unknown): string {
+  if (Array.isArray(value)) return `[${value.map(stableJson).join(",")}]`;
+  if (value && typeof value === "object") {
+    return `{${Object.entries(value as Record<string, unknown>)
+      .sort(([left], [right]) => left.localeCompare(right))
+      .map(([key, entry]) => `${JSON.stringify(key)}:${stableJson(entry)}`)
+      .join(",")}}`;
+  }
+  return JSON.stringify(value);
+}
+
+function governanceRecordForBundle(bundle: LessonBundle): GovernanceRecordV1 {
+  const stored = (bundle.package.manifest || {}).governance;
+  const parsed = governanceRecordSchema.safeParse(stored);
+  if (parsed.success) return parsed.data;
+  return defaultGovernanceRecord(bundle.package.id, bundle.slides.map((slide) => slide.id));
+}
+
+function governanceGateFingerprints(bundle: LessonBundle, record = governanceRecordForBundle(bundle)): Record<GovernanceGate, string> {
+  const sourceSnapshot = bundle.sources.map((source) => ({ id: source.id, approvalStatus: source.approvalStatus }));
+  const slideSnapshot = bundle.slides.map((slide) => ({
+      id: slide.id,
+      slideNumber: slide.slideNumber,
+      slideType: slide.slideType,
+      title: slide.title,
+      visibleContent: slide.visibleContent,
+      nclexCategory: slide.nclexCategory,
+      cjmStep: slide.cjmStep,
+      bloomLevel: slide.bloomLevel,
+  }));
+  const citationSnapshot = bundle.citations.map((citation) => ({
+      id: citation.id,
+      slideId: citation.slideId,
+      sourceId: citation.sourceId,
+      documentId: citation.documentId,
+      chunkId: citation.chunkId,
+      citationLabel: citation.citationLabel,
+  }));
+  const objectiveMap = record.slideTraceability.map((trace) => ({ slideId: trace.slideId, objectiveIds: trace.objectiveIds }));
+  const accessibility = record.slideTraceability.map((trace) => ({ slideId: trace.slideId, accessibility: trace.accessibility }));
+  const payloads: Record<GovernanceGate, unknown> = {
+    taxonomy: { sourceSnapshot, taxonomy: record.taxonomy },
+    objectives: { sourceSnapshot, taxonomy: record.taxonomy, learningOutcomes: record.learningOutcomes },
+    outline: { sourceSnapshot, sourceGovernance: record.sourceGovernance, taxonomy: record.taxonomy, learningOutcomes: record.learningOutcomes, objectiveMap, slideSnapshot, citationSnapshot },
+    script: { sourceSnapshot, sourceGovernance: record.sourceGovernance, taxonomy: record.taxonomy, learningOutcomes: record.learningOutcomes, objectiveMap, slideSnapshot, citationSnapshot, speakerNotes: bundle.slides.map((slide) => ({ id: slide.id, speakerNotes: slide.speakerNotes })) },
+    accessibility: { sourceSnapshot, sourceGovernance: record.sourceGovernance, taxonomy: record.taxonomy, learningOutcomes: record.learningOutcomes, objectiveMap, slideSnapshot, citationSnapshot, accessibility },
+  };
+  return Object.fromEntries(Object.entries(payloads).map(([gate, value]) => [
+    gate,
+    createHash("sha256").update(stableJson(value)).digest("hex"),
+  ])) as Record<GovernanceGate, string>;
+}
+
+function governanceFingerprint(bundle: LessonBundle, record = governanceRecordForBundle(bundle)) {
+  return governanceGateFingerprints(bundle, record).accessibility;
+}
+
+function reviewGovernanceFingerprint(review: any) {
+  return String((review.metadata || {}).governanceFingerprint || "") || null;
+}
+
+function governanceEvaluationForBundle(bundle: LessonBundle, record = governanceRecordForBundle(bundle)): GovernanceEvaluation {
+  const approvalFingerprints = governanceGateFingerprints(bundle, record);
+  const fingerprint = approvalFingerprints.accessibility;
+  const humanReviews = bundle.reviews.filter((review) => review.reviewerRole !== "ai_reviewer");
+  const pilotReview = humanReviews.find((review) => review.decision === "approved_for_pilot" || review.decision === "approved_for_release");
+  const releaseReview = humanReviews.find((review) => {
+    const metadata = review.metadata || {};
+    const role = String(review.reviewerRole || "").toLowerCase();
+    return review.decision === "approved_for_release"
+      && metadata.licensedRn === true
+      && (role.includes("rn") || role.includes("faculty") || role.includes("clinical"));
+  });
+  const citedSlideIds = Array.from(new Set(bundle.citations.filter((citation) => citation.slideId).map((citation) => String(citation.slideId))));
+  const sourceIds = new Set(bundle.sources.map((source) => String(source.id)));
+  const unknownSourceReferenceIds = Array.from(new Set(bundle.citations
+    .map((citation) => citation.sourceId ? String(citation.sourceId) : null)
+    .filter((sourceId): sourceId is string => sourceId !== null)
+    .filter((sourceId) => !sourceIds.has(sourceId))));
+  const mediaReady = bundle.artifacts.some((artifact) => /audio_manifest/i.test(`${artifact.artifactKey} ${artifact.fileName}`))
+    && bundle.artifacts.some((artifact) => /binding_manifest/i.test(`${artifact.artifactKey} ${artifact.fileName}`));
+  const playbackPassed = bundle.qaResults.some((result) => result.gateKey === "playback" && result.status === "pass")
+    || bundle.artifacts.some((artifact) => /playback/i.test(`${artifact.artifactKey} ${artifact.fileName}`) && (artifact.metadata || {}).status === "playback_pass");
+  return evaluateGovernance(record, fingerprint, {
+    sourceStatuses: bundle.sources.map((source) => String(source.approvalStatus || "pending")),
+    slideIds: bundle.slides.map((slide) => String(slide.id)),
+    citedSlideIds,
+    unknownSourceReferenceIds,
+    failedQaCount: bundle.qaResults.filter((result) => result.status === "fail").length,
+    mediaReady,
+    playbackPassed,
+    facultyPilotApproved: Boolean(pilotReview),
+    facultyReleaseApproved: Boolean(releaseReview),
+    facultyReviewFingerprint: pilotReview ? reviewGovernanceFingerprint(pilotReview) : null,
+    releaseReviewFingerprint: releaseReview ? reviewGovernanceFingerprint(releaseReview) : null,
+  }, approvalFingerprints);
+}
+
+function governancePayload(bundle: LessonBundle) {
+  const governance = governanceRecordForBundle(bundle);
+  return {
+    governance,
+    evaluation: governanceEvaluationForBundle(bundle, governance),
+  };
+}
+
+async function recordAutomaticGovernanceInvalidations(
+  packageId: string,
+  before: LessonBundle,
+  after: LessonBundle,
+  actorId: string | undefined,
+  reason: string,
+) {
+  const record = governanceRecordForBundle(before);
+  const beforeFingerprints = governanceGateFingerprints(before, record);
+  const afterFingerprints = governanceGateFingerprints(after, record);
+  const beforeCurrent = currentApprovalMap(record, beforeFingerprints);
+  const afterCurrent = currentApprovalMap(record, afterFingerprints);
+  const invalidated = (Object.keys(beforeCurrent) as GovernanceGate[])
+    .filter((gate) => beforeCurrent[gate] && !afterCurrent[gate]);
+  for (const gate of invalidated) {
+    await recordReleaseAuditEvent(
+      packageId,
+      "governance_approval_automatically_invalidated",
+      `${gate} governance approval became stale after ${reason}.`,
+      { gate, reason, previousFingerprint: beforeFingerprints[gate], currentFingerprint: afterFingerprints[gate] },
+      actorId,
+    );
+  }
+  return invalidated;
+}
+
+function changedGovernanceAreas(previous: GovernanceRecordV1, next: z.infer<typeof governanceUpdateSchema>): GovernanceGate[] {
+  const changed: GovernanceGate[] = [];
+  if (stableJson(previous.taxonomy) !== stableJson(next.taxonomy)) changed.push("taxonomy");
+  if (stableJson(previous.learningOutcomes) !== stableJson(next.learningOutcomes)) changed.push("objectives");
+  const previousObjectiveMap = previous.slideTraceability.map((trace) => ({ slideId: trace.slideId, objectiveIds: trace.objectiveIds }));
+  const nextObjectiveMap = next.slideTraceability.map((trace) => ({ slideId: trace.slideId, objectiveIds: trace.objectiveIds }));
+  if (stableJson(previousObjectiveMap) !== stableJson(nextObjectiveMap) || stableJson(previous.sourceGovernance) !== stableJson(next.sourceGovernance)) changed.push("outline");
+  const previousAccessibility = previous.slideTraceability.map((trace) => ({ slideId: trace.slideId, accessibility: trace.accessibility }));
+  const nextAccessibility = next.slideTraceability.map((trace) => ({ slideId: trace.slideId, accessibility: trace.accessibility }));
+  if (stableJson(previousAccessibility) !== stableJson(nextAccessibility)) changed.push("accessibility");
+  return Array.from(new Set(changed));
+}
+
+function approvalPrerequisite(record: GovernanceRecordV1, evaluation: GovernanceEvaluation, gate: GovernanceGate) {
+  if (gate === "taxonomy") {
+    return evaluation.blockers.filter((blocker) => blocker.stage === "faculty_review" && blocker.code === "taxonomy");
+  }
+  if (gate === "objectives") {
+    return evaluation.blockers.filter((blocker) => blocker.stage === "faculty_review" && ["learning_outcomes", "duplicate_id"].includes(blocker.code));
+  }
+  if (gate === "outline") {
+    return evaluation.blockers.filter((blocker) => blocker.stage === "faculty_review" && ["missing_trace", "missing_objective_mapping", "unknown_objective", "unknown_source", "unknown_slide", "duplicate_id", "citation"].includes(blocker.code));
+  }
+  if (gate === "script") {
+    const missingNotes = record.slideTraceability.length === 0;
+    return missingNotes ? [{ message: "Slide traceability is required before script approval." }] : [];
+  }
+  return evaluation.blockers.filter((blocker) => blocker.code === "accessibility");
+}
+
 function hasLicensedClinicalApproval(bundle: LessonBundle) {
   return bundle.reviews.some((review) => {
     const metadata = review.metadata || {};
@@ -4524,7 +4682,6 @@ async function quarantineUnsafePackages() {
   return quarantined;
 }
 
->>>>>>> 179d0db8715932c65de403dd73682be39ba43277
 function compactTopicKey(value: string | null | undefined) {
   return String(value || "")
     .toLowerCase()
@@ -8628,10 +8785,7 @@ async function markPackageNeedsReview(packageId: string, reason: string) {
 
   await db.update(lessonPackages).set({
     status: wasPublished ? "needs_republish" : "draft",
-<<<<<<< HEAD
-=======
     releaseStage: "draft",
->>>>>>> 179d0db8715932c65de403dd73682be39ba43277
     qaSummary,
     deckModel: buildCurrentDeckModel(bundle),
     manifest: buildCurrentManifest(bundle, reason),
@@ -8666,11 +8820,6 @@ async function runQaForPackage(packageId: string) {
   const itemsWithRationales = items.filter((item) => Boolean(item.rationale && item.correctAnswer));
   const hasClinicalJudgment = slides.some((slide) => Boolean(slide.cjmStep)) && items.some((item) => Boolean((item.tags as any)?.cjmStep));
   const hasValidCitations = citations.every((citation) => citation.sourceId || citation.documentId || citation.chunkId);
-<<<<<<< HEAD
-
-  const results = [
-    gate("source_traceability", "Source Traceability", slidesWithCitations.size >= slides.length, `${slidesWithCitations.size}/${slides.length} slides have traceable citations.`),
-=======
   const alignment = topicSourceAlignment(bundle);
   const licensedApproval = hasLicensedClinicalApproval(bundle);
 
@@ -8678,7 +8827,6 @@ async function runQaForPackage(packageId: string) {
     gate("source_traceability", "Source Traceability", slidesWithCitations.size >= slides.length, `${slidesWithCitations.size}/${slides.length} slides have traceable citations.`),
     gate("topic_source_alignment", "Topic and Source Alignment", alignment.valid, alignment.message),
     gate("licensed_clinical_review", "Licensed RN Clinical Review", licensedApproval, licensedApproval ? "Licensed RN faculty release approval is recorded." : "Licensed RN faculty review is required before release.", true),
->>>>>>> 179d0db8715932c65de403dd73682be39ba43277
     gate("learner_only_visible_slides", "Learner-only Visible Slides", !visibleHasBannedTerms, visibleHasBannedTerms ? "Visible slide content contains instructor-facing language." : "Visible slide content stays learner-facing."),
     gate("exam_anchor_density", "Exam Anchor Density", slides.every((slide) => slide.nclexCategory), "Every slide should carry an NCLEX category."),
     gate("retrieval_practice", "Retrieval and Application", slidesWithRetrieval.length >= Math.max(2, Math.floor(slides.length / 2)), `${slidesWithRetrieval.length}/${slides.length} slides include retrieval prompts.`),
@@ -8720,14 +8868,11 @@ async function runQaForPackage(packageId: string) {
     .update(lessonPackages)
     .set({
       status: nextStatus,
-<<<<<<< HEAD
-=======
       releaseStage: failing > 0
         ? "draft"
         : bundle.package.status === "published"
           ? "export_ready"
           : "clinical_review",
->>>>>>> 179d0db8715932c65de403dd73682be39ba43277
       qaSummary,
       updatedAt: new Date(),
     })
@@ -8761,6 +8906,8 @@ const harrityRequiredExportFiles = [
   "instructor_facilitation_notes.md",
   "student_reception_review.json",
   "accessibility_report.json",
+  "governance.json",
+  "governance_report.json",
   "package_manifest.json",
 ];
 
@@ -8771,6 +8918,7 @@ function serializeArtifactContent(artifact: { contentJson?: any; contentText?: s
 
 function buildPackageArtifactPayloads(bundle: LessonBundle, profile = "harrity"): PackageArtifactPayload[] {
   const { package: pkg, sources, slides, items, citations, qaResults } = bundle;
+  const governance = governancePayload(bundle);
   const citationsBySlide = new Map<string, any[]>();
   for (const citation of citations) {
     if (citation.slideId) {
@@ -8904,6 +9052,8 @@ function buildPackageArtifactPayloads(bundle: LessonBundle, profile = "harrity")
     { artifactKey: "instructor_facilitation_notes", artifactType: "markdown", fileName: "instructor_facilitation_notes.md", mimeType: "text/markdown", contentText: instructorFacilitationNotes },
     { artifactKey: "student_reception_review", artifactType: "json", fileName: "student_reception_review.json", mimeType: "application/json", contentJson: studentReceptionReview },
     { artifactKey: "accessibility_report", artifactType: "json", fileName: "accessibility_report.json", mimeType: "application/json", contentJson: accessibilityReport },
+    { artifactKey: "governance", artifactType: "json", fileName: "governance.json", mimeType: "application/json", contentJson: governance.governance },
+    { artifactKey: "governance_report", artifactType: "json", fileName: "governance_report.json", mimeType: "application/json", contentJson: governance.evaluation },
     { artifactKey: "package_manifest", artifactType: "json", fileName: "package_manifest.json", mimeType: "application/json", contentJson: packageManifest },
     { artifactKey: "deck_model", artifactType: "json", fileName: "deck_model.json", mimeType: "application/json", contentJson: pkg.deckModel || {} },
   ];
@@ -10430,6 +10580,7 @@ async function recordPackageReview(
       packageStatusAtReview: bundle.package.status,
       qaFailCount: Number(bundle.package.qaSummary?.failCount || 0),
       contractFailCount: Number(bundle.package.manifest?.contractValidation?.failCount || 0),
+      governanceFingerprint: governanceFingerprint(bundle),
     },
     createdBy: actorId,
   }).returning();
@@ -10713,6 +10864,7 @@ function buildPilotEvidenceReport(
   deckExemplars: Array<typeof sourceRegistry.$inferSelect> = []
 ) {
   const artifacts = buildPackageArtifactPayloads(bundle, "harrity");
+  const governance = governancePayload(bundle);
   const generatedFiles = artifacts.map((artifact) => artifact.fileName).sort();
   const missingRequiredFiles = harrityRequiredExportFiles.filter((fileName) => !generatedFiles.includes(fileName));
   const sourceTraceability = bundle.sources.map((source) => ({
@@ -10777,6 +10929,7 @@ function buildPilotEvidenceReport(
       aiReview: bundle.package.manifest?.aiReview || null,
       facultyReview: bundle.package.manifest?.facultyReview || null,
       facultyReviewPremium: true,
+      governance: governance.evaluation,
       exportReady: missingRequiredFiles.length === 0,
       missingRequiredFiles,
     },
@@ -13341,6 +13494,142 @@ export function registerLessonBuilderRoutes(app: Express) {
     }
   });
 
+  app.get("/api/admin/lesson-builder/packages/:id/governance", requireAdminSession, async (req: AdminAuthRequest, res: Response) => {
+    try {
+      await ensureLessonBuilderTables();
+      const bundle = await findPackageBundle(req.params.id);
+      if (!bundle) return res.status(404).json({ error: "Lesson package not found" });
+      res.json({ packageId: req.params.id, ...governancePayload(bundle) });
+    } catch (error) {
+      console.error("Lesson governance load error:", error);
+      res.status(500).json({ error: "Failed to load lesson governance" });
+    }
+  });
+
+  app.put("/api/admin/lesson-builder/packages/:id/governance", requireAdminSession, async (req: AdminAuthRequest, res: Response) => {
+    try {
+      await ensureLessonBuilderTables();
+      const data = governanceUpdateSchema.parse(req.body || {});
+      const bundle = await findPackageBundle(req.params.id);
+      if (!bundle) return res.status(404).json({ error: "Lesson package not found" });
+      const current = governanceRecordForBundle(bundle);
+      if (data.expectedRevision !== current.revision) {
+        return res.status(409).json({
+          error: "Lesson governance was updated by another session",
+          expectedRevision: data.expectedRevision,
+          currentRevision: current.revision,
+        });
+      }
+      const changedAreas = changedGovernanceAreas(current, data);
+      const currentApprovals = currentApprovalMap(current, governanceGateFingerprints(bundle, current));
+      const invalidatedGates = (Object.keys(currentApprovals) as GovernanceGate[])
+        .filter((gate) => currentApprovals[gate] && changedAreas.some((changed) => GOVERNANCE_GATE_ORDER.indexOf(gate) >= GOVERNANCE_GATE_ORDER.indexOf(changed)));
+      const { expectedRevision: _expectedRevision, ...editable } = data;
+      const now = new Date().toISOString();
+      const next = governanceRecordSchema.parse({
+        ...current,
+        ...editable,
+        revision: current.revision + 1,
+        taxonomyStatus: changedAreas.includes("taxonomy") ? "draft" : current.taxonomyStatus,
+        approvals: invalidateApprovals(current.approvals, changedAreas),
+        updatedAt: now,
+      });
+      await db.update(lessonPackages).set({
+        manifest: { ...(bundle.package.manifest || {}), governance: next },
+        updatedAt: new Date(),
+      }).where(eq(lessonPackages.id, req.params.id));
+      await recordReleaseAuditEvent(
+        req.params.id,
+        "governance_updated",
+        `Lesson governance updated to revision ${next.revision}.`,
+        { previousRevision: current.revision, revision: next.revision, changedAreas, invalidatedApprovalCount: current.approvals.length - next.approvals.length },
+        req.session.adminUser?.userId,
+      );
+      for (const gate of invalidatedGates) {
+        await recordReleaseAuditEvent(
+          req.params.id,
+          "governance_approval_automatically_invalidated",
+          `${gate} governance approval was invalidated by a governance update.`,
+          { gate, changedAreas, previousRevision: current.revision, revision: next.revision },
+          req.session.adminUser?.userId,
+        );
+      }
+      const updated = await findPackageBundle(req.params.id);
+      res.json({ packageId: req.params.id, ...governancePayload(updated!) });
+    } catch (error) {
+      if (error instanceof z.ZodError) return res.status(400).json({ error: "Invalid lesson governance", details: error.errors });
+      console.error("Lesson governance update error:", error);
+      res.status(500).json({ error: "Failed to update lesson governance" });
+    }
+  });
+
+  app.post("/api/admin/lesson-builder/packages/:id/governance/approvals", requireAdminSession, async (req: AdminAuthRequest, res: Response) => {
+    try {
+      await ensureLessonBuilderTables();
+      const actorId = req.session.adminUser?.userId;
+      if (!actorId) return res.status(401).json({ error: "Authenticated admin identity is required for governance approvals" });
+      const data = governanceApprovalRequestSchema.parse(req.body || {});
+      const bundle = await findPackageBundle(req.params.id);
+      if (!bundle) return res.status(404).json({ error: "Lesson package not found" });
+      const current = governanceRecordForBundle(bundle);
+      if (data.expectedRevision !== current.revision) {
+        return res.status(409).json({ error: "Lesson governance was updated by another session", currentRevision: current.revision });
+      }
+      const evaluation = governanceEvaluationForBundle(bundle, current);
+      if (data.decision === "approved") {
+        const priorGates = GOVERNANCE_GATE_ORDER.slice(0, GOVERNANCE_GATE_ORDER.indexOf(data.gate));
+        const missingPrior = priorGates.filter((gate) => !evaluation.currentApprovals[gate]);
+        if (missingPrior.length > 0) {
+          return res.status(400).json({ error: "Governance gates must be approved in order", missingPriorGates: missingPrior });
+        }
+        const prerequisites = approvalPrerequisite(current, evaluation, data.gate);
+        if (data.gate === "script" && bundle.slides.some((slide) => !String(slide.speakerNotes || "").trim())) {
+          return res.status(400).json({
+            error: "The script gate is not ready for approval",
+            blockers: [{ message: "Every slide requires speaker notes before script approval." }],
+          });
+        }
+        if (prerequisites.length > 0) {
+          return res.status(400).json({ error: `The ${data.gate} gate is not ready for approval`, blockers: prerequisites });
+        }
+      }
+      const now = new Date().toISOString();
+      const gateFingerprint = governanceGateFingerprints(bundle, current)[data.gate];
+      const next = governanceRecordSchema.parse({
+        ...current,
+        revision: current.revision + 1,
+        taxonomyStatus: data.gate === "taxonomy" ? (data.decision === "approved" ? "locked" : "draft") : current.taxonomyStatus,
+        approvals: [{
+          gate: data.gate,
+          decision: data.decision,
+          note: data.note,
+          actorId,
+          actorLabel: req.session.adminUser?.email || "Admin reviewer",
+          decidedAt: now,
+          fingerprint: gateFingerprint,
+        }, ...current.approvals],
+        updatedAt: now,
+      });
+      await db.update(lessonPackages).set({
+        manifest: { ...(bundle.package.manifest || {}), governance: next },
+        updatedAt: new Date(),
+      }).where(eq(lessonPackages.id, req.params.id));
+      await recordReleaseAuditEvent(
+        req.params.id,
+        `governance_${data.gate}_${data.decision}`,
+        `${data.gate} governance gate ${data.decision}.`,
+        { gate: data.gate, decision: data.decision, note: data.note, revision: next.revision, fingerprint: gateFingerprint },
+        actorId,
+      );
+      const updated = await findPackageBundle(req.params.id);
+      res.json({ packageId: req.params.id, ...governancePayload(updated!) });
+    } catch (error) {
+      if (error instanceof z.ZodError) return res.status(400).json({ error: "Invalid governance approval", details: error.errors });
+      console.error("Lesson governance approval error:", error);
+      res.status(500).json({ error: "Failed to record governance approval" });
+    }
+  });
+
   app.get("/api/admin/lesson-builder/packages/:id/assignments", requireAdminSession, async (req: AdminAuthRequest, res: Response) => {
     try {
       await ensureLessonBuilderTables();
@@ -13680,6 +13969,24 @@ export function registerLessonBuilderRoutes(app: Express) {
           rubricSummary,
         },
       });
+      if (data.decision === "approved_for_release" && data.metadata.licensedRn !== true) {
+        return res.status(400).json({
+          error: "Release approval requires an explicit licensed RN attestation",
+          requiredMetadata: { licensedRn: true },
+        });
+      }
+      if (data.decision === "approved_for_release") {
+        const bundle = await findPackageBundle(req.params.id);
+        if (!bundle) return res.status(404).json({ error: "Lesson package not found" });
+        const releasePrerequisiteBlockers = governanceEvaluationForBundle(bundle).blockers
+          .filter((blocker) => !["faculty_review", "licensed_rn_release"].includes(blocker.code));
+        if (releasePrerequisiteBlockers.length > 0) {
+          return res.status(400).json({
+            error: "Release approval is blocked until all authoritative governance and evidence prerequisites pass",
+            blockers: releasePrerequisiteBlockers,
+          });
+        }
+      }
       const result = await recordPackageReview(req.params.id, data, req.session.adminUser?.userId, "faculty");
       if (!result) return res.status(404).json({ error: "Lesson package not found" });
       res.json({ ...result, premiumFeature: true });
@@ -13714,15 +14021,22 @@ export function registerLessonBuilderRoutes(app: Express) {
       const data = packageReviewSchema.parse(req.body || {});
       const bundle = await findPackageBundle(req.params.id);
       if (!bundle) return res.status(404).json({ error: "Lesson package not found" });
-<<<<<<< HEAD
-=======
       if (data.decision === "approved_for_release" && data.metadata.licensedRn !== true) {
         return res.status(400).json({
           error: "Release approval requires an explicit licensed RN attestation",
           requiredMetadata: { licensedRn: true },
         });
       }
->>>>>>> 179d0db8715932c65de403dd73682be39ba43277
+      if (data.decision === "approved_for_release") {
+        const releasePrerequisiteBlockers = governanceEvaluationForBundle(bundle).blockers
+          .filter((blocker) => !["faculty_review", "licensed_rn_release"].includes(blocker.code));
+        if (releasePrerequisiteBlockers.length > 0) {
+          return res.status(400).json({
+            error: "Release approval is blocked until all authoritative governance and evidence prerequisites pass",
+            blockers: releasePrerequisiteBlockers,
+          });
+        }
+      }
 
       const [review] = await db.insert(lessonPackageReviews).values({
         packageId: req.params.id,
@@ -13736,6 +14050,7 @@ export function registerLessonBuilderRoutes(app: Express) {
           packageStatusAtReview: bundle.package.status,
           qaFailCount: Number(bundle.package.qaSummary?.failCount || 0),
           contractFailCount: Number(bundle.package.manifest?.contractValidation?.failCount || 0),
+          governanceFingerprint: governanceFingerprint(bundle),
         },
         createdBy: req.session.adminUser?.userId,
       }).returning();
@@ -13753,14 +14068,11 @@ export function registerLessonBuilderRoutes(app: Express) {
       };
 
       await db.update(lessonPackages).set({
-<<<<<<< HEAD
-=======
         releaseStage: review.decision === "approved_for_release"
           ? "approved"
           : review.decision === "changes_requested"
             ? "draft"
             : "clinical_review",
->>>>>>> 179d0db8715932c65de403dd73682be39ba43277
         manifest: {
           ...(bundle.package.manifest || {}),
           facultyReview: reviewSummary,
@@ -13850,6 +14162,7 @@ export function registerLessonBuilderRoutes(app: Express) {
         .limit(1);
 
       if (!existing) return res.status(404).json({ error: "Lesson slide not found" });
+      const beforeBundle = await findPackageBundle(req.params.id);
 
       const [updated] = await db.update(lessonSlides).set(cleanedUpdateValues({
         title: data.title,
@@ -13864,6 +14177,9 @@ export function registerLessonBuilderRoutes(app: Express) {
       })).where(eq(lessonSlides.id, req.params.slideId)).returning();
 
       const bundle = await markPackageNeedsReview(req.params.id, "slide_edit");
+      if (beforeBundle && bundle) {
+        await recordAutomaticGovernanceInvalidations(req.params.id, beforeBundle, bundle, req.session.adminUser?.userId, "slide_edit");
+      }
       res.json({ slide: updated, package: bundle?.package, reviewStatus: "needs_qa_after_edit" });
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -13987,8 +14303,6 @@ export function registerLessonBuilderRoutes(app: Express) {
       }
       const bundle = await findPackageBundle(req.params.id);
       if (!bundle) return res.status(404).json({ error: "Lesson package not found" });
-<<<<<<< HEAD
-=======
       const alignment = topicSourceAlignment(bundle);
       if (!alignment.valid) {
         return res.status(400).json({ error: "Topic and source evidence do not align", alignment });
@@ -14006,7 +14320,6 @@ export function registerLessonBuilderRoutes(app: Express) {
           requiredReview: { decision: "approved_for_release", metadata: { licensedRn: true } },
         });
       }
->>>>>>> 179d0db8715932c65de403dd73682be39ba43277
       const controlPlane = buildLessonControlPlaneReport(bundle, "harrity");
       if (controlPlane.summary.failCount > 0) {
         return res.status(400).json({
@@ -14019,10 +14332,7 @@ export function registerLessonBuilderRoutes(app: Express) {
 
       const [published] = await db.update(lessonPackages).set({
         status: "published",
-<<<<<<< HEAD
-=======
         releaseStage: "export_ready",
->>>>>>> 179d0db8715932c65de403dd73682be39ba43277
         publishedAt: new Date(),
         updatedAt: new Date(),
       }).where(eq(lessonPackages.id, req.params.id)).returning();
@@ -14037,11 +14347,7 @@ export function registerLessonBuilderRoutes(app: Express) {
         },
       }, req.session.adminUser?.userId);
 
-<<<<<<< HEAD
-      res.json({ package: published, qa, validation, controlPlane, publishConfirmation: { confirmed: true } });
-=======
       res.json({ package: published, qa, validation, controlPlane, alignment, publishConfirmation: { confirmed: true } });
->>>>>>> 179d0db8715932c65de403dd73682be39ba43277
     } catch (error) {
       console.error("Lesson builder publish error:", error);
       res.status(500).json({ error: "Failed to publish lesson package" });
@@ -14187,8 +14493,6 @@ export function registerLessonBuilderRoutes(app: Express) {
       res.status(500).json({ error: "Failed to export lesson package" });
     }
   });
-<<<<<<< HEAD
-=======
 
   app.get("/api/public/nclex-curriculum/status", (_req: Request, res: Response) => {
     res.json(executionStatus());
@@ -14279,5 +14583,4 @@ export function registerLessonBuilderRoutes(app: Express) {
       res.status(500).json({ error: "Failed to build Common Cartridge" });
     }
   });
->>>>>>> 179d0db8715932c65de403dd73682be39ba43277
 }

@@ -932,8 +932,6 @@ export const taxonomyTerms = pgTable("taxonomy_terms", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-<<<<<<< HEAD
-=======
 // Versioned curriculum graph used by the directed-remediation and Canvas export pipeline.
 // Legacy nursing_topics records remain valid and can be linked through alias nodes.
 export const curriculumFrameworks = pgTable("curriculum_frameworks", {
@@ -1041,7 +1039,6 @@ export const curriculumExportJobs = pgTable("curriculum_export_jobs", {
   completedAt: timestamp("completed_at"),
 });
 
->>>>>>> 179d0db8715932c65de403dd73682be39ba43277
 export const sourceTaxonomyMappings = pgTable("source_taxonomy_mappings", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   sourceId: varchar("source_id").references(() => sourceRegistry.id, { onDelete: "cascade" }).notNull(),
@@ -1059,12 +1056,8 @@ export const lessonPackages = pgTable("lesson_packages", {
   title: text("title").notNull(),
   topic: text("topic").notNull(),
   audience: text("audience").notNull().default("Prelicensure RN"),
-<<<<<<< HEAD
-  status: text("status").notNull().default("draft"), // 'draft', 'qa_ready', 'published', 'needs_republish', 'blocked'
-=======
   status: text("status").notNull().default("draft"), // legacy delivery status
   releaseStage: text("release_stage").notNull().default("draft"), // draft, clinical_review, approved, export_ready
->>>>>>> 179d0db8715932c65de403dd73682be39ba43277
   sourceIds: text("source_ids").array().default([]),
   taxonomySnapshot: jsonb("taxonomy_snapshot").$type<Record<string, any>>().default({}),
   deckModel: jsonb("deck_model").$type<Record<string, any>>().default({}),

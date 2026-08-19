@@ -21,11 +21,8 @@
     "smoke:lesson-builder": "node scripts/lesson-builder-release-smoke.mjs",
     "smoke:launch-surfaces": "node scripts/launch-surface-smoke.mjs",
     "smoke:topic-production": "node scripts/topic-production-launch-smoke.mjs",
-<<<<<<< HEAD
-=======
     "build:nclex-curriculum": "tsx scripts/build-nclex-curriculum-exports.mjs",
     "check:nclex-curriculum": "vitest run server/tests/nclex-curriculum.test.ts",
->>>>>>> 179d0db8715932c65de403dd73682be39ba43277
     "ops:hourly-check": "node scripts/hourly-ops-check.mjs",
     "ops:hourly-run": "node scripts/hourly-ops-run.mjs",
     "ops:asset-packet": "node scripts/asset-approval-packet.mjs",
@@ -169,7 +166,7 @@
     "tsx": "^4.19.1",
     "typescript": "5.6.3",
     "vite": "^5.4.19",
-    "vitest": "^4.1.5"
+    "vitest": "^2.1.9"
   },
   "optionalDependencies": {
     "bufferutil": "^4.0.8"

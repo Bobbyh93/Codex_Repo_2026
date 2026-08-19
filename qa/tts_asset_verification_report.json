@@ -1,14 +1,5 @@
 {
   "version": 1,
-<<<<<<< HEAD
-  "status": "pass",
-  "queue_id": "HLB-TTS-ASSET-VERIFICATION-022",
-  "verified_asset_count": 2,
-  "planned_asset_count": 2,
-  "binding_manifest_status": "ready_for_downstream_binding",
-  "secret_values_logged": false,
-  "errors": []
-=======
   "status": "blocked",
   "queue_id": "HLB-TTS-ASSET-VERIFICATION-022",
   "verified_asset_count": 0,
@@ -49,5 +40,4 @@
       }
     }
   ]
->>>>>>> 179d0db8715932c65de403dd73682be39ba43277
 }

@@ -55,16 +55,6 @@ async function main() {
 
   const studentHome = await request("/api/student/home");
   const home = studentHome.payload || {};
-<<<<<<< HEAD
-  record(
-    "student home API",
-    studentHome.status === 200
-      && Array.isArray(home.lessons)
-      && home.lessons.length >= 1
-      && home.featuredLesson?.learnerUrl?.startsWith("/lessons/")
-      && Array.isArray(home.topicTiles)
-      && home.topicTiles.length >= 1,
-=======
   const homeHasPublishedLessons = Array.isArray(home.lessons)
     && home.lessons.length >= 1
     && home.featuredLesson?.learnerUrl?.startsWith("/lessons/")
@@ -80,7 +70,6 @@ async function main() {
     "student home API",
     studentHome.status === 200
       && (homeHasPublishedLessons || homeHasValidEmptyLibrary),
->>>>>>> 179d0db8715932c65de403dd73682be39ba43277
     `status ${studentHome.status}, lessons ${home.lessons?.length || 0}, topics ${home.topicTiles?.length || 0}`
   );
 
@@ -90,11 +79,7 @@ async function main() {
   record(
     "student lessons API learner safe",
     studentLessons.status === 200
-<<<<<<< HEAD
-      && lessons.length >= 1
-=======
       && Array.isArray(studentLessons.payload?.lessons)
->>>>>>> 179d0db8715932c65de403dd73682be39ba43277
       && lessons.every((lesson) => typeof lesson.id === "string" && lesson.learnerUrl?.startsWith("/lessons/"))
       && !/qaSummary|sourceRegistry|sourceManagement|adminOnly/i.test(lessonText),
     `status ${studentLessons.status}, lessons ${lessons.length}`

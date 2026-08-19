@@ -138,12 +138,7 @@ async function run() {
     "student home API",
     studentHome.status === 200
       && isJson(studentHome)
-<<<<<<< HEAD
-      && Boolean(studentHome.payload?.featuredLesson?.id)
-      && studentHomeLessons.length > 0,
-=======
       && Array.isArray(studentHome.payload?.lessons),
->>>>>>> 179d0db8715932c65de403dd73682be39ba43277
     `status ${studentHome.status}, lessons ${studentHomeLessons.length}, featured ${studentHome.payload?.featuredLesson?.id || "missing"}`
   );
 
@@ -154,10 +149,6 @@ async function run() {
     "student lesson library API",
     studentLessons.status === 200
       && isJson(studentLessons)
-<<<<<<< HEAD
-      && studentLessonList.length > 0
-=======
->>>>>>> 179d0db8715932c65de403dd73682be39ba43277
       && studentLessonList.every((lesson) => lesson.learnerUrl && lesson.practiceCount >= 0),
     `status ${studentLessons.status}, lessons ${studentLessonList.length}`
   );
@@ -273,29 +264,14 @@ async function run() {
   const blockers = Array.isArray(readiness.payload?.blockers) ? readiness.payload.blockers : [];
   const failingBlockers = blockers.filter((blocker) => blocker.status === "fail");
   const warningBlockers = blockers.filter((blocker) => blocker.status === "warn");
-<<<<<<< HEAD
-=======
   const pilotReadiness = readiness.payload?.health?.pilotReadiness || {};
   const emptyPreviewLibrary = studentLessonList.length === 0 && Number(pilotReadiness.packageCount || 0) === 0;
->>>>>>> 179d0db8715932c65de403dd73682be39ba43277
   record(
     "release readiness endpoint",
     readiness.status === 200 && isJson(readiness),
     `status ${readiness.status}`
   );
   record(
-<<<<<<< HEAD
-    "no failing release blockers",
-    failingBlockers.length === 0,
-    `${failingBlockers.length} failing blocker(s)`
-  );
-  record(
-    "pilot ready",
-    readiness.payload?.pilotReady === true,
-    `pilotReady=${String(readiness.payload?.pilotReady)}`
-  );
-  const pilotReadiness = readiness.payload?.health?.pilotReadiness || {};
-=======
     "release blockers match preview state",
     failingBlockers.length === 0 || emptyPreviewLibrary,
     emptyPreviewLibrary ? `${failingBlockers.length} expected blocker(s) with no preview packages` : `${failingBlockers.length} failing blocker(s)`
@@ -305,7 +281,6 @@ async function run() {
     readiness.payload?.pilotReady === true || emptyPreviewLibrary,
     emptyPreviewLibrary ? "empty preview library accepted before clinical approval" : `pilotReady=${String(readiness.payload?.pilotReady)}`
   );
->>>>>>> 179d0db8715932c65de403dd73682be39ba43277
   record(
     "official source normalized",
     pilotReadiness.normalizedSourceReady === true && pilotReadiness.officialPilotSourceReady === true,
@@ -313,17 +288,10 @@ async function run() {
   );
   record(
     "assessment bridge attached",
-<<<<<<< HEAD
-    pilotReadiness.assessmentBridgeReady === true,
-    pilotReadiness.assessmentBridge?.weakTopic
-      ? `weak topic ${pilotReadiness.assessmentBridge.weakTopic}`
-      : "missing weak topic bridge"
-=======
     pilotReadiness.assessmentBridgeReady === true || emptyPreviewLibrary,
     pilotReadiness.assessmentBridge?.weakTopic
       ? `weak topic ${pilotReadiness.assessmentBridge.weakTopic}`
       : emptyPreviewLibrary ? "not required until a preview package exists" : "missing weak topic bridge"
->>>>>>> 179d0db8715932c65de403dd73682be39ba43277
   );
   record(
     "active pilot assignment",
@@ -347,13 +315,8 @@ async function run() {
   const latestPackageId = readiness.payload?.latestPublishedPackageId;
   record(
     "published package id available",
-<<<<<<< HEAD
-    typeof latestPackageId === "string" && latestPackageId.length > 0,
-    latestPackageId ? `package ${latestPackageId}` : "missing latestPublishedPackageId"
-=======
     (typeof latestPackageId === "string" && latestPackageId.length > 0) || emptyPreviewLibrary,
     latestPackageId ? `package ${latestPackageId}` : "no published package expected before clinical approval"
->>>>>>> 179d0db8715932c65de403dd73682be39ba43277
   );
 
   if (latestPackageId) {

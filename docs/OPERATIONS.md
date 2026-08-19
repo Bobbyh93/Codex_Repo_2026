@@ -6,10 +6,7 @@ Run:
 
 ```powershell
 python scripts/validate_state.py
-<<<<<<< HEAD
-=======
 python scripts/credential_guard.py
->>>>>>> 179d0db8715932c65de403dd73682be39ba43277
 python scripts/create_daily_workset.py --out-dir daily_worksets
 ```
 
@@ -20,8 +17,6 @@ daily_worksets/YYYY-MM-DD.json
 daily_worksets/YYYY-MM-DD.md
 ```
 
-<<<<<<< HEAD
-=======
 ## Hourly Ops Check
 
 Run:
@@ -49,7 +44,6 @@ the workset, hourly status, credential report, and JSONL log as workflow
 artifacts. It is intentionally read-only against the repository and does not
 publish, deploy, email, or call paid production APIs.
 
->>>>>>> 179d0db8715932c65de403dd73682be39ba43277
 ## Updating State
 
 Update `state/work_queue.json` when a work package changes status. Use these

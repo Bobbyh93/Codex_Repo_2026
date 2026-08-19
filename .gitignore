@@ -1,11 +1,6 @@
-<<<<<<< HEAD
-__pycache__/
-*.py[cod]
-.env
-.env.*
-!.env.example
-=======
 node_modules
+.worktrees/
+.pnpm-store/
 dist
 .DS_Store
 server/public
@@ -27,6 +22,5 @@ attached_assets/documents/*mvp-*.txt
 attached_assets/documents/*mvp-*.txt.metadata.json
 __pycache__/
 *.py[cod]
->>>>>>> 179d0db8715932c65de403dd73682be39ba43277
 *api-key*.txt
 *apikey*.txt

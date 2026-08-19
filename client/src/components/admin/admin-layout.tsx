@@ -4,56 +4,13 @@ import { setCsrfToken, useAdminAuth } from "@/lib/admin-auth";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
-<<<<<<< HEAD
-import {
-  LayoutDashboard,
-  BookOpen,
-  Brain,
-  Database,
-  FileText,
-  Users,
-  Settings,
-  LogOut,
-  ChevronLeft,
-  Menu,
-  Activity,
-  Package,
-  Upload,
-  GitBranch,
-  Search,
-  Bot,
-  Map,
-  BarChart3,
-  Shield,
-  Phone,
-  Rocket
-} from "lucide-react";
-=======
 import { adminMvpNavigation } from "@/lib/mvp-navigation";
 import { Shield, LogOut, ChevronLeft, Menu } from "lucide-react";
->>>>>>> 179d0db8715932c65de403dd73682be39ba43277
 
 interface AdminLayoutProps {
   children: React.ReactNode;
 }
 
-<<<<<<< HEAD
-const navigation = [
-  { name: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
-  { name: "Call Bookings", href: "/admin/call-bookings", icon: Phone },
-  { name: "Pilot Requests", href: "/admin/pilot-requests", icon: Rocket },
-  { name: "Knowledge Base", href: "/admin/knowledge-base", icon: Database },
-  { name: "Content Import", href: "/admin/content-import", icon: Upload },
-  { name: "Topic Matrix", href: "/admin/topic-production", icon: GitBranch },
-  { name: "Content Mapper", href: "/admin/content-mapper", icon: Map },
-  { name: "Lesson Builder", href: "/admin/lesson-builder", icon: Package },
-  { name: "Database Manager", href: "/admin/database", icon: Database },
-  { name: "Resources (post-MVP)", href: "/admin/resources", icon: BookOpen },
-  { name: "Topics Queue (post-MVP)", href: "/admin/topics-queue", icon: Brain },
-];
-
-=======
->>>>>>> 179d0db8715932c65de403dd73682be39ba43277
 export default function AdminLayout({ children }: AdminLayoutProps) {
   const [location, navigate] = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -116,13 +73,10 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     }
   };
 
-<<<<<<< HEAD
-=======
   const activeItem = adminMvpNavigation.find((item) => {
     return location === item.href || (location === "/admin" && item.href === "/admin/dashboard");
   });
 
->>>>>>> 179d0db8715932c65de403dd73682be39ba43277
   if (!isAuthenticated) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-50 p-6">
@@ -140,21 +94,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
   return (
     <div className="flex h-screen bg-gray-50">
-<<<<<<< HEAD
-      {/* Sidebar */}
-      <div
-        className={cn(
-          "flex flex-col bg-slate-900 text-white transition-all duration-300",
-          sidebarOpen ? "w-64" : "w-16"
-        )}
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between h-16 px-4 border-b border-slate-800">
-          {sidebarOpen && (
-            <div className="flex items-center gap-2">
-              <Shield className="h-6 w-6 text-primary" />
-              <span className="font-bold text-lg">Admin Portal</span>
-=======
       <div
         className={cn(
           "flex flex-col bg-slate-950 text-white transition-all duration-300",
@@ -166,7 +105,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             <div className="flex min-w-0 items-center gap-2">
               <Shield className="h-6 w-6 shrink-0 text-primary" />
               <span className="truncate text-lg font-bold">NurseStudy Admin</span>
->>>>>>> 179d0db8715932c65de403dd73682be39ba43277
             </div>
           )}
           <Button
@@ -175,25 +113,12 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             onClick={() => setSidebarOpen(!sidebarOpen)}
             className="text-white hover:bg-slate-800"
             data-testid="button-toggle-sidebar"
-<<<<<<< HEAD
-=======
             aria-label={sidebarOpen ? "Collapse admin sidebar" : "Expand admin sidebar"}
->>>>>>> 179d0db8715932c65de403dd73682be39ba43277
           >
             {sidebarOpen ? <ChevronLeft className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
           </Button>
         </div>
 
-<<<<<<< HEAD
-        {/* Navigation */}
-        <ScrollArea className="flex-1 py-4">
-          <nav className="space-y-1 px-2">
-            {navigation.map((item) => {
-              const isActive = location === item.href;
-              return (
-                <Button
-                  key={item.name}
-=======
         <ScrollArea className="flex-1 py-4">
           <nav className="space-y-1 px-2" aria-label="Admin MVP navigation">
             {adminMvpNavigation.map((item) => {
@@ -202,7 +127,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
               return (
                 <Button
                   key={item.href}
->>>>>>> 179d0db8715932c65de403dd73682be39ba43277
                   variant="ghost"
                   className={cn(
                     "w-full justify-start text-white hover:bg-slate-800",
@@ -210,34 +134,18 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                     !sidebarOpen && "justify-center px-2"
                   )}
                   onClick={() => navigate(item.href)}
-<<<<<<< HEAD
-                  data-testid={`nav-${item.name.toLowerCase().replace(/\s+/g, '-')}`}
-                >
-                  <item.icon className={cn("h-4 w-4", sidebarOpen && "mr-3")} />
-                  {sidebarOpen && <span>{item.name}</span>}
-=======
                   data-testid={`nav-${item.testId}`}
                   aria-current={isActive ? "page" : undefined}
                   title={!sidebarOpen ? item.title : undefined}
                 >
                   <Icon className={cn("h-4 w-4", sidebarOpen && "mr-3")} />
                   {sidebarOpen && <span className="truncate">{item.title}</span>}
->>>>>>> 179d0db8715932c65de403dd73682be39ba43277
                 </Button>
               );
             })}
           </nav>
         </ScrollArea>
 
-<<<<<<< HEAD
-        {/* Footer */}
-        <div className="p-4 border-t border-slate-800">
-          <Button
-            variant="ghost"
-            className="w-full justify-start text-white hover:bg-slate-800"
-            onClick={handleLogout}
-            data-testid="button-admin-logout"
-=======
         <div className="border-t border-slate-800 p-4">
           <Button
             variant="ghost"
@@ -248,7 +156,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             onClick={handleLogout}
             data-testid="button-admin-logout"
             title={!sidebarOpen ? "Logout" : undefined}
->>>>>>> 179d0db8715932c65de403dd73682be39ba43277
           >
             <LogOut className={cn("h-4 w-4", sidebarOpen && "mr-3")} />
             {sidebarOpen && <span>Logout</span>}
@@ -256,28 +163,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         </div>
       </div>
 
-<<<<<<< HEAD
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Top Bar */}
-        <div className="h-16 bg-white border-b flex items-center justify-between px-6">
-          <div className="flex items-center gap-4">
-            <h1 className="text-xl font-semibold">NursePrep Analytics Admin</h1>
-          </div>
-          <div className="flex items-center gap-4">
-            <Button variant="outline" size="sm">
-              <Activity className="h-4 w-4 mr-2" />
-              System Status: Healthy
-            </Button>
-            <Button variant="outline" size="sm">
-              <Search className="h-4 w-4 mr-2" />
-              Quick Search
-            </Button>
-          </div>
-        </div>
-
-        {/* Page Content */}
-=======
       <div className="flex flex-1 flex-col overflow-hidden">
         <div className="flex h-16 items-center justify-between border-b bg-white px-6">
           <div className="min-w-0">
@@ -291,7 +176,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           </div>
         </div>
 
->>>>>>> 179d0db8715932c65de403dd73682be39ba43277
         <ScrollArea className="flex-1">
           <div className="p-6">{children}</div>
         </ScrollArea>

@@ -25,15 +25,12 @@ jobs:
       - name: Validate persistent state
         run: python scripts/validate_state.py
 
-<<<<<<< HEAD
-=======
       - name: Run credential guard
         run: python scripts/credential_guard.py
 
       - name: Validate Nurse Prep web app
         run: python scripts/validate_nurse_prep_web.py
 
->>>>>>> 179d0db8715932c65de403dd73682be39ba43277
       - name: Generate daily workset
         run: python scripts/create_daily_workset.py --out-dir daily_worksets
 

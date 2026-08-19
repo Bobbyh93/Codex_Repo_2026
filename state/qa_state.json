@@ -14,11 +14,7 @@
     },
     {
       "gate": "openai_tts_live_execution",
-<<<<<<< HEAD
-      "status": "pass",
-=======
       "status": "blocked",
->>>>>>> 179d0db8715932c65de403dd73682be39ba43277
       "required_evidence": "Credential-backed MP3 generation report with no secrets serialized"
     },
     {
@@ -35,24 +31,6 @@
       "gate": "video_release",
       "status": "blocked",
       "required_evidence": "Machine QA and target-player playback evidence against exact checksum"
-<<<<<<< HEAD
-    },
-    {
-      "gate": "source_grounded_production_pilot",
-      "status": "pilot_audio_pass_playback_blocked",
-      "required_evidence": "qa/production_pilot_release_report.json"
-    },
-    {
-      "gate": "production_pilot_playback_evidence",
-      "status": "blocked",
-      "required_evidence": "qa/production_pilot_playback_report.json reaches playback_pass"
-    },
-    {
-      "gate": "nurse_prep_web_production_pilot_integration",
-      "status": "pass",
-      "required_evidence": "scripts/validate_nurse_prep_web.py passes with production pilot artifacts"
-=======
->>>>>>> 179d0db8715932c65de403dd73682be39ba43277
     }
   ]
 }
