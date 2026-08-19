@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "queue_id": "HLB-TTS-ASSET-VERIFICATION-022",
+  "purpose": "Two-slide credential-backed TTS asset verification pilot for the Harrity Lesson Builder Pipeline.",
+  "status": "approved_for_tts_asset_verification",
+  "default_model": "gpt-4o-mini-tts",
+  "default_voice": "marin",
+  "response_format": "mp3",
+  "requests": [
+    {
+      "slide_id": "S01",
+      "slide_number": 1,
+      "slide_title": "Pipeline Readiness Check",
+      "tts_text": "This is the Harrity Lesson Builder audio verification pilot. This slide confirms that approved narration text can be converted into one verified MP3 file for a stable slide identifier.",
+      "voice": "marin",
+      "instructions": "Speak clearly in a calm nursing educator voice. Use a professional pace and neutral clinical training tone.",
+      "output_filename": "S01_pipeline_readiness_check.mp3",
+      "approved_for_tts": true,
+      "content_status": "asset_verification_text",
+      "human_review_status": "approved_for_asset_verification"
+    },
+    {
+      "slide_id": "S02",
+      "slide_number": 2,
+      "slide_title": "Release Gate Reminder",
+      "tts_text": "A generated audio file is not a release by itself. The pipeline must record checksums, duration, quality review, binding evidence, and playback evidence before final export.",
+      "voice": "marin",
+      "instructions": "Speak clearly in a calm nursing educator voice. Emphasize that release requires verification evidence.",
+      "output_filename": "S02_release_gate_reminder.mp3",
+      "approved_for_tts": true,
+      "content_status": "asset_verification_text",
+      "human_review_status": "approved_for_asset_verification"
+    }
+  ]
+}

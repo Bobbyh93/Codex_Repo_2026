@@ -1,5 +1,6 @@
 {
   "version": 1,
+<<<<<<< HEAD
   "run_at": "2026-07-20T03:09:28.268184+00:00",
   "date": "2026-07-20",
   "status": "blocked_or_planning_only",
@@ -9,6 +10,17 @@
     "status": "blocked",
     "priority": 3,
     "owner": "Codex"
+=======
+  "run_at": "2026-07-15T02:21:22.073877+00:00",
+  "date": "2026-07-15",
+  "status": "blocked_or_planning_only",
+  "selected_work_package": {
+    "id": "HLB-TTS-ASSET-VERIFICATION-022",
+    "title": "Verify credential-backed OpenAI TTS assets",
+    "status": "blocked",
+    "priority": 2,
+    "owner": "Codex + OpenAI Platform runtime"
+>>>>>>> 179d0db8715932c65de403dd73682be39ba43277
   },
   "checks": {
     "credential_guard": {
@@ -22,7 +34,11 @@
     },
     "daily_workset": {
       "status": "blocked_or_planning_only",
+<<<<<<< HEAD
       "active_blocker_count": 9
+=======
+      "active_blocker_count": 7
+>>>>>>> 179d0db8715932c65de403dd73682be39ba43277
     },
     "nurse_prep_web_app": {
       "status": "pass",
@@ -33,16 +49,28 @@
     "paid_ai_actions_allowed": false,
     "max_next_paid_retry_dollars": "0.00",
     "user_budget_checkpoint_dollars": "100.00",
+<<<<<<< HEAD
     "reason": "Selected work package is not ready for bounded execution.",
     "blocked_paid_actions": [
       "paid_ai_generation",
       "paid_audio_generation"
+=======
+    "reason": "OpenAI authenticated probe returned invalid_api_key; do not spend on another live TTS retry until the key is replaced and a cheap runtime probe passes.",
+    "blocked_paid_actions": [
+      "openai_tts_live_execution"
+>>>>>>> 179d0db8715932c65de403dd73682be39ba43277
     ]
   },
   "next_actions": [
     "Do not run live paid OpenAI generation during this hourly cycle.",
+<<<<<<< HEAD
     "Resolve or update blockers for HLB-PRODUCTION-PILOT-019 before downstream binding work.",
     "Resolve or update blockers for HLB-PRODUCTION-PILOT-019.",
+=======
+    "Replace and verify OPENAI_API_KEY with a cheap runtime probe before retrying live TTS.",
+    "Resolve or update blockers for HLB-TTS-ASSET-VERIFICATION-022 before downstream binding work.",
+    "Resolve or update blockers for HLB-TTS-ASSET-VERIFICATION-022.",
+>>>>>>> 179d0db8715932c65de403dd73682be39ba43277
     "Commit any missing source manifests, request queues, or QA evidence required by the selected work package.",
     "Rerun scripts/validate_state.py and scripts/create_daily_workset.py after blockers change."
   ],

@@ -8,6 +8,7 @@
     "branch": "main"
   },
   "status": "blocked_or_planning_only",
+<<<<<<< HEAD
   "active_stage": "production_pilot_media_binding",
   "next_stage": "deck_or_video_playback_evidence",
   "selected_work_package": {
@@ -52,6 +53,43 @@
     "google_slides_audio_binding: Drive upload, Slides readback, notes parity, and playback evidence",
     "video_release: Machine QA and target-player playback evidence against exact checksum",
     "production_pilot_playback_evidence: qa/production_pilot_playback_report.json reaches playback_pass",
+=======
+  "active_stage": "tts_asset_verification",
+  "next_stage": "credential_backed_openai_tts_assets",
+  "selected_work_package": {
+    "id": "HLB-TTS-ASSET-VERIFICATION-022",
+    "title": "Verify credential-backed OpenAI TTS assets",
+    "status": "blocked",
+    "priority": 2,
+    "owner": "Codex + OpenAI Platform runtime",
+    "summary": "Execute a two-slide live TTS pilot only after an approved request queue and OPENAI_API_KEY are present in the runner.",
+    "acceptance_criteria": [
+      "Two authentic narration MP3 files decode successfully.",
+      "Every asset maps to one stable slide_id and one frozen request fingerprint.",
+      "No credentials appear in artifacts or logs.",
+      "Request identifiers, model, voice, timestamp, bytes, checksum, codec, and duration are recorded.",
+      "Human review passes pronunciation, intelligibility, pacing, and terminology.",
+      "Only verified audio assets enter the binding manifest."
+    ],
+    "blockers": [
+      "OpenAI authenticated probe failed with invalid_api_key; replace the local OPENAI_API_KEY and rerun scripts/openai_tts_live_pilot.py --live.",
+      "No authentic MP3 assets exist for codec, checksum, duration, loudness, silence, or clipping analysis."
+    ],
+    "outputs": [
+      "manifests/tts_execution_report.json",
+      "manifests/audio_manifest.json",
+      "manifests/binding_manifest.json",
+      "qa/tts_asset_verification_report.json"
+    ]
+  },
+  "active_blockers": [
+    "OpenAI authenticated probe failed with invalid_api_key; replace the local OPENAI_API_KEY and rerun scripts/openai_tts_live_pilot.py --live.",
+    "No authentic MP3 assets exist for codec, checksum, duration, loudness, silence, or clipping analysis.",
+    "openai_tts_live_execution: Credential-backed MP3 generation report with no secrets serialized",
+    "pptx_audio_binding: Embedded media, native playback configuration, and PowerPoint playback evidence",
+    "google_slides_audio_binding: Drive upload, Slides readback, notes parity, and playback evidence",
+    "video_release: Machine QA and target-player playback evidence against exact checksum",
+>>>>>>> 179d0db8715932c65de403dd73682be39ba43277
     "release_state=not_ready: export_pass is not allowed"
   ],
   "daily_instructions": [
@@ -63,7 +101,11 @@
     "Do not publish, deploy, email, or mutate external systems without explicit approval."
   ],
   "recommended_actions": [
+<<<<<<< HEAD
     "Resolve or update blockers for HLB-PRODUCTION-PILOT-019.",
+=======
+    "Resolve or update blockers for HLB-TTS-ASSET-VERIFICATION-022.",
+>>>>>>> 179d0db8715932c65de403dd73682be39ba43277
     "Commit any missing source manifests, request queues, or QA evidence required by the selected work package.",
     "Rerun scripts/validate_state.py and scripts/create_daily_workset.py after blockers change."
   ],

@@ -1298,15 +1298,47 @@ async function run() {
         confirmationText: publicPublishConfirmationText,
       },
     });
+<<<<<<< HEAD
     record(
       `final publish endpoint: ${publishCandidate.Topic}`,
       publishResult.status === 200
         && publishResult.payload?.package?.status === "published"
         && publishResult.payload?.publishConfirmation?.confirmed === true,
+=======
+    const clinicalReviewBlocked = publishResult.status === 400
+      && publishResult.payload?.error !== "Publish confirmation required";
+    record(
+      clinicalReviewBlocked
+        ? `unreviewed publish blocked by release gates: ${publishCandidate.Topic}`
+        : `final publish endpoint: ${publishCandidate.Topic}`,
+      clinicalReviewBlocked || (
+        publishResult.status === 200
+          && publishResult.payload?.package?.status === "published"
+          && publishResult.payload?.publishConfirmation?.confirmed === true
+      ),
+>>>>>>> 179d0db8715932c65de403dd73682be39ba43277
       `status ${publishResult.status}`
     );
 
     const publicLesson = await request(`/api/lessons/${encodeURIComponent(String(publishPackageId))}`);
+<<<<<<< HEAD
+=======
+    if (clinicalReviewBlocked) {
+      assertRecord(
+        `unreviewed package remains hidden: ${publishCandidate.Topic}`,
+        publicLesson.status === 404,
+        `status ${publicLesson.status}`
+      );
+      console.log(JSON.stringify({
+        target: baseUrl,
+        mode: "clinical_review_publish_guard",
+        packageId: publishPackageId,
+        releaseStage: publishResult.payload?.releaseStage || "clinical_review",
+        checks: results,
+      }, null, 2));
+      return;
+    }
+>>>>>>> 179d0db8715932c65de403dd73682be39ba43277
     assertRecord(
       `public lesson loads after publish: ${publishCandidate.Topic}`,
       publicLesson.status === 200

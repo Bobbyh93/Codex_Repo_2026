@@ -89,7 +89,11 @@ def recommended_hourly_actions(workset: dict[str, Any], cost_guard: dict[str, An
     if not cost_guard["paid_ai_actions_allowed"]:
         actions.append("Do not run live paid OpenAI generation during this hourly cycle.")
 
+<<<<<<< HEAD
     if "openai_tts_live_execution" in cost_guard.get("blocked_paid_actions", []):
+=======
+    if cost_guard.get("blocked_paid_actions"):
+>>>>>>> 179d0db8715932c65de403dd73682be39ba43277
         actions.append("Replace and verify OPENAI_API_KEY with a cheap runtime probe before retrying live TTS.")
 
     if selected.get("blockers"):

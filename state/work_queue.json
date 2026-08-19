@@ -30,7 +30,11 @@
     {
       "id": "HLB-TTS-ASSET-VERIFICATION-022",
       "title": "Verify credential-backed OpenAI TTS assets",
+<<<<<<< HEAD
       "status": "complete",
+=======
+      "status": "blocked",
+>>>>>>> 179d0db8715932c65de403dd73682be39ba43277
       "priority": 2,
       "owner": "Codex + OpenAI Platform runtime",
       "summary": "Execute a two-slide live TTS pilot only after an approved request queue and OPENAI_API_KEY are present in the runner.",
@@ -42,7 +46,14 @@
         "Human review passes pronunciation, intelligibility, pacing, and terminology.",
         "Only verified audio assets enter the binding manifest."
       ],
+<<<<<<< HEAD
       "blockers": [],
+=======
+      "blockers": [
+        "OpenAI authenticated probe failed with invalid_api_key; replace the local OPENAI_API_KEY and rerun scripts/openai_tts_live_pilot.py --live.",
+        "No authentic MP3 assets exist for codec, checksum, duration, loudness, silence, or clipping analysis."
+      ],
+>>>>>>> 179d0db8715932c65de403dd73682be39ba43277
       "outputs": [
         "manifests/tts_execution_report.json",
         "manifests/audio_manifest.json",
@@ -74,6 +85,7 @@
       ]
     },
     {
+<<<<<<< HEAD
       "id": "NP-WEB-002",
       "title": "Integrate OpenAI TTS production pilot telemetry",
       "status": "complete",
@@ -123,6 +135,8 @@
       ]
     },
     {
+=======
+>>>>>>> 179d0db8715932c65de403dd73682be39ba43277
       "id": "HLB-PRODUCTION-PILOT-019",
       "title": "Run an end-to-end source-grounded production lesson pilot",
       "status": "blocked",
@@ -138,6 +152,7 @@
         "No blocker or major defects remain."
       ],
       "blockers": [
+<<<<<<< HEAD
         "ffmpeg/ffprobe not available, so MP4 assembly and stream QA were not executed.",
         "Release playback path has not been selected.",
         "Final artifact path and checksum are not recorded.",
@@ -151,6 +166,15 @@
         "manifests/production_pilot_binding_manifest.json",
         "qa/production_pilot_playback_evidence.json",
         "qa/production_pilot_playback_report.json",
+=======
+        "Production source package has not been selected.",
+        "Live OpenAI narration is not yet verified.",
+        "Target playback environment has not been selected."
+      ],
+      "outputs": [
+        "lessons/production_pilot/lesson_spec.json",
+        "audio/production_pilot/*.mp3",
+>>>>>>> 179d0db8715932c65de403dd73682be39ba43277
         "video/production_pilot/lesson_video.mp4",
         "qa/production_pilot_release_report.json"
       ]

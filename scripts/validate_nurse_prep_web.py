@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
+<<<<<<< HEAD
 """Validate the dependency-free Nurse Prep EB web app scaffold."""
+=======
+"""Validate the dependency-free Open NCLEX curriculum dashboard."""
+>>>>>>> 179d0db8715932c65de403dd73682be39ba43277
 
 from __future__ import annotations
 
@@ -9,6 +13,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 APP_DIR = ROOT / "apps" / "nurse-prep-web"
+<<<<<<< HEAD
 REQUIRED_FILES = ["index.html", "styles.css", "app.js", "README.md"]
 REQUIRED_DATA_SOURCES = [
     "/state/project_state.json",
@@ -42,6 +47,9 @@ REQUIRED_DOM_IDS = [
     'id="productionPilotAssets"',
     'id="productionPilotBlockers"',
 ]
+=======
+REQUIRED_FILES = ["index.html", "styles.css", "app.js", "README.md", "data/execution-status.json"]
+>>>>>>> 179d0db8715932c65de403dd73682be39ba43277
 
 
 class ScriptAndLinkParser(HTMLParser):
@@ -78,6 +86,7 @@ def validate_app(app_dir: Path = APP_DIR) -> list[str]:
         if src.startswith("./") and not (app_dir / src[2:]).exists():
             errors.append(f"Missing script referenced by index.html: {src}")
 
+<<<<<<< HEAD
     index_html = index_path.read_text(encoding="utf-8")
     app_js = (app_dir / "app.js").read_text(encoding="utf-8")
     for source in REQUIRED_DATA_SOURCES:
@@ -91,6 +100,17 @@ def validate_app(app_dir: Path = APP_DIR) -> list[str]:
     for marker in REQUIRED_DOM_IDS:
         if marker not in index_html:
             errors.append(f"Missing production pilot DOM marker in index.html: {marker}")
+=======
+    app_js = (app_dir / "app.js").read_text(encoding="utf-8")
+    for source in ["./data/execution-status.json"]:
+        if source not in app_js:
+            errors.append(f"Missing data source reference in app.js: {source}")
+
+    obsolete_terms = ["TTS Pilot", "invalid_api_key", "video_release"]
+    for term in obsolete_terms:
+        if term in app_js or term in index_path.read_text(encoding="utf-8"):
+            errors.append(f"Obsolete media-pipeline surface remains in curriculum dashboard: {term}")
+>>>>>>> 179d0db8715932c65de403dd73682be39ba43277
 
     combined = "\n".join((app_dir / filename).read_text(encoding="utf-8", errors="ignore") for filename in REQUIRED_FILES)
     for term in ["OPENAI_API_KEY=", "sk-proj-", "sk-"]:

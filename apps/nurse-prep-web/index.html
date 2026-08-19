@@ -3,6 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+<<<<<<< HEAD
     <title>Nurse Prep EB Workbench</title>
     <link rel="stylesheet" href="./styles.css" />
   </head>
@@ -131,6 +132,80 @@
             <div id="artifactMap" class="artifact-grid"></div>
           </article>
         </section>
+=======
+    <meta name="description" content="Read-only execution dashboard for the Open NCLEX-RN 2026 curriculum." />
+    <title>Open NCLEX Curriculum Workbench</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%231d2521'/%3E%3Ctext x='32' y='40' text-anchor='middle' font-family='Arial' font-size='24' font-weight='700' fill='white'%3ENS%3C/text%3E%3C/svg%3E" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#mainContent">Skip to curriculum status</a>
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="Curriculum navigation">
+        <div class="brand-block">
+          <div class="brand-mark" aria-hidden="true">NS</div>
+          <div><p class="eyebrow">NurseStudy</p><h1>Curriculum Workbench</h1></div>
+        </div>
+        <nav class="nav-list" aria-label="Primary">
+          <a href="#overview" class="active">Overview</a>
+          <a href="#coverage">Framework Coverage</a>
+          <a href="#production">Production Batches</a>
+          <a href="#review">Clinical Review</a>
+          <a href="#exports">Canvas Exports</a>
+        </nav>
+        <section class="sidebar-panel" aria-live="polite">
+          <p class="panel-label">Release stage</p>
+          <strong id="releaseState">Loading</strong>
+          <span id="releaseHint">Reading canonical curriculum status</span>
+        </section>
+      </aside>
+
+      <main class="main" id="mainContent">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">NCLEX-RN 2026</p>
+            <h2>Open curriculum execution</h2>
+            <p class="lede">Coverage, evidence, faculty review, remediation readiness, and Canvas portability from one canonical curriculum graph.</p>
+          </div>
+          <div class="topbar-actions"><button id="refreshButton" type="button">Refresh status</button><a href="../../README.md">Repository</a></div>
+        </header>
+
+        <section id="overview" class="metrics-grid" aria-label="Curriculum metrics">
+          <article class="metric accent-green"><span>Client Needs coverage</span><strong id="categoryCoverage">-</strong><p id="categorySummary">Loading framework</p></article>
+          <article class="metric accent-gold"><span>Clinical review</span><strong id="reviewCount">-</strong><p id="reviewSummary">Loading review queue</p></article>
+          <article class="metric accent-coral"><span>Assessment items</span><strong id="assessmentCount">-</strong><p id="assessmentSummary">Loading content inventory</p></article>
+          <article class="metric accent-blue"><span>Portable exports</span><strong id="exportCount">-</strong><p id="exportSummary">Loading export status</p></article>
+        </section>
+
+        <section class="content-grid">
+          <article id="coverage" class="panel wide">
+            <div class="panel-header"><div><p class="eyebrow">Canonical graph</p><h3>Framework coverage</h3></div><span id="validationStatus" class="status-pill">Loading</span></div>
+            <div id="coverageGrid" class="coverage-grid"></div>
+          </article>
+          <article class="panel">
+            <div class="panel-header"><div><p class="eyebrow">Safety</p><h3>Release gates</h3></div></div>
+            <div id="releaseGates" class="stack-list"></div>
+          </article>
+          <article id="production" class="panel wide">
+            <div class="panel-header"><div><p class="eyebrow">Execution</p><h3>Content-production batches</h3></div></div>
+            <div id="productionBatches" class="queue-list"></div>
+          </article>
+          <article id="review" class="panel">
+            <div class="panel-header"><div><p class="eyebrow">Faculty workflow</p><h3>Clinical review queue</h3></div></div>
+            <div id="reviewQueue" class="stack-list"></div>
+          </article>
+          <article class="panel wide">
+            <div class="panel-header"><div><p class="eyebrow">Evidence</p><h3>Source readiness</h3></div></div>
+            <div id="sourceReadiness" class="source-layout"></div>
+          </article>
+          <article id="exports" class="panel">
+            <div class="panel-header"><div><p class="eyebrow">Canvas portability</p><h3>Export artifacts</h3></div></div>
+            <div id="exportList" class="stack-list"></div>
+          </article>
+        </section>
+
+        <footer class="footer-note"><span id="generatedAt">Status timestamp unavailable</span><span id="privacyNote">Aggregate curriculum status only.</span></footer>
+>>>>>>> 179d0db8715932c65de403dd73682be39ba43277
       </main>
     </div>
     <script src="./app.js" type="module"></script>

@@ -1,5 +1,6 @@
 {
   "version": 1,
+<<<<<<< HEAD
   "status": "ready_for_downstream_binding",
   "created_at": "2026-07-15T02:26:02.156579+00:00",
   "bindings": [
@@ -22,4 +23,9 @@
       "binding_status": "ready_for_downstream_binding"
     }
   ]
+=======
+  "status": "blocked",
+  "created_at": "2026-07-15T01:53:15.299250+00:00",
+  "bindings": []
+>>>>>>> 179d0db8715932c65de403dd73682be39ba43277
 }

@@ -47,11 +47,19 @@ def load_dotenv(path: Path) -> None:
     if not path.exists():
         return
     for line in path.read_text(encoding="utf-8").splitlines():
+<<<<<<< HEAD
         stripped = line.strip().lstrip("\ufeff")
         if not stripped or stripped.startswith("#") or "=" not in stripped:
             continue
         key, value = stripped.split("=", 1)
         os.environ[key.strip()] = value.strip()
+=======
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#") or "=" not in stripped:
+            continue
+        key, value = stripped.split("=", 1)
+        os.environ.setdefault(key.strip(), value.strip())
+>>>>>>> 179d0db8715932c65de403dd73682be39ba43277
 
 
 def sha256_bytes(data: bytes) -> str:
@@ -360,6 +368,7 @@ def write_json(path: Path, payload: Any) -> None:
 
 def main() -> int:
     args = parse_args()
+<<<<<<< HEAD
     queue_path = args.queue if args.queue.is_absolute() else ROOT / args.queue
     audio_dir = args.audio_dir if args.audio_dir.is_absolute() else ROOT / args.audio_dir
     manifest_path = args.manifest if args.manifest.is_absolute() else ROOT / args.manifest
@@ -376,6 +385,17 @@ def main() -> int:
     write_json(binding_manifest_path, binding_manifest)
     write_json(
         report_path,
+=======
+    queue = json.loads(args.queue.read_text(encoding="utf-8"))
+    result = process_queue(queue, args.audio_dir, args.live)
+    binding_manifest = build_binding_manifest(result)
+
+    write_json(args.execution_report, result)
+    write_json(args.manifest, {"version": 1, "audio_assets": result.get("records", [])})
+    write_json(args.binding_manifest, binding_manifest)
+    write_json(
+        args.report,
+>>>>>>> 179d0db8715932c65de403dd73682be39ba43277
         {
             "version": 1,
             "status": result["status"],
@@ -389,8 +409,13 @@ def main() -> int:
     )
 
     print(f"TTS pilot status: {result['status']}")
+<<<<<<< HEAD
     print(f"Wrote {execution_report_path}")
     print(f"Wrote {report_path}")
+=======
+    print(f"Wrote {args.execution_report}")
+    print(f"Wrote {args.report}")
+>>>>>>> 179d0db8715932c65de403dd73682be39ba43277
     return 0 if result["status"] in {"pass", "planned"} else 1
 
 

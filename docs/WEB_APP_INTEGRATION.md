@@ -15,6 +15,7 @@ The Nurse Prep EB Workbench gives the current pipeline a readable operational fr
 | `state/pipeline_state.json` | Current stage and runtime context |
 | `manifests/openai_runtime_check.json` | OpenAI runtime status |
 | `qa/tts_asset_verification_report.json` | TTS pilot status |
+<<<<<<< HEAD
 | `qa/production_pilot_release_report.json` | Source-grounded production pilot release state |
 | `qa/production_pilot_tts_report.json` | Production pilot OpenAI TTS verification summary |
 | `manifests/production_pilot_audio_manifest.json` | Per-slide OpenAI MP3 asset evidence |
@@ -23,12 +24,15 @@ The Nurse Prep EB Workbench gives the current pipeline a readable operational fr
 | `lessons/production_pilot/source_manifest.json` | Approved local source package for the pilot |
 | `qa/production_pilot_playback_evidence.json` | Target-player playback evidence input |
 | `qa/production_pilot_playback_report.json` | Playback release gate result |
+=======
+>>>>>>> 179d0db8715932c65de403dd73682be39ba43277
 | `daily_worksets/*.json` | Current daily work order |
 
 ## Design Boundary
 
 This is an operations web app, not a marketing page. It prioritizes dense status, blocker visibility, traceable artifacts, and daily execution handoff.
 
+<<<<<<< HEAD
 ## OpenAI TTS Pilot Integration
 
 The workbench now treats `scripts/openai_tts_live_pilot.py` outputs as operational evidence rather than hidden backend files. The Production Pilot panel summarizes the source-grounded lesson, verified OpenAI narration count, binding readiness, and remaining playback blockers without exposing request credentials or key material.
@@ -48,3 +52,11 @@ Each playback record must identify the tested artifact checksum, player/applicat
 - Fill target-player playback evidence for the selected release path.
 - Add a source package selector for additional nursing topics.
 - Add deck/video preview links after playback artifacts are generated and verified.
+=======
+## Next Integrations
+
+- Add a committed production source package selector.
+- Add an approved `lesson_spec.json` view once the first source-grounded pilot is ready.
+- Add a TTS asset table after a valid OpenAI key produces MP3s.
+- Add playback evidence cards for video, PowerPoint, and LMS release paths.
+>>>>>>> 179d0db8715932c65de403dd73682be39ba43277

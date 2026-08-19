@@ -23,6 +23,21 @@ body {
 }
 a { color: inherit; text-decoration: none; }
 button, a { font: inherit; }
+<<<<<<< HEAD
+=======
+.skip-link {
+  position: fixed;
+  z-index: 10;
+  top: 8px;
+  left: 8px;
+  transform: translateY(-150%);
+  border-radius: 6px;
+  background: var(--ink);
+  color: white;
+  padding: 9px 12px;
+}
+.skip-link:focus { transform: translateY(0); }
+>>>>>>> 179d0db8715932c65de403dd73682be39ba43277
 .app-shell {
   display: grid;
   grid-template-columns: 280px minmax(0, 1fr);
@@ -62,6 +77,10 @@ h1, h2, h3 { margin: 0; line-height: 1.12; letter-spacing: 0; }
 h1 { font-size: 1.05rem; }
 h2 { font-size: clamp(1.4rem, 2vw, 2rem); }
 h3 { font-size: 1rem; }
+<<<<<<< HEAD
+=======
+.lede { max-width: 760px; margin: 7px 0 0; color: var(--muted); line-height: 1.45; }
+>>>>>>> 179d0db8715932c65de403dd73682be39ba43277
 .nav-list { display: grid; gap: 4px; }
 .nav-list a {
   padding: 10px 12px;
@@ -162,7 +181,26 @@ h3 { font-size: 1rem; }
 .status-pass { color: var(--green); border-color: rgba(38, 116, 91, 0.32); }
 .status-blocked { color: var(--coral); border-color: rgba(185, 83, 69, 0.32); }
 .status-planned { color: var(--gold); border-color: rgba(164, 111, 22, 0.32); }
+<<<<<<< HEAD
 .workset-body, .stack-list, .queue-list, .artifact-grid, .pilot-summary { display: grid; gap: 8px; }
+=======
+.coverage-grid { display: grid; gap: 14px; }
+.coverage-item > div:first-child { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 7px; }
+.coverage-item span { color: var(--muted); font-variant-numeric: tabular-nums; }
+.progress { height: 8px; overflow: hidden; border-radius: 999px; background: var(--surface-2); }
+.progress > span { display: block; height: 100%; border-radius: inherit; background: var(--green); }
+.review-row, .export-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.review-row b { color: var(--green); font-size: 1.05rem; }
+.source-layout { display: grid; gap: 16px; }
+.source-metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.source-metrics > div { border-left: 3px solid var(--green); padding: 8px 12px; background: var(--surface-2); }
+.source-metrics strong { display: block; font-size: 1.35rem; }
+.source-metrics span { color: var(--muted); font-size: 0.8rem; }
+.policy-note { border: 1px solid var(--line); border-radius: 8px; padding: 14px; }
+.policy-note p { margin: 5px 0 0; color: var(--muted); line-height: 1.45; }
+.footer-note { display: flex; justify-content: space-between; gap: 18px; padding: 18px 2px 0; color: var(--muted); font-size: 0.76rem; }
+.workset-body, .stack-list, .queue-list, .artifact-grid { display: grid; gap: 8px; }
+>>>>>>> 179d0db8715932c65de403dd73682be39ba43277
 .workset-body p { margin: 0; color: var(--muted); line-height: 1.45; }
 .queue-item, .gate-item, .artifact-item {
   border: 1px solid var(--line);
@@ -179,6 +217,7 @@ h3 { font-size: 1rem; }
 .queue-item strong, .gate-item strong, .artifact-item strong { display: block; margin-bottom: 4px; }
 .queue-item p, .gate-item p, .artifact-item p { margin: 0; color: var(--muted); line-height: 1.4; }
 .artifact-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+<<<<<<< HEAD
 .pilot-summary {
   grid-template-columns: repeat(3, minmax(0, 1fr));
   margin-bottom: 10px;
@@ -203,6 +242,8 @@ h3 { font-size: 1rem; }
   overflow-wrap: anywhere;
 }
 .pilot-assets { margin-bottom: 8px; }
+=======
+>>>>>>> 179d0db8715932c65de403dd73682be39ba43277
 .empty-state {
   color: var(--muted);
   border: 1px dashed var(--line);
@@ -217,5 +258,11 @@ h3 { font-size: 1rem; }
 @media (max-width: 720px) {
   .main, .sidebar { padding: 16px; }
   .topbar, .queue-item { grid-template-columns: 1fr; display: grid; }
+<<<<<<< HEAD
   .metrics-grid, .content-grid, .artifact-grid, .pilot-summary { grid-template-columns: 1fr; }
+=======
+  .metrics-grid, .content-grid, .artifact-grid { grid-template-columns: 1fr; }
+  .source-metrics { grid-template-columns: 1fr; }
+  .footer-note { flex-direction: column; }
+>>>>>>> 179d0db8715932c65de403dd73682be39ba43277
 }

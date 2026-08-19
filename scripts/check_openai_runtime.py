@@ -14,6 +14,7 @@ ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_REPORT = ROOT / "manifests" / "openai_runtime_check.json"
 
 
+<<<<<<< HEAD
 def load_dotenv(path: Path) -> None:
     if not path.exists():
         return
@@ -27,6 +28,9 @@ def load_dotenv(path: Path) -> None:
 
 def check_runtime() -> dict[str, object]:
     load_dotenv(ROOT / ".env")
+=======
+def check_runtime() -> dict[str, object]:
+>>>>>>> 179d0db8715932c65de403dd73682be39ba43277
     api_key = os.environ.get("OPENAI_API_KEY", "")
     model = os.environ.get("OPENAI_TTS_MODEL", "gpt-4o-mini-tts")
     voice = os.environ.get("OPENAI_TTS_VOICE", "marin")

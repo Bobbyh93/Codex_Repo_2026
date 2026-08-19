@@ -1,5 +1,6 @@
 {
   "version": 1,
+<<<<<<< HEAD
   "status": "pass",
   "queue_id": "HLB-TTS-ASSET-VERIFICATION-022",
   "verified_asset_count": 2,
@@ -7,4 +8,46 @@
   "binding_manifest_status": "ready_for_downstream_binding",
   "secret_values_logged": false,
   "errors": []
+=======
+  "status": "blocked",
+  "queue_id": "HLB-TTS-ASSET-VERIFICATION-022",
+  "verified_asset_count": 0,
+  "planned_asset_count": 2,
+  "binding_manifest_status": "blocked",
+  "secret_values_logged": false,
+  "errors": [
+    {
+      "slide_id": "S01",
+      "error": {
+        "status": 401,
+        "reason": "Unauthorized",
+        "body": {
+          "error": {
+            "type": "invalid_request_error",
+            "code": "invalid_api_key",
+            "param": null,
+            "message_redacted": true
+          }
+        },
+        "credential_logged": false
+      }
+    },
+    {
+      "slide_id": "S02",
+      "error": {
+        "status": 401,
+        "reason": "Unauthorized",
+        "body": {
+          "error": {
+            "type": "invalid_request_error",
+            "code": "invalid_api_key",
+            "param": null,
+            "message_redacted": true
+          }
+        },
+        "credential_logged": false
+      }
+    }
+  ]
+>>>>>>> 179d0db8715932c65de403dd73682be39ba43277
 }

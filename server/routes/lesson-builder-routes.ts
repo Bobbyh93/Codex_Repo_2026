@@ -6,9 +6,29 @@ import OpenAI from "openai";
 import { z } from "zod";
 import { and, asc, desc, eq, ilike, inArray, sql } from "drizzle-orm";
 import { db } from "../db";
+<<<<<<< HEAD
 import { requireAdminSession, validateCSRFToken, type AdminAuthRequest } from "../admin-auth-session";
 import {
   contentBlocks,
+=======
+import { buildDirectedRemediationPlan } from "../directed-remediation-engine";
+import {
+  canvasOutcomesCsv,
+  commonCartridgeArchive,
+  curriculumManifest,
+  executionStatus,
+  pathwayRulesManifest,
+  qtiAssessmentXml,
+  validateCurriculum,
+} from "../nclex-curriculum-service";
+import { requireAdminSession, validateCSRFToken, type AdminAuthRequest } from "../admin-auth-session";
+import {
+  contentBlocks,
+  curriculumEdges,
+  curriculumEvidenceSources,
+  curriculumFrameworks,
+  curriculumNodes,
+>>>>>>> 179d0db8715932c65de403dd73682be39ba43277
   documents,
   documentChunks,
   lessonAssignmentLearners,
@@ -31,6 +51,17 @@ import {
   taxonomyTerms,
   topicProductionReviews,
 } from "@shared/schema";
+<<<<<<< HEAD
+=======
+import {
+  EXEMPLAR_TOPICS,
+  INTEGRATED_PROCESSES,
+  NCJMM_FUNCTIONS,
+  NCLEX_CATEGORIES,
+  NCLEX_FRAMEWORK_ID,
+  buildExemplarPackage,
+} from "@shared/nclex-rn-2026";
+>>>>>>> 179d0db8715932c65de403dd73682be39ba43277
 
 type EvidenceChunk = {
   sourceId?: string | null;
@@ -1281,6 +1312,10 @@ async function ensureLessonBuilderTables() {
       updated_at timestamp DEFAULT now()
     )
   `);
+<<<<<<< HEAD
+=======
+  await db.execute(sql`ALTER TABLE lesson_packages ADD COLUMN IF NOT EXISTS release_stage text NOT NULL DEFAULT 'draft'`);
+>>>>>>> 179d0db8715932c65de403dd73682be39ba43277
 
   await db.execute(sql`
     CREATE TABLE IF NOT EXISTS lesson_slides (
@@ -1318,6 +1353,123 @@ async function ensureLessonBuilderTables() {
   `);
 
   await db.execute(sql`
+<<<<<<< HEAD
+=======
+    CREATE TABLE IF NOT EXISTS curriculum_frameworks (
+      id varchar PRIMARY KEY,
+      title text NOT NULL,
+      version text NOT NULL,
+      audience text NOT NULL DEFAULT 'Prelicensure RN',
+      status text NOT NULL DEFAULT 'draft',
+      source_uri text,
+      metadata jsonb DEFAULT '{}'::jsonb,
+      created_at timestamp DEFAULT now(),
+      updated_at timestamp DEFAULT now()
+    )
+  `);
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS curriculum_nodes (
+      id varchar PRIMARY KEY,
+      framework_id varchar NOT NULL REFERENCES curriculum_frameworks(id) ON DELETE CASCADE,
+      node_type text NOT NULL,
+      code text NOT NULL,
+      label text NOT NULL,
+      description text,
+      blueprint_weight decimal(5,2),
+      safety_risk text NOT NULL DEFAULT 'standard',
+      release_stage text NOT NULL DEFAULT 'draft',
+      legacy_ids text[] DEFAULT '{}',
+      metadata jsonb DEFAULT '{}'::jsonb,
+      created_at timestamp DEFAULT now(),
+      updated_at timestamp DEFAULT now()
+    )
+  `);
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS curriculum_edges (
+      id varchar PRIMARY KEY DEFAULT gen_random_uuid(),
+      framework_id varchar NOT NULL REFERENCES curriculum_frameworks(id) ON DELETE CASCADE,
+      from_node_id varchar NOT NULL REFERENCES curriculum_nodes(id) ON DELETE CASCADE,
+      to_node_id varchar NOT NULL REFERENCES curriculum_nodes(id) ON DELETE CASCADE,
+      relationship text NOT NULL,
+      weight decimal(5,4),
+      metadata jsonb DEFAULT '{}'::jsonb,
+      created_at timestamp DEFAULT now()
+    )
+  `);
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS curriculum_objective_mappings (
+      id varchar PRIMARY KEY DEFAULT gen_random_uuid(),
+      objective_node_id varchar NOT NULL REFERENCES curriculum_nodes(id) ON DELETE CASCADE,
+      package_id varchar,
+      item_id varchar,
+      mapping_type text NOT NULL DEFAULT 'primary',
+      confidence decimal(5,4) NOT NULL DEFAULT 1,
+      verified_by text,
+      verified_at timestamp,
+      metadata jsonb DEFAULT '{}'::jsonb,
+      created_at timestamp DEFAULT now()
+    )
+  `);
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS curriculum_evidence_sources (
+      id varchar PRIMARY KEY,
+      framework_id varchar NOT NULL REFERENCES curriculum_frameworks(id) ON DELETE CASCADE,
+      title text NOT NULL,
+      publisher text NOT NULL,
+      license text NOT NULL,
+      source_uri text NOT NULL,
+      edition text,
+      locator text,
+      approval_status text NOT NULL DEFAULT 'pending',
+      metadata jsonb DEFAULT '{}'::jsonb,
+      created_at timestamp DEFAULT now(),
+      updated_at timestamp DEFAULT now()
+    )
+  `);
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS curriculum_performance_evidence (
+      id varchar PRIMARY KEY DEFAULT gen_random_uuid(),
+      learner_key text NOT NULL,
+      objective_node_id varchar NOT NULL REFERENCES curriculum_nodes(id) ON DELETE CASCADE,
+      score decimal(5,2) NOT NULL,
+      confidence decimal(5,4) NOT NULL DEFAULT 1,
+      source_kind text NOT NULL,
+      observed_at timestamp NOT NULL DEFAULT now(),
+      metadata jsonb DEFAULT '{}'::jsonb,
+      created_at timestamp DEFAULT now()
+    )
+  `);
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS directed_remediation_plans (
+      id varchar PRIMARY KEY DEFAULT gen_random_uuid(),
+      learner_key text NOT NULL,
+      framework_id varchar NOT NULL REFERENCES curriculum_frameworks(id),
+      algorithm_version text NOT NULL,
+      status text NOT NULL DEFAULT 'draft',
+      inputs jsonb NOT NULL,
+      recommendations jsonb NOT NULL,
+      audit jsonb NOT NULL,
+      created_at timestamp DEFAULT now(),
+      updated_at timestamp DEFAULT now()
+    )
+  `);
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS curriculum_export_jobs (
+      id varchar PRIMARY KEY DEFAULT gen_random_uuid(),
+      framework_id varchar NOT NULL REFERENCES curriculum_frameworks(id),
+      export_type text NOT NULL,
+      status text NOT NULL DEFAULT 'queued',
+      artifact_uri text,
+      validation_summary jsonb DEFAULT '{}'::jsonb,
+      created_at timestamp DEFAULT now(),
+      completed_at timestamp
+    )
+  `);
+  await db.execute(sql`CREATE INDEX IF NOT EXISTS curriculum_nodes_framework_idx ON curriculum_nodes(framework_id, node_type)`);
+  await db.execute(sql`CREATE INDEX IF NOT EXISTS curriculum_performance_learner_idx ON curriculum_performance_evidence(learner_key, objective_node_id)`);
+
+  await db.execute(sql`
+>>>>>>> 179d0db8715932c65de403dd73682be39ba43277
     CREATE TABLE IF NOT EXISTS lesson_citations (
       id varchar PRIMARY KEY DEFAULT gen_random_uuid(),
       package_id varchar NOT NULL REFERENCES lesson_packages(id) ON DELETE CASCADE,
@@ -4201,6 +4353,178 @@ async function findPackageBundle(packageId: string): Promise<LessonBundle | null
   return { package: pkg, sources, slides, items, citations, qaResults, generationRuns, artifacts, contractValidations, reviews, assignments, learnerEvents, releaseAuditEvents };
 }
 
+<<<<<<< HEAD
+=======
+function hasLicensedClinicalApproval(bundle: LessonBundle) {
+  return bundle.reviews.some((review) => {
+    const metadata = review.metadata || {};
+    const role = String(review.reviewerRole || "").toLowerCase();
+    return review.decision === "approved_for_release"
+      && metadata.licensedRn === true
+      && (role.includes("rn") || role.includes("faculty") || role.includes("clinical"));
+  });
+}
+
+function clinicalDomain(value: unknown) {
+  const text = String(value || "").toLowerCase();
+  if (/contraception|postpartum|maternal|newborn|pregnan|labor|fetal|reproductive/.test(text)) return "maternal-newborn";
+  if (/respiratory|asthma|oxygen|airway|lung|ventilat/.test(text)) return "respiratory";
+  if (/mental health|psychiatr|therapeutic communication|suicid|anxiety/.test(text)) return "mental-health";
+  if (/pharmacol|medication|drug|infusion/.test(text)) return "pharmacology";
+  if (/pediatric|child|infant|adolescent/.test(text)) return "pediatrics";
+  return "general";
+}
+
+function topicSourceAlignment(bundle: LessonBundle) {
+  const expected = clinicalDomain(`${bundle.package.topic} ${bundle.package.title}`);
+  const sourceDomains = bundle.sources.map((source) => clinicalDomain(`${source.title} ${source.subject || ""}`));
+  const incompatible = expected !== "general"
+    && sourceDomains.length > 0
+    && sourceDomains.every((domain) => domain !== expected && domain !== "general");
+  return {
+    valid: !incompatible,
+    expectedDomain: expected,
+    sourceDomains,
+    message: incompatible
+      ? `Topic domain ${expected} does not align with the attached source domains (${sourceDomains.join(", ")}).`
+      : "Topic and source domains are compatible.",
+  };
+}
+
+function nodeId(kind: string, value: string) {
+  return `${NCLEX_FRAMEWORK_ID}:${kind}:${value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}`;
+}
+
+async function installCanonicalCurriculumGraph() {
+  await db.insert(curriculumFrameworks).values({
+    id: NCLEX_FRAMEWORK_ID,
+    title: "2026 NCLEX-RN Open Curriculum",
+    version: "2026",
+    audience: "Prelicensure RN",
+    status: "active",
+    sourceUri: "https://www.ncsbn.org/publications/2026-nclex-rn-test-plan",
+    metadata: { legacyTopicMigrationTarget: 77, maternalNewbornMigrationRows: 94, atiPolicy: "aliases_only" },
+  }).onConflictDoUpdate({
+    target: curriculumFrameworks.id,
+    set: { status: "active", updatedAt: new Date() },
+  });
+
+  const categoryNodes = NCLEX_CATEGORIES.map((category) => ({
+    id: nodeId("category", category.id),
+    frameworkId: NCLEX_FRAMEWORK_ID,
+    nodeType: "category",
+    code: category.id,
+    label: category.label,
+    blueprintWeight: category.blueprintWeight.toFixed(2),
+    releaseStage: "approved",
+    metadata: { blueprintRange: category.blueprintRange },
+  }));
+  const processNodes = INTEGRATED_PROCESSES.map((process) => ({
+    id: nodeId("integrated-process", process),
+    frameworkId: NCLEX_FRAMEWORK_ID,
+    nodeType: "integrated_process",
+    code: process,
+    label: process,
+    releaseStage: "approved",
+  }));
+  const judgmentNodes = NCJMM_FUNCTIONS.map((fn) => ({
+    id: nodeId("ncjmm", fn),
+    frameworkId: NCLEX_FRAMEWORK_ID,
+    nodeType: "ncjmm",
+    code: fn,
+    label: fn,
+    releaseStage: "approved",
+  }));
+  const topicNodes = EXEMPLAR_TOPICS.map((topic) => ({
+    id: nodeId("topic", topic.id),
+    frameworkId: NCLEX_FRAMEWORK_ID,
+    nodeType: "topic",
+    code: topic.id,
+    label: topic.title,
+    description: topic.summary,
+    safetyRisk: topic.safetyRisk,
+    releaseStage: topic.releaseStage,
+    legacyIds: topic.prerequisites,
+    metadata: { concept: topic.concept, prerequisites: topic.prerequisites },
+  }));
+  const objectiveNodes = EXEMPLAR_TOPICS.flatMap((topic) => topic.objectives.map((objective, index) => ({
+    id: nodeId("objective", `${topic.id}-${index + 1}`),
+    frameworkId: NCLEX_FRAMEWORK_ID,
+    nodeType: "objective",
+    code: `${topic.id}-objective-${index + 1}`,
+    label: objective,
+    safetyRisk: topic.safetyRisk,
+    releaseStage: topic.releaseStage,
+    metadata: { topicId: topic.id },
+  })));
+
+  for (const node of [...categoryNodes, ...processNodes, ...judgmentNodes, ...topicNodes, ...objectiveNodes]) {
+    await db.insert(curriculumNodes).values(node).onConflictDoUpdate({
+      target: curriculumNodes.id,
+      set: { label: node.label, releaseStage: node.releaseStage, updatedAt: new Date() },
+    });
+  }
+
+  const edges = EXEMPLAR_TOPICS.flatMap((topic) => {
+    const topicNodeId = nodeId("topic", topic.id);
+    const relationships = [
+      { id: nodeId("edge", `${topic.id}-category`), fromNodeId: nodeId("category", topic.categoryId), toNodeId: topicNodeId, relationship: "contains" },
+      ...topic.objectives.map((_, index) => ({ id: nodeId("edge", `${topic.id}-objective-${index + 1}`), fromNodeId: topicNodeId, toNodeId: nodeId("objective", `${topic.id}-${index + 1}`), relationship: "contains" })),
+      ...topic.integratedProcesses.map((process) => ({ id: nodeId("edge", `${topic.id}-process-${process}`), fromNodeId: topicNodeId, toNodeId: nodeId("integrated-process", process), relationship: "maps_to" })),
+      ...NCJMM_FUNCTIONS.map((fn) => ({ id: nodeId("edge", `${topic.id}-ncjmm-${fn}`), fromNodeId: topicNodeId, toNodeId: nodeId("ncjmm", fn), relationship: "maps_to" })),
+    ];
+    return relationships;
+  });
+  for (const edge of edges) {
+    await db.insert(curriculumEdges).values({ ...edge, frameworkId: NCLEX_FRAMEWORK_ID }).onConflictDoNothing();
+  }
+
+  const sources = Array.from(new Map(EXEMPLAR_TOPICS.flatMap((topic) => topic.sources).map((source) => [source.id, source])).values());
+  for (const source of sources) {
+    await db.insert(curriculumEvidenceSources).values({
+      id: source.id,
+      frameworkId: NCLEX_FRAMEWORK_ID,
+      title: source.title,
+      publisher: source.publisher,
+      license: source.license,
+      sourceUri: source.sourceUri,
+      locator: source.locator,
+      approvalStatus: source.approvalStatus,
+    }).onConflictDoUpdate({
+      target: curriculumEvidenceSources.id,
+      set: { locator: source.locator, approvalStatus: source.approvalStatus, updatedAt: new Date() },
+    });
+  }
+
+  return { frameworkId: NCLEX_FRAMEWORK_ID, nodes: categoryNodes.length + processNodes.length + judgmentNodes.length + topicNodes.length + objectiveNodes.length, edges: edges.length, sources: sources.length };
+}
+
+async function quarantineUnsafePackages() {
+  const packages = await db.select({ id: lessonPackages.id, title: lessonPackages.title, status: lessonPackages.status }).from(lessonPackages);
+  const quarantined: Array<{ id: string; title: string; reason: string }> = [];
+  for (const pkg of packages) {
+    const bundle = await findPackageBundle(pkg.id);
+    if (!bundle) continue;
+    const alignment = topicSourceAlignment(bundle);
+    const demoPackage = /\b(smoke|demo|test package|pilot variant)\b/i.test(pkg.title);
+    if (!demoPackage && alignment.valid) continue;
+    const reason = demoPackage ? "demo_or_smoke_package" : "topic_source_mismatch";
+    await db.update(lessonPackages).set({
+      status: "blocked",
+      releaseStage: "draft",
+      publishedAt: null,
+      manifest: {
+        ...(bundle.package.manifest || {}),
+        quarantine: { reason, quarantinedAt: new Date().toISOString(), alignment },
+      },
+      updatedAt: new Date(),
+    }).where(eq(lessonPackages.id, pkg.id));
+    quarantined.push({ id: pkg.id, title: pkg.title, reason });
+  }
+  return quarantined;
+}
+
+>>>>>>> 179d0db8715932c65de403dd73682be39ba43277
 function compactTopicKey(value: string | null | undefined) {
   return String(value || "")
     .toLowerCase()
@@ -8304,6 +8628,10 @@ async function markPackageNeedsReview(packageId: string, reason: string) {
 
   await db.update(lessonPackages).set({
     status: wasPublished ? "needs_republish" : "draft",
+<<<<<<< HEAD
+=======
+    releaseStage: "draft",
+>>>>>>> 179d0db8715932c65de403dd73682be39ba43277
     qaSummary,
     deckModel: buildCurrentDeckModel(bundle),
     manifest: buildCurrentManifest(bundle, reason),
@@ -8338,9 +8666,19 @@ async function runQaForPackage(packageId: string) {
   const itemsWithRationales = items.filter((item) => Boolean(item.rationale && item.correctAnswer));
   const hasClinicalJudgment = slides.some((slide) => Boolean(slide.cjmStep)) && items.some((item) => Boolean((item.tags as any)?.cjmStep));
   const hasValidCitations = citations.every((citation) => citation.sourceId || citation.documentId || citation.chunkId);
+<<<<<<< HEAD
 
   const results = [
     gate("source_traceability", "Source Traceability", slidesWithCitations.size >= slides.length, `${slidesWithCitations.size}/${slides.length} slides have traceable citations.`),
+=======
+  const alignment = topicSourceAlignment(bundle);
+  const licensedApproval = hasLicensedClinicalApproval(bundle);
+
+  const results = [
+    gate("source_traceability", "Source Traceability", slidesWithCitations.size >= slides.length, `${slidesWithCitations.size}/${slides.length} slides have traceable citations.`),
+    gate("topic_source_alignment", "Topic and Source Alignment", alignment.valid, alignment.message),
+    gate("licensed_clinical_review", "Licensed RN Clinical Review", licensedApproval, licensedApproval ? "Licensed RN faculty release approval is recorded." : "Licensed RN faculty review is required before release.", true),
+>>>>>>> 179d0db8715932c65de403dd73682be39ba43277
     gate("learner_only_visible_slides", "Learner-only Visible Slides", !visibleHasBannedTerms, visibleHasBannedTerms ? "Visible slide content contains instructor-facing language." : "Visible slide content stays learner-facing."),
     gate("exam_anchor_density", "Exam Anchor Density", slides.every((slide) => slide.nclexCategory), "Every slide should carry an NCLEX category."),
     gate("retrieval_practice", "Retrieval and Application", slidesWithRetrieval.length >= Math.max(2, Math.floor(slides.length / 2)), `${slidesWithRetrieval.length}/${slides.length} slides include retrieval prompts.`),
@@ -8382,6 +8720,14 @@ async function runQaForPackage(packageId: string) {
     .update(lessonPackages)
     .set({
       status: nextStatus,
+<<<<<<< HEAD
+=======
+      releaseStage: failing > 0
+        ? "draft"
+        : bundle.package.status === "published"
+          ? "export_ready"
+          : "clinical_review",
+>>>>>>> 179d0db8715932c65de403dd73682be39ba43277
       qaSummary,
       updatedAt: new Date(),
     })
@@ -13368,6 +13714,15 @@ export function registerLessonBuilderRoutes(app: Express) {
       const data = packageReviewSchema.parse(req.body || {});
       const bundle = await findPackageBundle(req.params.id);
       if (!bundle) return res.status(404).json({ error: "Lesson package not found" });
+<<<<<<< HEAD
+=======
+      if (data.decision === "approved_for_release" && data.metadata.licensedRn !== true) {
+        return res.status(400).json({
+          error: "Release approval requires an explicit licensed RN attestation",
+          requiredMetadata: { licensedRn: true },
+        });
+      }
+>>>>>>> 179d0db8715932c65de403dd73682be39ba43277
 
       const [review] = await db.insert(lessonPackageReviews).values({
         packageId: req.params.id,
@@ -13398,6 +13753,14 @@ export function registerLessonBuilderRoutes(app: Express) {
       };
 
       await db.update(lessonPackages).set({
+<<<<<<< HEAD
+=======
+        releaseStage: review.decision === "approved_for_release"
+          ? "approved"
+          : review.decision === "changes_requested"
+            ? "draft"
+            : "clinical_review",
+>>>>>>> 179d0db8715932c65de403dd73682be39ba43277
         manifest: {
           ...(bundle.package.manifest || {}),
           facultyReview: reviewSummary,
@@ -13624,6 +13987,26 @@ export function registerLessonBuilderRoutes(app: Express) {
       }
       const bundle = await findPackageBundle(req.params.id);
       if (!bundle) return res.status(404).json({ error: "Lesson package not found" });
+<<<<<<< HEAD
+=======
+      const alignment = topicSourceAlignment(bundle);
+      if (!alignment.valid) {
+        return res.status(400).json({ error: "Topic and source evidence do not align", alignment });
+      }
+      if (bundle.package.releaseStage !== "approved" && bundle.package.releaseStage !== "export_ready") {
+        return res.status(400).json({
+          error: "Licensed clinical approval is required before public publishing",
+          releaseStage: bundle.package.releaseStage || "draft",
+          requiredReleaseStage: "approved",
+        });
+      }
+      if (!hasLicensedClinicalApproval(bundle)) {
+        return res.status(400).json({
+          error: "No licensed RN faculty release approval is recorded",
+          requiredReview: { decision: "approved_for_release", metadata: { licensedRn: true } },
+        });
+      }
+>>>>>>> 179d0db8715932c65de403dd73682be39ba43277
       const controlPlane = buildLessonControlPlaneReport(bundle, "harrity");
       if (controlPlane.summary.failCount > 0) {
         return res.status(400).json({
@@ -13636,6 +14019,10 @@ export function registerLessonBuilderRoutes(app: Express) {
 
       const [published] = await db.update(lessonPackages).set({
         status: "published",
+<<<<<<< HEAD
+=======
+        releaseStage: "export_ready",
+>>>>>>> 179d0db8715932c65de403dd73682be39ba43277
         publishedAt: new Date(),
         updatedAt: new Date(),
       }).where(eq(lessonPackages.id, req.params.id)).returning();
@@ -13650,7 +14037,11 @@ export function registerLessonBuilderRoutes(app: Express) {
         },
       }, req.session.adminUser?.userId);
 
+<<<<<<< HEAD
       res.json({ package: published, qa, validation, controlPlane, publishConfirmation: { confirmed: true } });
+=======
+      res.json({ package: published, qa, validation, controlPlane, alignment, publishConfirmation: { confirmed: true } });
+>>>>>>> 179d0db8715932c65de403dd73682be39ba43277
     } catch (error) {
       console.error("Lesson builder publish error:", error);
       res.status(500).json({ error: "Failed to publish lesson package" });
@@ -13796,4 +14187,97 @@ export function registerLessonBuilderRoutes(app: Express) {
       res.status(500).json({ error: "Failed to export lesson package" });
     }
   });
+<<<<<<< HEAD
+=======
+
+  app.get("/api/public/nclex-curriculum/status", (_req: Request, res: Response) => {
+    res.json(executionStatus());
+  });
+
+  app.get("/api/admin/nclex-curriculum/coverage", requireAdminSession, (_req: AdminAuthRequest, res: Response) => {
+    res.json({ validation: validateCurriculum(), status: executionStatus() });
+  });
+
+  app.post("/api/admin/nclex-curriculum/install", requireAdminSession, validateCSRFToken, async (_req: AdminAuthRequest, res: Response) => {
+    try {
+      await ensureLessonBuilderTables();
+      const validation = validateCurriculum();
+      if (!validation.valid) return res.status(400).json({ error: "Curriculum contract validation failed", validation });
+      const installed = await installCanonicalCurriculumGraph();
+      const quarantinedPackages = await quarantineUnsafePackages();
+      res.json({ installed, quarantinedPackages, validation });
+    } catch (error) {
+      console.error("NCLEX curriculum install error:", error);
+      res.status(500).json({ error: "Failed to install NCLEX curriculum graph" });
+    }
+  });
+
+  app.get("/api/admin/nclex-curriculum/manifest", requireAdminSession, (_req: AdminAuthRequest, res: Response) => {
+    res.setHeader("Content-Disposition", "attachment; filename=curriculum-manifest.json");
+    res.json(curriculumManifest());
+  });
+
+  app.post("/api/admin/nclex-curriculum/remediation-preview", requireAdminSession, (req: AdminAuthRequest, res: Response) => {
+    const parsed = z.object({
+      learnerKey: z.string().trim().min(1).max(160),
+      signals: z.array(z.object({
+        objectiveId: z.string().trim().min(1),
+        topicId: z.string().trim().min(1),
+        score: z.number().min(0).max(100),
+        confidence: z.number().min(0).max(1),
+        observedAt: z.string().datetime(),
+        frequency: z.number().int().positive().optional(),
+        sourceKind: z.enum(["generic_csv", "ati_alias_report", "canvas_outcome", "quiz"]),
+      })).min(1).max(500),
+    }).safeParse(req.body || {});
+    if (!parsed.success) return res.status(400).json({ error: "Invalid performance signals", details: parsed.error.errors });
+    res.json(buildDirectedRemediationPlan(parsed.data.learnerKey, parsed.data.signals));
+  });
+
+  app.post("/api/admin/nclex-curriculum/generate-batch", requireAdminSession, validateCSRFToken, (req: AdminAuthRequest, res: Response) => {
+    const parsed = z.object({ topicIds: z.array(z.string().trim().min(1)).min(1).max(15) }).safeParse(req.body || {});
+    if (!parsed.success) return res.status(400).json({ error: "A batch must contain 1-15 topic IDs", details: parsed.error.errors });
+    const selected = parsed.data.topicIds.map((id) => EXEMPLAR_TOPICS.find((topic) => topic.id === id));
+    const missing = parsed.data.topicIds.filter((_, index) => !selected[index]);
+    if (missing.length) return res.status(404).json({ error: "Unknown curriculum topic IDs", missing });
+    const packages = selected.map((topic) => buildExemplarPackage(topic!));
+    res.json({
+      generationMode: "deterministic_clinical_review_draft",
+      releaseStage: "clinical_review",
+      packageCount: packages.length,
+      packages,
+    });
+  });
+
+  app.get("/api/admin/nclex-curriculum/canvas-outcomes", requireAdminSession, (_req: AdminAuthRequest, res: Response) => {
+    res.setHeader("Content-Type", "text/csv; charset=utf-8");
+    res.setHeader("Content-Disposition", "attachment; filename=canvas-outcomes.csv");
+    res.send(canvasOutcomesCsv());
+  });
+
+  app.get("/api/admin/nclex-curriculum/qti", requireAdminSession, (_req: AdminAuthRequest, res: Response) => {
+    res.setHeader("Content-Type", "application/xml; charset=utf-8");
+    res.setHeader("Content-Disposition", "attachment; filename=qti-exemplar-bank.xml");
+    res.send(qtiAssessmentXml());
+  });
+
+  app.get("/api/admin/nclex-curriculum/pathway-rules", requireAdminSession, (_req: AdminAuthRequest, res: Response) => {
+    res.setHeader("Content-Disposition", "attachment; filename=pathway-rules.json");
+    res.json(pathwayRulesManifest());
+  });
+
+  app.get("/api/admin/nclex-curriculum/common-cartridge", requireAdminSession, async (_req: AdminAuthRequest, res: Response) => {
+    try {
+      const validation = validateCurriculum();
+      if (!validation.valid) return res.status(400).json({ error: "Curriculum export validation failed", validation });
+      const buffer = await commonCartridgeArchive();
+      res.setHeader("Content-Type", "application/vnd.ims.imsccv1p3");
+      res.setHeader("Content-Disposition", "attachment; filename=nclex-rn-2026.imscc");
+      res.send(buffer);
+    } catch (error) {
+      console.error("NCLEX Common Cartridge export error:", error);
+      res.status(500).json({ error: "Failed to build Common Cartridge" });
+    }
+  });
+>>>>>>> 179d0db8715932c65de403dd73682be39ba43277
 }
