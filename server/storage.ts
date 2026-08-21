@@ -55,14 +55,6 @@ import {
   type InsertLead,
   type AdminAvailability,
   type InsertAdminAvailability,
-  type LeadActivity,
-  type InsertLeadActivity,
-  type LeadTag,
-  type InsertLeadTag,
-  type EmailCampaign,
-  type InsertEmailCampaign,
-  type EmailTemplate,
-  type InsertEmailTemplate,
   type Document,
   type InsertDocument,
   type DocumentChunk,
@@ -234,54 +226,7 @@ export interface IStorage {
     averageConversionValue: number;
     leadsByStatus: { status: string; count: number }[];
   }>;
-  
-  // Lead activity operations
-  createLeadActivity(activity: InsertLeadActivity): Promise<LeadActivity>;
-  getLeadActivities(leadId: string): Promise<LeadActivity[]>;
-  getRecentActivities(limit?: number): Promise<(LeadActivity & { lead: Lead })[]>;
-  
-  // Lead tag operations
-  createLeadTag(tag: InsertLeadTag): Promise<LeadTag>;
-  getLeadTags(leadId: string): Promise<LeadTag[]>;
-  removeLeadTag(id: string): Promise<void>;
-  getPopularTags(): Promise<{ tag: string; count: number }[]>;
-  
-  // Email campaign operations
-  createEmailCampaign(campaign: InsertEmailCampaign): Promise<EmailCampaign>;
-  updateEmailCampaign(id: string, updates: Partial<EmailCampaign>): Promise<EmailCampaign>;
-  getEmailCampaigns(leadId?: string): Promise<EmailCampaign[]>;
-  getEmailCampaign(id: string): Promise<EmailCampaign | undefined>;
-  
-  // Email template operations
-  createEmailTemplate(template: InsertEmailTemplate): Promise<EmailTemplate>;
-  updateEmailTemplate(id: string, updates: Partial<EmailTemplate>): Promise<EmailTemplate>;
-  getEmailTemplates(category?: string): Promise<EmailTemplate[]>;
-  getEmailTemplate(id: string): Promise<EmailTemplate | undefined>;
-  deleteEmailTemplate(id: string): Promise<void>;
-  
-  // Lead scoring operations
-  updateLeadScore(leadId: string, scoreComponents: {
-    engagementScore?: number;
-    demographicScore?: number;
-    behavioralScore?: number;
-    timingScore?: number;
-  }): Promise<void>;
-  recalculateLeadScore(leadId: string): Promise<number>;
-  
-  // Lead pipeline operations
-  getLeadsByPipelineStage(): Promise<Map<string, Lead[]>>;
-  moveLeadToStage(leadId: string, newStatus: string): Promise<Lead>;
-  getLeadVelocity(leadId: string): Promise<{
-    daysInCurrentStage: number;
-    averageStageTime: number;
-    totalDays: number;
-  }>;
-  
-  // Bulk lead operations
-  bulkUpdateLeads(leadIds: string[], updates: Partial<Lead>): Promise<number>;
-  bulkAssignLeads(leadIds: string[], assignToId: string): Promise<number>;
-  bulkTagLeads(leadIds: string[], tags: string[]): Promise<number>;
-  
+
   // Admin availability operations
   createAdminAvailability(availability: InsertAdminAvailability): Promise<AdminAvailability>;
   updateAdminAvailability(id: string, updates: Partial<AdminAvailability>): Promise<AdminAvailability>;
@@ -897,7 +842,7 @@ export class DatabaseStorage implements IStorage {
   async createResourceMapping(mapping: InsertResourceMapping): Promise<ResourceMapping> {
     const [newMapping] = await db
       .insert(resourceMappings)
-      .values([mapping])
+      .values([mapping as typeof resourceMappings.$inferInsert])
       .returning();
     return newMapping;
   }
@@ -931,7 +876,8 @@ export class DatabaseStorage implements IStorage {
       })
       .from(resourceMappings)
       .leftJoin(nursingTopics, eq(resourceMappings.topicId, nursingTopics.id))
-      .leftJoin(learningResources, eq(resourceMappings.resourceId, learningResources.id));
+      .leftJoin(learningResources, eq(resourceMappings.resourceId, learningResources.id))
+      .$dynamic();
     
     const conditions = [];
     if (filters?.topicId) {
@@ -979,7 +925,7 @@ export class DatabaseStorage implements IStorage {
     if (mappings.length === 0) return [];
     const newMappings = await db
       .insert(resourceMappings)
-      .values(mappings)
+      .values(mappings as (typeof resourceMappings.$inferInsert)[])
       .returning();
     return newMappings;
   }
@@ -1052,7 +998,7 @@ export class DatabaseStorage implements IStorage {
   async trackTopicDemand(demand: InsertTopicDemand): Promise<TopicDemand> {
     const [newDemand] = await db
       .insert(topicDemand)
-      .values([demand])
+      .values([demand as typeof topicDemand.$inferInsert])
       .returning();
     return newDemand;
   }
@@ -1075,7 +1021,7 @@ export class DatabaseStorage implements IStorage {
       totalDemand: sql<number>`count(*)`,
       uniqueUsers: sql<number>`count(distinct ${topicDemand.userId})`,
       avgPriority: sql<number>`avg(${topicDemand.priority})`,
-    }).from(topicDemand);
+    }).from(topicDemand).$dynamic();
     
     if (topicId) {
       baseQuery = baseQuery.where(eq(topicDemand.topicId, topicId));
@@ -1087,7 +1033,7 @@ export class DatabaseStorage implements IStorage {
     let sourceQuery = db.select({
       source: topicDemand.source,
       count: sql<number>`count(*)`,
-    }).from(topicDemand).groupBy(topicDemand.source);
+    }).from(topicDemand).groupBy(topicDemand.source).$dynamic();
     
     if (topicId) {
       sourceQuery = sourceQuery.where(eq(topicDemand.topicId, topicId));
@@ -1107,13 +1053,13 @@ export class DatabaseStorage implements IStorage {
   async createResourceAllocation(allocation: InsertResourceAllocation): Promise<ResourceAllocation> {
     const [newAllocation] = await db
       .insert(resourceAllocation)
-      .values([allocation])
+      .values([allocation as typeof resourceAllocation.$inferInsert])
       .returning();
     return newAllocation;
   }
   
   async getResourceAllocations(status?: string): Promise<ResourceAllocation[]> {
-    let query = db.select().from(resourceAllocation);
+    let query = db.select().from(resourceAllocation).$dynamic();
     
     if (status) {
       query = query.where(eq(resourceAllocation.status, status));
@@ -1150,7 +1096,7 @@ export class DatabaseStorage implements IStorage {
   async createCallBooking(booking: InsertCallBooking): Promise<CallBooking> {
     const [newBooking] = await db
       .insert(callBookings)
-      .values([booking])
+      .values([booking as typeof callBookings.$inferInsert])
       .returning();
     return newBooking;
   }
@@ -1170,7 +1116,7 @@ export class DatabaseStorage implements IStorage {
     topicId?: string;
     assignedTo?: string;
   }): Promise<CallBooking[]> {
-    let query = db.select().from(callBookings);
+    let query = db.select().from(callBookings).$dynamic();
     
     const conditions = [];
     if (filters?.status) {
@@ -1220,19 +1166,17 @@ export class DatabaseStorage implements IStorage {
   async getAvailableTimeSlots(date: Date, adminId?: string): Promise<string[]> {
     // Get admin availability for the given day
     const dayOfWeek = date.getDay();
-    let availabilityQuery = db
+    const availabilityConditions = [
+      eq(adminAvailability.dayOfWeek, dayOfWeek),
+      eq(adminAvailability.isActive, true),
+    ];
+    if (adminId) {
+      availabilityConditions.push(eq(adminAvailability.adminId, adminId));
+    }
+    const availabilities = await db
       .select()
       .from(adminAvailability)
-      .where(and(
-        eq(adminAvailability.dayOfWeek, dayOfWeek),
-        eq(adminAvailability.isActive, true)
-      ));
-    
-    if (adminId) {
-      availabilityQuery = availabilityQuery.where(eq(adminAvailability.adminId, adminId));
-    }
-    
-    const availabilities = await availabilityQuery;
+      .where(and(...availabilityConditions));
     
     // Get existing bookings for the date
     const startOfDay = new Date(date);
@@ -1287,7 +1231,7 @@ export class DatabaseStorage implements IStorage {
   async createLead(lead: InsertLead): Promise<Lead> {
     const [newLead] = await db
       .insert(leads)
-      .values([lead])
+      .values([lead as typeof leads.$inferInsert])
       .returning();
     return newLead;
   }
@@ -1306,19 +1250,22 @@ export class DatabaseStorage implements IStorage {
     assignedTo?: string;
     source?: string;
   }): Promise<Lead[]> {
-    let query = db.select().from(leads);
-    
+    const conditions = [];
     if (filters?.status) {
-      query = query.where(eq(leads.status, filters.status));
+      conditions.push(eq(leads.status, filters.status));
     }
     if (filters?.assignedTo) {
-      query = query.where(eq(leads.assignedTo, filters.assignedTo));
+      conditions.push(eq(leads.assignedTo, filters.assignedTo));
     }
     if (filters?.source) {
-      query = query.where(eq(leads.source, filters.source));
+      conditions.push(eq(leads.source, filters.source));
     }
-    
-    return await query.orderBy(desc(leads.createdAt));
+
+    return await db
+      .select()
+      .from(leads)
+      .where(conditions.length > 0 ? and(...conditions) : undefined)
+      .orderBy(desc(leads.createdAt));
   }
   
   async getLeadById(id: string): Promise<Lead | undefined> {
@@ -1413,7 +1360,7 @@ export class DatabaseStorage implements IStorage {
   async createDocument(doc: InsertDocument): Promise<Document> {
     const [newDocument] = await db
       .insert(documents)
-      .values(doc)
+      .values(doc as typeof documents.$inferInsert)
       .returning();
     return newDocument;
   }
@@ -1470,7 +1417,7 @@ export class DatabaseStorage implements IStorage {
       const batch = chunks.slice(i, i + batchSize);
       const inserted = await db
         .insert(documentChunks)
-        .values(batch)
+        .values(batch as (typeof documentChunks.$inferInsert)[])
         .returning();
       results.push(...inserted);
     }
@@ -1561,7 +1508,7 @@ export class DatabaseStorage implements IStorage {
   async createJob(job: InsertDocumentJob): Promise<DocumentJob> {
     const [newJob] = await db
       .insert(documentJobs)
-      .values(job)
+      .values(job as typeof documentJobs.$inferInsert)
       .returning();
     return newJob;
   }
@@ -1774,7 +1721,7 @@ export class DatabaseStorage implements IStorage {
   async recordCitation(citation: InsertRagCitation): Promise<RagCitation> {
     const [newCitation] = await db
       .insert(ragCitations)
-      .values(citation)
+      .values(citation as typeof ragCitations.$inferInsert)
       .returning();
     return newCitation;
   }
