@@ -924,8 +924,8 @@ export async function seedTopicObjectiveCrosswalks() {
     const topics = await db.select().from(nursingTopics);
     const objectives = await db.select().from(learningObjectives);
     
-    const crosswalks = [];
-    
+    const crosswalks: (typeof topicObjectivesCrosswalk.$inferInsert)[] = [];
+
     // Create mappings based on practice area matching
     for (const topic of topics) {
       const matchingObjectives = objectives.filter(obj => {
@@ -1015,7 +1015,7 @@ export async function runComprehensiveSeeding() {
     console.error("💥 Comprehensive seeding failed:", error);
     return {
       success: false,
-      error: error.message
+      error: (error as Error).message
     };
   }
 }
