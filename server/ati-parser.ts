@@ -18,6 +18,11 @@ export interface ATIReportData {
     assessmentName?: string;
     overallScore?: string;
   };
+  parsingError?: {
+    reason: string;
+    context?: unknown;
+    suggestedActions: string[];
+  };
 }
 
 export function parseATIReport(text: string): ATIReportData {

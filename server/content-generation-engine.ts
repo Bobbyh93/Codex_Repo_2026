@@ -13,11 +13,12 @@ import {
   type StudyPathTemplate,
   type PerformancePathCrosswalk
 } from "@shared/crosswalk-schema";
-import { 
-  topicPerformance, 
+import {
+  topicPerformance,
   assessmentReports,
   studyPlans,
   studyPlanItems,
+  nursingTopics,
   type TopicPerformance
 } from "@shared/schema";
 import { eq, and, gte, lte, desc, asc, sql, inArray } from "drizzle-orm";
@@ -115,7 +116,7 @@ export class ContentGenerationEngine {
     );
     
     return {
-      pathName: pathTemplate?.pathName || `Personalized ${pathType} Study Path`,
+      pathName: pathTemplate?.name || `Personalized ${pathType} Study Path`,
       pathType,
       totalHours: modules.reduce((sum, m) => sum + m.estimatedTime, 0) / 60,
       modules,
@@ -143,24 +144,27 @@ export class ContentGenerationEngine {
     const topicScores = await db
       .select({
         topicId: topicPerformance.topicId,
-        topicName: topicPerformance.topicName,
+        topicName: nursingTopics.name,
         score: topicPerformance.score,
         gapScore: sql<number>`100 - ${topicPerformance.score}`
       })
       .from(topicPerformance)
+      .leftJoin(nursingTopics, eq(topicPerformance.topicId, nursingTopics.id))
       .where(eq(topicPerformance.reportId, reportId))
       .orderBy(desc(sql`100 - ${topicPerformance.score}`));
-    
+
     return {
       reportId,
       userId: report.userId || undefined,
       overallScore: parseFloat(report.overallScore || '75'),
-      topicScores: topicScores.map(t => ({
-        topicId: t.topicId,
-        topicName: t.topicName,
-        score: parseFloat(t.score || '0'),
-        gapScore: parseFloat(t.gapScore?.toString() || '0')
-      }))
+      topicScores: topicScores
+        .filter((t): t is typeof t & { topicId: string } => t.topicId !== null)
+        .map(t => ({
+          topicId: t.topicId,
+          topicName: t.topicName || 'Unknown Topic',
+          score: parseFloat(t.score || '0'),
+          gapScore: parseFloat(t.gapScore?.toString() || '0')
+        }))
     };
   }
 

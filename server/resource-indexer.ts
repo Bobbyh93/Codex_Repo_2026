@@ -340,10 +340,12 @@ export class ResourceIndexer {
         resources = resources.filter(r => r.type === filters.type);
       }
       if (filters.topic) {
-        resources = resources.filter(r => r.topics.includes(filters.topic));
+        const topic = filters.topic;
+        resources = resources.filter(r => r.topics.includes(topic));
       }
       if (filters.system) {
-        resources = resources.filter(r => r.systems?.includes(filters.system));
+        const system = filters.system;
+        resources = resources.filter(r => r.systems?.includes(system));
       }
     }
 
