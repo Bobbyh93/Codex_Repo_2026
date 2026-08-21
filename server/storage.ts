@@ -75,7 +75,7 @@ export interface IStorage {
   // User operations
   getUser(id: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
-  createUser(user: InsertUser): Promise<User>;
+  createUser(user: InsertUser & { id?: string; isEmailVerified?: boolean }): Promise<User>;
 
   // Assessment report operations
   createAssessmentReport(report: InsertAssessmentReport & { userId: string }): Promise<AssessmentReport>;
@@ -314,7 +314,7 @@ export class DatabaseStorage implements IStorage {
     return user || undefined;
   }
 
-  async createUser(insertUser: InsertUser): Promise<User> {
+  async createUser(insertUser: InsertUser & { id?: string; isEmailVerified?: boolean }): Promise<User> {
     const [user] = await db
       .insert(users)
       .values(insertUser)

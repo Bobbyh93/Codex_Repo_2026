@@ -306,7 +306,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const emailSent = await EmailService.sendMagicLinkEmail(
         email, 
         magicLinkUrl,
-        result.user?.firstName
+        result.user?.firstName || undefined
       );
       
       if (!emailSent) {
@@ -1670,13 +1670,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.log(`[Upload] Authenticated user upload: ${decoded.email}`);
         } else {
           // Guest access - create or use session-based guest ID
-          const sessionId = req.sessionID || req.headers['x-session-id'] || `guest_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+          const sessionIdHeader = req.headers['x-session-id'];
+          const sessionId = req.sessionID || (Array.isArray(sessionIdHeader) ? sessionIdHeader[0] : sessionIdHeader) || `guest_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
           userId = normalizeGuestId(sessionId);
           console.log(`[Upload] Guest user upload: ${userId}`);
         }
       } catch (tokenError) {
         // Invalid token, treat as guest
-        const sessionId = req.sessionID || req.headers['x-session-id'] || `guest_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        const sessionIdHeader = req.headers['x-session-id'];
+        const sessionId = req.sessionID || (Array.isArray(sessionIdHeader) ? sessionIdHeader[0] : sessionIdHeader) || `guest_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
         userId = normalizeGuestId(sessionId);
         console.log(`[Upload] Invalid token, treating as guest: ${userId}`);
       }
