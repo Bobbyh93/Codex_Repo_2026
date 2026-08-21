@@ -25,6 +25,19 @@ interface ContentBlock {
   concepts?: string[];
   keywords?: string[];
   isProcessed: boolean;
+  reviewTopicId?: string;
+}
+
+interface ReviewTopic {
+  id: string;
+  name: string;
+  description?: string;
+  nclexCategory?: string;
+  nclexSubcategory?: string;
+  nursingSpecialty?: string;
+  bodySystem?: string;
+  difficulty?: string;
+  keywords?: string[];
 }
 
 const nursingSpecialties = [
@@ -55,7 +68,7 @@ export default function SimplifiedContentMapper() {
     }
   });
 
-  const { data: reviewTopics = [] } = useQuery({
+  const { data: reviewTopics = [] } = useQuery<ReviewTopic[]>({
     queryKey: ['/api/review-topics'],
     queryFn: async () => {
       const response = await fetch('/api/review-topics');
