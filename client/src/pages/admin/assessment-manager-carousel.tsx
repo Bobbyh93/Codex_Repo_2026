@@ -458,7 +458,7 @@ export default function AssessmentManagerCarousel() {
                 onPlanChange={(planId) => 
                   setCustomizations({ ...customizations, studyPlanId: planId })
                 }
-                studentScore={String(parseFloat(selectedAssessment.overallScore || '0'))}
+                studentScore={selectedAssessment.overallScore || 0}
                 topicsCount={selectedAssessment.topicsCount}
               />
             </TabsContent>

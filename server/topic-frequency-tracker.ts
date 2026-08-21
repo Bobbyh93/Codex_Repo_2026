@@ -1,5 +1,6 @@
 // Topic frequency tracker for identifying high-priority content development areas
 import { db } from "./db";
+import { sql } from "drizzle-orm";
 
 interface TopicReviewEvent {
   topicName: string;
@@ -40,17 +41,11 @@ export async function trackTopicReview(events: TopicReviewEvent[]): Promise<void
   for (const event of events) {
     try {
       // Record the review instance
-      await db.execute(`
-        INSERT INTO topic_review_instances 
+      await db.execute(sql`
+        INSERT INTO topic_review_instances
         (review_topic_name, assessment_report_id, user_identifier, source, confidence_score, created_at)
-        VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
-      `, [
-        event.topicName,
-        event.assessmentReportId || null,
-        event.userIdentifier || null,
-        event.source,
-        event.confidenceScore || 0.5
-      ]);
+        VALUES (${event.topicName}, ${event.assessmentReportId || null}, ${event.userIdentifier || null}, ${event.source}, ${event.confidenceScore || 0.5}, CURRENT_TIMESTAMP)
+      `);
 
       // Update frequency counters
       await updateTopicFrequency(event.topicName);
@@ -65,20 +60,20 @@ export async function trackTopicReview(events: TopicReviewEvent[]): Promise<void
 async function updateTopicFrequency(topicName: string): Promise<void> {
   try {
     // Update review frequency and last reviewed timestamp
-    await db.execute(`
-      UPDATE review_topics 
-      SET 
+    await db.execute(sql`
+      UPDATE review_topics
+      SET
         review_frequency = review_frequency + 1,
         last_reviewed_at = CURRENT_TIMESTAMP,
         content_priority_score = (
-          SELECT COUNT(*) * 1.0 + 
+          SELECT COUNT(*) * 1.0 +
                  COUNT(CASE WHEN created_at > CURRENT_TIMESTAMP - INTERVAL '30 days' THEN 1 END) * 2.0 +
                  AVG(confidence_score) * 10.0
-          FROM topic_review_instances 
-          WHERE review_topic_name = ?
+          FROM topic_review_instances
+          WHERE review_topic_name = ${topicName}
         )
-      WHERE name = ?
-    `, [topicName, topicName]);
+      WHERE name = ${topicName}
+    `);
     
   } catch (error) {
     console.error(`Error updating frequency for ${topicName}:`, error);
@@ -178,15 +173,15 @@ async function identifyContentGaps(frequencyData: TopicFrequencyData[]): Promise
   for (const topic of frequencyData) {
     try {
       // Count available content for this topic
-      const contentResult = await db.execute(`
+      const contentResult = await db.execute(sql`
         SELECT COUNT(*) as content_count
-        FROM content_blocks 
-        WHERE category = $1 OR 
-              title LIKE $2 OR 
-              content LIKE $3
-      `, [topic.topicName, `%${topic.topicName}%`, `%${topic.topicName}%`]);
-      
-      const contentCount = parseInt(contentResult.rows[0]?.content_count) || 0;
+        FROM content_blocks
+        WHERE category = ${topic.topicName} OR
+              title LIKE ${`%${topic.topicName}%`} OR
+              content LIKE ${`%${topic.topicName}%`}
+      `);
+
+      const contentCount = parseInt(contentResult.rows[0]?.content_count as string) || 0;
       const demandScore = topic.contentPriorityScore;
       
       // Calculate resource gap (high demand, low content)
@@ -293,8 +288,8 @@ export async function getPriorityMetrics(): Promise<{
       .map(t => ({ name: t.topicName, score: t.contentPriorityScore }));
     
     return {
-      totalReviews: parseInt(totalResult.rows[0]?.total) || 0,
-      activeTopics: parseInt(activeResult.rows[0]?.active) || 0,
+      totalReviews: parseInt(totalResult.rows[0]?.total as string) || 0,
+      activeTopics: parseInt(activeResult.rows[0]?.active as string) || 0,
       criticalTopics,
       contentGapsCount: gaps.contentGaps.length,
       topDemandTopics

@@ -19,16 +19,18 @@ export async function searchUsersByEmail(req: Request, res: Response) {
       .select({
         id: users.id,
         email: users.email,
-        name: users.name,
+        firstName: users.firstName,
+        lastName: users.lastName,
+        username: users.username,
         createdAt: users.createdAt,
         assessmentCount: sql<number>`COUNT(DISTINCT ${assessmentReports.id})`,
         averageScore: sql<number>`AVG(CAST(${assessmentReports.overallScore} AS FLOAT))`,
-        lastAssessment: sql<string>`MAX(${assessmentReports.createdAt})`
+        lastAssessment: sql<string>`MAX(${assessmentReports.uploadDate})`
       })
       .from(users)
       .leftJoin(assessmentReports, eq(users.id, assessmentReports.userId))
       .where(like(users.email, searchPattern))
-      .groupBy(users.id, users.email, users.name, users.createdAt)
+      .groupBy(users.id, users.email, users.firstName, users.lastName, users.username, users.createdAt)
       .orderBy(desc(users.createdAt))
       .limit(10);
 
@@ -36,7 +38,7 @@ export async function searchUsersByEmail(req: Request, res: Response) {
     const formattedResults = usersWithStats.map(user => ({
       id: user.id.toString(),
       email: user.email,
-      name: user.name || undefined,
+      name: [user.firstName, user.lastName].filter(Boolean).join(' ') || user.username,
       createdAt: user.createdAt?.toISOString(),
       assessmentCount: parseInt(user.assessmentCount?.toString() || '0'),
       averageScore: user.averageScore ? Math.round(user.averageScore) : undefined,
@@ -53,14 +55,9 @@ export async function searchUsersByEmail(req: Request, res: Response) {
 export async function getUserById(req: Request, res: Response) {
   try {
     const { id } = req.params;
-    
+
     if (!id) {
       return res.status(400).json({ error: 'User ID is required' });
-    }
-
-    const userId = parseInt(id);
-    if (isNaN(userId)) {
-      return res.status(400).json({ error: 'Invalid user ID' });
     }
 
     // Get user with assessment statistics
@@ -68,16 +65,18 @@ export async function getUserById(req: Request, res: Response) {
       .select({
         id: users.id,
         email: users.email,
-        name: users.name,
+        firstName: users.firstName,
+        lastName: users.lastName,
+        username: users.username,
         createdAt: users.createdAt,
         assessmentCount: sql<number>`COUNT(DISTINCT ${assessmentReports.id})`,
         averageScore: sql<number>`AVG(CAST(${assessmentReports.overallScore} AS FLOAT))`,
-        lastAssessment: sql<string>`MAX(${assessmentReports.createdAt})`
+        lastAssessment: sql<string>`MAX(${assessmentReports.uploadDate})`
       })
       .from(users)
       .leftJoin(assessmentReports, eq(users.id, assessmentReports.userId))
-      .where(eq(users.id, userId))
-      .groupBy(users.id, users.email, users.name, users.createdAt);
+      .where(eq(users.id, id))
+      .groupBy(users.id, users.email, users.firstName, users.lastName, users.username, users.createdAt);
 
     if (!userWithStats) {
       return res.status(404).json({ error: 'User not found' });
@@ -86,7 +85,7 @@ export async function getUserById(req: Request, res: Response) {
     const formattedUser = {
       id: userWithStats.id.toString(),
       email: userWithStats.email,
-      name: userWithStats.name || undefined,
+      name: [userWithStats.firstName, userWithStats.lastName].filter(Boolean).join(' ') || userWithStats.username,
       createdAt: userWithStats.createdAt?.toISOString(),
       assessmentCount: parseInt(userWithStats.assessmentCount?.toString() || '0'),
       averageScore: userWithStats.averageScore ? Math.round(userWithStats.averageScore) : undefined,
@@ -108,7 +107,9 @@ export async function getAllUsers(req: Request, res: Response) {
       .select({
         id: users.id,
         email: users.email,
-        name: users.name,
+        firstName: users.firstName,
+        lastName: users.lastName,
+        username: users.username,
         createdAt: users.createdAt
       })
       .from(users)
@@ -119,7 +120,7 @@ export async function getAllUsers(req: Request, res: Response) {
     const formattedUsers = usersList.map(user => ({
       id: user.id.toString(),
       email: user.email,
-      name: user.name || undefined,
+      name: [user.firstName, user.lastName].filter(Boolean).join(' ') || user.username,
       createdAt: user.createdAt?.toISOString()
     }));
 

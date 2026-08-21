@@ -306,7 +306,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const emailSent = await EmailService.sendMagicLinkEmail(
         email, 
         magicLinkUrl,
-        result.user?.firstName
+        result.user?.firstName || undefined
       );
       
       if (!emailSent) {
@@ -534,6 +534,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Get progress error:", error);
       res.status(500).json({ error: "Failed to fetch user progress" });
+    }
+  });
+
+  // Aggregate stats backing the progress dashboard header metrics.
+  app.get("/api/user/dashboard-stats", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const stats = await storage.getUserDashboardStats(req.user.userId);
+      res.json(stats);
+    } catch (error) {
+      console.error("Dashboard stats error:", error);
+      res.status(500).json({ error: "Failed to fetch dashboard stats" });
     }
   });
 
@@ -1655,13 +1670,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.log(`[Upload] Authenticated user upload: ${decoded.email}`);
         } else {
           // Guest access - create or use session-based guest ID
-          const sessionId = req.sessionID || req.headers['x-session-id'] || `guest_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+          const sessionIdHeader = req.headers['x-session-id'];
+          const sessionId = req.sessionID || (Array.isArray(sessionIdHeader) ? sessionIdHeader[0] : sessionIdHeader) || `guest_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
           userId = normalizeGuestId(sessionId);
           console.log(`[Upload] Guest user upload: ${userId}`);
         }
       } catch (tokenError) {
         // Invalid token, treat as guest
-        const sessionId = req.sessionID || req.headers['x-session-id'] || `guest_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        const sessionIdHeader = req.headers['x-session-id'];
+        const sessionId = req.sessionID || (Array.isArray(sessionIdHeader) ? sessionIdHeader[0] : sessionIdHeader) || `guest_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
         userId = normalizeGuestId(sessionId);
         console.log(`[Upload] Invalid token, treating as guest: ${userId}`);
       }

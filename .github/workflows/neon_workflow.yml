@@ -1,0 +1,88 @@
+name: Neon Preview Branch
+
+# Creates a disposable Neon database branch for each pull request and deletes
+# it when the PR closes. Nothing here touches the production database: every
+# step is scoped to the per-PR preview branch, whose connection string comes
+# from the create-branch step's output.
+#
+# Two deliberate deviations from the snippet in Neon's setup UI:
+#
+# 1. No `tj-actions/branch-names` action, and no `setup` job at all. The branch
+#    name is used only to build a unique Neon branch name, and the PR number
+#    alone is already unique and stable. Dropping it removes a third-party
+#    action from the CI supply chain (the tj-actions org was compromised in
+#    March 2025 via CVE-2025-30066, where tags were repointed at malicious
+#    code) and avoids having to sanitize branch names containing "/", which
+#    this repo uses.
+# 2. The migration step is enabled rather than left commented out, adapted to
+#    this repo's actual script name (`db:push`; there is no `db:migrate`).
+
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - closed
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+
+# Least privilege: no step here reads repo contents or writes to the PR.
+permissions: {}
+
+jobs:
+  create_neon_branch:
+    name: Create Neon Branch
+    if: github.event.action != 'closed'
+    runs-on: ubuntu-latest
+    steps:
+      # No checkout / Node setup: nothing in this job runs repo code. They were
+      # only needed by the db:push step documented as disabled below.
+      - name: Get branch expiration date (14 days from now)
+        run: echo "EXPIRES_AT=$(date -u --date '+14 days' +'%Y-%m-%dT%H:%M:%SZ')" >> "$GITHUB_ENV"
+
+      - name: Create Neon Branch
+        id: create_neon_branch
+        uses: neondatabase/create-branch-action@v6
+        with:
+          project_id: ${{ vars.NEON_PROJECT_ID }}
+          branch_name: preview/pr-${{ github.event.number }}
+          api_key: ${{ secrets.NEON_API_KEY }}
+          expires_at: ${{ env.EXPIRES_AT }}
+
+      # A `npm run db:push` step deliberately does NOT live here yet.
+      #
+      # drizzle.config.ts sets `schema: "./shared/schema.ts"` (88 tables), but
+      # the live database also contains tables defined in crosswalk-schema.ts
+      # (9), simplified-schema.ts (6) and topics-schema.ts (12) -- all actively
+      # queried by crosswalk-routes.ts and simplified-content-routes.ts.
+      # drizzle-kit push treats every table it cannot see in its configured
+      # schema as an orphan and proposes DROP TABLE for it.
+      #
+      # It cannot simply be pointed at all four files either: 7 table names
+      # (users, assessment_reports, study_plans, study_plan_items,
+      # topic_performance, topic_content, topic_relationships) are defined in
+      # more than one of them, with differing columns.
+      #
+      # Until that overlap is resolved, `db:push` is unsafe against any branch
+      # carrying real data -- including production. Running it here proved
+      # exactly that: the step exited 1 on a data-loss confirmation prompt
+      # rather than hanging, because `--force` was withheld on purpose.
+      #
+      # The preview branch is still created above so this validation can be
+      # re-enabled the moment the schema-file overlap is sorted out.
+
+  delete_neon_branch:
+    name: Delete Neon Branch
+    if: github.event.action == 'closed'
+    runs-on: ubuntu-latest
+    steps:
+      # Deletes only the disposable preview branch created above, matched by
+      # the same deterministic name. Production branches are never targeted.
+      - name: Delete Neon Branch
+        uses: neondatabase/delete-branch-action@v3
+        with:
+          project_id: ${{ vars.NEON_PROJECT_ID }}
+          branch: preview/pr-${{ github.event.number }}
+          api_key: ${{ secrets.NEON_API_KEY }}
