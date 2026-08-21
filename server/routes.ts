@@ -537,6 +537,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Aggregate stats backing the progress dashboard header metrics.
+  app.get("/api/user/dashboard-stats", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const stats = await storage.getUserDashboardStats(req.user.userId);
+      res.json(stats);
+    } catch (error) {
+      console.error("Dashboard stats error:", error);
+      res.status(500).json({ error: "Failed to fetch dashboard stats" });
+    }
+  });
+
   app.post("/api/progress/mark-complete", authenticateToken, async (req: AuthRequest, res) => {
     try {
       if (!req.user) {
