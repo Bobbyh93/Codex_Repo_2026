@@ -20,7 +20,6 @@ import {
   sourceRegistry,
   type ExtractedTable,
   type TableCell,
-  type InsertTableApproval,
   type InsertTableTopicMapping
 } from "@shared/schema";
 import { eq, desc, asc, and, sql, isNull, or, like, inArray } from "drizzle-orm";
@@ -2197,7 +2196,12 @@ export function registerAdminRoutes(app: Express) {
       const { documentId } = req.params;
       const { status } = req.query;
       
-      let query = db
+      const tableConditions = [eq(extractedTables.documentId, documentId)];
+      if (status) {
+        tableConditions.push(eq(extractedTables.status, status as string));
+      }
+
+      const tables = await db
         .select({
           id: extractedTables.id,
           tableIndex: extractedTables.tableIndex,
@@ -2214,20 +2218,11 @@ export function registerAdminRoutes(app: Express) {
           rejectedBy: extractedTables.rejectedBy,
           rejectedAt: extractedTables.rejectedAt,
           metadata: extractedTables.metadata,
-          createdAt: extractedTables.createdAt
+          createdAt: extractedTables.extractedAt
         })
         .from(extractedTables)
-        .where(eq(extractedTables.documentId, documentId))
+        .where(and(...tableConditions))
         .orderBy(extractedTables.tableIndex);
-      
-      if (status) {
-        query = query.where(and(
-          eq(extractedTables.documentId, documentId),
-          eq(extractedTables.status, status as string)
-        )) as any;
-      }
-      
-      const tables = await query;
       
       res.json({
         documentId,
@@ -2295,7 +2290,7 @@ export function registerAdminRoutes(app: Express) {
       }
       
       const { tableId, action, notes, editedTitle, topicMappings } = validation.data;
-      const adminId = req.session.adminId!;
+      const adminId = req.adminUser!.userId;
       
       // Start transaction
       await db.transaction(async (tx) => {
@@ -2323,11 +2318,11 @@ export function registerAdminRoutes(app: Express) {
         // Create approval record
         await tx.insert(tableApprovals).values({
           tableId,
-          adminId,
+          reviewerId: adminId,
           action: action === 'approve' ? 'approved' : 'rejected',
           notes,
-          createdAt: new Date()
-        } as InsertTableApproval);
+          reviewedAt: new Date()
+        });
         
         // If approved and topic mappings provided, create topic mappings
         if (action === 'approve' && topicMappings && topicMappings.length > 0) {
@@ -2419,7 +2414,7 @@ export function registerAdminRoutes(app: Express) {
       }
       
       const { tableIds, action, notes } = validation.data;
-      const adminId = req.session.adminId!;
+      const adminId = req.adminUser!.userId;
       
       await db.transaction(async (tx) => {
         if (action === 'delete') {
@@ -2447,13 +2442,13 @@ export function registerAdminRoutes(app: Express) {
           // Create approval records for each table
           const approvalRecords = tableIds.map(tableId => ({
             tableId,
-            adminId,
+            reviewerId: adminId,
             action: action === 'approve' ? 'approved' as const : 'rejected' as const,
             notes,
-            createdAt: new Date()
+            reviewedAt: new Date()
           }));
-          
-          await tx.insert(tableApprovals).values(approvalRecords as InsertTableApproval[]);
+
+          await tx.insert(tableApprovals).values(approvalRecords);
         }
       });
       
@@ -2533,12 +2528,12 @@ export function registerAdminRoutes(app: Express) {
           extractionConfidence: extractedTables.extractionConfidence,
           approvedAt: extractedTables.approvedAt,
           rejectedAt: extractedTables.rejectedAt,
-          createdAt: extractedTables.createdAt
+          createdAt: extractedTables.extractedAt
         })
         .from(extractedTables)
         .leftJoin(documents, eq(extractedTables.documentId, documents.id))
         .where(whereClause)
-        .orderBy(desc(extractedTables.createdAt))
+        .orderBy(desc(extractedTables.extractedAt))
         .limit(limit)
         .offset(offset);
       
@@ -2575,11 +2570,11 @@ export function registerAdminRoutes(app: Express) {
           documentTitle: documents.title,
           status: extractedTables.status,
           extractionConfidence: extractedTables.extractionConfidence,
-          createdAt: extractedTables.createdAt
+          createdAt: extractedTables.extractedAt
         })
         .from(extractedTables)
         .leftJoin(documents, eq(extractedTables.documentId, documents.id))
-        .orderBy(desc(extractedTables.createdAt))
+        .orderBy(desc(extractedTables.extractedAt))
         .limit(10);
       
       // Get confidence distribution
