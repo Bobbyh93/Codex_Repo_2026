@@ -28,8 +28,10 @@ on:
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
 
-# Least privilege: no step here reads repo contents or writes to the PR.
-permissions: {}
+# Least privilege: contents:read is needed only to check out the repo so the
+# schema-validation step can run. Nothing here writes to the PR.
+permissions:
+  contents: read
 
 jobs:
   create_neon_branch:
@@ -37,8 +39,18 @@ jobs:
     if: github.event.action != 'closed'
     runs-on: ubuntu-latest
     steps:
-      # No checkout / Node setup: nothing in this job runs repo code. They were
-      # only needed by the db:push step documented as disabled below.
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
       - name: Get branch expiration date (14 days from now)
         run: echo "EXPIRES_AT=$(date -u --date '+14 days' +'%Y-%m-%dT%H:%M:%SZ')" >> "$GITHUB_ENV"
 
@@ -51,27 +63,28 @@ jobs:
           api_key: ${{ secrets.NEON_API_KEY }}
           expires_at: ${{ env.EXPIRES_AT }}
 
-      # A `npm run db:push` step deliberately does NOT live here yet.
+      # Applies the Drizzle schema to the PREVIEW branch only -- a disposable
+      # copy -- proving db:push is safe before anyone runs it on production.
       #
-      # drizzle.config.ts sets `schema: "./shared/schema.ts"` (88 tables), but
-      # the live database also contains tables defined in crosswalk-schema.ts
-      # (9), simplified-schema.ts (6) and topics-schema.ts (12) -- all actively
-      # queried by crosswalk-routes.ts and simplified-content-routes.ts.
-      # drizzle-kit push treats every table it cannot see in its configured
-      # schema as an orphan and proposes DROP TABLE for it.
+      # This step previously failed, and correctly so: drizzle.config.ts listed
+      # only shared/schema.ts (88 tables) while the live database has 98, so
+      # push proposed DROP TABLE for the 10 it could not see. That has been
+      # fixed by adding crosswalk-schema.ts (which covers 9 of them and shares
+      # no table names) and excluding user_sessions via tablesFilter, since
+      # connect-pg-simple owns that table.
       #
-      # It cannot simply be pointed at all four files either: 7 table names
-      # (users, assessment_reports, study_plans, study_plan_items,
-      # topic_performance, topic_content, topic_relationships) are defined in
-      # more than one of them, with differing columns.
+      # Still deliberately NOT using `--force`: it auto-approves data-loss
+      # statements. The three columns this branch adds are additive and
+      # nullable, so they apply without it. If push ever wants a destructive
+      # statement again, this step must fail loudly rather than execute it.
       #
-      # Until that overlap is resolved, `db:push` is unsafe against any branch
-      # carrying real data -- including production. Running it here proved
-      # exactly that: the step exited 1 on a data-loss confirmation prompt
-      # rather than hanging, because `--force` was withheld on purpose.
-      #
-      # The preview branch is still created above so this validation can be
-      # re-enabled the moment the schema-file overlap is sorted out.
+      # `< /dev/null` keeps it non-interactive: drizzle-kit prompts on
+      # ambiguous changes and exits on EOF instead of hanging.
+      - name: Apply schema to preview branch
+        timeout-minutes: 5
+        env:
+          DATABASE_URL: ${{ steps.create_neon_branch.outputs.db_url_with_pooler }}
+        run: npm run db:push < /dev/null
 
   delete_neon_branch:
     name: Delete Neon Branch
