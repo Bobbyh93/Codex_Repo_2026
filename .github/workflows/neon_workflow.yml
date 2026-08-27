@@ -66,25 +66,36 @@ jobs:
       # Applies the Drizzle schema to the PREVIEW branch only -- a disposable
       # copy -- proving db:push is safe before anyone runs it on production.
       #
-      # This step previously failed, and correctly so: drizzle.config.ts listed
-      # only shared/schema.ts (88 tables) while the live database has 98, so
-      # push proposed DROP TABLE for the 10 it could not see. That has been
-      # fixed by adding crosswalk-schema.ts (which covers 9 of them and shares
-      # no table names) and excluding user_sessions via tablesFilter, since
-      # connect-pg-simple owns that table.
+      # The action's db_url_with_pooler points at the branch's DEFAULT database,
+      # which on this project is `neondb`. This app's data lives in `nursestudy`
+      # (the branch carries neondb, nursestudy and postgres). Postgres extensions
+      # are per-database, and only `nursestudy` has pgvector -- so pushing at
+      # `neondb` failed with `type "vector" does not exist`, because
+      # shared/schema.ts declares document_chunks.embedding as a vector column.
+      # The database segment of the URL is therefore rewritten below.
       #
-      # Still deliberately NOT using `--force`: it auto-approves data-loss
-      # statements. The three columns this branch adds are additive and
-      # nullable, so they apply without it. If push ever wants a destructive
-      # statement again, this step must fail loudly rather than execute it.
+      # The URL is never echoed: it carries credentials.
       #
-      # `< /dev/null` keeps it non-interactive: drizzle-kit prompts on
-      # ambiguous changes and exits on EOF instead of hanging.
+      # Deliberately no `--force`: it auto-approves data-loss statements. The
+      # three columns this branch adds are additive and nullable and apply
+      # without it. Verified directly against the production schema that push
+      # has nothing else to do: table sets match exactly (no DROP/CREATE TABLE)
+      # and the only column deltas are those three ADD COLUMNs.
+      #
+      # `< /dev/null` keeps it non-interactive so an unexpected prompt exits on
+      # EOF instead of hanging.
       - name: Apply schema to preview branch
         timeout-minutes: 5
         env:
-          DATABASE_URL: ${{ steps.create_neon_branch.outputs.db_url_with_pooler }}
-        run: npm run db:push < /dev/null
+          BRANCH_URL: ${{ steps.create_neon_branch.outputs.db_url_with_pooler }}
+        run: |
+          set -euo pipefail
+          base="${BRANCH_URL%%\?*}"
+          query="${BRANCH_URL#"$base"}"
+          root="${base%/*}"
+          export DATABASE_URL="$root/nursestudy$query"
+          echo "Targeting database: nursestudy (URL withheld)"
+          npm run db:push < /dev/null
 
   delete_neon_branch:
     name: Delete Neon Branch
