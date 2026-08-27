@@ -28,10 +28,8 @@ on:
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
 
-# Least privilege: contents:read is needed only to check out the repo so the
-# schema-validation step can run. Nothing here writes to the PR.
-permissions:
-  contents: read
+# Least privilege: no step reads repo contents or writes to the PR.
+permissions: {}
 
 jobs:
   create_neon_branch:
@@ -39,18 +37,7 @@ jobs:
     if: github.event.action != 'closed'
     runs-on: ubuntu-latest
     steps:
-      - name: Check out repository
-        uses: actions/checkout@v4
-
-      - name: Set up Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-
-      - name: Install dependencies
-        run: npm ci
-
+      # No checkout / Node setup: nothing in this job runs repo code.
       - name: Get branch expiration date (14 days from now)
         run: echo "EXPIRES_AT=$(date -u --date '+14 days' +'%Y-%m-%dT%H:%M:%SZ')" >> "$GITHUB_ENV"
 
@@ -63,39 +50,36 @@ jobs:
           api_key: ${{ secrets.NEON_API_KEY }}
           expires_at: ${{ env.EXPIRES_AT }}
 
-      # Applies the Drizzle schema to the PREVIEW branch only -- a disposable
-      # copy -- proving db:push is safe before anyone runs it on production.
+      # A `npm run db:push` step is deliberately NOT here.
       #
-      # The action's db_url_with_pooler points at the branch's DEFAULT database,
-      # which on this project is `neondb`. This app's data lives in `nursestudy`
-      # (the branch carries neondb, nursestudy and postgres). Postgres extensions
-      # are per-database, and only `nursestudy` has pgvector -- so pushing at
-      # `neondb` failed with `type "vector" does not exist`, because
-      # shared/schema.ts declares document_chunks.embedding as a vector column.
-      # The database segment of the URL is therefore rewritten below.
+      # It was added, and it reported success while changing nothing: after a
+      # green run the preview branch still lacked all three columns, its
+      # written_data_bytes was 0, and its updated_at was days old. A check that
+      # passes without doing anything is worse than no check, so it was removed
+      # rather than left green.
       #
-      # The URL is never echoed: it carries credentials.
+      # drizzle-kit push itself is fine. It was reproduced locally against real
+      # PostgreSQL 16 in every configuration this workflow used -- with
+      # `< /dev/null`, with tablesFilter ["!user_sessions"], against both empty
+      # and populated databases -- and correctly applied the additive column
+      # every time ("[/] Changes applied"). So neither the stdin guard nor the
+      # table filter is at fault.
       #
-      # Deliberately no `--force`: it auto-approves data-loss statements. The
-      # three columns this branch adds are additive and nullable and apply
-      # without it. Verified directly against the production schema that push
-      # has nothing else to do: table sets match exactly (no DROP/CREATE TABLE)
-      # and the only column deltas are those three ADD COLUMNs.
+      # The most likely cause is that preview/pr-7 already existed from an
+      # earlier run (created 2026-08-21, never rewritten since), so
+      # create-branch-action returned without producing a usable connection
+      # string for it. Confirming that needs the Actions log, which redirects to
+      # blob storage blocked by this environment's egress proxy.
       #
-      # `< /dev/null` keeps it non-interactive so an unexpected prompt exits on
-      # EOF instead of hanging.
-      - name: Apply schema to preview branch
-        timeout-minutes: 5
-        env:
-          BRANCH_URL: ${{ steps.create_neon_branch.outputs.db_url_with_pooler }}
-        run: |
-          set -euo pipefail
-          base="${BRANCH_URL%%\?*}"
-          query="${BRANCH_URL#"$base"}"
-          root="${base%/*}"
-          export DATABASE_URL="$root/nursestudy$query"
-          echo "Targeting database: nursestudy (URL withheld)"
-          npm run db:push < /dev/null
+      # Re-enabling this is safe to try once the stale preview branch is gone,
+      # but only if the step is verified to actually apply something -- assert
+      # the columns exist afterwards rather than trusting the exit code.
+      #
+      # The validation it was meant to provide has been obtained directly and
+      # more conclusively by comparing shared/schema.ts + crosswalk-schema.ts
+      # against the live schema: table sets match exactly (no DROP TABLE, no
+      # CREATE TABLE) and the only deltas are this branch's three additive
+      # nullable columns. Production was verified untouched throughout.
 
   delete_neon_branch:
     name: Delete Neon Branch
