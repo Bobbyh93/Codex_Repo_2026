@@ -79,12 +79,10 @@ if (process.env.NODE_ENV === 'production') {
 // Setup security middleware first
 setupSecurityMiddleware(app);
 
-// Add simple health check endpoint at the root for deployment readiness
-app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'ok', message: 'Server is running' });
-});
-
-// Health check endpoints (before rate limiting)
+// Health check endpoints (before rate limiting).
+// registerHealthEndpoints owns /health -- a second app.get('/health') must not
+// be registered before it, or Express first-match would shadow the real check
+// and the probe would report OK with the database down.
 registerHealthEndpoints(app);
 
 // Performance monitoring

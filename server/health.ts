@@ -1,3 +1,4 @@
+import v8 from 'v8';
 import { db } from './db';
 import { sql } from 'drizzle-orm';
 import { AppLogger } from './logger';
@@ -53,7 +54,11 @@ export class HealthCheckService {
   // Check memory usage
   static checkMemory(): HealthCheck {
     const usage = process.memoryUsage();
-    const heapUsedPercent = (usage.heapUsed / usage.heapTotal) * 100;
+    // Measured against the heap ceiling, not heapTotal. heapTotal is only what
+    // V8 has committed so far and grows on demand, so heapUsed/heapTotal sits
+    // near 100% routinely just before a GC -- it says nothing about pressure.
+    const heapLimit = v8.getHeapStatistics().heap_size_limit;
+    const heapUsedPercent = (usage.heapUsed / heapLimit) * 100;
     
     let status: 'ok' | 'warning' | 'error' = 'ok';
     let message = 'Memory usage normal';
@@ -72,6 +77,7 @@ export class HealthCheckService {
       details: {
         heapUsed: Math.round(usage.heapUsed / 1024 / 1024),
         heapTotal: Math.round(usage.heapTotal / 1024 / 1024),
+        heapLimit: Math.round(heapLimit / 1024 / 1024),
         rss: Math.round(usage.rss / 1024 / 1024),
         heapUsedPercent: heapUsedPercent.toFixed(2),
       },
@@ -98,10 +104,15 @@ export class HealthCheckService {
   }
 
   // Comprehensive health check
-  static async performHealthCheck(): Promise<HealthCheckResult> {
+  // includeEmail is opt-in because checkEmailService opens a real SMTP
+  // connection. /health is the platform health probe and runs continuously, so
+  // it must not make an outbound network call on every hit.
+  static async performHealthCheck(
+    options: { includeEmail?: boolean } = {},
+  ): Promise<HealthCheckResult> {
     const [database, email] = await Promise.all([
       this.checkDatabase(),
-      this.checkEmailService(),
+      options.includeEmail ? this.checkEmailService() : Promise.resolve(undefined),
     ]);
 
     const memory = this.checkMemory();
@@ -163,8 +174,15 @@ export function registerHealthEndpoints(app: Express) {
   // Comprehensive health check
   app.get('/health', async (req, res) => {
     try {
-      const health = await HealthCheckService.performHealthCheck();
-      const statusCode = health.status === 'healthy' ? 200 : health.status === 'degraded' ? 200 : 503;
+      const health = await HealthCheckService.performHealthCheck({
+        includeEmail: req.query.email === '1',
+      });
+      // The HTTP status answers one question only: can this instance serve
+      // requests? That is the database being reachable. Memory pressure is
+      // reported in the body but does not fail the probe -- an instance under
+      // memory pressure still serves, and failing here would have the platform
+      // restart it in a loop. health.status still carries the fuller verdict.
+      const statusCode = health.checks.database.status === 'error' ? 503 : 200;
       res.status(statusCode).json(health);
     } catch (error) {
       AppLogger.error('Health check endpoint error', error as Error);
