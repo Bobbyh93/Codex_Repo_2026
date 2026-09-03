@@ -88,11 +88,13 @@ export class HealthCheckService {
   static async checkEmailService(): Promise<HealthCheck> {
     try {
       const { EmailService } = await import('./email-service');
-      const isConnected = await EmailService.testConnection();
+      // testConnection returns { success, error? }. The object is always
+      // truthy, so testing it directly reported 'ok' even when unconfigured.
+      const { success } = await EmailService.testConnection();
       
       return {
-        status: isConnected ? 'ok' : 'warning',
-        message: isConnected ? 'Email service configured' : 'Email service not configured',
+        status: success ? 'ok' : 'warning',
+        message: success ? 'Email service configured' : 'Email service not configured',
       };
     } catch (error) {
       return {
@@ -104,9 +106,11 @@ export class HealthCheckService {
   }
 
   // Comprehensive health check
-  // includeEmail is opt-in because checkEmailService opens a real SMTP
-  // connection. /health is the platform health probe and runs continuously, so
-  // it must not make an outbound network call on every hit.
+  // includeEmail is opt-in to keep the probe path minimal: /health is the
+  // platform health probe and runs continuously, and email reachability is not
+  // part of whether this instance can serve requests. (checkEmailService is
+  // local-only -- it validates the SendGrid API key string and makes no network
+  // call -- so this is about scope, not latency.)
   static async performHealthCheck(
     options: { includeEmail?: boolean } = {},
   ): Promise<HealthCheckResult> {

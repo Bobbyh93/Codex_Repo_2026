@@ -46,7 +46,7 @@ beforeEach(async () => {
   execute.mockReset();
   testConnection.mockReset();
   execute.mockResolvedValue({ rows: [] });
-  testConnection.mockResolvedValue(true);
+  testConnection.mockResolvedValue({ success: true });
 
   const app = express();
   registerHealthEndpoints(app);
@@ -96,6 +96,20 @@ describe('/health as a platform probe', () => {
     const body = await res.json();
     expect(testConnection).toHaveBeenCalled();
     expect(body.checks.email).toBeDefined();
+    expect(body.checks.email.status).toBe('ok');
+  });
+
+  it('reports email as a warning when it is not configured', async () => {
+    // testConnection resolves { success, error? }. The object is always truthy,
+    // so testing it directly reported 'ok' unconditionally and the check was
+    // inert. This pins the success flag being read.
+    testConnection.mockResolvedValue({ success: false, error: 'not configured' });
+
+    const res = await fetch(`${base}/health?email=1`);
+    const body = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(body.checks.email.status).toBe('warning');
   });
 
   it('stays in service under memory pressure, reporting it in the body', async () => {
