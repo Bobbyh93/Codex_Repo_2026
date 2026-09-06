@@ -1,12 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import express from 'express';
 import type { Server } from 'http';
-import { readdirSync, readFileSync } from 'node:fs';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-
-/** server/, as seen from server/tests/. */
-const SERVER_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 /**
  * Regression test for unauthenticated PII exposure.
@@ -44,7 +38,19 @@ vi.mock('../db', () => {
     },
   );
   return {
-    db: { select: (...args: unknown[]) => (select(...args), chain) },
+    db: {
+      select: (...args: unknown[]) => (select(...args), chain),
+      // The rest exist only so importing the whole route tree does not explode;
+      // `select` is the one the handlers under test actually reach for.
+      insert: () => chain,
+      update: () => chain,
+      delete: () => chain,
+      execute: async () => ({ rows: [] }),
+      query: new Proxy(
+        {},
+        { get: () => ({ findFirst: async () => null, findMany: async () => [] }) },
+      ),
+    },
     pool: {},
   };
 });
@@ -137,64 +143,73 @@ describe('/api/admin/users* require an admin session', () => {
 });
 
 /**
- * The suite above mounts its own bare express app. That pins what
- * requireAdminSession *does*, but not that it is actually *attached* to the
- * real application: the registrations are re-declared locally, so deleting the
- * guard from server/routes.ts leaves every assertion above green. That was
- * verified by doing it -- all six passed against a routes.ts with the
- * middleware stripped back out, which is the exact regression this file exists
- * to prevent.
+ * The suite above mounts its own bare express app and re-declares the three
+ * registrations locally. That pins what requireAdminSession *does*, but it
+ * never imports server/routes.ts, so it cannot see whether the guard is
+ * actually *attached* to the real application.
  *
- * registerRoutes() cannot simply be called here to close the gap: it is a
- * 3,700-line function with 62 dynamic imports that pulls in storage, multer,
- * the PDF generator and the ATI parser, and mocking that surface would be far
- * more brittle than the thing being tested.
+ * Verified by doing it: with the middleware stripped back out of
+ * server/routes.ts -- the endpoints once again serving student PII to
+ * anonymous callers -- all six tests above stayed green. That is precisely the
+ * blind spot that let these routes ship unguarded in the first place.
  *
- * So assert against the source of the registrations instead. This is the
- * assertion that fails if someone drops the guard from the real app.
+ * So drive the real registerRoutes(). It is a 3,700-line function with 62
+ * dynamic imports, but it only ever calls methods on the `app` it is handed,
+ * so a recording stub is enough to capture what it wires up: no express, no
+ * listening socket, and `db` mocked exactly as it is above.
  */
 
-/** Registrations are one-liners; a multi-line one trips the count assertion. */
-const REGISTRATION = /\b(?:app|router)\.[a-z]+\(\s*['"`](\/api\/admin\/users[^'"`]*)['"`]/;
+type Registration = { method: string; path: unknown; handlers: unknown[] };
 
-/** Every /api/admin/users* express registration in server/, excluding tests. */
-function adminUserRegistrations(): { file: string; line: string; path: string }[] {
-  const found: { file: string; line: string; path: string }[] = [];
-  // readdirSync returns OS-native separators, so normalise before excluding
-  // this directory -- on Windows the entries look like `tests\foo.test.ts`.
-  const files = readdirSync(SERVER_DIR, { recursive: true, encoding: 'utf8' })
-    .map((f) => f.split(path.sep).join('/'))
-    .filter((f) => f.endsWith('.ts') && !f.split('/').includes('tests'));
-
-  for (const file of files) {
-    const source = readFileSync(path.join(SERVER_DIR, file), 'utf8');
-    for (const line of source.split('\n')) {
-      const match = REGISTRATION.exec(line);
-      if (match) found.push({ file, line: line.trim(), path: match[1] });
-    }
+/** Stands in for an Express app, recording registrations instead of serving. */
+function recordingApp(recorded: Registration[]) {
+  const app: any = {};
+  for (const method of ['get', 'post', 'put', 'patch', 'delete', 'all', 'use', 'options', 'head']) {
+    app[method] = (path: unknown, ...handlers: unknown[]) => {
+      recorded.push({ method, path, handlers });
+      return app;
+    };
   }
-  return found;
+  app.set = () => app;
+  app.engine = () => app;
+  app.locals = {};
+  return app;
 }
 
-describe('server/routes.ts wires the guard onto the real app', () => {
-  it('registers exactly the three known /api/admin/users* routes', () => {
-    // Guards against a vacuous pass: if the paths move, are inlined across
-    // several lines, or a fourth appears, every assertion below would other-
-    // wise silently check nothing.
-    expect(adminUserRegistrations().map((r) => r.path).sort()).toEqual([
+async function adminUserRoutes(): Promise<Registration[]> {
+  const recorded: Registration[] = [];
+  const { registerRoutes } = await import('../routes');
+  await registerRoutes(recordingApp(recorded));
+
+  // Guard against a vacuous pass: if registerRoutes stopped wiring anything --
+  // or quietly failed part way -- the filtered assertions below would hold
+  // trivially. It declares a few hundred routes.
+  expect(recorded.length).toBeGreaterThan(100);
+
+  return recorded.filter(
+    (r) => typeof r.path === 'string' && (r.path as string).startsWith('/api/admin/users'),
+  );
+}
+
+describe('registerRoutes attaches the guard to the real app', () => {
+  // Generous timeout: a cold transform of routes.ts and its 62 dynamic imports
+  // runs well past vitest's 5s default.
+  it('wires requireAdminSession onto every /api/admin/users* route', async () => {
+    const routes = await adminUserRoutes();
+
+    // Pins the set itself, so a renamed, relocated or added route fails here
+    // rather than silently dropping out of the guard check below.
+    expect(routes.map((r) => r.path).sort()).toEqual([
       '/api/admin/users',
       '/api/admin/users/:id',
       '/api/admin/users/search',
     ]);
-  });
 
-  it.each(['/api/admin/users', '/api/admin/users/:id', '/api/admin/users/search'])(
-    'applies requireAdminSession to %s',
-    (routePath) => {
-      const registration = adminUserRegistrations().find((r) => r.path === routePath);
-      expect(registration, `no registration found for ${routePath}`).toBeDefined();
-      // These return student PII. An unguarded registration is the bug.
-      expect(registration!.line).toContain('requireAdminSession');
-    },
-  );
+    for (const route of routes) {
+      // Identity, not name: a same-named local decoy would not satisfy this.
+      expect(route.handlers, `${route.path} is registered without the guard`).toContain(
+        requireAdminSession,
+      );
+    }
+  }, 60_000);
 });
