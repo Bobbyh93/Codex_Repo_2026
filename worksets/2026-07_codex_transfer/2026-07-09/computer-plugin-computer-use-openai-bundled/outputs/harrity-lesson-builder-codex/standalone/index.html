@@ -1,0 +1,541 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Harrity Slide Audio Builder</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f6f8fb;
+        --ink: #172033;
+        --muted: #647084;
+        --surface: #ffffff;
+        --surface-strong: #eef3f9;
+        --line: #d8e0ea;
+        --accent: #1f8a70;
+        --accent-dark: #11614e;
+        --warn: #a45f10;
+        --danger: #b42318;
+        --pass-bg: #dff8ec;
+        --pass-text: #176c45;
+        --fail-bg: #fee4e2;
+        --fail-text: #b42318;
+        --shadow: 0 18px 45px rgba(35, 48, 72, 0.09);
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background:
+          linear-gradient(135deg, rgba(31, 138, 112, 0.08), transparent 32rem),
+          linear-gradient(315deg, rgba(164, 95, 16, 0.07), transparent 28rem),
+          var(--bg);
+        color: var(--ink);
+        min-height: 100vh;
+      }
+
+      main {
+        width: min(1180px, calc(100vw - 32px));
+        margin: 0 auto;
+        padding: 32px 0;
+      }
+
+      .app-header {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 24px;
+      }
+
+      .brand-mark {
+        width: 48px;
+        height: 48px;
+        border-radius: 8px;
+        display: grid;
+        place-items: center;
+        background: var(--ink);
+        color: white;
+        font-weight: 800;
+        font-size: 22px;
+        box-shadow: var(--shadow);
+      }
+
+      h1,
+      h2,
+      p {
+        margin: 0;
+      }
+
+      h1 {
+        font-size: clamp(28px, 4vw, 40px);
+        line-height: 1.05;
+        font-weight: 720;
+      }
+
+      h2 {
+        font-size: 19px;
+        line-height: 1.2;
+      }
+
+      .subtitle,
+      .section-note,
+      .meta {
+        color: var(--muted);
+      }
+
+      .subtitle {
+        margin-top: 5px;
+        font-size: 14px;
+      }
+
+      .layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1.08fr) minmax(330px, 0.92fr);
+        gap: 20px;
+        align-items: start;
+      }
+
+      .panel {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        box-shadow: var(--shadow);
+      }
+
+      .panel-inner {
+        padding: 22px;
+      }
+
+      .stack {
+        display: grid;
+        gap: 18px;
+      }
+
+      .grid-2,
+      .grid-3 {
+        display: grid;
+        gap: 14px;
+      }
+
+      .grid-2 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .grid-3 {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      label {
+        display: block;
+        margin-bottom: 7px;
+        color: #354056;
+        font-size: 13px;
+        font-weight: 680;
+      }
+
+      input,
+      select,
+      textarea,
+      button {
+        font: inherit;
+      }
+
+      input,
+      select,
+      textarea {
+        width: 100%;
+        border: 1px solid #bfccda;
+        border-radius: 8px;
+        background: white;
+        color: var(--ink);
+        outline: none;
+        font-size: 14px;
+        transition:
+          border-color 160ms ease,
+          box-shadow 160ms ease;
+      }
+
+      input,
+      select {
+        min-height: 42px;
+        padding: 0 12px;
+      }
+
+      textarea {
+        min-height: 172px;
+        resize: vertical;
+        padding: 12px;
+        line-height: 1.5;
+      }
+
+      input:focus,
+      select:focus,
+      textarea:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(31, 138, 112, 0.16);
+      }
+
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      button {
+        border: 0;
+        border-radius: 8px;
+        min-height: 42px;
+        padding: 0 15px;
+        font-size: 14px;
+        font-weight: 720;
+        cursor: pointer;
+      }
+
+      .primary {
+        background: var(--accent);
+        color: white;
+      }
+
+      .primary:hover {
+        background: var(--accent-dark);
+      }
+
+      .primary:disabled {
+        background: #b9c4d0;
+        cursor: not-allowed;
+      }
+
+      .secondary {
+        background: white;
+        border: 1px solid #bfccda;
+        color: var(--ink);
+      }
+
+      .side {
+        display: grid;
+        gap: 20px;
+      }
+
+      .section-title {
+        display: grid;
+        gap: 5px;
+        margin-bottom: 16px;
+      }
+
+      .checks {
+        display: grid;
+        gap: 9px;
+      }
+
+      .check-row {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 12px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fbfcfe;
+      }
+
+      .check-name {
+        font-weight: 720;
+        font-size: 14px;
+      }
+
+      .meta {
+        margin-top: 3px;
+        font-size: 12px;
+        line-height: 1.35;
+      }
+
+      .status {
+        flex: 0 0 auto;
+        border-radius: 999px;
+        padding: 4px 8px;
+        font-size: 12px;
+        font-weight: 780;
+      }
+
+      .status.pass {
+        background: var(--pass-bg);
+        color: var(--pass-text);
+      }
+
+      .status.fail {
+        background: var(--fail-bg);
+        color: var(--fail-text);
+      }
+
+      pre {
+        margin: 0;
+        max-height: 340px;
+        overflow: auto;
+        border-radius: 8px;
+        background: #111827;
+        color: #edf2f7;
+        padding: 15px;
+        font-size: 12px;
+        line-height: 1.5;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+
+      .footer-note {
+        margin-top: 14px;
+        color: var(--warn);
+        font-size: 12px;
+        line-height: 1.45;
+      }
+
+      @media (max-width: 900px) {
+        main {
+          width: min(100vw - 24px, 680px);
+          padding: 20px 0;
+        }
+
+        .layout,
+        .grid-2,
+        .grid-3 {
+          grid-template-columns: 1fr;
+        }
+
+        .app-header {
+          align-items: flex-start;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header class="app-header">
+        <div class="brand-mark" aria-hidden="true">A</div>
+        <div>
+          <h1>Slide Audio Builder</h1>
+          <p class="subtitle">Configure one narration file per slide using dependency-free, typed controls.</p>
+        </div>
+      </header>
+
+      <div class="layout">
+        <section class="panel">
+          <div class="panel-inner stack">
+            <div class="grid-2">
+              <div>
+                <label for="lessonTitle">Lesson title</label>
+                <input id="lessonTitle" placeholder="Example: Oxygenation" />
+              </div>
+              <div>
+                <label for="slideId">Slide ID</label>
+                <input id="slideId" value="S001" />
+              </div>
+            </div>
+
+            <div class="grid-3">
+              <div>
+                <label for="audioModel">Audio model</label>
+                <select id="audioModel"></select>
+              </div>
+              <div>
+                <label for="voice">Voice</label>
+                <select id="voice"></select>
+              </div>
+              <div>
+                <label for="responseFormat">Format</label>
+                <select id="responseFormat"></select>
+              </div>
+            </div>
+
+            <div>
+              <label for="scriptText">Teleprompter script</label>
+              <textarea
+                id="scriptText"
+                placeholder="Paste only the narration text the lecturer should speak. Do not paste prompt instructions."
+              ></textarea>
+            </div>
+
+            <div class="actions">
+              <button class="primary" id="prepareButton" type="button" disabled>Prepare audio payload</button>
+              <button class="secondary" id="resetButton" type="button">Reset</button>
+            </div>
+          </div>
+        </section>
+
+        <aside class="side">
+          <section class="panel">
+            <div class="panel-inner">
+              <div class="section-title">
+                <h2>Build checks</h2>
+                <p class="section-note">These checks run without external icon or select packages.</p>
+              </div>
+              <div class="checks" id="checks"></div>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-inner">
+              <div class="section-title">
+                <h2>Speech request payload</h2>
+                <p class="section-note">Use this object for backend TTS generation.</p>
+              </div>
+              <pre id="payload"></pre>
+              <p class="footer-note">
+                This local preview prepares payloads only. It does not call OpenAI or write lesson files.
+              </p>
+            </div>
+          </section>
+        </aside>
+      </div>
+    </main>
+
+    <script>
+      const TTS_MODELS = ["gpt-4o-mini-tts", "tts-1", "tts-1-hd"];
+      const VOICES = [
+        "alloy",
+        "ash",
+        "ballad",
+        "coral",
+        "echo",
+        "fable",
+        "onyx",
+        "nova",
+        "sage",
+        "shimmer",
+        "verse",
+        "marin",
+        "cedar",
+      ];
+      const AUDIO_FORMATS = ["mp3", "wav", "aac", "flac", "opus", "pcm"];
+
+      const DEFAULT_FORM = {
+        lessonTitle: "",
+        slideId: "S001",
+        audioModel: "gpt-4o-mini-tts",
+        voice: "alloy",
+        responseFormat: "mp3",
+        scriptText: "",
+      };
+
+      const fields = {
+        lessonTitle: document.querySelector("#lessonTitle"),
+        slideId: document.querySelector("#slideId"),
+        audioModel: document.querySelector("#audioModel"),
+        voice: document.querySelector("#voice"),
+        responseFormat: document.querySelector("#responseFormat"),
+        scriptText: document.querySelector("#scriptText"),
+      };
+
+      const checksNode = document.querySelector("#checks");
+      const payloadNode = document.querySelector("#payload");
+      const prepareButton = document.querySelector("#prepareButton");
+      const resetButton = document.querySelector("#resetButton");
+
+      function fillSelect(select, values) {
+        select.innerHTML = values.map((value) => `<option value="${value}">${value}</option>`).join("");
+      }
+
+      function readForm() {
+        return {
+          lessonTitle: fields.lessonTitle.value,
+          slideId: fields.slideId.value,
+          audioModel: fields.audioModel.value,
+          voice: fields.voice.value,
+          responseFormat: fields.responseFormat.value,
+          scriptText: fields.scriptText.value,
+        };
+      }
+
+      function setForm(form) {
+        for (const [key, value] of Object.entries(form)) {
+          fields[key].value = value;
+        }
+        render();
+      }
+
+      function isSupportedValue(values, value) {
+        return values.includes(value);
+      }
+
+      function runSelfTests(form) {
+        return [
+          {
+            name: "default model is supported",
+            pass: isSupportedValue(TTS_MODELS, DEFAULT_FORM.audioModel),
+            detail: DEFAULT_FORM.audioModel,
+          },
+          {
+            name: "selected model is supported",
+            pass: isSupportedValue(TTS_MODELS, form.audioModel),
+            detail: form.audioModel,
+          },
+          {
+            name: "selected voice is supported",
+            pass: isSupportedValue(VOICES, form.voice),
+            detail: form.voice,
+          },
+          {
+            name: "selected response format is supported",
+            pass: isSupportedValue(AUDIO_FORMATS, form.responseFormat),
+            detail: form.responseFormat,
+          },
+          {
+            name: "slide id is present",
+            pass: form.slideId.trim().length > 0,
+            detail: form.slideId || "missing",
+          },
+          {
+            name: "script is narration-only text",
+            pass: !/\b(system|developer|prompt|instruction|write a|generate a)\b/i.test(form.scriptText),
+            detail: "blocks obvious prompt/instruction leakage",
+          },
+        ];
+      }
+
+      function buildSpeechPayload(form) {
+        return {
+          model: form.audioModel,
+          voice: form.voice,
+          response_format: form.responseFormat,
+          input: form.scriptText.trim(),
+        };
+      }
+
+      function render() {
+        const form = readForm();
+        const tests = runSelfTests(form);
+        const allTestsPass = tests.every((test) => test.pass);
+        const canGenerate = form.scriptText.trim().length > 0 && allTestsPass;
+        prepareButton.disabled = !canGenerate;
+
+        checksNode.innerHTML = tests
+          .map(
+            (test) => `
+              <div class="check-row">
+                <div>
+                  <p class="check-name">${test.name}</p>
+                  <p class="meta">${test.detail}</p>
+                </div>
+                <span class="status ${test.pass ? "pass" : "fail"}">${test.pass ? "pass" : "fail"}</span>
+              </div>
+            `,
+          )
+          .join("");
+
+        payloadNode.textContent = JSON.stringify(buildSpeechPayload(form), null, 2);
+      }
+
+      fillSelect(fields.audioModel, TTS_MODELS);
+      fillSelect(fields.voice, VOICES);
+      fillSelect(fields.responseFormat, AUDIO_FORMATS);
+      setForm(DEFAULT_FORM);
+
+      Object.values(fields).forEach((field) => field.addEventListener("input", render));
+      resetButton.addEventListener("click", () => setForm(DEFAULT_FORM));
+    </script>
+  </body>
+</html>

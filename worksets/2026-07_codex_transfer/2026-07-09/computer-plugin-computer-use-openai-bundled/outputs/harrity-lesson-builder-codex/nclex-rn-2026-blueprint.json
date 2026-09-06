@@ -1,0 +1,97 @@
+{
+  "exam": "NCLEX-RN",
+  "testPlanYear": 2026,
+  "effectiveStart": "2026-04-01",
+  "effectiveEnd": "2029-03-31",
+  "source": {
+    "testPlansPage": "https://www.nclex.com/test-plans.page",
+    "rnTestPlanPdf": "https://www.nclex.com/files/2026_RN_Test%20Plan_English-F.pdf",
+    "catPage": "https://www.nclex.com/computerized-adaptive-testing.page",
+    "clinicalJudgmentPage": "https://www.nclex.com/clinical-judgment-measurement-model.page"
+  },
+  "examLength": {
+    "minItems": 85,
+    "maxItems": 150,
+    "timeLimitHours": 5,
+    "pretestItems": 15,
+    "minimumLengthScoredContentItems": 52,
+    "minimumLengthClinicalJudgmentCaseStudyItems": 18
+  },
+  "clinicalJudgment": {
+    "caseStudySetsAtMinimumLength": 3,
+    "itemsPerCaseStudy": 6,
+    "approximateStandaloneClinicalJudgmentItemPercent": 10,
+    "steps": [
+      "recognize_cues",
+      "analyze_cues",
+      "prioritize_hypotheses",
+      "generate_solutions",
+      "take_action",
+      "evaluate_outcomes"
+    ]
+  },
+  "clientNeeds": [
+    {
+      "category": "Safe and Effective Care Environment",
+      "subcategory": "Management of Care",
+      "minPercent": 15,
+      "maxPercent": 21,
+      "midpointPercent": 18
+    },
+    {
+      "category": "Safe and Effective Care Environment",
+      "subcategory": "Safety and Infection Prevention and Control",
+      "minPercent": 10,
+      "maxPercent": 16,
+      "midpointPercent": 13
+    },
+    {
+      "category": "Health Promotion and Maintenance",
+      "subcategory": null,
+      "minPercent": 6,
+      "maxPercent": 12,
+      "midpointPercent": 9
+    },
+    {
+      "category": "Psychosocial Integrity",
+      "subcategory": null,
+      "minPercent": 6,
+      "maxPercent": 12,
+      "midpointPercent": 9
+    },
+    {
+      "category": "Physiological Integrity",
+      "subcategory": "Basic Care and Comfort",
+      "minPercent": 6,
+      "maxPercent": 12,
+      "midpointPercent": 9
+    },
+    {
+      "category": "Physiological Integrity",
+      "subcategory": "Pharmacological and Parenteral Therapies",
+      "minPercent": 13,
+      "maxPercent": 19,
+      "midpointPercent": 16
+    },
+    {
+      "category": "Physiological Integrity",
+      "subcategory": "Reduction of Risk Potential",
+      "minPercent": 9,
+      "maxPercent": 15,
+      "midpointPercent": 12
+    },
+    {
+      "category": "Physiological Integrity",
+      "subcategory": "Physiological Adaptation",
+      "minPercent": 11,
+      "maxPercent": 17,
+      "midpointPercent": 14
+    }
+  ],
+  "catSelectionCriteria": [
+    "match_test_plan_percentages",
+    "align_item_difficulty_to_ability_estimate",
+    "avoid_repeating_items_for_repeat_candidate"
+  ],
+  "prototypeWarning": "Use this blueprint for educational CAT-style simulation and product planning only. Do not represent the prototype as the official NCLEX scoring engine."
+}

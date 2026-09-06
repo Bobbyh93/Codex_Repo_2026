@@ -1,0 +1,1161 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>CAT Testing Studio</title>
+    <style>
+      :root {
+        --bg: #eef5f7;
+        --panel: #ffffff;
+        --ink: #102033;
+        --muted: #627286;
+        --line: #d8e4ea;
+        --accent: #0f5e7a;
+        --accent-2: #b98b13;
+        --pass: #dff8eb;
+        --fail: #ffe8e0;
+        --shadow: 0 18px 48px rgba(18, 44, 63, 0.1);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: radial-gradient(circle at top left, #f8fcfd 0, var(--bg) 44%, #edf2f5 100%);
+        color: var(--ink);
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      button,
+      select {
+        font: inherit;
+      }
+
+      button {
+        cursor: pointer;
+      }
+
+      button:disabled {
+        cursor: not-allowed;
+        opacity: 0.55;
+      }
+
+      .shell {
+        width: min(1180px, calc(100vw - 28px));
+        margin: 0 auto;
+        padding: 22px 0 40px;
+      }
+
+      .topbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 22px;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+
+      .mark {
+        display: grid;
+        width: 52px;
+        height: 52px;
+        place-items: center;
+        border-radius: 8px;
+        background: #0d1b2a;
+        color: white;
+        font-weight: 850;
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin: 0;
+      }
+
+      h1 {
+        font-size: clamp(30px, 5vw, 48px);
+        line-height: 0.95;
+        letter-spacing: 0;
+      }
+
+      h2 {
+        font-size: 24px;
+        line-height: 1.1;
+        letter-spacing: 0;
+      }
+
+      h3 {
+        font-size: 16px;
+        line-height: 1.25;
+      }
+
+      .subtitle,
+      .muted {
+        color: var(--muted);
+      }
+
+      .small {
+        font-size: 13px;
+        line-height: 1.45;
+      }
+
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        min-height: 30px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 5px 12px;
+        background: rgba(255, 255, 255, 0.78);
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 760;
+      }
+
+      .layout {
+        display: grid;
+        grid-template-columns: 260px minmax(0, 1fr);
+        gap: 18px;
+      }
+
+      .sidebar,
+      .panel {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.92);
+        box-shadow: var(--shadow);
+      }
+
+      .sidebar {
+        position: sticky;
+        top: 16px;
+        align-self: start;
+        padding: 14px;
+      }
+
+      .nav {
+        display: grid;
+        gap: 8px;
+      }
+
+      .nav button {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        width: 100%;
+        border: 0;
+        border-radius: 8px;
+        padding: 13px 12px;
+        background: transparent;
+        color: var(--muted);
+        font-weight: 820;
+        text-align: left;
+      }
+
+      .nav button.active {
+        background: #0d1b2a;
+        color: white;
+        outline: 2px solid var(--accent-2);
+      }
+
+      .build-path {
+        display: grid;
+        gap: 10px;
+        margin-top: 20px;
+      }
+
+      .path-row,
+      .gate-row,
+      .result-row,
+      .map-row,
+      .coverage-row {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fff;
+        padding: 12px;
+      }
+
+      .path-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .status {
+        display: inline-flex;
+        align-items: center;
+        border-radius: 999px;
+        padding: 4px 9px;
+        font-size: 12px;
+        font-weight: 820;
+      }
+
+      .status.pass {
+        background: var(--pass);
+        color: #086334;
+      }
+
+      .status.fail {
+        background: var(--fail);
+        color: #9b2d18;
+      }
+
+      .panel-inner {
+        padding: 20px;
+      }
+
+      .section-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 14px;
+        margin-bottom: 16px;
+      }
+
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        justify-content: flex-end;
+      }
+
+      .btn {
+        min-height: 42px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 10px 14px;
+        background: white;
+        color: var(--ink);
+        font-weight: 820;
+      }
+
+      .btn.primary {
+        border-color: var(--accent);
+        background: var(--accent);
+        color: white;
+      }
+
+      .btn.warning {
+        border-color: var(--accent-2);
+        color: #5c4308;
+      }
+
+      .grid-3 {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .field {
+        display: grid;
+        gap: 7px;
+      }
+
+      .field label {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 820;
+        text-transform: uppercase;
+      }
+
+      select {
+        min-height: 44px;
+        width: 100%;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 0 12px;
+        background: white;
+        color: var(--ink);
+        font-weight: 740;
+      }
+
+      .soft {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #f8fbfc;
+        padding: 14px;
+      }
+
+      .metrics,
+      .remediation-grid,
+      .two-col {
+        display: grid;
+        gap: 12px;
+      }
+
+      .metrics {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .metric,
+      .remediation-card {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fff;
+        padding: 16px;
+      }
+
+      .metric-value,
+      .card-value {
+        margin-top: 8px;
+        font-size: 32px;
+        font-weight: 860;
+      }
+
+      .two-col {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        margin-top: 16px;
+      }
+
+      .remediation-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .question-card {
+        display: grid;
+        gap: 16px;
+      }
+
+      .stem {
+        font-size: 21px;
+        line-height: 1.35;
+        font-weight: 780;
+      }
+
+      .options {
+        display: grid;
+        gap: 10px;
+      }
+
+      .option {
+        display: grid;
+        grid-template-columns: 34px minmax(0, 1fr);
+        gap: 10px;
+        width: 100%;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 12px;
+        background: white;
+        color: var(--ink);
+        text-align: left;
+      }
+
+      .option.selected {
+        border-color: var(--accent-2);
+        outline: 2px solid rgba(185, 139, 19, 0.25);
+      }
+
+      .option.correct {
+        background: var(--pass);
+      }
+
+      .option.incorrect {
+        background: var(--fail);
+      }
+
+      .key {
+        display: grid;
+        width: 30px;
+        height: 30px;
+        place-items: center;
+        border-radius: 999px;
+        background: #edf5f7;
+        font-weight: 850;
+      }
+
+      .tag-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 7px;
+        margin-top: 10px;
+      }
+
+      .tag {
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 4px 9px;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 740;
+      }
+
+      .bar-list,
+      .review-list,
+      .item-list,
+      .gate-list,
+      .coverage-list {
+        display: grid;
+        gap: 10px;
+      }
+
+      .bar-label {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 6px;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 760;
+      }
+
+      .bar-track {
+        height: 10px;
+        overflow: hidden;
+        border-radius: 999px;
+        background: #dce9ef;
+      }
+
+      .bar-fill {
+        height: 100%;
+        border-radius: inherit;
+        background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      }
+
+      .trend {
+        display: flex;
+        align-items: end;
+        height: 96px;
+        gap: 8px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 10px;
+        background: #fff;
+      }
+
+      .trend-bar {
+        flex: 1;
+        min-width: 8px;
+        border-radius: 5px 5px 0 0;
+        background: var(--accent);
+      }
+
+      .export-box {
+        max-height: 320px;
+        overflow: auto;
+        border: 1px solid #183149;
+        border-radius: 8px;
+        padding: 14px;
+        background: #071c2f;
+        color: #e8f6fb;
+        font: 12px/1.55 Consolas, "SFMono-Regular", monospace;
+        white-space: pre-wrap;
+      }
+
+      .coverage-row {
+        display: grid;
+        grid-template-columns: minmax(190px, 1.4fr) 80px minmax(170px, 1fr);
+        align-items: center;
+        gap: 12px;
+      }
+
+      .depth-meter {
+        display: block;
+        height: 8px;
+        margin-top: 6px;
+        overflow: hidden;
+        border-radius: 999px;
+        background: #dce9ef;
+      }
+
+      .depth-fill {
+        display: block;
+        height: 100%;
+        border-radius: inherit;
+        background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      }
+
+      .hidden {
+        display: none !important;
+      }
+
+      @media (max-width: 900px) {
+        .layout,
+        .two-col {
+          grid-template-columns: 1fr;
+        }
+
+        .sidebar {
+          position: static;
+        }
+      }
+
+      @media (max-width: 680px) {
+        .shell {
+          width: min(100vw - 20px, 640px);
+        }
+
+        .topbar,
+        .section-head {
+          display: grid;
+        }
+
+        .metrics,
+        .grid-3,
+        .remediation-grid,
+        .coverage-row {
+          grid-template-columns: 1fr;
+        }
+
+        h1 {
+          font-size: 34px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="shell">
+      <header class="topbar">
+        <div class="brand">
+          <div class="mark" aria-hidden="true">HN</div>
+          <div>
+            <h1>CAT Testing Studio</h1>
+            <p class="subtitle">Adaptive nursing practice connected to NCLEX blueprint, concepts, items, and remediation.</p>
+          </div>
+        </div>
+        <div class="actions">
+          <span class="pill" id="sessionStatus">Prototype mode</span>
+          <span class="pill">NCLEX-RN 2026</span>
+        </div>
+      </header>
+
+      <div class="layout">
+        <aside class="sidebar">
+          <nav class="nav" aria-label="CAT studio sections">
+            <button type="button" data-view="practice" class="active"><span>CAT Practice</span><span id="navPractice">ready</span></button>
+            <button type="button" data-view="results"><span>Results</span><span id="navResults">empty</span></button>
+            <button type="button" data-view="mapping"><span>Content Map</span><span>items</span></button>
+            <button type="button" data-view="control"><span>Control Plane</span><span id="navControl">pass</span></button>
+          </nav>
+          <div class="build-path" id="buildPath"></div>
+        </aside>
+
+        <section>
+          <div class="panel view" id="view-practice">
+            <div class="panel-inner" id="setupScreen">
+              <div class="section-head">
+                <div>
+                  <h2>Start adaptive practice</h2>
+                  <p class="muted small">The selector prioritizes under-covered blueprint categories and difficulty match.</p>
+                </div>
+                <span class="status pass">ready</span>
+              </div>
+              <div class="grid-3">
+                <div class="field">
+                  <label for="scopeSelect">Scope</label>
+                  <select id="scopeSelect"></select>
+                </div>
+                <div class="field">
+                  <label for="lengthSelect">Session length</label>
+                  <select id="lengthSelect">
+                    <option value="4">4 item smoke test</option>
+                    <option value="8">8 item blueprint pass</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="startAbility">Starting estimate</label>
+                  <select id="startAbility">
+                    <option value="-0.5">developing</option>
+                    <option value="0" selected>baseline</option>
+                    <option value="0.5">advancing</option>
+                  </select>
+                </div>
+              </div>
+              <div class="actions" style="margin-top: 16px">
+                <button class="btn primary" id="startButton" type="button">Start CAT practice</button>
+                <button class="btn" id="resetButton" type="button">Reset prototype</button>
+              </div>
+              <div class="soft" style="margin-top: 16px">
+                <h3>Readiness gates</h3>
+                <div class="gate-list" id="readinessList" style="margin-top: 10px"></div>
+              </div>
+            </div>
+
+            <div class="panel-inner hidden" id="examScreen">
+              <div class="section-head">
+                <div>
+                  <h2 id="progressTitle">Item 1 of 4</h2>
+                  <p class="muted small" id="selectionReason"></p>
+                </div>
+                <div class="actions"><span class="pill" id="abilityPill">ability 0.00</span></div>
+              </div>
+              <div class="question-card">
+                <div class="tag-list" id="questionMeta"></div>
+                <p class="stem" id="stem"></p>
+                <div class="options" id="options"></div>
+                <div class="soft hidden" id="rationaleBox"></div>
+                <div class="actions">
+                  <button class="btn primary" id="confirmButton" type="button" disabled>Confirm answer</button>
+                  <button class="btn primary hidden" id="nextButton" type="button">Next item</button>
+                  <button class="btn" id="endButton" type="button">End session</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel view hidden" id="view-results">
+            <div class="panel-inner">
+              <div class="section-head">
+                <div>
+                  <h2>Results and remediation</h2>
+                  <p class="muted small">Adaptive performance mapped back to concepts, lessons, and item rationales.</p>
+                </div>
+                <div class="actions">
+                  <button class="btn warning" id="exportButton" type="button" disabled>Export session</button>
+                  <button class="btn primary" id="retestButton" type="button" disabled>Retest weak concepts</button>
+                </div>
+              </div>
+              <div class="soft" id="resultsEmpty">
+                <h3>No completed session yet</h3>
+                <p class="muted small">Start CAT Practice to generate results.</p>
+              </div>
+              <div class="hidden" id="resultsContent">
+                <div class="metrics">
+                  <div class="metric"><p class="muted small">Score</p><p class="metric-value" id="scoreMetric">0%</p></div>
+                  <div class="metric"><p class="muted small">Ability estimate</p><p class="metric-value" id="abilityMetric">0.00</p></div>
+                  <div class="metric"><p class="muted small">Weak concepts</p><p class="metric-value" id="weakMetric">0</p></div>
+                </div>
+                <section class="soft" style="margin-top: 16px">
+                  <h2>Remediation plan</h2>
+                  <p class="muted small">Generated from missed concepts, linked lessons, and rationales.</p>
+                  <div class="remediation-grid" id="remediationPlan" style="margin-top: 12px"></div>
+                </section>
+                <section class="soft hidden" id="exportPanel" style="margin-top: 16px">
+                  <h2>Session evidence</h2>
+                  <p class="muted small">Portable JSON for instructor review, analytics, or LMS integration.</p>
+                  <pre class="export-box" id="sessionExport" style="margin-top: 12px"></pre>
+                </section>
+                <div class="two-col">
+                  <section class="soft">
+                    <h2>Blueprint coverage</h2>
+                    <div class="bar-list" id="coverageBars" style="margin-top: 12px"></div>
+                    <h2 style="margin-top: 16px">Ability trend</h2>
+                    <div class="trend" id="abilityTrend" style="margin-top: 10px"></div>
+                  </section>
+                  <section class="soft">
+                    <h2>Review queue</h2>
+                    <div class="review-list" id="reviewList" style="margin-top: 12px"></div>
+                  </section>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel view hidden" id="view-mapping">
+            <div class="panel-inner">
+              <div class="section-head">
+                <div>
+                  <h2>Learning content mapping</h2>
+                  <p class="muted small">Every item traces to a client-needs category, concepts, lessons, and rationale.</p>
+                </div>
+              </div>
+              <div class="item-list" id="itemMap"></div>
+            </div>
+          </div>
+
+          <div class="panel view hidden" id="view-control">
+            <div class="panel-inner">
+              <div class="section-head">
+                <div>
+                  <h2>Control Plane Gates</h2>
+                  <p class="muted small">Gate status for CAT readiness and content integrity.</p>
+                </div>
+                <button class="btn" id="gateButton" type="button">Run gates</button>
+              </div>
+              <div class="two-col">
+                <section>
+                  <h2>CAT gates</h2>
+                  <div class="gate-list" id="controlGates" style="margin-top: 12px"></div>
+                </section>
+                <section>
+                  <h2>Source anchors</h2>
+                  <div class="soft" style="margin-top: 12px">
+                    <p class="small"><strong>Prototype boundary:</strong> educational CAT-style simulator; not official NCLEX scoring equivalence.</p>
+                  </div>
+                </section>
+              </div>
+              <section class="soft" style="margin-top: 16px">
+                <h2>Educator coverage matrix</h2>
+                <p class="muted small">Blueprint depth view for deciding which categories need more approved items before a real CAT pilot.</p>
+                <div class="coverage-list" id="coverageMatrix" style="margin-top: 12px"></div>
+              </section>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <script>
+      const blueprint = [
+        ["Management of Care", 18],
+        ["Safety and Infection Prevention and Control", 13],
+        ["Health Promotion and Maintenance", 9],
+        ["Psychosocial Integrity", 9],
+        ["Basic Care and Comfort", 9],
+        ["Pharmacological and Parenteral Therapies", 16],
+        ["Reduction of Risk Potential", 12],
+        ["Physiological Adaptation", 14],
+      ].map(([category, target]) => ({ category, target }));
+
+      const items = [
+        item("ITEM-001", "Management of Care", "prioritize_hypotheses", ["delegation", "wound-care", "scope-of-practice"], "LESSON-DELEGATION-001", -0.2, "A charge nurse assigns care for a client who requires sterile wound irrigation. Which staff member is appropriate to assign?", ["Experienced RN", "Unit clerk", "Unlicensed assistive personnel", "Transport aide"], "A", "Sterile wound irrigation requires nursing assessment, sterile technique, and RN accountability."),
+        item("ITEM-002", "Pharmacological and Parenteral Therapies", "analyze_cues", ["medication-safety", "electrolytes", "iv-therapy"], "LESSON-MED-SAFETY-001", 0.4, "A nurse receives prescriptions for four clients. Which prescription should the nurse question?", ["Administer regular insulin using a sliding scale.", "Give potassium chloride IV push for hypokalemia.", "Start oxygen at 2 L/min by nasal cannula.", "Obtain a serum trough level before the next antibiotic dose."], "B", "Potassium chloride should not be administered IV push because it can cause fatal dysrhythmias."),
+        item("ITEM-003", "Physiological Adaptation", "take_action", ["oxygenation", "priority-setting", "acute-change"], "LESSON-OXYGENATION-001", 0.1, "A client has oxygen saturation of 88% on room air and new confusion. Which action should the nurse take first?", ["Document and reassess in one hour.", "Apply oxygen per protocol and assess respiratory status.", "Encourage oral fluids.", "Ask family about baseline cognition."], "B", "Hypoxemia with acute confusion requires immediate oxygenation support and respiratory assessment."),
+        item("ITEM-004", "Safety and Infection Prevention and Control", "evaluate_outcomes", ["fall-prevention", "safety", "quality-improvement"], "LESSON-SAFETY-002", 0.1, "After fall precautions are initiated, which observation shows the plan is effective?", ["Call light is clipped behind the bed.", "Client wears nonskid footwear when ambulating.", "Bed is left in high position for transfers.", "Side rails are all raised at all times."], "B", "Nonskid footwear during ambulation is an appropriate fall-prevention outcome."),
+        item("ITEM-005", "Reduction of Risk Potential", "recognize_cues", ["diagnostics", "post-procedure-care", "bleeding-risk"], "LESSON-RISK-REDUCTION-001", 0.2, "Four hours after a liver biopsy, which finding requires immediate follow-up?", ["Mild soreness at puncture site", "Blood pressure 88/54 mm Hg", "Temperature 99.1 F", "Reports wanting to sleep"], "B", "Hypotension after liver biopsy can indicate internal bleeding and requires immediate intervention."),
+        item("ITEM-006", "Basic Care and Comfort", "generate_solutions", ["mobility", "skin-integrity", "comfort"], "LESSON-BASIC-CARE-001", -0.6, "Which intervention best reduces pressure injury risk for an immobile client?", ["Reposition at scheduled intervals.", "Limit oral fluids.", "Keep the head of bed at 90 degrees.", "Massage reddened bony prominences."], "A", "Scheduled repositioning reduces pressure duration and protects skin integrity."),
+        item("ITEM-007", "Psychosocial Integrity", "analyze_cues", ["therapeutic-communication", "anxiety", "coping"], "LESSON-PSYCHOSOCIAL-001", -0.1, "A client says, 'I cannot stop worrying about surgery tomorrow.' Which response is therapeutic?", ["You should not worry because surgery is routine.", "Tell me what concerns you most right now.", "The surgeon will explain everything later.", "I will ask for a sedative."], "B", "Open-ended exploration supports therapeutic communication and assessment of anxiety."),
+        item("ITEM-008", "Health Promotion and Maintenance", "generate_solutions", ["patient-education", "screening", "prevention"], "LESSON-HEALTH-PROMOTION-001", -0.3, "Which instruction supports health promotion for an adult client with hypertension?", ["Stop medication when blood pressure improves.", "Use a home blood pressure log.", "Avoid all physical activity.", "Increase sodium intake during hot weather."], "B", "Home blood pressure monitoring supports self-management and follow-up."),
+      ];
+
+      const state = {
+        view: "practice",
+        session: null,
+        current: null,
+        selected: null,
+        lastResults: null,
+        weakScope: null,
+        exportOpen: false,
+      };
+
+      const els = {
+        views: [...document.querySelectorAll(".view")],
+        nav: [...document.querySelectorAll(".nav button")],
+        buildPath: document.querySelector("#buildPath"),
+        scope: document.querySelector("#scopeSelect"),
+        length: document.querySelector("#lengthSelect"),
+        startAbility: document.querySelector("#startAbility"),
+        start: document.querySelector("#startButton"),
+        reset: document.querySelector("#resetButton"),
+        setup: document.querySelector("#setupScreen"),
+        exam: document.querySelector("#examScreen"),
+        status: document.querySelector("#sessionStatus"),
+        readiness: document.querySelector("#readinessList"),
+        progress: document.querySelector("#progressTitle"),
+        reason: document.querySelector("#selectionReason"),
+        ability: document.querySelector("#abilityPill"),
+        meta: document.querySelector("#questionMeta"),
+        stem: document.querySelector("#stem"),
+        options: document.querySelector("#options"),
+        rationale: document.querySelector("#rationaleBox"),
+        confirm: document.querySelector("#confirmButton"),
+        next: document.querySelector("#nextButton"),
+        end: document.querySelector("#endButton"),
+        empty: document.querySelector("#resultsEmpty"),
+        content: document.querySelector("#resultsContent"),
+        score: document.querySelector("#scoreMetric"),
+        finalAbility: document.querySelector("#abilityMetric"),
+        weak: document.querySelector("#weakMetric"),
+        remediation: document.querySelector("#remediationPlan"),
+        exportButton: document.querySelector("#exportButton"),
+        exportPanel: document.querySelector("#exportPanel"),
+        exportText: document.querySelector("#sessionExport"),
+        retest: document.querySelector("#retestButton"),
+        coverage: document.querySelector("#coverageBars"),
+        trend: document.querySelector("#abilityTrend"),
+        review: document.querySelector("#reviewList"),
+        map: document.querySelector("#itemMap"),
+        controlGates: document.querySelector("#controlGates"),
+        coverageMatrix: document.querySelector("#coverageMatrix"),
+        gateButton: document.querySelector("#gateButton"),
+        navResults: document.querySelector("#navResults"),
+        navControl: document.querySelector("#navControl"),
+      };
+
+      function item(id, category, step, concepts, lesson, difficulty, stem, optionText, answer, rationale) {
+        return {
+          id,
+          status: "approved",
+          category,
+          step,
+          concepts,
+          lesson,
+          difficulty,
+          stem,
+          options: optionText.map((text, index) => ({ id: String.fromCharCode(65 + index), text })),
+          answer,
+          rationale,
+        };
+      }
+
+      function init() {
+        renderScopeOptions();
+        renderBuildPath();
+        renderGates();
+        renderMapping();
+        bindEvents();
+      }
+
+      function bindEvents() {
+        els.nav.forEach((button) => button.addEventListener("click", () => setView(button.dataset.view)));
+        els.start.addEventListener("click", startSession);
+        els.reset.addEventListener("click", resetPrototype);
+        els.confirm.addEventListener("click", confirmAnswer);
+        els.next.addEventListener("click", advanceItem);
+        els.end.addEventListener("click", finishSession);
+        els.exportButton.addEventListener("click", toggleExport);
+        els.retest.addEventListener("click", startWeakRetest);
+        els.gateButton.addEventListener("click", renderGates);
+        els.scope.addEventListener("change", () => {
+          if (els.scope.value !== "weak") state.weakScope = null;
+        });
+      }
+
+      function renderScopeOptions() {
+        const weakEnabled = Array.isArray(state.weakScope) && state.weakScope.length > 0;
+        els.scope.innerHTML = [
+          `<option value="full">Full RN blueprint</option>`,
+          `<option value="weak"${weakEnabled ? "" : " disabled"}>Weak concepts retest${weakEnabled ? ` (${state.weakScope.length})` : ""}</option>`,
+          ...blueprint.map((entry) => `<option value="${entry.category}">${entry.category}</option>`),
+        ].join("");
+        if (weakEnabled) els.scope.value = "weak";
+      }
+
+      function setView(view) {
+        state.view = view;
+        els.views.forEach((node) => node.classList.toggle("hidden", node.id !== `view-${view}`));
+        els.nav.forEach((button) => button.classList.toggle("active", button.dataset.view === view));
+        if (view === "results") renderResults();
+        if (view === "control") renderGates();
+      }
+
+      function renderBuildPath() {
+        els.buildPath.innerHTML = [
+          ["CAT selector", "prototype"],
+          ["Concept map", "active"],
+          ["Item bank", "seeded"],
+          ["Remediation", "linked"],
+        ]
+          .map(([name, detail]) => `<div class="path-row"><div><h3>${name}</h3><p class="muted small">${detail}</p></div><span class="status pass">ok</span></div>`)
+          .join("");
+      }
+
+      function getScopedItems() {
+        const approved = items.filter((candidate) => candidate.status === "approved");
+        if (els.scope.value === "full") return approved;
+        if (els.scope.value === "weak" && Array.isArray(state.weakScope)) {
+          return approved.filter((candidate) => candidate.concepts.some((concept) => state.weakScope.includes(concept)));
+        }
+        return approved.filter((candidate) => candidate.category === els.scope.value);
+      }
+
+      function startSession() {
+        const pool = getScopedItems();
+        const length = Math.min(Number(els.length.value), pool.length);
+        state.session = {
+          id: `CAT-${Date.now()}`,
+          length,
+          ability: Number(els.startAbility.value),
+          abilityHistory: [Number(els.startAbility.value)],
+          responses: [],
+          used: [],
+          coverage: {},
+        };
+        state.selected = null;
+        state.exportOpen = false;
+        els.setup.classList.add("hidden");
+        els.exam.classList.remove("hidden");
+        els.status.textContent = "Session in progress";
+        advanceItem();
+      }
+
+      function selectNextItem() {
+        const pool = getScopedItems().filter((candidate) => !state.session.used.includes(candidate.id));
+        if (!pool.length) return null;
+        const totalSeen = Object.values(state.session.coverage).reduce((sum, count) => sum + count, 0);
+        const ranked = blueprint
+          .map((entry) => {
+            const seen = state.session.coverage[entry.category] || 0;
+            const observed = totalSeen ? seen / totalSeen : 0;
+            return { ...entry, gap: entry.target / 100 - observed };
+          })
+          .sort((a, b) => b.gap - a.gap);
+
+        for (const category of ranked) {
+          const candidates = pool
+            .filter((candidate) => candidate.category === category.category)
+            .sort((a, b) => Math.abs(a.difficulty - state.session.ability) - Math.abs(b.difficulty - state.session.ability));
+          if (candidates.length) {
+            return {
+              item: candidates[0],
+              reason: `Selected ${category.category} because it is under target coverage; difficulty ${candidates[0].difficulty.toFixed(1)} is closest to ability ${state.session.ability.toFixed(2)}.`,
+            };
+          }
+        }
+
+        const fallback = pool.sort((a, b) => Math.abs(a.difficulty - state.session.ability) - Math.abs(b.difficulty - state.session.ability))[0];
+        return { item: fallback, reason: `Fallback selection by difficulty match near ability ${state.session.ability.toFixed(2)}.` };
+      }
+
+      function advanceItem() {
+        if (!state.session || state.session.responses.length >= state.session.length) {
+          finishSession();
+          return;
+        }
+        const selection = selectNextItem();
+        if (!selection) {
+          finishSession();
+          return;
+        }
+        state.current = selection;
+        state.selected = null;
+        state.session.used.push(selection.item.id);
+        renderCurrentItem();
+      }
+
+      function renderCurrentItem() {
+        const { item: current, reason } = state.current;
+        const number = state.session.responses.length + 1;
+        els.progress.textContent = `Item ${number} of ${state.session.length}`;
+        els.reason.textContent = reason;
+        els.ability.textContent = `ability ${state.session.ability.toFixed(2)}`;
+        els.meta.innerHTML = [current.category, current.step.replaceAll("_", " "), `difficulty ${current.difficulty.toFixed(1)}`, ...current.concepts]
+          .map((text) => `<span class="tag">${text}</span>`)
+          .join("");
+        els.stem.textContent = current.stem;
+        els.options.innerHTML = current.options
+          .map((option) => `<button class="option" type="button" data-option="${option.id}"><span class="key">${option.id}</span><span>${option.text}</span></button>`)
+          .join("");
+        els.options.querySelectorAll(".option").forEach((button) => {
+          button.addEventListener("click", () => {
+            state.selected = button.dataset.option;
+            els.options.querySelectorAll(".option").forEach((node) => node.classList.toggle("selected", node === button));
+            els.confirm.disabled = false;
+          });
+        });
+        els.rationale.classList.add("hidden");
+        els.confirm.disabled = true;
+        els.confirm.classList.remove("hidden");
+        els.next.classList.add("hidden");
+      }
+
+      function confirmAnswer() {
+        if (!state.current || !state.selected) return;
+        const current = state.current.item;
+        const correct = state.selected === current.answer;
+        const before = state.session.ability;
+        const after = updateAbility(before, current.difficulty, correct);
+        state.session.ability = after;
+        state.session.abilityHistory.push(after);
+        state.session.coverage[current.category] = (state.session.coverage[current.category] || 0) + 1;
+        state.session.responses.push({ itemId: current.id, selected: state.selected, correct, before, after });
+
+        els.options.querySelectorAll(".option").forEach((button) => {
+          button.disabled = true;
+          if (button.dataset.option === current.answer) button.classList.add("correct");
+          if (button.dataset.option === state.selected && !correct) button.classList.add("incorrect");
+        });
+        els.rationale.classList.remove("hidden");
+        els.rationale.innerHTML = `<h3>${correct ? "Correct" : "Needs review"}</h3><p class="muted small" style="margin-top: 6px">${current.rationale}</p><p class="small" style="margin-top: 8px"><strong>Ability:</strong> ${before.toFixed(2)} to ${after.toFixed(2)}</p>`;
+        els.confirm.classList.add("hidden");
+        els.next.classList.remove("hidden");
+        els.next.textContent = state.session.responses.length >= state.session.length ? "Finish and review" : "Next item";
+      }
+
+      function updateAbility(ability, difficulty, correct) {
+        const mismatch = Math.abs(difficulty - ability);
+        const base = 0.22 + Math.min(0.18, mismatch * 0.08);
+        const challengeBoost = correct && difficulty > ability ? 0.08 : 0;
+        const missPenalty = !correct && difficulty < ability ? 0.08 : 0;
+        return Math.max(-3, Math.min(3, ability + (correct ? 1 : -1) * (base + challengeBoost + missPenalty)));
+      }
+
+      function finishSession() {
+        if (!state.session) return;
+        state.lastResults = state.session;
+        state.session = null;
+        state.current = null;
+        state.selected = null;
+        els.setup.classList.remove("hidden");
+        els.exam.classList.add("hidden");
+        els.status.textContent = "Prototype mode";
+        els.navResults.textContent = "ready";
+        setView("results");
+      }
+
+      function renderResults() {
+        if (!state.lastResults) {
+          els.empty.classList.remove("hidden");
+          els.content.classList.add("hidden");
+          els.exportButton.disabled = true;
+          els.retest.disabled = true;
+          return;
+        }
+        const responses = state.lastResults.responses;
+        const correct = responses.filter((response) => response.correct).length;
+        const missed = responses.filter((response) => !response.correct).map((response) => findItem(response.itemId));
+        const weakConcepts = [...new Set(missed.flatMap((current) => current.concepts))];
+        els.empty.classList.add("hidden");
+        els.content.classList.remove("hidden");
+        els.score.textContent = `${Math.round((correct / responses.length) * 100)}%`;
+        els.finalAbility.textContent = state.lastResults.ability.toFixed(2);
+        els.weak.textContent = weakConcepts.length;
+        els.exportButton.disabled = false;
+        els.retest.disabled = weakConcepts.length === 0;
+        els.retest.textContent = weakConcepts.length ? "Retest weak concepts" : "No weak concepts to retest";
+        renderRemediation(missed, weakConcepts);
+        renderCoverage();
+        renderTrend();
+        renderReview();
+        renderExport();
+      }
+
+      function renderRemediation(missed, weakConcepts) {
+        if (!missed.length) {
+          els.remediation.innerHTML = [card("Maintain proficiency", "0", "No weak concepts detected in this session."), card("Next practice", "Full", "Run a longer mixed session to increase blueprint coverage evidence."), card("Instructor note", "Ready", "Learner can move to higher difficulty items or readiness review.")].join("");
+          return;
+        }
+        const lessons = [...new Set(missed.map((current) => current.lesson))];
+        els.remediation.innerHTML = [card("Priority concepts", String(weakConcepts.length), weakConcepts.join(", ")), card("Linked lessons", String(lessons.length), lessons.join(", ")), card("Retest pool", String(getScopedItems().length), "Use weak-concepts retest for targeted reassessment.")].join("");
+      }
+
+      function card(title, value, detail) {
+        return `<article class="remediation-card"><h3>${title}</h3><p class="card-value">${value}</p><p class="muted small">${detail}</p></article>`;
+      }
+
+      function renderCoverage() {
+        const total = state.lastResults.responses.length;
+        els.coverage.innerHTML = blueprint
+          .map((entry) => {
+            const count = state.lastResults.coverage[entry.category] || 0;
+            const pct = total ? Math.round((count / total) * 100) : 0;
+            return `<div><div class="bar-label"><span>${entry.category}</span><span>${count} item${count === 1 ? "" : "s"} target ${entry.target}%</span></div><div class="bar-track"><div class="bar-fill" style="width: ${pct}%"></div></div></div>`;
+          })
+          .join("");
+      }
+
+      function renderTrend() {
+        els.trend.innerHTML = state.lastResults.abilityHistory
+          .map((value) => `<div class="trend-bar" title="${value.toFixed(2)}" style="height: ${Math.max(8, ((value + 3) / 6) * 100)}%"></div>`)
+          .join("");
+      }
+
+      function renderReview() {
+        els.review.innerHTML = state.lastResults.responses
+          .map((response) => {
+            const current = findItem(response.itemId);
+            return `<article class="result-row"><div class="section-head"><div><h3>${current.id} - ${current.category}</h3><p class="muted small">${current.stem}</p></div><span class="status ${response.correct ? "pass" : "fail"}">${response.correct ? "correct" : "missed"}</span></div><p class="small"><strong>Rationale:</strong> ${current.rationale}</p><div class="tag-list">${current.concepts.map((concept) => `<span class="tag">${concept}</span>`).join("")}<span class="tag">${current.lesson}</span></div></article>`;
+          })
+          .join("");
+      }
+
+      function buildExport() {
+        const responses = state.lastResults.responses;
+        const missed = responses.filter((response) => !response.correct).map((response) => findItem(response.itemId));
+        return {
+          sessionId: state.lastResults.id,
+          boundary: "Educational CAT-style simulator; not official NCLEX scoring equivalence.",
+          summary: {
+            completedItems: responses.length,
+            correctItems: responses.filter((response) => response.correct).length,
+            finalAbilityEstimate: Number(state.lastResults.ability.toFixed(2)),
+            weakConcepts: [...new Set(missed.flatMap((current) => current.concepts))],
+          },
+          coverage: state.lastResults.coverage,
+          abilityHistory: state.lastResults.abilityHistory.map((value) => Number(value.toFixed(2))),
+          responses: responses.map((response) => {
+            const current = findItem(response.itemId);
+            return { itemId: current.id, selectedResponse: response.selected, correctResponse: current.answer, correct: response.correct, category: current.category, concepts: current.concepts, lesson: current.lesson };
+          }),
+        };
+      }
+
+      function toggleExport() {
+        state.exportOpen = !state.exportOpen;
+        renderExport();
+      }
+
+      function renderExport() {
+        if (!state.lastResults || !state.exportOpen) {
+          els.exportPanel.classList.add("hidden");
+          els.exportButton.textContent = "Export session";
+          return;
+        }
+        els.exportPanel.classList.remove("hidden");
+        els.exportButton.textContent = "Hide export";
+        els.exportText.textContent = JSON.stringify(buildExport(), null, 2);
+      }
+
+      function startWeakRetest() {
+        if (!state.lastResults) return;
+        const missed = state.lastResults.responses.filter((response) => !response.correct).map((response) => findItem(response.itemId));
+        const weakConcepts = [...new Set(missed.flatMap((current) => current.concepts))];
+        if (!weakConcepts.length) return;
+        state.weakScope = weakConcepts;
+        renderScopeOptions();
+        setView("practice");
+      }
+
+      function renderMapping() {
+        els.map.innerHTML = items
+          .map((current) => `<article class="map-row"><h3>${current.id} - ${current.category}</h3><p class="muted small" style="margin-top: 4px">${current.stem}</p><div class="tag-list"><span class="tag">${current.step.replaceAll("_", " ")}</span><span class="tag">difficulty ${current.difficulty.toFixed(1)}</span>${current.concepts.map((concept) => `<span class="tag">${concept}</span>`).join("")}<span class="tag">${current.lesson}</span></div></article>`)
+          .join("");
+      }
+
+      function evaluateGates() {
+        const categories = new Set(items.map((current) => current.category));
+        return [
+          gate("Approved item pool", items.length >= 8, `${items.length} approved items available`),
+          gate("Blueprint mapping", categories.size === blueprint.length, `${categories.size} of ${blueprint.length} categories represented`),
+          gate("Concept mapping", items.every((current) => current.concepts.length), "all approved items mapped to concepts"),
+          gate("Lesson remediation links", items.every((current) => current.lesson), "all approved items link to lessons"),
+          gate("Rationales", items.every((current) => current.rationale), "all approved items include rationales"),
+        ];
+      }
+
+      function gate(name, pass, detail) {
+        return { name, pass, detail };
+      }
+
+      function renderGates() {
+        const gates = evaluateGates();
+        const html = gates.map((entry) => `<article class="gate-row"><div class="section-head"><div><h3>${entry.name}</h3><p class="muted small">${entry.detail}</p></div><span class="status ${entry.pass ? "pass" : "fail"}">${entry.pass ? "pass" : "blocked"}</span></div></article>`).join("");
+        els.readiness.innerHTML = html;
+        els.controlGates.innerHTML = html;
+        els.navControl.textContent = gates.every((entry) => entry.pass) ? "pass" : "blocked";
+        renderCoverageMatrix();
+      }
+
+      function renderCoverageMatrix() {
+        els.coverageMatrix.innerHTML = blueprint
+          .map((entry) => {
+            const count = items.filter((current) => current.category === entry.category).length;
+            const pct = Math.min(100, count * 100);
+            return `<article class="coverage-row"><span><strong>${entry.category}</strong><br><span class="muted small">Target midpoint ${entry.target}%</span></span><span>${count}</span><span><span class="muted small">${count ? "pilot-seeded" : "needs items"}</span><span class="depth-meter"><span class="depth-fill" style="width: ${pct}%"></span></span></span></article>`;
+          })
+          .join("");
+      }
+
+      function resetPrototype() {
+        state.session = null;
+        state.current = null;
+        state.selected = null;
+        state.lastResults = null;
+        state.weakScope = null;
+        state.exportOpen = false;
+        renderScopeOptions();
+        els.scope.value = "full";
+        els.setup.classList.remove("hidden");
+        els.exam.classList.add("hidden");
+        els.status.textContent = "Prototype mode";
+        els.navResults.textContent = "empty";
+        setView("practice");
+      }
+
+      function findItem(id) {
+        return items.find((current) => current.id === id);
+      }
+
+      init();
+    </script>
+  </body>
+</html>
