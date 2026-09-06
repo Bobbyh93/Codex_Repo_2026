@@ -38,7 +38,19 @@ vi.mock('../db', () => {
     },
   );
   return {
-    db: { select: (...args: unknown[]) => (select(...args), chain) },
+    db: {
+      select: (...args: unknown[]) => (select(...args), chain),
+      // The rest exist only so importing the whole route tree does not explode;
+      // `select` is the one the handlers under test actually reach for.
+      insert: () => chain,
+      update: () => chain,
+      delete: () => chain,
+      execute: async () => ({ rows: [] }),
+      query: new Proxy(
+        {},
+        { get: () => ({ findFirst: async () => null, findMany: async () => [] }) },
+      ),
+    },
     pool: {},
   };
 });
@@ -128,4 +140,76 @@ describe('/api/admin/users* require an admin session', () => {
     expect(res.status).not.toBe(401);
     expect(select).toHaveBeenCalled();
   });
+});
+
+/**
+ * The suite above mounts its own bare express app and re-declares the three
+ * registrations locally. That pins what requireAdminSession *does*, but it
+ * never imports server/routes.ts, so it cannot see whether the guard is
+ * actually *attached* to the real application.
+ *
+ * Verified by doing it: with the middleware stripped back out of
+ * server/routes.ts -- the endpoints once again serving student PII to
+ * anonymous callers -- all six tests above stayed green. That is precisely the
+ * blind spot that let these routes ship unguarded in the first place.
+ *
+ * So drive the real registerRoutes(). It is a 3,700-line function with 62
+ * dynamic imports, but it only ever calls methods on the `app` it is handed,
+ * so a recording stub is enough to capture what it wires up: no express, no
+ * listening socket, and `db` mocked exactly as it is above.
+ */
+
+type Registration = { method: string; path: unknown; handlers: unknown[] };
+
+/** Stands in for an Express app, recording registrations instead of serving. */
+function recordingApp(recorded: Registration[]) {
+  const app: any = {};
+  for (const method of ['get', 'post', 'put', 'patch', 'delete', 'all', 'use', 'options', 'head']) {
+    app[method] = (path: unknown, ...handlers: unknown[]) => {
+      recorded.push({ method, path, handlers });
+      return app;
+    };
+  }
+  app.set = () => app;
+  app.engine = () => app;
+  app.locals = {};
+  return app;
+}
+
+async function adminUserRoutes(): Promise<Registration[]> {
+  const recorded: Registration[] = [];
+  const { registerRoutes } = await import('../routes');
+  await registerRoutes(recordingApp(recorded));
+
+  // Guard against a vacuous pass: if registerRoutes stopped wiring anything --
+  // or quietly failed part way -- the filtered assertions below would hold
+  // trivially. It declares a few hundred routes.
+  expect(recorded.length).toBeGreaterThan(100);
+
+  return recorded.filter(
+    (r) => typeof r.path === 'string' && (r.path as string).startsWith('/api/admin/users'),
+  );
+}
+
+describe('registerRoutes attaches the guard to the real app', () => {
+  // Generous timeout: a cold transform of routes.ts and its 62 dynamic imports
+  // runs well past vitest's 5s default.
+  it('wires requireAdminSession onto every /api/admin/users* route', async () => {
+    const routes = await adminUserRoutes();
+
+    // Pins the set itself, so a renamed, relocated or added route fails here
+    // rather than silently dropping out of the guard check below.
+    expect(routes.map((r) => r.path).sort()).toEqual([
+      '/api/admin/users',
+      '/api/admin/users/:id',
+      '/api/admin/users/search',
+    ]);
+
+    for (const route of routes) {
+      // Identity, not name: a same-named local decoy would not satisfy this.
+      expect(route.handlers, `${route.path} is registered without the guard`).toContain(
+        requireAdminSession,
+      );
+    }
+  }, 60_000);
 });
