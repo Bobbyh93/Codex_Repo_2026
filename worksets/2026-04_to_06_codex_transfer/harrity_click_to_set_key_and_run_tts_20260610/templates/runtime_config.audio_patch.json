@@ -1,0 +1,16 @@
+{
+  "audio": {
+    "enable_slide_script_tts": true,
+    "tts_provider": "openai",
+    "tts_model": "gpt-4o-mini-tts",
+    "tts_voice": "marin",
+    "tts_output_format": "mp3",
+    "tts_requires_locked_script": true,
+    "tts_fail_on_unapproved_script": true,
+    "tts_one_file_per_slide": true,
+    "tts_manifest_path": "manifests/slide_script_tts_manifest.json",
+    "tts_output_dir": "audio/slide_narration",
+    "tts_qa_manifest_path": "manifests/tts_render_qa.json",
+    "fallback_policy": "block_not_fake"
+  }
+}

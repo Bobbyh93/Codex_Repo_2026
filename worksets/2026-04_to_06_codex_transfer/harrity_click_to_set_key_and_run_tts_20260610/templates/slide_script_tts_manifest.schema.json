@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://harrity.local/schemas/slide_script_tts_manifest.schema.json",
+  "title": "Slide Script TTS Manifest",
+  "type": "object",
+  "required": ["package_id", "lesson_title", "tts_contract_version", "render_policy", "slides"],
+  "properties": {
+    "package_id": {"type": "string", "minLength": 1},
+    "lesson_title": {"type": "string", "minLength": 1},
+    "course": {"type": "string"},
+    "version": {"type": "string"},
+    "created_date": {"type": "string"},
+    "tts_contract_version": {"type": "string", "minLength": 1},
+    "render_policy": {
+      "type": "object",
+      "required": ["provider", "model", "default_voice", "format", "one_file_per_slide", "fallback_policy", "requires_locked_script"],
+      "properties": {
+        "provider": {"const": "openai"},
+        "model": {"type": "string", "minLength": 1},
+        "default_voice": {"type": "string", "minLength": 1},
+        "format": {"enum": ["mp3", "wav", "opus", "aac", "flac", "pcm"]},
+        "one_file_per_slide": {"type": "boolean"},
+        "fallback_policy": {"const": "block_not_fake"},
+        "requires_locked_script": {"type": "boolean"}
+      },
+      "additionalProperties": true
+    },
+    "slides": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["slide_id", "slide_number", "slide_title", "narration_script_status", "narration_script_locked", "duration_target_sec", "output_file", "status"],
+        "properties": {
+          "slide_id": {"type": "string", "pattern": "^S[0-9]{3,}$"},
+          "slide_number": {"type": "integer", "minimum": 1},
+          "slide_title": {"type": "string", "minLength": 1},
+          "narration_script_status": {"const": "script_locked"},
+          "narration_script_locked": {"type": "string", "minLength": 1},
+          "duration_target_sec": {"type": "number", "exclusiveMinimum": 0},
+          "voice": {"type": "string"},
+          "pronunciation_notes": {"type": "array"},
+          "clinical_terms": {"type": "array"},
+          "source_anchor_ids": {"type": "array"},
+          "output_file": {"type": "string", "minLength": 1},
+          "status": {"enum": ["tts_ready", "tts_rendered", "tts_qa_passed"]}
+        },
+        "additionalProperties": true
+      }
+    }
+  },
+  "additionalProperties": true
+}

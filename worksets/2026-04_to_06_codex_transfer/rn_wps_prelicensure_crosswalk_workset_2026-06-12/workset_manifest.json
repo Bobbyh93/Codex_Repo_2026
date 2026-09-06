@@ -1,0 +1,99 @@
+{
+  "workset_id": "rn_wps_prelicensure_crosswalk_workset_2026-06-12",
+  "created_at": "2026-06-12T17:50:05",
+  "source_policy": "read_only_sources",
+  "mapping_policy": "local_only_conservative_lexical_rule_based",
+  "canonical_inputs": [
+    {
+      "source_id": "SRC_001",
+      "source_kind": "prelicensure_workbook",
+      "canonical_input": true,
+      "source_name": "Prelicensure Workbook.xlsx",
+      "source_path": "C:\\Users\\RHarrity\\Documents\\Prelicensure Workbook.xlsx",
+      "source_hash": "sha256:7e711dd431e5f33993ae800f6749396b8ef7832b1b0ecb30bb9de0f8162ce78f",
+      "source_size_bytes": 152019,
+      "source_modified": "2026-05-06T06:31:53"
+    },
+    {
+      "source_id": "SRC_002",
+      "source_kind": "wps_docx",
+      "canonical_input": true,
+      "source_name": "wps_competency_2074.docx",
+      "source_path": "C:\\Users\\RHarrity\\Downloads\\Registered Nurse training Department of Education\\wps_competency_2074.docx",
+      "source_hash": "sha256:8f10ba9b94c7fa0533e8e53a95138ece03533a9dd9caf01da5f919ed7716343d",
+      "source_size_bytes": 1939435,
+      "source_modified": "2026-05-06T01:20:35"
+    },
+    {
+      "source_id": "SRC_003",
+      "source_kind": "wps_docx",
+      "canonical_input": true,
+      "source_name": "wps_competency_3056.docx",
+      "source_path": "C:\\Users\\RHarrity\\Downloads\\Registered Nurse training Department of Education\\wps_competency_3056.docx",
+      "source_hash": "sha256:011417c69a7ab4dfdab7f4e4165d7a86f1343f35a089444a6e182f3b81d41729",
+      "source_size_bytes": 1939427,
+      "source_modified": "2026-05-06T01:20:55"
+    },
+    {
+      "source_id": "SRC_004",
+      "source_kind": "wps_docx",
+      "canonical_input": true,
+      "source_name": "wps_hybrid_2074.docx",
+      "source_path": "C:\\Users\\RHarrity\\Downloads\\Registered Nurse training Department of Education\\wps_hybrid_2074.docx",
+      "source_hash": "sha256:5532f732343cea49581e50d6ede1cdf0a291d54fd65fb93d19ed05523d997287",
+      "source_size_bytes": 296588,
+      "source_modified": "2026-05-06T01:17:53"
+    },
+    {
+      "source_id": "SRC_005",
+      "source_kind": "wps_docx",
+      "canonical_input": true,
+      "source_name": "wps_hybrid_3056.docx",
+      "source_path": "C:\\Users\\RHarrity\\Downloads\\Registered Nurse training Department of Education\\wps_hybrid_3056.docx",
+      "source_hash": "sha256:380f226ed0f3c1a8477bb79c3886253385e2e97df8cf75295bfd22590eee6fb4",
+      "source_size_bytes": 2159577,
+      "source_modified": "2026-05-06T01:20:59"
+    },
+    {
+      "source_id": "SRC_006",
+      "source_kind": "wps_docx",
+      "canonical_input": true,
+      "source_name": "wps_time_2074.docx",
+      "source_path": "C:\\Users\\RHarrity\\Downloads\\Registered Nurse training Department of Education\\wps_time_2074.docx",
+      "source_hash": "sha256:821f110e9598b1036cf68fafff9c4d1358b06a19d5312f04aa88f143079742b7",
+      "source_size_bytes": 2360556,
+      "source_modified": "2026-05-06T01:20:28"
+    },
+    {
+      "source_id": "SRC_007",
+      "source_kind": "wps_docx",
+      "canonical_input": true,
+      "source_name": "wps_time_3056.docx",
+      "source_path": "C:\\Users\\RHarrity\\Downloads\\Registered Nurse training Department of Education\\wps_time_3056.docx",
+      "source_hash": "sha256:5f27e02980f2b8e3a45c1769ee570ef22afdb83cc5c6defeb7de9760964f699c",
+      "source_size_bytes": 2360548,
+      "source_modified": "2026-05-06T01:20:49"
+    }
+  ],
+  "provenance_only_inputs": [
+    {
+      "source_id": "SRC_008",
+      "source_kind": "word_backup",
+      "canonical_input": false,
+      "source_name": "Backup of wps_hybrid_2074.wbk",
+      "source_path": "C:\\Users\\RHarrity\\Downloads\\Registered Nurse training Department of Education\\Backup of wps_hybrid_2074.wbk",
+      "source_hash": "sha256:604185532f12388a02ad585ef58aa6504748fd5057cf43c3ff263ec593de1479",
+      "source_size_bytes": 296557,
+      "source_modified": "2026-05-06T01:17:31"
+    }
+  ],
+  "outputs_planned": [
+    "C:\\Users\\RHarrity\\Documents\\Codex\\rn_wps_prelicensure_crosswalk_workset_2026-06-12\\outputs\\rn_wps_prelicensure_crosswalk_release.xlsx",
+    "C:\\Users\\RHarrity\\Documents\\Codex\\rn_wps_prelicensure_crosswalk_workset_2026-06-12\\rn_wps_prelicensure_crosswalk_qa.json"
+  ],
+  "notes": [
+    "WBK backup inventoried as provenance only.",
+    "No OpenAI or external semantic API calls are used for mapping.",
+    "Requested sheet name Suggested_WPS_Prelicensure_Bridge is shortened in Excel output to Suggested_WPS_Prelic_Bridge due to Excel's 31-character sheet-name limit."
+  ]
+}

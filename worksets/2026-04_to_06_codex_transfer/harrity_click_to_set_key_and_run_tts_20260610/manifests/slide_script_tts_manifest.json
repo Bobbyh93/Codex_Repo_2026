@@ -1,0 +1,33 @@
+{
+  "package_id": "HLB-LESSON-0001",
+  "lesson_title": "Example Lesson",
+  "course": "NUR-XXXX",
+  "version": "1.0.0",
+  "created_date": "2026-06-10",
+  "tts_contract_version": "1.0.0",
+  "render_policy": {
+    "provider": "openai",
+    "model": "gpt-4o-mini-tts",
+    "default_voice": "marin",
+    "format": "mp3",
+    "one_file_per_slide": true,
+    "fallback_policy": "block_not_fake",
+    "requires_locked_script": true
+  },
+  "slides": [
+    {
+      "slide_id": "S001",
+      "slide_number": 1,
+      "slide_title": "Introduction",
+      "narration_script_status": "script_locked",
+      "narration_script_locked": "Today we will begin by reviewing the purpose of this lesson.",
+      "duration_target_sec": 45,
+      "voice": "marin",
+      "pronunciation_notes": [],
+      "clinical_terms": [],
+      "source_anchor_ids": [],
+      "output_file": "audio/slide_narration/S001.mp3",
+      "status": "tts_ready"
+    }
+  ]
+}

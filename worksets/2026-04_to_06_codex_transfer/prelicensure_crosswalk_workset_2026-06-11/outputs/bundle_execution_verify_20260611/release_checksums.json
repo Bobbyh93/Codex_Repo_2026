@@ -1,0 +1,52 @@
+{
+  "release_name": "prelicensure_qsen_aacn_crosswalk_release_resolved",
+  "release_root": "C:\\Users\\RHarrity\\Documents\\Codex\\prelicensure_crosswalk_workset_2026-06-11",
+  "file_count": 9,
+  "files": [
+    {
+      "relative_path": "outputs/prelicensure_qsen_aacn_crosswalk_release_resolved.xlsx",
+      "size_bytes": 211834,
+      "sha256": "d0320eb9b71e1551fdc9ea46afe13f4cda4726a4fd83b255ec65134d48905953"
+    },
+    {
+      "relative_path": "prelicensure_crosswalk_resolved_qa.json",
+      "size_bytes": 2317,
+      "sha256": "c76056c5271177538c43a9905f4cfc7489ef5c2e145968160e4e0138a141e577"
+    },
+    {
+      "relative_path": "workset_manifest.json",
+      "size_bytes": 6345,
+      "sha256": "bfabcab59acb712f71483392a84dedc2b7070ab734dab8f931744402e778e5e5"
+    },
+    {
+      "relative_path": "execution_order.json",
+      "size_bytes": 3781,
+      "sha256": "48fa626332b5de667417ad839e623db059774eaa581c624432eb4abe3480cdca"
+    },
+    {
+      "relative_path": "execution_checklist.md",
+      "size_bytes": 2129,
+      "sha256": "9082841c5f2b59940d6da160f99b7bcaaa05d4f186dccc300828836381926c46"
+    },
+    {
+      "relative_path": "outputs/remaining_review_packet.md",
+      "size_bytes": 3627,
+      "sha256": "14382241a05226489f457a9d88206a9e3a649e54fa021fb0364db5b867a78a7b"
+    },
+    {
+      "relative_path": "outputs/remaining_review_queue.csv",
+      "size_bytes": 5059,
+      "sha256": "8473f705f78298ac065fd0b5e05adfc6c2f8496373af6d14b428ebf8cdc1f31a"
+    },
+    {
+      "relative_path": "outputs/remaining_review_context.json",
+      "size_bytes": 10205,
+      "sha256": "743efb0695b78de1f69f422d15a81cd7ecff03ae27db4bf5928f173e4db9201e"
+    },
+    {
+      "relative_path": "outputs/release_handoff.md",
+      "size_bytes": 1794,
+      "sha256": "6bd139bb5d391eb10a59c250bf32af2c7c55e5dc81064bfd026646e45ec17197"
+    }
+  ]
+}

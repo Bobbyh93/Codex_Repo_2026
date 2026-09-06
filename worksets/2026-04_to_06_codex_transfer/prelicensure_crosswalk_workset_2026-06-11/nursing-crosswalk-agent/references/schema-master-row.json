@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CanonicalMasterRow",
+  "type": "object",
+  "required": [
+    "record_type",
+    "source_family",
+    "source_workbook",
+    "source_sheet",
+    "subject_canonical",
+    "resource_canonical",
+    "entity_name"
+  ],
+  "properties": {
+    "record_type": {"type": "string"},
+    "source_family": {"type": "string"},
+    "source_workbook": {"type": "string"},
+    "source_sheet": {"type": "string"},
+    "subject_canonical": {"type": "string"},
+    "resource_canonical": {"type": "string"},
+    "entity_name": {"type": "string"},
+    "notes_long": {"type": "string"},
+    "module_name": {"type": "string"},
+    "scenario_name": {"type": "string"},
+    "chapter": {"type": ["string", "number"]},
+    "section": {"type": "string"},
+    "unit": {"type": ["string", "number"]},
+    "page": {"type": ["string", "number"]},
+    "source_trace": {"type": "string"},
+    "rule_trace": {"type": "string"},
+    "needs_review": {"type": ["boolean", "string"]}
+  }
+}

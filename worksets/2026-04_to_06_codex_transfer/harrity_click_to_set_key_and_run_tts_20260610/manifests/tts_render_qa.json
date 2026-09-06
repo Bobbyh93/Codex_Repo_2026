@@ -1,0 +1,17 @@
+{
+  "package_id": "HLB-LESSON-0001",
+  "lesson_title": "Example Lesson",
+  "tts_contract_version": "1.0.0",
+  "results": [
+    {
+      "slide_id": "S001",
+      "slide_number": 1,
+      "output_file": "audio/slide_narration/S001.mp3",
+      "render_status": "success",
+      "model": "gpt-4o-mini-tts",
+      "voice": "marin",
+      "text_hash": "sha256:081e604742819d0d6cf968a19e9171bb9a3dfb37f455e68f457986621afaf0a7",
+      "qa_status": "pass"
+    }
+  ]
+}

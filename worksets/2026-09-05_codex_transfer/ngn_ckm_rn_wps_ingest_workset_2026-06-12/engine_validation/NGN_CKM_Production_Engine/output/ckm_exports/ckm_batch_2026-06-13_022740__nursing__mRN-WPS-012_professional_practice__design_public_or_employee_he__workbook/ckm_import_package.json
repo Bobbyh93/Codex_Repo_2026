@@ -1,0 +1,588 @@
+{
+  "manifest": {
+    "batch_id": "ckm_batch_2026-06-13_022740__nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook",
+    "created_at": "2026-06-13T02:27:40.454462",
+    "job_id": "workbook_20260613_022740_0001_Design_public_or_employee_health_programs.",
+    "record_counts": {
+      "cards": 7,
+      "objectives": 5,
+      "sources": 7,
+      "links": 49,
+      "notes": 14
+    },
+    "files": [
+      "card_links.csv",
+      "card_objective_map.csv",
+      "card_research_notes.csv",
+      "card_sources.csv",
+      "curriculum_objectives.csv",
+      "exception_report.csv",
+      "knowledge_cards.csv"
+    ],
+    "status": "ready_for_validation"
+  },
+  "cards": [
+    {
+      "card_id": "S01",
+      "card_title": "Design public or employee health programs. overview",
+      "concept": "Design public or employee health programs.",
+      "subject_area": "Prelicensure Nursing",
+      "content_area": "Professional Practice",
+      "specialty_area": "Registered Nurse Apprenticeship",
+      "status": "reviewed",
+      "evidence_status": "sourced",
+      "version": "v1.1_compressed",
+      "compression_applied": "yes",
+      "compression_pass": "true"
+    },
+    {
+      "card_id": "S02",
+      "card_title": "Instruct individuals - families - or other groups on topics such as health education - disease prevention - or childbirth and develop health improvement programs.",
+      "concept": "Design public or employee health programs.",
+      "subject_area": "Prelicensure Nursing",
+      "content_area": "Professional Practice",
+      "specialty_area": "Registered Nurse Apprenticeship",
+      "status": "reviewed",
+      "evidence_status": "sourced",
+      "version": "v1.1_compressed",
+      "compression_applied": "yes",
+      "compression_pass": "true"
+    },
+    {
+      "card_id": "S03",
+      "card_title": "Clinical judgment case: Instruct individuals - families - or other groups on topics such as health education - disease prevention - or childbirth and develop health improvement programs.",
+      "concept": "Design public or employee health programs.",
+      "subject_area": "Prelicensure Nursing",
+      "content_area": "Professional Practice",
+      "specialty_area": "Registered Nurse Apprenticeship",
+      "status": "reviewed",
+      "evidence_status": "sourced",
+      "version": "v1.0",
+      "compression_applied": "no",
+      "compression_pass": "true"
+    },
+    {
+      "card_id": "S04",
+      "card_title": "Work with individuals - groups - or families to plan or implement programs designed to improve the overall health of communities.",
+      "concept": "Design public or employee health programs.",
+      "subject_area": "Prelicensure Nursing",
+      "content_area": "Professional Practice",
+      "specialty_area": "Registered Nurse Apprenticeship",
+      "status": "reviewed",
+      "evidence_status": "sourced",
+      "version": "v1.1_compressed",
+      "compression_applied": "yes",
+      "compression_pass": "true"
+    },
+    {
+      "card_id": "S05",
+      "card_title": "Clinical judgment case: Work with individuals - groups - or families to plan or implement programs designed to improve the overall health of communities.",
+      "concept": "Design public or employee health programs.",
+      "subject_area": "Prelicensure Nursing",
+      "content_area": "Professional Practice",
+      "specialty_area": "Registered Nurse Apprenticeship",
+      "status": "reviewed",
+      "evidence_status": "sourced",
+      "version": "v1.0",
+      "compression_applied": "no",
+      "compression_pass": "true"
+    },
+    {
+      "card_id": "S06",
+      "card_title": "Design public or employee health programs. comparison guide",
+      "concept": "Design public or employee health programs.",
+      "subject_area": "Prelicensure Nursing",
+      "content_area": "Professional Practice",
+      "specialty_area": "Registered Nurse Apprenticeship",
+      "status": "reviewed",
+      "evidence_status": "sourced",
+      "version": "v1.0",
+      "compression_applied": "no",
+      "compression_pass": "true"
+    },
+    {
+      "card_id": "S07",
+      "card_title": "Design public or employee health programs. summary and remediation",
+      "concept": "Design public or employee health programs.",
+      "subject_area": "Prelicensure Nursing",
+      "content_area": "Professional Practice",
+      "specialty_area": "Registered Nurse Apprenticeship",
+      "status": "reviewed",
+      "evidence_status": "sourced",
+      "version": "v1.1_compressed",
+      "compression_applied": "yes",
+      "compression_pass": "true"
+    }
+  ],
+  "objectives": [
+    {
+      "objective_id": "Design_public_or_employee_health_programs._Design_public_or_employee_health_programs._overview_OBJ",
+      "concept": "Design public or employee health programs.",
+      "exemplar": "Design public or employee health programs. overview",
+      "nclex_category": "Unspecified",
+      "ncjmm_primary": "Recognize Cues",
+      "priority_framework": "Nursing process",
+      "description": "Apply clinical judgment to manage Design public or employee health programs. overview within Design public or employee health programs..",
+      "evidence_status": "sourced",
+      "review_status": "reviewed"
+    },
+    {
+      "objective_id": "Design_public_or_employee_health_programs._Instruct_individuals_-_families_-_or_other_groups_on_topics_such_as_health_education_-_disease_prevention_-_or_childbirth_and_develop_health_improvement_programs._OBJ",
+      "concept": "Design public or employee health programs.",
+      "exemplar": "Clinical judgment case: Instruct individuals - families - or other groups on topics such as health education - disease prevention - or childbirth and develop health improvement programs.",
+      "nclex_category": "Unspecified",
+      "ncjmm_primary": "Recognize Cues",
+      "priority_framework": "Nursing process",
+      "description": "Apply clinical judgment to manage Clinical judgment case: Instruct individuals - families - or other groups on topics such as health education - disease prevention - or childbirth and develop health improvement programs. within Design public or employee health programs..",
+      "evidence_status": "sourced",
+      "review_status": "reviewed"
+    },
+    {
+      "objective_id": "Design_public_or_employee_health_programs._Work_with_individuals_-_groups_-_or_families_to_plan_or_implement_programs_designed_to_improve_the_overall_health_of_communities._OBJ",
+      "concept": "Design public or employee health programs.",
+      "exemplar": "Clinical judgment case: Work with individuals - groups - or families to plan or implement programs designed to improve the overall health of communities.",
+      "nclex_category": "Unspecified",
+      "ncjmm_primary": "Recognize Cues",
+      "priority_framework": "Nursing process",
+      "description": "Apply clinical judgment to manage Clinical judgment case: Work with individuals - groups - or families to plan or implement programs designed to improve the overall health of communities. within Design public or employee health programs..",
+      "evidence_status": "sourced",
+      "review_status": "reviewed"
+    },
+    {
+      "objective_id": "Design_public_or_employee_health_programs._Design_public_or_employee_health_programs._comparison_guide_OBJ",
+      "concept": "Design public or employee health programs.",
+      "exemplar": "Design public or employee health programs. comparison guide",
+      "nclex_category": "Unspecified",
+      "ncjmm_primary": "Recognize Cues",
+      "priority_framework": "Nursing process",
+      "description": "Apply clinical judgment to manage Design public or employee health programs. comparison guide within Design public or employee health programs..",
+      "evidence_status": "sourced",
+      "review_status": "reviewed"
+    },
+    {
+      "objective_id": "Design_public_or_employee_health_programs._Design_public_or_employee_health_programs._summary_and_remediation_OBJ",
+      "concept": "Design public or employee health programs.",
+      "exemplar": "Design public or employee health programs. summary and remediation",
+      "nclex_category": "Unspecified",
+      "ncjmm_primary": "Recognize Cues",
+      "priority_framework": "Nursing process",
+      "description": "Apply clinical judgment to manage Design public or employee health programs. summary and remediation within Design public or employee health programs..",
+      "evidence_status": "sourced",
+      "review_status": "reviewed"
+    }
+  ],
+  "mappings": [
+    {
+      "card_id": "S01",
+      "objective_id": "Design_public_or_employee_health_programs._Design_public_or_employee_health_programs._overview_OBJ"
+    },
+    {
+      "card_id": "S02",
+      "objective_id": "Design_public_or_employee_health_programs._Instruct_individuals_-_families_-_or_other_groups_on_topics_such_as_health_education_-_disease_prevention_-_or_childbirth_and_develop_health_improvement_programs._OBJ"
+    },
+    {
+      "card_id": "S03",
+      "objective_id": "Design_public_or_employee_health_programs._Instruct_individuals_-_families_-_or_other_groups_on_topics_such_as_health_education_-_disease_prevention_-_or_childbirth_and_develop_health_improvement_programs._OBJ"
+    },
+    {
+      "card_id": "S04",
+      "objective_id": "Design_public_or_employee_health_programs._Work_with_individuals_-_groups_-_or_families_to_plan_or_implement_programs_designed_to_improve_the_overall_health_of_communities._OBJ"
+    },
+    {
+      "card_id": "S05",
+      "objective_id": "Design_public_or_employee_health_programs._Work_with_individuals_-_groups_-_or_families_to_plan_or_implement_programs_designed_to_improve_the_overall_health_of_communities._OBJ"
+    },
+    {
+      "card_id": "S06",
+      "objective_id": "Design_public_or_employee_health_programs._Design_public_or_employee_health_programs._comparison_guide_OBJ"
+    },
+    {
+      "card_id": "S07",
+      "objective_id": "Design_public_or_employee_health_programs._Design_public_or_employee_health_programs._summary_and_remediation_OBJ"
+    }
+  ],
+  "sources": [
+    {
+      "card_id": "S01",
+      "source": "WPS process: Design public or employee health programs.; variants: 2074:time_based, 2074CB:competency_based, 2074HY:hybrid, 3056:time_based, 3056CB:competency_based, 3056HY:hybrid; source rows: wps_competency_2074.docx#T20:R3; wps_competency_2074.docx#T20:R4; wps_competency_3056.docx#T20:R3; wps_competency_3056.docx#T20:R4; wps_hybrid_2074.docx#T20:R2; wps_hybrid_2074.docx#T20:R3; wps_hybrid_3056.docx#T20:R2; wps_hybrid_3056.docx#T20:R3; wps_time_2074.docx#T20:R2; wps_time_2074.docx#T20:R3; wps_time_3056.docx#T20:R2; wps_time_3056.docx#T20:R3; crosswalk_data: C:\\Users\\RHarrity\\Documents\\Codex\\rn_wps_prelicensure_crosswalk_workset_2026-06-12\\build\\intermediate\\rn_wps_prelicensure_crosswalk_data.json",
+      "source_type": "taxonomy_source_anchor"
+    },
+    {
+      "card_id": "S02",
+      "source": "WPS process: Design public or employee health programs.; variants: 2074:time_based, 2074CB:competency_based, 2074HY:hybrid, 3056:time_based, 3056CB:competency_based, 3056HY:hybrid; source rows: wps_competency_2074.docx#T20:R3; wps_competency_2074.docx#T20:R4; wps_competency_3056.docx#T20:R3; wps_competency_3056.docx#T20:R4; wps_hybrid_2074.docx#T20:R2; wps_hybrid_2074.docx#T20:R3; wps_hybrid_3056.docx#T20:R2; wps_hybrid_3056.docx#T20:R3; wps_time_2074.docx#T20:R2; wps_time_2074.docx#T20:R3; wps_time_3056.docx#T20:R2; wps_time_3056.docx#T20:R3; crosswalk_data: C:\\Users\\RHarrity\\Documents\\Codex\\rn_wps_prelicensure_crosswalk_workset_2026-06-12\\build\\intermediate\\rn_wps_prelicensure_crosswalk_data.json",
+      "source_type": "taxonomy_source_anchor"
+    },
+    {
+      "card_id": "S03",
+      "source": "WPS process: Design public or employee health programs.; variants: 2074:time_based, 2074CB:competency_based, 2074HY:hybrid, 3056:time_based, 3056CB:competency_based, 3056HY:hybrid; source rows: wps_competency_2074.docx#T20:R3; wps_competency_2074.docx#T20:R4; wps_competency_3056.docx#T20:R3; wps_competency_3056.docx#T20:R4; wps_hybrid_2074.docx#T20:R2; wps_hybrid_2074.docx#T20:R3; wps_hybrid_3056.docx#T20:R2; wps_hybrid_3056.docx#T20:R3; wps_time_2074.docx#T20:R2; wps_time_2074.docx#T20:R3; wps_time_3056.docx#T20:R2; wps_time_3056.docx#T20:R3; crosswalk_data: C:\\Users\\RHarrity\\Documents\\Codex\\rn_wps_prelicensure_crosswalk_workset_2026-06-12\\build\\intermediate\\rn_wps_prelicensure_crosswalk_data.json",
+      "source_type": "taxonomy_source_anchor"
+    },
+    {
+      "card_id": "S04",
+      "source": "WPS process: Design public or employee health programs.; variants: 2074:time_based, 2074CB:competency_based, 2074HY:hybrid, 3056:time_based, 3056CB:competency_based, 3056HY:hybrid; source rows: wps_competency_2074.docx#T20:R3; wps_competency_2074.docx#T20:R4; wps_competency_3056.docx#T20:R3; wps_competency_3056.docx#T20:R4; wps_hybrid_2074.docx#T20:R2; wps_hybrid_2074.docx#T20:R3; wps_hybrid_3056.docx#T20:R2; wps_hybrid_3056.docx#T20:R3; wps_time_2074.docx#T20:R2; wps_time_2074.docx#T20:R3; wps_time_3056.docx#T20:R2; wps_time_3056.docx#T20:R3; crosswalk_data: C:\\Users\\RHarrity\\Documents\\Codex\\rn_wps_prelicensure_crosswalk_workset_2026-06-12\\build\\intermediate\\rn_wps_prelicensure_crosswalk_data.json",
+      "source_type": "taxonomy_source_anchor"
+    },
+    {
+      "card_id": "S05",
+      "source": "WPS process: Design public or employee health programs.; variants: 2074:time_based, 2074CB:competency_based, 2074HY:hybrid, 3056:time_based, 3056CB:competency_based, 3056HY:hybrid; source rows: wps_competency_2074.docx#T20:R3; wps_competency_2074.docx#T20:R4; wps_competency_3056.docx#T20:R3; wps_competency_3056.docx#T20:R4; wps_hybrid_2074.docx#T20:R2; wps_hybrid_2074.docx#T20:R3; wps_hybrid_3056.docx#T20:R2; wps_hybrid_3056.docx#T20:R3; wps_time_2074.docx#T20:R2; wps_time_2074.docx#T20:R3; wps_time_3056.docx#T20:R2; wps_time_3056.docx#T20:R3; crosswalk_data: C:\\Users\\RHarrity\\Documents\\Codex\\rn_wps_prelicensure_crosswalk_workset_2026-06-12\\build\\intermediate\\rn_wps_prelicensure_crosswalk_data.json",
+      "source_type": "taxonomy_source_anchor"
+    },
+    {
+      "card_id": "S06",
+      "source": "WPS process: Design public or employee health programs.; variants: 2074:time_based, 2074CB:competency_based, 2074HY:hybrid, 3056:time_based, 3056CB:competency_based, 3056HY:hybrid; source rows: wps_competency_2074.docx#T20:R3; wps_competency_2074.docx#T20:R4; wps_competency_3056.docx#T20:R3; wps_competency_3056.docx#T20:R4; wps_hybrid_2074.docx#T20:R2; wps_hybrid_2074.docx#T20:R3; wps_hybrid_3056.docx#T20:R2; wps_hybrid_3056.docx#T20:R3; wps_time_2074.docx#T20:R2; wps_time_2074.docx#T20:R3; wps_time_3056.docx#T20:R2; wps_time_3056.docx#T20:R3; crosswalk_data: C:\\Users\\RHarrity\\Documents\\Codex\\rn_wps_prelicensure_crosswalk_workset_2026-06-12\\build\\intermediate\\rn_wps_prelicensure_crosswalk_data.json",
+      "source_type": "taxonomy_source_anchor"
+    },
+    {
+      "card_id": "S07",
+      "source": "WPS process: Design public or employee health programs.; variants: 2074:time_based, 2074CB:competency_based, 2074HY:hybrid, 3056:time_based, 3056CB:competency_based, 3056HY:hybrid; source rows: wps_competency_2074.docx#T20:R3; wps_competency_2074.docx#T20:R4; wps_competency_3056.docx#T20:R3; wps_competency_3056.docx#T20:R4; wps_hybrid_2074.docx#T20:R2; wps_hybrid_2074.docx#T20:R3; wps_hybrid_3056.docx#T20:R2; wps_hybrid_3056.docx#T20:R3; wps_time_2074.docx#T20:R2; wps_time_2074.docx#T20:R3; wps_time_3056.docx#T20:R2; wps_time_3056.docx#T20:R3; crosswalk_data: C:\\Users\\RHarrity\\Documents\\Codex\\rn_wps_prelicensure_crosswalk_workset_2026-06-12\\build\\intermediate\\rn_wps_prelicensure_crosswalk_data.json",
+      "source_type": "taxonomy_source_anchor"
+    }
+  ],
+  "links": [
+    {
+      "card_id": "S01",
+      "type": "outline.json",
+      "path": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\engine_validation\\NGN_CKM_Production_Engine\\output\\nursing\\professional_practice\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook__outline.json"
+    },
+    {
+      "card_id": "S01",
+      "type": "blueprint.json",
+      "path": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\engine_validation\\NGN_CKM_Production_Engine\\output\\nursing\\professional_practice\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook__blueprint.json"
+    },
+    {
+      "card_id": "S01",
+      "type": "remediation_map.json",
+      "path": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\engine_validation\\NGN_CKM_Production_Engine\\output\\nursing\\professional_practice\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook__remediation_map.json"
+    },
+    {
+      "card_id": "S01",
+      "type": "scripts.md",
+      "path": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\engine_validation\\NGN_CKM_Production_Engine\\output\\nursing\\professional_practice\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook__scripts.md"
+    },
+    {
+      "card_id": "S01",
+      "type": "case_study.md",
+      "path": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\engine_validation\\NGN_CKM_Production_Engine\\output\\nursing\\professional_practice\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook__case_study.md"
+    },
+    {
+      "card_id": "S01",
+      "type": "answer_key.md",
+      "path": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\engine_validation\\NGN_CKM_Production_Engine\\output\\nursing\\professional_practice\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook__answer_key.md"
+    },
+    {
+      "card_id": "S01",
+      "type": "deck.pptx",
+      "path": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\engine_validation\\NGN_CKM_Production_Engine\\output\\nursing\\professional_practice\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook__lesson_deck.pptx"
+    },
+    {
+      "card_id": "S02",
+      "type": "outline.json",
+      "path": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\engine_validation\\NGN_CKM_Production_Engine\\output\\nursing\\professional_practice\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook__outline.json"
+    },
+    {
+      "card_id": "S02",
+      "type": "blueprint.json",
+      "path": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\engine_validation\\NGN_CKM_Production_Engine\\output\\nursing\\professional_practice\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook__blueprint.json"
+    },
+    {
+      "card_id": "S02",
+      "type": "remediation_map.json",
+      "path": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\engine_validation\\NGN_CKM_Production_Engine\\output\\nursing\\professional_practice\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook__remediation_map.json"
+    },
+    {
+      "card_id": "S02",
+      "type": "scripts.md",
+      "path": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\engine_validation\\NGN_CKM_Production_Engine\\output\\nursing\\professional_practice\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook__scripts.md"
+    },
+    {
+      "card_id": "S02",
+      "type": "case_study.md",
+      "path": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\engine_validation\\NGN_CKM_Production_Engine\\output\\nursing\\professional_practice\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook__case_study.md"
+    },
+    {
+      "card_id": "S02",
+      "type": "answer_key.md",
+      "path": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\engine_validation\\NGN_CKM_Production_Engine\\output\\nursing\\professional_practice\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook__answer_key.md"
+    },
+    {
+      "card_id": "S02",
+      "type": "deck.pptx",
+      "path": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\engine_validation\\NGN_CKM_Production_Engine\\output\\nursing\\professional_practice\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook__lesson_deck.pptx"
+    },
+    {
+      "card_id": "S03",
+      "type": "outline.json",
+      "path": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\engine_validation\\NGN_CKM_Production_Engine\\output\\nursing\\professional_practice\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook__outline.json"
+    },
+    {
+      "card_id": "S03",
+      "type": "blueprint.json",
+      "path": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\engine_validation\\NGN_CKM_Production_Engine\\output\\nursing\\professional_practice\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook__blueprint.json"
+    },
+    {
+      "card_id": "S03",
+      "type": "remediation_map.json",
+      "path": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\engine_validation\\NGN_CKM_Production_Engine\\output\\nursing\\professional_practice\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook__remediation_map.json"
+    },
+    {
+      "card_id": "S03",
+      "type": "scripts.md",
+      "path": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\engine_validation\\NGN_CKM_Production_Engine\\output\\nursing\\professional_practice\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook__scripts.md"
+    },
+    {
+      "card_id": "S03",
+      "type": "case_study.md",
+      "path": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\engine_validation\\NGN_CKM_Production_Engine\\output\\nursing\\professional_practice\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook__case_study.md"
+    },
+    {
+      "card_id": "S03",
+      "type": "answer_key.md",
+      "path": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\engine_validation\\NGN_CKM_Production_Engine\\output\\nursing\\professional_practice\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook__answer_key.md"
+    },
+    {
+      "card_id": "S03",
+      "type": "deck.pptx",
+      "path": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\engine_validation\\NGN_CKM_Production_Engine\\output\\nursing\\professional_practice\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook__lesson_deck.pptx"
+    },
+    {
+      "card_id": "S04",
+      "type": "outline.json",
+      "path": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\engine_validation\\NGN_CKM_Production_Engine\\output\\nursing\\professional_practice\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook__outline.json"
+    },
+    {
+      "card_id": "S04",
+      "type": "blueprint.json",
+      "path": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\engine_validation\\NGN_CKM_Production_Engine\\output\\nursing\\professional_practice\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook__blueprint.json"
+    },
+    {
+      "card_id": "S04",
+      "type": "remediation_map.json",
+      "path": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\engine_validation\\NGN_CKM_Production_Engine\\output\\nursing\\professional_practice\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook__remediation_map.json"
+    },
+    {
+      "card_id": "S04",
+      "type": "scripts.md",
+      "path": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\engine_validation\\NGN_CKM_Production_Engine\\output\\nursing\\professional_practice\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook__scripts.md"
+    },
+    {
+      "card_id": "S04",
+      "type": "case_study.md",
+      "path": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\engine_validation\\NGN_CKM_Production_Engine\\output\\nursing\\professional_practice\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook__case_study.md"
+    },
+    {
+      "card_id": "S04",
+      "type": "answer_key.md",
+      "path": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\engine_validation\\NGN_CKM_Production_Engine\\output\\nursing\\professional_practice\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook__answer_key.md"
+    },
+    {
+      "card_id": "S04",
+      "type": "deck.pptx",
+      "path": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\engine_validation\\NGN_CKM_Production_Engine\\output\\nursing\\professional_practice\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook__lesson_deck.pptx"
+    },
+    {
+      "card_id": "S05",
+      "type": "outline.json",
+      "path": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\engine_validation\\NGN_CKM_Production_Engine\\output\\nursing\\professional_practice\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook__outline.json"
+    },
+    {
+      "card_id": "S05",
+      "type": "blueprint.json",
+      "path": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\engine_validation\\NGN_CKM_Production_Engine\\output\\nursing\\professional_practice\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook__blueprint.json"
+    },
+    {
+      "card_id": "S05",
+      "type": "remediation_map.json",
+      "path": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\engine_validation\\NGN_CKM_Production_Engine\\output\\nursing\\professional_practice\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook__remediation_map.json"
+    },
+    {
+      "card_id": "S05",
+      "type": "scripts.md",
+      "path": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\engine_validation\\NGN_CKM_Production_Engine\\output\\nursing\\professional_practice\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook__scripts.md"
+    },
+    {
+      "card_id": "S05",
+      "type": "case_study.md",
+      "path": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\engine_validation\\NGN_CKM_Production_Engine\\output\\nursing\\professional_practice\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook__case_study.md"
+    },
+    {
+      "card_id": "S05",
+      "type": "answer_key.md",
+      "path": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\engine_validation\\NGN_CKM_Production_Engine\\output\\nursing\\professional_practice\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook__answer_key.md"
+    },
+    {
+      "card_id": "S05",
+      "type": "deck.pptx",
+      "path": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\engine_validation\\NGN_CKM_Production_Engine\\output\\nursing\\professional_practice\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook__lesson_deck.pptx"
+    },
+    {
+      "card_id": "S06",
+      "type": "outline.json",
+      "path": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\engine_validation\\NGN_CKM_Production_Engine\\output\\nursing\\professional_practice\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook__outline.json"
+    },
+    {
+      "card_id": "S06",
+      "type": "blueprint.json",
+      "path": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\engine_validation\\NGN_CKM_Production_Engine\\output\\nursing\\professional_practice\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook__blueprint.json"
+    },
+    {
+      "card_id": "S06",
+      "type": "remediation_map.json",
+      "path": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\engine_validation\\NGN_CKM_Production_Engine\\output\\nursing\\professional_practice\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook__remediation_map.json"
+    },
+    {
+      "card_id": "S06",
+      "type": "scripts.md",
+      "path": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\engine_validation\\NGN_CKM_Production_Engine\\output\\nursing\\professional_practice\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook__scripts.md"
+    },
+    {
+      "card_id": "S06",
+      "type": "case_study.md",
+      "path": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\engine_validation\\NGN_CKM_Production_Engine\\output\\nursing\\professional_practice\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook__case_study.md"
+    },
+    {
+      "card_id": "S06",
+      "type": "answer_key.md",
+      "path": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\engine_validation\\NGN_CKM_Production_Engine\\output\\nursing\\professional_practice\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook__answer_key.md"
+    },
+    {
+      "card_id": "S06",
+      "type": "deck.pptx",
+      "path": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\engine_validation\\NGN_CKM_Production_Engine\\output\\nursing\\professional_practice\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook__lesson_deck.pptx"
+    },
+    {
+      "card_id": "S07",
+      "type": "outline.json",
+      "path": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\engine_validation\\NGN_CKM_Production_Engine\\output\\nursing\\professional_practice\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook__outline.json"
+    },
+    {
+      "card_id": "S07",
+      "type": "blueprint.json",
+      "path": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\engine_validation\\NGN_CKM_Production_Engine\\output\\nursing\\professional_practice\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook__blueprint.json"
+    },
+    {
+      "card_id": "S07",
+      "type": "remediation_map.json",
+      "path": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\engine_validation\\NGN_CKM_Production_Engine\\output\\nursing\\professional_practice\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook__remediation_map.json"
+    },
+    {
+      "card_id": "S07",
+      "type": "scripts.md",
+      "path": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\engine_validation\\NGN_CKM_Production_Engine\\output\\nursing\\professional_practice\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook__scripts.md"
+    },
+    {
+      "card_id": "S07",
+      "type": "case_study.md",
+      "path": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\engine_validation\\NGN_CKM_Production_Engine\\output\\nursing\\professional_practice\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook__case_study.md"
+    },
+    {
+      "card_id": "S07",
+      "type": "answer_key.md",
+      "path": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\engine_validation\\NGN_CKM_Production_Engine\\output\\nursing\\professional_practice\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook__answer_key.md"
+    },
+    {
+      "card_id": "S07",
+      "type": "deck.pptx",
+      "path": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\engine_validation\\NGN_CKM_Production_Engine\\output\\nursing\\professional_practice\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook__lesson_deck.pptx"
+    }
+  ],
+  "notes": [
+    {
+      "card_id": "S01",
+      "note_type": "semantic_compression",
+      "original_text": "Instruct individuals - families - or other groups on topics such as health education - disease prevention - or childbirth and develop health improvement programs.",
+      "compressed_text": "Instruct individuals - families - or other groups on topics such as health education - di\u2026",
+      "loss_risk": "medium"
+    },
+    {
+      "card_id": "S01",
+      "note_type": "semantic_compression",
+      "original_text": "includes a recognition phase, a priority decision phase, and an evaluation phase.",
+      "compressed_text": "includes a recognition phase, a priority decision phase, and an evaluation phase.",
+      "loss_risk": "low"
+    },
+    {
+      "card_id": "S01",
+      "note_type": "semantic_compression",
+      "original_text": "The first safe action should be linked to the highest-risk cue pattern in Instruct individuals - families - or other groups on topics such as health education - disease prevention - or childbirth and develop health improvement programs..",
+      "compressed_text": "The first safe action should be linked to the highest-risk cue pattern in Instruct indivi\u2026",
+      "loss_risk": "medium"
+    },
+    {
+      "card_id": "S01",
+      "note_type": "semantic_compression",
+      "original_text": "Lesson scope includes: Instruct individuals - families - or other groups on topics such as health education - disease prevention - or childbirth and develop health improvement programs., Work with individuals - groups - or families to plan or implement programs designed to improve the overall health of communities..",
+      "compressed_text": "Lesson scope includes: Instruct individuals - families - or other groups on topics such a\u2026",
+      "loss_risk": "medium"
+    },
+    {
+      "card_id": "S02",
+      "note_type": "semantic_compression",
+      "original_text": "Instruct individuals - families - or other groups on topics such as health education - disease prevention - or childbirth and develop health improvement programs.",
+      "compressed_text": "Instruct individuals - families - or other groups on topics such as health education - di\u2026",
+      "loss_risk": "medium"
+    },
+    {
+      "card_id": "S02",
+      "note_type": "semantic_compression",
+      "original_text": "includes a recognition phase, a priority decision phase, and an evaluation phase.",
+      "compressed_text": "includes a recognition phase, a priority decision phase, and an evaluation phase.",
+      "loss_risk": "low"
+    },
+    {
+      "card_id": "S02",
+      "note_type": "semantic_compression",
+      "original_text": "The first safe action should be linked to the highest-risk cue pattern in Instruct individuals - families - or other groups on topics such as health education - disease prevention - or childbirth and develop health improvement programs..",
+      "compressed_text": "The first safe action should be linked to the highest-risk cue pattern in Instruct indivi\u2026",
+      "loss_risk": "medium"
+    },
+    {
+      "card_id": "S04",
+      "note_type": "semantic_compression",
+      "original_text": "Work with individuals - groups - or families to plan or implement programs designed to improve the overall health of communities.",
+      "compressed_text": "Work with individuals - groups - or families to plan or implement programs designed to im\u2026",
+      "loss_risk": "medium"
+    },
+    {
+      "card_id": "S04",
+      "note_type": "semantic_compression",
+      "original_text": "includes a recognition phase, a priority decision phase, and an evaluation phase.",
+      "compressed_text": "includes a recognition phase, a priority decision phase, and an evaluation phase.",
+      "loss_risk": "low"
+    },
+    {
+      "card_id": "S04",
+      "note_type": "semantic_compression",
+      "original_text": "The first safe action should be linked to the highest-risk cue pattern in Work with individuals - groups - or families to plan or implement programs designed to improve the overall health of communities..",
+      "compressed_text": "The first safe action should be linked to the highest-risk cue pattern in Work with indiv\u2026",
+      "loss_risk": "medium"
+    },
+    {
+      "card_id": "S07",
+      "note_type": "semantic_compression",
+      "original_text": "Review high-risk cues for: Instruct individuals - families - or other groups on topics such as health education - disease prevention - or childbirth and develop health improvement programs., Work with individuals - groups - or families to plan or implement programs designed to improve the overall health of communities..",
+      "compressed_text": "Review high-risk cues for: Instruct individuals - families - or other groups on topics su\u2026",
+      "loss_risk": "medium"
+    },
+    {
+      "card_id": "S07",
+      "note_type": "semantic_compression",
+      "original_text": "Rehearse one case before moving into assessment or question-bank work.",
+      "compressed_text": "Rehearse one case before moving into assessment or question-bank work.",
+      "loss_risk": "low"
+    },
+    {
+      "card_id": "S07",
+      "note_type": "semantic_compression",
+      "original_text": "Use the objective table to confirm lesson-to-assessment alignment.",
+      "compressed_text": "Use the objective table to confirm lesson-to-assessment alignment.",
+      "loss_risk": "low"
+    },
+    {
+      "card_id": "S07",
+      "note_type": "semantic_compression",
+      "original_text": "Follow the remediation map for weak areas and repeat the decision cycle.",
+      "compressed_text": "Follow the remediation map for weak areas and repeat the decision cycle.",
+      "loss_risk": "low"
+    }
+  ]
+}
