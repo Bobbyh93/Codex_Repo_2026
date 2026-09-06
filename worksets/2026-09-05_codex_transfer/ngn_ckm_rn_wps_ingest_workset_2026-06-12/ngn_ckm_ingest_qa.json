@@ -1,0 +1,141 @@
+{
+  "generated_at": "2026-06-12T19:23:26",
+  "ingest_pack_id": "ngn_ckm_rn_wps_ingest_workset_2026-06-12",
+  "csv_path": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\source_tables\\rn_wps_process_lesson_ingest_queue.csv",
+  "xlsx_path": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\source_tables\\rn_wps_process_lesson_ingest_queue.xlsx",
+  "manifest_path": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\ngn_ckm_ingest_manifest.json",
+  "source_trace_path": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\support\\source_trace.json",
+  "payload_preview_path": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\support\\pipeline_payloads_preview.json",
+  "ingest_row_count": 39,
+  "clean_default_row_count": 1,
+  "review_held_row_count": 38,
+  "source_process_count": 39,
+  "source_task_count": 402,
+  "source_bridge_count": 402,
+  "source_trace_row_count": 39,
+  "payload_preview_clean_count": 1,
+  "payload_preview_all_count": 39,
+  "header_status": {
+    "headers": [
+      "concept",
+      "exemplars",
+      "subject_area",
+      "content_area",
+      "specialty_area",
+      "nclex_category",
+      "ncjmm_primary",
+      "priority_framework",
+      "source_anchor",
+      "evidence_status",
+      "needs_review",
+      "module_number"
+    ],
+    "required_headers_present": true,
+    "ckm_output_markers_present": []
+  },
+  "xlsx_relationship_targets_normalized_for_engine": true,
+  "engine_loader": {
+    "csv_sheet": "rn_wps_process_lesson_ingest_queue",
+    "csv_payload_count_include_review_false": 1,
+    "xlsx_sheet": "Lesson_Ingest_Queue",
+    "xlsx_payload_count_include_review_false": 1,
+    "xlsx_payload_count_include_review_true": 39,
+    "first_clean_payload": {
+      "taxonomy": {
+        "concept": "Design public or employee health programs.",
+        "exemplars": [
+          "Instruct individuals - families - or other groups on topics such as health education - disease prevention - or childbirth and develop health improvement programs.",
+          "Work with individuals - groups - or families to plan or implement programs designed to improve the overall health of communities."
+        ],
+        "subject_area": "Prelicensure Nursing",
+        "content_area": "Professional Practice",
+        "specialty_area": "Registered Nurse Apprenticeship",
+        "nclex_category": "Unspecified",
+        "ncjmm_primary": "Recognize Cues",
+        "priority_framework": "Nursing process",
+        "source_anchor": "WPS process: Design public or employee health programs.; variants: 2074:time_based, 2074CB:competency_based, 2074HY:hybrid, 3056:time_based, 3056CB:competency_based, 3056HY:hybrid; source rows: wps_competency_2074.docx#T20:R3; wps_competency_2074.docx#T20:R4; wps_competency_3056.docx#T20:R3; wps_competency_3056.docx#T20:R4; wps_hybrid_2074.docx#T20:R2; wps_hybrid_2074.docx#T20:R3; wps_hybrid_3056.docx#T20:R2; wps_hybrid_3056.docx#T20:R3; wps_time_2074.docx#T20:R2; wps_time_2074.docx#T20:R3; wps_time_3056.docx#T20:R2; wps_time_3056.docx#T20:R3; crosswalk_data: C:\\Users\\RHarrity\\Documents\\Codex\\rn_wps_prelicensure_crosswalk_workset_2026-06-12\\build\\intermediate\\rn_wps_prelicensure_crosswalk_data.json",
+        "evidence_status": "sourced",
+        "needs_review": false,
+        "module_number": "RN-WPS-012"
+      }
+    }
+  },
+  "source_hash_checks": [
+    {
+      "source_name": "rn_wps_prelicensure_crosswalk_data.json",
+      "source_kind": "crosswalk_data_json",
+      "expected_hash": "sha256:4452ab0ec6284d1b9e0734e884a2ce74c2dc59afb67c3a09dac2f921039aaecd",
+      "current_hash": "sha256:4452ab0ec6284d1b9e0734e884a2ce74c2dc59afb67c3a09dac2f921039aaecd",
+      "unchanged": true
+    },
+    {
+      "source_name": "rn_wps_prelicensure_crosswalk_release.xlsx",
+      "source_kind": "crosswalk_release_workbook",
+      "expected_hash": "sha256:acae07d549ca9b5ff8812c2397c4f0c6fc23dec25d7805a8a791cada30121afa",
+      "current_hash": "sha256:acae07d549ca9b5ff8812c2397c4f0c6fc23dec25d7805a8a791cada30121afa",
+      "unchanged": true
+    },
+    {
+      "source_name": "NGN_CKM_Production_Engine_v2_3.zip",
+      "source_kind": "ngn_ckm_engine_zip",
+      "expected_hash": "sha256:52c1a016496c6239e76f5a7717b405a15799654f2fe77ceb56d2f95ede14adb2",
+      "current_hash": "sha256:52c1a016496c6239e76f5a7717b405a15799654f2fe77ceb56d2f95ede14adb2",
+      "unchanged": true
+    },
+    {
+      "source_name": "Prelicensure Workbook.xlsx",
+      "source_kind": "prelicensure_workbook",
+      "expected_hash": "sha256:7e711dd431e5f33993ae800f6749396b8ef7832b1b0ecb30bb9de0f8162ce78f",
+      "current_hash": "sha256:7e711dd431e5f33993ae800f6749396b8ef7832b1b0ecb30bb9de0f8162ce78f",
+      "unchanged": true
+    },
+    {
+      "source_name": "wps_competency_2074.docx",
+      "source_kind": "wps_docx",
+      "expected_hash": "sha256:8f10ba9b94c7fa0533e8e53a95138ece03533a9dd9caf01da5f919ed7716343d",
+      "current_hash": "sha256:8f10ba9b94c7fa0533e8e53a95138ece03533a9dd9caf01da5f919ed7716343d",
+      "unchanged": true
+    },
+    {
+      "source_name": "wps_competency_3056.docx",
+      "source_kind": "wps_docx",
+      "expected_hash": "sha256:011417c69a7ab4dfdab7f4e4165d7a86f1343f35a089444a6e182f3b81d41729",
+      "current_hash": "sha256:011417c69a7ab4dfdab7f4e4165d7a86f1343f35a089444a6e182f3b81d41729",
+      "unchanged": true
+    },
+    {
+      "source_name": "wps_hybrid_2074.docx",
+      "source_kind": "wps_docx",
+      "expected_hash": "sha256:5532f732343cea49581e50d6ede1cdf0a291d54fd65fb93d19ed05523d997287",
+      "current_hash": "sha256:5532f732343cea49581e50d6ede1cdf0a291d54fd65fb93d19ed05523d997287",
+      "unchanged": true
+    },
+    {
+      "source_name": "wps_hybrid_3056.docx",
+      "source_kind": "wps_docx",
+      "expected_hash": "sha256:380f226ed0f3c1a8477bb79c3886253385e2e97df8cf75295bfd22590eee6fb4",
+      "current_hash": "sha256:380f226ed0f3c1a8477bb79c3886253385e2e97df8cf75295bfd22590eee6fb4",
+      "unchanged": true
+    },
+    {
+      "source_name": "wps_time_2074.docx",
+      "source_kind": "wps_docx",
+      "expected_hash": "sha256:821f110e9598b1036cf68fafff9c4d1358b06a19d5312f04aa88f143079742b7",
+      "current_hash": "sha256:821f110e9598b1036cf68fafff9c4d1358b06a19d5312f04aa88f143079742b7",
+      "unchanged": true
+    },
+    {
+      "source_name": "wps_time_3056.docx",
+      "source_kind": "wps_docx",
+      "expected_hash": "sha256:5f27e02980f2b8e3a45c1769ee570ef22afdb83cc5c6defeb7de9760964f699c",
+      "current_hash": "sha256:5f27e02980f2b8e3a45c1769ee570ef22afdb83cc5c6defeb7de9760964f699c",
+      "unchanged": true
+    }
+  ],
+  "source_hashes_unchanged": true,
+  "no_ckm_output_markers": true,
+  "lesson_generation_run": false,
+  "openai_api_calls_made": false,
+  "drive_or_notion_changed": false,
+  "validation_status": "pass"
+}

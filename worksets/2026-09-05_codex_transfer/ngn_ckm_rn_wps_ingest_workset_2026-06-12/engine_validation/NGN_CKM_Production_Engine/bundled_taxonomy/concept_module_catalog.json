@@ -1,0 +1,566 @@
+[
+  {
+    "module_number": 1,
+    "concept": "Acid-Base Balance",
+    "volume": "Volume 1",
+    "part": "Biophysical Modules",
+    "exemplars": [
+      "Metabolic Acidosis",
+      "Metabolic Alkalosis",
+      "Respiratory Acidosis",
+      "Respiratory Alkalosis"
+    ]
+  },
+  {
+    "module_number": 2,
+    "concept": "Cellular Regulation",
+    "volume": "Volume 1",
+    "part": "Biophysical Modules",
+    "exemplars": [
+      "Cancer",
+      "Anemia",
+      "Breast Cancer",
+      "Colorectal Cancer",
+      "Leukemia",
+      "Lung Cancer",
+      "Prostate Cancer",
+      "Sickle Cell Disease",
+      "Skin Cancer"
+    ]
+  },
+  {
+    "module_number": 3,
+    "concept": "Comfort",
+    "volume": "Volume 1",
+    "part": "Biophysical Modules",
+    "exemplars": [
+      "Acute and Chronic Pain",
+      "End-of-Life Care",
+      "Fatigue",
+      "Fibromyalgia",
+      "Sleep-Rest Disorders"
+    ]
+  },
+  {
+    "module_number": 4,
+    "concept": "Digestion",
+    "volume": "Volume 1",
+    "part": "Biophysical Modules",
+    "exemplars": [
+      "Gastroesophageal Reflux Disease",
+      "Hepatitis",
+      "Malabsorption Disorders",
+      "Pancreatitis",
+      "Pyloric Stenosis"
+    ]
+  },
+  {
+    "module_number": 5,
+    "concept": "Elimination",
+    "volume": "Volume 1",
+    "part": "Biophysical Modules",
+    "exemplars": [
+      "Benign Prostatic Hyperplasia",
+      "Bladder Incontinence and Retention",
+      "Bowel: Incontinence, Constipation, and Impaction",
+      "Urinary Calculi"
+    ]
+  },
+  {
+    "module_number": 6,
+    "concept": "Fluids and Electrolytes",
+    "volume": "Volume 1",
+    "part": "Biophysical Modules",
+    "exemplars": [
+      "Fluid and Electrolyte Imbalance",
+      "Acute Kidney Injury",
+      "Chronic Kidney Disease"
+    ]
+  },
+  {
+    "module_number": 7,
+    "concept": "Health, Wellness, Illness, and Injury",
+    "volume": "Volume 1",
+    "part": "Biophysical Modules",
+    "exemplars": [
+      "Physical Fitness and Exercise",
+      "Oral Health",
+      "Normal Sleep-Rest"
+    ]
+  },
+  {
+    "module_number": 8,
+    "concept": "Immunity",
+    "volume": "Volume 1",
+    "part": "Biophysical Modules",
+    "exemplars": [
+      "HIV/ AIDS",
+      "Hypersensitivity",
+      "Rheumatoid Arthritis",
+      "Systemic Lupus"
+    ]
+  },
+  {
+    "module_number": 9,
+    "concept": "Infection",
+    "volume": "Volume 1",
+    "part": "Biophysical Modules",
+    "exemplars": [
+      "Cellulitis",
+      "Conjunctivitis",
+      "Influenza",
+      "Otitis Media",
+      "Pneumonia",
+      "Sepsis",
+      "Tuberculosis",
+      "Urinary Tract Infection"
+    ]
+  },
+  {
+    "module_number": 10,
+    "concept": "Inflammation",
+    "volume": "Volume 1",
+    "part": "Biophysical Modules",
+    "exemplars": [
+      "Appendicitis",
+      "Gallbladder Disease",
+      "Inflammatory Bowel Disease",
+      "Nephritis",
+      "Peptic Ulcer Disease"
+    ]
+  },
+  {
+    "module_number": 11,
+    "concept": "Intracranial Regulation",
+    "volume": "Volume 1",
+    "part": "Biophysical Modules",
+    "exemplars": [
+      "Increased Intracranial Pressure",
+      "Seizure Disorders",
+      "Traumatic Brain Injury"
+    ]
+  },
+  {
+    "module_number": 12,
+    "concept": "Metabolism",
+    "volume": "Volume 1",
+    "part": "Biophysical Modules",
+    "exemplars": [
+      "Type 1 Diabetes",
+      "Type 2 Diabetes Mellitus",
+      "Type 2 Diabetes",
+      "Liver Disease",
+      "Osteoporosis",
+      "Thyroid Disease"
+    ]
+  },
+  {
+    "module_number": 13,
+    "concept": "Mobility",
+    "volume": "Volume 1",
+    "part": "Biophysical Modules",
+    "exemplars": [
+      "Back Problems",
+      "Fractures",
+      "Hip Fractures",
+      "Multiple Sclerosis",
+      "Osteoarthritis",
+      "Parkinson Disease",
+      "Spinal Cord Injury"
+    ]
+  },
+  {
+    "module_number": 14,
+    "concept": "Nutrition",
+    "volume": "Volume 1",
+    "part": "Biophysical Modules",
+    "exemplars": [
+      "Obesity"
+    ]
+  },
+  {
+    "module_number": 15,
+    "concept": "Oxygenation",
+    "volume": "Volume 1",
+    "part": "Biophysical Modules",
+    "exemplars": [
+      "Acute Respiratory Failure",
+      "Asthma",
+      "Chronic Obstructive Pulmonary Disease",
+      "Cystic Fibrosis",
+      "Respiratory Syncytial Virus",
+      "Sudden Infant Death"
+    ]
+  },
+  {
+    "module_number": 16,
+    "concept": "Perfusion",
+    "volume": "Volume 1",
+    "part": "Biophysical Modules",
+    "exemplars": [
+      "Cardiomyopathy",
+      "Congenital Heart",
+      "Coronary Artery Disease",
+      "Coronary Artery",
+      "Deep Venous",
+      "Disseminated",
+      "Heart Failure",
+      "Hypertension",
+      "Hypertensive Disorders",
+      "Life-Threatening",
+      "Peripheral Vascular",
+      "Pulmonary Embolism",
+      "Shock",
+      "Stroke"
+    ]
+  },
+  {
+    "module_number": 17,
+    "concept": "Perioperative Care",
+    "volume": "Volume 1",
+    "part": "Biophysical Modules",
+    "exemplars": []
+  },
+  {
+    "module_number": 18,
+    "concept": "Sensory Perception",
+    "volume": "Volume 1",
+    "part": "Biophysical Modules",
+    "exemplars": [
+      "Hearing Impairment",
+      "Diseases of the Eye",
+      "Eye Injuries",
+      "Peripheral Neuropathy",
+      "M\u00e9ni\u00e8re Disease"
+    ]
+  },
+  {
+    "module_number": 19,
+    "concept": "Sexuality",
+    "volume": "Volume 1",
+    "part": "Biophysical Modules",
+    "exemplars": [
+      "Family Planning",
+      "Menopause",
+      "Menstrual Dysfunction",
+      "Sexual Dysfunctions",
+      "Sexually Transmitted"
+    ]
+  },
+  {
+    "module_number": 20,
+    "concept": "Thermoregulation",
+    "volume": "Volume 1",
+    "part": "Biophysical Modules",
+    "exemplars": [
+      "Hyperthermia",
+      "Hypothermia"
+    ]
+  },
+  {
+    "module_number": 21,
+    "concept": "Tissue Integrity",
+    "volume": "Volume 1",
+    "part": "Biophysical Modules",
+    "exemplars": [
+      "Burns",
+      "Pressure Injuries",
+      "Wound Healing"
+    ]
+  },
+  {
+    "module_number": 22,
+    "concept": "Addiction",
+    "volume": "Volume 2",
+    "part": "Psychosocial/Reproduction/Nursing Domain",
+    "exemplars": [
+      "Alcohol Abuse",
+      "Alcohol Use Disorder",
+      "Nicotine Use",
+      "Nicotine Use Disorder",
+      "Substance Abuse",
+      "Substance Use"
+    ]
+  },
+  {
+    "module_number": 23,
+    "concept": "Cognition",
+    "volume": "Volume 2",
+    "part": "Psychosocial/Reproduction/Nursing Domain",
+    "exemplars": [
+      "Alzheimer Disease",
+      "Delirium",
+      "Schizophrenia"
+    ]
+  },
+  {
+    "module_number": 24,
+    "concept": "Culture and Diversity",
+    "volume": "Volume 2",
+    "part": "Psychosocial/Reproduction/Nursing Domain",
+    "exemplars": []
+  },
+  {
+    "module_number": 25,
+    "concept": "Development",
+    "volume": "Volume 2",
+    "part": "Psychosocial/Reproduction/Nursing Domain",
+    "exemplars": [
+      "Attention-Deficit/Hyperactivity Disorder",
+      "Autism Spectrum Disorder",
+      "Cerebral Palsy",
+      "Failure to Thrive"
+    ]
+  },
+  {
+    "module_number": 27,
+    "concept": "Grief and Loss",
+    "volume": "Volume 2",
+    "part": "Psychosocial/Reproduction/Nursing Domain",
+    "exemplars": []
+  },
+  {
+    "module_number": 28,
+    "concept": "Mood and Affect",
+    "volume": "Volume 2",
+    "part": "Psychosocial/Reproduction/Nursing Domain",
+    "exemplars": [
+      "Depression",
+      "Bipolar Disorders",
+      "Postpartum Depression",
+      "Suicide"
+    ]
+  },
+  {
+    "module_number": 29,
+    "concept": "Self",
+    "volume": "Volume 2",
+    "part": "Psychosocial/Reproduction/Nursing Domain",
+    "exemplars": [
+      "Feeding and Eating Disorders",
+      "Personality",
+      "Personality Disorders"
+    ]
+  },
+  {
+    "module_number": 30,
+    "concept": "Spirituality",
+    "volume": "Volume 2",
+    "part": "Psychosocial/Reproduction/Nursing Domain",
+    "exemplars": [
+      "Religion",
+      "Spiritual Distress"
+    ]
+  },
+  {
+    "module_number": 31,
+    "concept": "Stress and Coping",
+    "volume": "Volume 2",
+    "part": "Psychosocial/Reproduction/Nursing Domain",
+    "exemplars": [
+      "Anxiety Disorders",
+      "Crisis",
+      "Obsessive-Compulsive Disorder"
+    ]
+  },
+  {
+    "module_number": 32,
+    "concept": "Trauma",
+    "volume": "Volume 2",
+    "part": "Psychosocial/Reproduction/Nursing Domain",
+    "exemplars": [
+      "Posttraumatic Stress Disorder",
+      "Abuse",
+      "Multisystem Trauma",
+      "Rape and Rape-Trauma",
+      "Sexual Violence"
+    ]
+  },
+  {
+    "module_number": 33,
+    "concept": "Reproduction",
+    "volume": "Volume 2",
+    "part": "Psychosocial/Reproduction/Nursing Domain",
+    "exemplars": [
+      "Antepartum Care",
+      "Intrapartum Care",
+      "Postpartum Care",
+      "Newborn Care",
+      "Prematurity"
+    ]
+  },
+  {
+    "module_number": 34,
+    "concept": "Assessment",
+    "volume": "Volume 2",
+    "part": "Psychosocial/Reproduction/Nursing Domain",
+    "exemplars": []
+  },
+  {
+    "module_number": 35,
+    "concept": "Caring Interventions",
+    "volume": "Volume 2",
+    "part": "Psychosocial/Reproduction/Nursing Domain",
+    "exemplars": []
+  },
+  {
+    "module_number": 36,
+    "concept": "Clinical Decision Making",
+    "volume": "Volume 2",
+    "part": "Psychosocial/Reproduction/Nursing Domain",
+    "exemplars": [
+      "Nursing Process",
+      "The Nursing Plan of Care",
+      "Prioritizing Care"
+    ]
+  },
+  {
+    "module_number": 37,
+    "concept": "Collaboration",
+    "volume": "Volume 2",
+    "part": "Psychosocial/Reproduction/Nursing Domain",
+    "exemplars": []
+  },
+  {
+    "module_number": 38,
+    "concept": "Communication",
+    "volume": "Volume 2",
+    "part": "Psychosocial/Reproduction/Nursing Domain",
+    "exemplars": [
+      "Groups and Group",
+      "Therapeutic",
+      "Documentation",
+      "Reporting"
+    ]
+  },
+  {
+    "module_number": 39,
+    "concept": "Managing Care",
+    "volume": "Volume 2",
+    "part": "Psychosocial/Reproduction/Nursing Domain",
+    "exemplars": [
+      "Case Management",
+      "Cost-Effective",
+      "Delegation",
+      "Leadership and"
+    ]
+  },
+  {
+    "module_number": 40,
+    "concept": "Professionalism",
+    "volume": "Volume 2",
+    "part": "Psychosocial/Reproduction/Nursing Domain",
+    "exemplars": [
+      "Commitment to",
+      "Professional",
+      "Work Ethic"
+    ]
+  },
+  {
+    "module_number": 41,
+    "concept": "Teaching and Learning",
+    "volume": "Volume 2",
+    "part": "Psychosocial/Reproduction/Nursing Domain",
+    "exemplars": [
+      "Patient/Consumer"
+    ]
+  },
+  {
+    "module_number": 42,
+    "concept": "Accountability",
+    "volume": "Volume 2",
+    "part": "Psychosocial/Reproduction/Nursing Domain",
+    "exemplars": [
+      "Competence",
+      "Professional"
+    ]
+  },
+  {
+    "module_number": 43,
+    "concept": "Advocacy",
+    "volume": "Volume 2",
+    "part": "Psychosocial/Reproduction/Nursing Domain",
+    "exemplars": [
+      "Environmental"
+    ]
+  },
+  {
+    "module_number": 44,
+    "concept": "Ethics",
+    "volume": "Volume 2",
+    "part": "Psychosocial/Reproduction/Nursing Domain",
+    "exemplars": [
+      "Morality",
+      "Ethical Dilemmas",
+      "Patient Rights"
+    ]
+  },
+  {
+    "module_number": 45,
+    "concept": "Evidence-Based Practice",
+    "volume": "Volume 2",
+    "part": "Psychosocial/Reproduction/Nursing Domain",
+    "exemplars": []
+  },
+  {
+    "module_number": 46,
+    "concept": "Healthcare Systems",
+    "volume": "Volume 2",
+    "part": "Psychosocial/Reproduction/Nursing Domain",
+    "exemplars": [
+      "Emergency"
+    ]
+  },
+  {
+    "module_number": 47,
+    "concept": "Health Policy",
+    "volume": "Volume 2",
+    "part": "Psychosocial/Reproduction/Nursing Domain",
+    "exemplars": []
+  },
+  {
+    "module_number": 48,
+    "concept": "Informatics",
+    "volume": "Volume 2",
+    "part": "Psychosocial/Reproduction/Nursing Domain",
+    "exemplars": [
+      "Clinical Decision",
+      "Clinical Decision Support",
+      "Individual",
+      "Individual Information"
+    ]
+  },
+  {
+    "module_number": 49,
+    "concept": "Legal Issues",
+    "volume": "Volume 2",
+    "part": "Psychosocial/Reproduction/Nursing Domain",
+    "exemplars": [
+      "Nurse Practice Acts",
+      "Advance Directives",
+      "Health Insurance",
+      "Mandatory",
+      "Risk Management"
+    ]
+  },
+  {
+    "module_number": 50,
+    "concept": "Quality Improvement",
+    "volume": "Volume 2",
+    "part": "Psychosocial/Reproduction/Nursing Domain",
+    "exemplars": []
+  },
+  {
+    "module_number": 51,
+    "concept": "Safety",
+    "volume": "Volume 2",
+    "part": "Psychosocial/Reproduction/Nursing Domain",
+    "exemplars": [
+      "Health Promotion",
+      "Health Promotion and",
+      "Patient Safety",
+      "Nurse Safety",
+      "Medication Safety"
+    ]
+  }
+]

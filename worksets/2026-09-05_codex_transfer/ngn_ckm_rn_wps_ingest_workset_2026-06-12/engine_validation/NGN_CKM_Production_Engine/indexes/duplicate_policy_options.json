@@ -1,0 +1,18 @@
+[
+  {
+    "value": "skip_exact",
+    "label": "Skip exact duplicate"
+  },
+  {
+    "value": "contribute_to_existing",
+    "label": "Contribute to existing content"
+  },
+  {
+    "value": "create_new_version",
+    "label": "Create a new version"
+  },
+  {
+    "value": "replace_existing",
+    "label": "Replace the existing version"
+  }
+]

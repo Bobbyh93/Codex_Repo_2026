@@ -1,0 +1,156 @@
+{
+  "generated_at": "2026-06-12T19:29:02",
+  "run_status": "complete",
+  "row_count": 1,
+  "success_count": 1,
+  "failure_count": 0,
+  "live_import": false,
+  "include_review_rows": false,
+  "openai_api_calls_made": false,
+  "diagram_provider": "local",
+  "concept": "Design public or employee health programs.",
+  "job_id": "workbook_20260613_022740_0001_Design_public_or_employee_health_programs.",
+  "batch_dir": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\engine_validation\\NGN_CKM_Production_Engine\\output\\ckm_exports\\ckm_batch_2026-06-13_022740__nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook",
+  "lesson_dir": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\engine_validation\\NGN_CKM_Production_Engine\\output\\nursing\\professional_practice\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook",
+  "report_json": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\engine_validation\\NGN_CKM_Production_Engine\\reports\\workbook_20260613_022740_full_workbook_report.json",
+  "report_md": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\engine_validation\\NGN_CKM_Production_Engine\\reports\\workbook_20260613_022740_full_workbook_report.md",
+  "expected_ckm_files": [
+    {
+      "path": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\engine_validation\\NGN_CKM_Production_Engine\\output\\ckm_exports\\ckm_batch_2026-06-13_022740__nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook\\knowledge_cards.csv",
+      "exists": true,
+      "bytes": 2069
+    },
+    {
+      "path": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\engine_validation\\NGN_CKM_Production_Engine\\output\\ckm_exports\\ckm_batch_2026-06-13_022740__nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook\\card_objective_map.csv",
+      "exists": true,
+      "bytes": 1151
+    },
+    {
+      "path": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\engine_validation\\NGN_CKM_Production_Engine\\output\\ckm_exports\\ckm_batch_2026-06-13_022740__nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook\\curriculum_objectives.csv",
+      "exists": true,
+      "bytes": 2813
+    },
+    {
+      "path": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\engine_validation\\NGN_CKM_Production_Engine\\output\\ckm_exports\\ckm_batch_2026-06-13_022740__nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook\\card_sources.csv",
+      "exists": true,
+      "bytes": 5194
+    },
+    {
+      "path": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\engine_validation\\NGN_CKM_Production_Engine\\output\\ckm_exports\\ckm_batch_2026-06-13_022740__nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook\\card_links.csv",
+      "exists": true,
+      "bytes": 17512
+    },
+    {
+      "path": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\engine_validation\\NGN_CKM_Production_Engine\\output\\ckm_exports\\ckm_batch_2026-06-13_022740__nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook\\card_research_notes.csv",
+      "exists": true,
+      "bytes": 3954
+    },
+    {
+      "path": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\engine_validation\\NGN_CKM_Production_Engine\\output\\ckm_exports\\ckm_batch_2026-06-13_022740__nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook\\exception_report.csv",
+      "exists": true,
+      "bytes": 23
+    },
+    {
+      "path": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\engine_validation\\NGN_CKM_Production_Engine\\output\\ckm_exports\\ckm_batch_2026-06-13_022740__nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook\\import_manifest.json",
+      "exists": true,
+      "bytes": 648
+    },
+    {
+      "path": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\engine_validation\\NGN_CKM_Production_Engine\\output\\ckm_exports\\ckm_batch_2026-06-13_022740__nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook\\ckm_import_package.json",
+      "exists": true,
+      "bytes": 43380
+    }
+  ],
+  "expected_lesson_files": [
+    {
+      "path": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\engine_validation\\NGN_CKM_Production_Engine\\output\\nursing\\professional_practice\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook__outline.json",
+      "exists": true,
+      "bytes": 4872
+    },
+    {
+      "path": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\engine_validation\\NGN_CKM_Production_Engine\\output\\nursing\\professional_practice\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook__blueprint.json",
+      "exists": true,
+      "bytes": 26267
+    },
+    {
+      "path": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\engine_validation\\NGN_CKM_Production_Engine\\output\\nursing\\professional_practice\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook__scripts.md",
+      "exists": true,
+      "bytes": 2738
+    },
+    {
+      "path": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\engine_validation\\NGN_CKM_Production_Engine\\output\\nursing\\professional_practice\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook__case_study.md",
+      "exists": true,
+      "bytes": 2516
+    },
+    {
+      "path": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\engine_validation\\NGN_CKM_Production_Engine\\output\\nursing\\professional_practice\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook__answer_key.md",
+      "exists": true,
+      "bytes": 1280
+    },
+    {
+      "path": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\engine_validation\\NGN_CKM_Production_Engine\\output\\nursing\\professional_practice\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook__remediation_map.json",
+      "exists": true,
+      "bytes": 1092
+    },
+    {
+      "path": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\engine_validation\\NGN_CKM_Production_Engine\\output\\nursing\\professional_practice\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook\\nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook__lesson_deck.pptx",
+      "exists": true,
+      "bytes": 52923
+    }
+  ],
+  "curriculum_master": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\engine_validation\\NGN_CKM_Production_Engine\\output\\curriculum_masters\\curriculum_master.xlsx",
+  "source_hashes_unchanged": true,
+  "source_hash_checks": [
+    {
+      "source_name": "rn_wps_prelicensure_crosswalk_data.json",
+      "source_kind": "crosswalk_data_json",
+      "unchanged": true
+    },
+    {
+      "source_name": "rn_wps_prelicensure_crosswalk_release.xlsx",
+      "source_kind": "crosswalk_release_workbook",
+      "unchanged": true
+    },
+    {
+      "source_name": "NGN_CKM_Production_Engine_v2_3.zip",
+      "source_kind": "ngn_ckm_engine_zip",
+      "unchanged": true
+    },
+    {
+      "source_name": "Prelicensure Workbook.xlsx",
+      "source_kind": "prelicensure_workbook",
+      "unchanged": true
+    },
+    {
+      "source_name": "wps_competency_2074.docx",
+      "source_kind": "wps_docx",
+      "unchanged": true
+    },
+    {
+      "source_name": "wps_competency_3056.docx",
+      "source_kind": "wps_docx",
+      "unchanged": true
+    },
+    {
+      "source_name": "wps_hybrid_2074.docx",
+      "source_kind": "wps_docx",
+      "unchanged": true
+    },
+    {
+      "source_name": "wps_hybrid_3056.docx",
+      "source_kind": "wps_docx",
+      "unchanged": true
+    },
+    {
+      "source_name": "wps_time_2074.docx",
+      "source_kind": "wps_docx",
+      "unchanged": true
+    },
+    {
+      "source_name": "wps_time_3056.docx",
+      "source_kind": "wps_docx",
+      "unchanged": true
+    }
+  ],
+  "validation_status": "pass"
+}

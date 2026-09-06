@@ -1,0 +1,11 @@
+{
+  "concept_count": 50,
+  "topic_rows": 182,
+  "module_count": 50,
+  "default_source_table": "bundled_taxonomy/master_taxonomy_base.csv",
+  "generated_from": [
+    "indexes/default_topic_catalog.csv",
+    "indexes/concept_module_catalog.json"
+  ],
+  "template_workbook": "bundled_taxonomy/course_content_master_template.xlsx"
+}
