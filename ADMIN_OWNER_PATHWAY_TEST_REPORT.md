@@ -11,7 +11,7 @@ Complete testing of the Admin/Owner avatar pathway reveals a comprehensive backe
 ### 1.1 Authentication Methods Tested
 ✅ **Primary Admin Login**
 - **Endpoint:** `/api/admin/login`
-- **Test Credentials:** admin@nurseprep.com / admin123
+- **Test Credentials:** redacted (see ADMIN_EMAIL / ADMIN_PASSWORD for the environment under test)
 - **Result:** Successfully authenticated, received token
 - **Token Format:** `admin-token-[timestamp]`
 
@@ -319,7 +319,7 @@ WHERE table_schema = 'public';
 # Admin login test
 curl -X POST http://localhost:5000/api/admin/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"admin@nurseprep.com","password":"admin123"}'
+  -d '{"email":"'"$ADMIN_EMAIL"'","password":"'"$ADMIN_PASSWORD"'"}'
 
 # Resource stats test
 curl -X GET http://localhost:5000/api/admin/resources/stats \

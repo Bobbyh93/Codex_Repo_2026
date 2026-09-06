@@ -2358,25 +2358,13 @@ Physiological Adaptation: Alterations in Body Systems`;
     }
   });
 
-  // Admin authentication endpoint
-  app.post("/api/admin/login", async (req, res) => {
-    try {
-      const { email, password } = req.body;
-      
-      // Simple admin check (in production, use proper authentication)
-      if (email === "admin@nurseprep.com" && password === "admin123") {
-        res.json({ 
-          token: "admin-token-" + Date.now(),
-          role: "admin"
-        });
-      } else {
-        res.status(401).json({ error: "Invalid credentials" });
-      }
-    } catch (error) {
-      console.error("Admin login error:", error);
-      res.status(500).json({ error: "Authentication failed" });
-    }
-  });
+  // Admin authentication lives in admin-routes.ts, registered above via
+  // registerAdminRoutes(app): session auth through AdminAuthSession, with CSRF
+  // and an audit log. A second /api/admin/login used to be declared here that
+  // string-compared a hardcoded email and password and handed back an
+  // unsigned "admin-token-<timestamp>". Registering later, it never matched a
+  // request - but it was one reordering away from shadowing the real handler,
+  // and its credentials were published in this public repo. Removed.
 
   // Admin analytics endpoint
   app.get("/api/admin/analytics", async (req, res) => {
