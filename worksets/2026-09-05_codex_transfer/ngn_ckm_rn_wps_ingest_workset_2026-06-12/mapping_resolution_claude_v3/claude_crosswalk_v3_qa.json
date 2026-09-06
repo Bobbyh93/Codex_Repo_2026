@@ -1,0 +1,37 @@
+{
+  "generated_at": "2026-09-06T06:46:24.496716+00:00",
+  "status": "regenerated_pending_human_review",
+  "drafted_by": "claude-opus-5 (Claude, via Cowork session)",
+  "candidate_generation": "semantic selection over the full 207-statement QSEN index for all 36 rows",
+  "supersedes": [
+    "mapping_resolution_claude",
+    "mapping_resolution_claude_v2"
+  ],
+  "method_consistency": "All 36 rows now use one candidate-generation method. v1 mixed a top-12 lexical prefilter across every row; v2 covered 10 rows semantically.",
+  "openai_api_calls_made": false,
+  "source_files_modified": false,
+  "original_artifacts_overwritten": false,
+  "qsen_index_size": 207,
+  "row_count": 36,
+  "mapping_status_counts": {
+    "draft_mapping": 30,
+    "not_mappable": 6
+  },
+  "confidence_counts_for_drafts": {
+    "medium": 13,
+    "low": 16,
+    "high": 1
+  },
+  "change_vs_v1": {
+    "confirmed": 10,
+    "status_changed": 9,
+    "top_changed": 17
+  },
+  "top_statement_ksa_distribution": {
+    "Skills": 30
+  },
+  "hallucination_validation_error_count": 0,
+  "validation_contract": "validate_suggestion() rules from build_mapping_resolution.py",
+  "review_required": true,
+  "hard_stop": "Drafts. No row enters the ingest queue or the binding manifest without a reviewer decision."
+}

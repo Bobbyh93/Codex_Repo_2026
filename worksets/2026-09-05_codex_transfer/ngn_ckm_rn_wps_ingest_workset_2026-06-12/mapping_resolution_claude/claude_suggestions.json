@@ -1,0 +1,154 @@
+{
+"_provenance": {
+  "generated_by": "Claude (claude-opus-5) acting as the drafting model for the mapping_resolution step",
+  "generated_at_note": "Fill from run time",
+  "replaces": "gpt-5.4-mini call in build_mapping_resolution.py; no OpenAI API call was made",
+  "contract": "Same JSON schema and validate_suggestion() rules as build_mapping_resolution.py",
+  "status": "DRAFT ONLY - not reviewed, not final, must not enter the binding manifest without reviewer decisions"
+},
+"suggestions": {
+"RN-WPS-002": {"mapping_status":"draft_mapping","top":"QSEN_0018","confidence":"medium","alts":["QSEN_0027","QSEN_0015"],
+ "rationale":"Administering anesthetics or sedatives to control pain is the initiation of a treatment intended to relieve pain and suffering, which is the direct subject of this QSEN skill statement.",
+ "notes":"Reviewer should confirm whether the pharmacologic act or the patient-centered framing of pain relief is the intended crosswalk anchor."},
+
+"RN-WPS-003": {"mapping_status":"insufficient_evidence","top":"","confidence":"low","alts":[],
+ "rationale":"Ten of the twelve supplied candidates scored 0.00 and are sequential filler (QSEN_0001-QSEN_0010); none address medication administration.",
+ "notes":"CANDIDATE SET GAP. Regenerate candidates before review. The safety-practice family (QSEN_0158 standardized practices, QSEN_0160 reduce reliance on memory, QSEN_0162 error reporting) is the likely correct region and is absent here."},
+
+"RN-WPS-004": {"mapping_status":"draft_mapping","top":"QSEN_0161","confidence":"low","alts":["QSEN_0156","QSEN_0176"],
+ "rationale":"Advising institutions on health or safety issues is an outward communication of safety concerns beyond the immediate care team, which is the nearest available QSEN skill.",
+ "notes":"Partial fit. Professional and policy advocacy is thinly represented in QSEN; AACN Domains 3 and 9-10 carry it better."},
+
+"RN-WPS-005": {"mapping_status":"draft_mapping","top":"QSEN_0169","confidence":"low","alts":["QSEN_0072","QSEN_0190"],
+ "rationale":"Consulting with personnel about necessary precautions is a safety communication to colleagues; this is the closest safety-communication statement in the candidate set.",
+ "notes":"Weak fit. QSEN_0161 and QSEN_0156 are better matches in the full QSEN set but were not supplied as candidates. Shares source task text with RN-WPS-014."},
+
+"RN-WPS-006": {"mapping_status":"draft_mapping","top":"QSEN_0095","confidence":"low","alts":["QSEN_0015","QSEN_0016"],
+ "rationale":"This statement explicitly covers assessment, diagnosis, treatment and evaluation as the frame in which evidence is applied, which is the context for interpreting diagnostic tests.",
+ "notes":"Contextual mapping only. Diagnostic test interpretation is a clinical skill outside QSEN's six competency domains. Shares source task text with RN-WPS-026."},
+
+"RN-WPS-007": {"mapping_status":"draft_mapping","top":"QSEN_0161","confidence":"medium","alts":["QSEN_0175","QSEN_0004"],
+ "rationale":"Assessing home, work and community environments to identify potential health or safety problems is hazard identification, and this statement covers observing and communicating hazards to patients, families and the team.",
+ "notes":"Reviewer should confirm whether identification alone or identification plus communication is intended."},
+
+"RN-WPS-008": {"mapping_status":"insufficient_evidence","top":"","confidence":"low","alts":[],
+ "rationale":"Nine of twelve candidates scored 0.00 and are sequential filler; none address assisting during examinations or treatments.",
+ "notes":"CANDIDATE SET GAP. Regenerate candidates. QSEN_0062 (function competently within own scope as a team member) is the likely region and is absent here. Shares source task text with RN-WPS-028."},
+
+"RN-WPS-009": {"mapping_status":"draft_mapping","top":"QSEN_0014","confidence":"medium","alts":["QSEN_0049","QSEN_0086","QSEN_0079"],
+ "rationale":"Consulting and coordinating with team members to assess, plan, implement and evaluate care plans is interprofessional communication about the patient, which this skill statement names directly.",
+ "notes":"Strongest genuine Teamwork and Collaboration mapping in this batch. QSEN_0049 is a defensible alternative if the reviewer prefers the roles-and-scopes framing."},
+
+"RN-WPS-010": {"mapping_status":"draft_mapping","top":"QSEN_0006","confidence":"low","alts":["QSEN_0051","QSEN_0035","QSEN_0082"],
+ "rationale":"Instructing individuals, families and groups on health education and disease prevention is patient and family empowerment through education, the subject of this statement.",
+ "notes":"Population-level health education sits in AACN Domain 3 and is weakly represented across QSEN. Reviewer should decide whether the individual-education framing is acceptable."},
+
+"RN-WPS-011": {"mapping_status":"draft_mapping","top":"QSEN_0097","confidence":"high","alts":["QSEN_0087","QSEN_0100","QSEN_0108"],
+ "rationale":"Engaging in nursing research activities is exactly what this statement describes: participating effectively in data collection and other research activities.",
+ "notes":"Clean one-to-one mapping. The strongest match in the batch and the only high-confidence draft."},
+
+"RN-WPS-013": {"mapping_status":"not_mappable","top":"","confidence":"low","alts":[],
+ "rationale":"Diagnostic reasoning has no counterpart among QSEN's six competency domains, which are deliberately cross-cutting rather than clinical.",
+ "notes":"Route to AACN Domain 2 and the NCJMM clinical judgment layer instead of the QSEN crosswalk. Shares source task text with RN-WPS-016 and RN-WPS-039."},
+
+"RN-WPS-014": {"mapping_status":"not_mappable","top":"","confidence":"low","alts":[],
+ "rationale":"Directing a healthcare delivery program is a management and systems activity with no QSEN competency counterpart.",
+ "notes":"Route to AACN Domain 7 (Systems-Based Practice) and Domain 10. Shares source task text with RN-WPS-005."},
+
+"RN-WPS-015": {"mapping_status":"draft_mapping","top":"QSEN_0134","confidence":"low","alts":["QSEN_0136","QSEN_0095","QSEN_0126"],
+ "rationale":"Modifying treatment plans based on patient response requires measuring the effect of a change, which is what this statement names.",
+ "notes":"LEVEL MISMATCH. The QSEN statement is written at the system or quality-improvement level while the WPS task is patient-level. Reviewer should confirm this is acceptable."},
+
+"RN-WPS-016": {"mapping_status":"draft_mapping","top":"QSEN_0016","confidence":"low","alts":["QSEN_0027","QSEN_0015"],
+ "rationale":"Examining a patient to assess general physical condition overlaps with assessing levels of physical comfort, the only physical-assessment statement available.",
+ "notes":"Partial fit. General physical assessment is a clinical skill outside QSEN's scope. Shares source task text with RN-WPS-013 and RN-WPS-039."},
+
+"RN-WPS-017": {"mapping_status":"not_mappable","top":"","confidence":"low","alts":[],
+ "rationale":"Immunization is a clinical and population-health intervention with no QSEN competency counterpart; the supplied candidates are patient-centered-care attitudes matched on incidental tokens.",
+ "notes":"Route to AACN Domain 3 (Population Health). Shares source task text with RN-WPS-038."},
+
+"RN-WPS-018": {"mapping_status":"draft_mapping","top":"QSEN_0189","confidence":"low","alts":["QSEN_0198","QSEN_0192"],
+ "rationale":"Monitoring, recording and reporting changes in patient condition is documentation of patient care in the health record, the action this statement names.",
+ "notes":"CANDIDATE SET GAP. QSEN_0161 (communicate observations or concerns to the health care team) is the better fit for the reporting half of this task and was not supplied as a candidate."},
+
+"RN-WPS-019": {"mapping_status":"not_mappable","top":"","confidence":"low","alts":[],
+ "rationale":"Supply and equipment inventory management has no QSEN competency counterpart; the highest candidate scored 0.07 on incidental tokens.",
+ "notes":"Route to AACN Domain 7 (resource stewardship). Shares source task text with RN-WPS-027."},
+
+"RN-WPS-020": {"mapping_status":"draft_mapping","top":"QSEN_0207","confidence":"low","alts":["QSEN_0041","QSEN_0202"],
+ "rationale":"Maintaining accurate, detailed records is governed by the confidentiality and security of patient records, the only records-focused statement in the candidate set.",
+ "notes":"CANDIDATE SET GAP. This is an attitude statement matched to a skill task. QSEN_0188 and QSEN_0189 (navigate and document in the EHR) are the correct family and are absent; six of twelve candidates are 0.00 filler."},
+
+"RN-WPS-021": {"mapping_status":"not_mappable","top":"","confidence":"low","alts":[],
+ "rationale":"Unit staffing, budget, planning and long-range goals are administrative functions with no QSEN competency counterpart.",
+ "notes":"Route to AACN Domains 7 and 10."},
+
+"RN-WPS-022": {"mapping_status":"draft_mapping","top":"QSEN_0192","confidence":"low","alts":["QSEN_0010","QSEN_0117"],
+ "rationale":"Observing nurses and visiting patients to ensure proper nursing care is monitoring the outcomes of care processes, which this statement names.",
+ "notes":"LABEL QUALITY. The WPS concept label 'Monitor health or behavior of people or animals' is a generic O*NET work-activity label mismatched to the nursing task text; map from the task, not the label. Shares source task text with RN-WPS-035."},
+
+"RN-WPS-023": {"mapping_status":"draft_mapping","top":"QSEN_0175","confidence":"low","alts":["QSEN_0192","QSEN_0189"],
+ "rationale":"Monitoring patients for reactions and reporting changes during treatment is the vigilance and monitoring this attitude statement values.",
+ "notes":"Attitude statement matched to a skill task; reviewer should decide whether a KSA-level mismatch is acceptable or whether this should be held for candidate regeneration."},
+
+"RN-WPS-024": {"mapping_status":"draft_mapping","top":"QSEN_0016","confidence":"low","alts":["QSEN_0192","QSEN_0018"],
+ "rationale":"Monitoring patient progress and response to treatment includes ongoing assessment of physical and emotional comfort.",
+ "notes":"FALSE POSITIVE WARNING. The top lexical candidate (QSEN_0006, score 0.23) matched only on the phrase 'all aspects' and should not be selected. Shares source task text with RN-WPS-025."},
+
+"RN-WPS-025": {"mapping_status":"draft_mapping","top":"QSEN_0016","confidence":"low","alts":["QSEN_0192","QSEN_0018"],
+ "rationale":"Post-operative monitoring is ongoing assessment of physical and emotional comfort and response to treatment.",
+ "notes":"Identical candidate set and source task to RN-WPS-024; the same false positive on 'all aspects' applies. Resolve both rows together."},
+
+"RN-WPS-026": {"mapping_status":"draft_mapping","top":"QSEN_0091","confidence":"low","alts":["QSEN_0089","QSEN_0191"],
+ "rationale":"Deciding which diagnostic tests to order is an application of evidence to determine best clinical practice.",
+ "notes":"Contextual mapping only; test ordering is outside QSEN scope and may exceed RN scope of practice. Shares source task text with RN-WPS-006."},
+
+"RN-WPS-027": {"mapping_status":"draft_mapping","top":"QSEN_0158","confidence":"low","alts":["QSEN_0166","QSEN_0162"],
+ "rationale":"Preparing sterile instruments, equipment and supplies is the use of standardized practices that support safety and quality.",
+ "notes":"Reasonable fit on the standardization framing. Shares source task text with RN-WPS-019, which is not mappable; the two rows should be resolved consistently."},
+
+"RN-WPS-028": {"mapping_status":"insufficient_evidence","top":"","confidence":"low","alts":[],
+ "rationale":"Eleven of twelve candidates scored 0.00 and are sequential filler; none address physical preparation of a patient for a procedure.",
+ "notes":"CANDIDATE SET GAP. Regenerate candidates. Shares source task text with RN-WPS-008."},
+
+"RN-WPS-029": {"mapping_status":"not_mappable","top":"","confidence":"low","alts":[],
+ "rationale":"Prescribing devices or therapies has no QSEN competency counterpart.",
+ "notes":"SCOPE MISMATCH. Prescribing is an advanced-practice activity; this row derives from an O*NET registered-nurse profile that blends RN and APRN tasks. Flag for exclusion from a prelicensure crosswalk. Shares source task text with RN-WPS-030."},
+
+"RN-WPS-030": {"mapping_status":"not_mappable","top":"","confidence":"low","alts":[],
+ "rationale":"Prescribing medications has no QSEN competency counterpart.",
+ "notes":"SCOPE MISMATCH. Same advanced-practice issue as RN-WPS-029; both are candidates for the source-exclusion list rather than the review queue."},
+
+"RN-WPS-032": {"mapping_status":"draft_mapping","top":"QSEN_0189","confidence":"medium","alts":["QSEN_0188","QSEN_0192"],
+ "rationale":"Recording patient medical information and vital signs is documenting patient care in the electronic health record.",
+ "notes":"Clean informatics mapping. One of the few rows where the candidate set contained the right statement."},
+
+"RN-WPS-033": {"mapping_status":"draft_mapping","top":"QSEN_0020","confidence":"medium","alts":["QSEN_0078","QSEN_0006"],
+ "rationale":"Referring patients to specialized health resources or community agencies is providing access to resources, which this statement names explicitly.",
+ "notes":"Good fit on the resource-access half of the statement; the decisional-conflict half is not exercised by this task."},
+
+"RN-WPS-034": {"mapping_status":"draft_mapping","top":"QSEN_0010","confidence":"low","alts":["QSEN_0196","QSEN_0117"],
+ "rationale":"Supervising less-skilled personnel and a care unit is an exercise of the nursing role in assuring coordination, integration and continuity of care.",
+ "notes":"CANDIDATE SET GAP. Delegation and supervision belong to the scopes-of-practice family (QSEN_0049, QSEN_0062, QSEN_0065), none of which were supplied as candidates."},
+
+"RN-WPS-035": {"mapping_status":"draft_mapping","top":"QSEN_0010","confidence":"low","alts":["QSEN_0086","QSEN_0196"],
+ "rationale":"Overseeing workers who provide patient services exercises the nursing role in coordination and continuity of care.",
+ "notes":"Shares source task text with RN-WPS-022 but received a different candidate set; resolve the two rows together and expect the same decision."},
+
+"RN-WPS-036": {"mapping_status":"not_mappable","top":"","confidence":"low","alts":[],
+ "rationale":"Conducting laboratory tests has no QSEN competency counterpart.",
+ "notes":"LEXICAL ARTIFACT. The entire candidate set matched on the token 'information' and on 'tests' via quality-improvement statements. None are topically related."},
+
+"RN-WPS-037": {"mapping_status":"insufficient_evidence","top":"","confidence":"low","alts":[],
+ "rationale":"Eight of twelve candidates scored 0.00 and are sequential filler; the highest real candidate scored 0.06 and concerns students as parts of systems of care, not instruction.",
+ "notes":"CANDIDATE SET GAP. Teaching and precepting map to AACN Domains 6 and 10. Regenerate candidates before review."},
+
+"RN-WPS-038": {"mapping_status":"draft_mapping","top":"QSEN_0029","confidence":"low","alts":["QSEN_0027","QSEN_0032"],
+ "rationale":"Providing health care, first aid and rehabilitation assistance is the delivery of patient-centered care; this is the generic care-delivery skill statement available.",
+ "notes":"Very broad mapping. Reviewer may prefer to hold this row pending candidate regeneration. Shares source task text with RN-WPS-017."},
+
+"RN-WPS-039": {"mapping_status":"not_mappable","top":"","confidence":"low","alts":[],
+ "rationale":"Emergency treatment and field triage have no QSEN competency counterpart; five of twelve candidates scored 0.00.",
+ "notes":"Route to AACN Domain 2 and the NCJMM clinical judgment layer. Shares source task text with RN-WPS-013 and RN-WPS-016."}
+}
+}

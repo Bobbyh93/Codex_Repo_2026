@@ -1,0 +1,25 @@
+{
+  "generated_at": "2026-09-06T06:35:28.961782+00:00",
+  "status": "regenerated_pending_human_review",
+  "drafted_by": "claude-opus-5 (Claude, via Cowork session)",
+  "candidate_generation": "semantic selection over the full 207-statement QSEN index, replacing the top-12 lexical prefilter",
+  "scope": "the 10 rows flagged in the 2026-08-27 packet as filler-dominated, candidate-gap, false-positive, or KSA-mismatched",
+  "openai_api_calls_made": false,
+  "source_files_modified": false,
+  "original_artifacts_overwritten": false,
+  "supersedes": "mapping_resolution_claude/ for these 10 modules only; the other 26 rows there stand",
+  "qsen_index_size": 207,
+  "row_count": 10,
+  "mapping_status_counts": {
+    "draft_mapping": 10
+  },
+  "confidence_counts": {
+    "medium": 5,
+    "low": 5
+  },
+  "hallucination_validation_error_count": 0,
+  "validation_contract": "validate_suggestion() rules from build_mapping_resolution.py, applied against the v2 candidate sets",
+  "methodology_change": "This changes the candidate-generation step, not just the drafting step. Adopting it is a methodology decision.",
+  "review_required": true,
+  "hard_stop": "Drafts. No row enters the ingest queue or binding manifest without a reviewer decision."
+}

@@ -1,0 +1,4 @@
+concept,exemplars,subject_area,content_area,specialty_area,nclex_category,ncjmm_primary,priority_framework,source_anchor,evidence_status,needs_review,module_number
+Concept A,"Subtopic 1,Subtopic 2,Subtopic 3",Subject Area A,Content Area A,Specialty Area A,Category A,Recognize Cues,Priority Framework A,"Source Name, Chapter or Page Range",sourced,false,01
+Concept B,"Subtopic 4,Subtopic 5",Subject Area B,Content Area B,Specialty Area B,Category B,Analyze Cues,Priority Framework B,"Source Name, Chapter or Page Range",sourced,false,02
+Concept C,"Subtopic 6,Subtopic 7",Subject Area C,Content Area C,Specialty Area C,Category C,Prioritize Hypotheses,Priority Framework C,"Source Name, Chapter or Page Range",sourced,true,03

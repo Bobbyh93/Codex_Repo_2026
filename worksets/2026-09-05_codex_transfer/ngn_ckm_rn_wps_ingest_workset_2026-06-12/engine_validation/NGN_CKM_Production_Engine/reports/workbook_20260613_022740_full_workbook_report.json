@@ -1,0 +1,37 @@
+{
+  "status": "complete",
+  "workbook_path": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\source_tables\\rn_wps_process_lesson_ingest_queue.xlsx",
+  "sheet": "Lesson_Ingest_Queue",
+  "started_at": "2026-06-13T02:27:40.074916",
+  "completed_at": "2026-06-13T02:27:40.776156",
+  "row_count": 1,
+  "success_count": 1,
+  "failure_count": 0,
+  "live_import": false,
+  "include_review_rows": false,
+  "max_rows": null,
+  "results": [
+    {
+      "job_id": "workbook_20260613_022740_0001_Design_public_or_employee_health_programs.",
+      "concept": "Design public or employee health programs.",
+      "exemplars": [
+        "Instruct individuals - families - or other groups on topics such as health education - disease prevention - or childbirth and develop health improvement programs.",
+        "Work with individuals - groups - or families to plan or implement programs designed to improve the overall health of communities."
+      ],
+      "status": "complete",
+      "phase": "cpi",
+      "error": "",
+      "batch_dir": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\engine_validation\\NGN_CKM_Production_Engine\\output\\ckm_exports\\ckm_batch_2026-06-13_022740__nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook"
+    }
+  ],
+  "cpi": {
+    "status": "pass",
+    "trends": 0,
+    "actions_created": 0
+  },
+  "cpi_summary": {
+    "event_count": 0,
+    "trends": [],
+    "actions": []
+  }
+}

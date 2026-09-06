@@ -1,0 +1,10 @@
+{
+  "enabled": false,
+  "run_time_local": "02:00",
+  "workbook_path": "",
+  "sheet_name": null,
+  "live_import": true,
+  "include_review_rows": false,
+  "max_rows": null,
+  "report_dir": "reports"
+}
