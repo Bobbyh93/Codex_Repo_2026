@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "source": "TOPIC_PRODUCTION_MILESTONES.md Phase 2: Five-Topic Catalog Expansion",
+  "policy": "Autonomous runs may only draft topics already listed here with status not_started. Adding new candidates is a human decision.",
+  "candidates": [
+    {
+      "slug": "postpartum-hemorrhage-priorities",
+      "topic": "Postpartum Hemorrhage Priorities",
+      "status": "not_started",
+      "drafted_at": null,
+      "package_status": null
+    },
+    {
+      "slug": "newborn-assessment-cues",
+      "topic": "Newborn Assessment Cues",
+      "status": "not_started",
+      "drafted_at": null,
+      "package_status": null
+    },
+    {
+      "slug": "pediatric-emergency-priorities",
+      "topic": "Pediatric Emergency Priorities",
+      "status": "not_started",
+      "drafted_at": null,
+      "package_status": null
+    }
+  ]
+}
