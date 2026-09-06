@@ -775,11 +775,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const { registerAdminDatabaseRoutes } = await import("./admin-database-routes");
   registerAdminDatabaseRoutes(app);
   
-  // Register user search routes
+  // Register user search routes.
+  //
+  // These return real PII -- email, first/last name, and assessment scores --
+  // so they carry the same session guard as every other /api/admin route (see
+  // `requireAdmin` in admin-routes.ts). They were registered with no middleware
+  // at all until this change; the omission went unnoticed because the handlers
+  // selected columns that did not exist and so failed before returning
+  // anything. Fixing the columns made them work, which is what exposed the
+  // data. No CSRF here on purpose: these are GETs, and validateCSRFToken
+  // guards state changes.
+  const { requireAdminSession } = await import("./admin-auth-session");
   const { searchUsersByEmail, getUserById, getAllUsers } = await import("./user-search-routes");
-  app.get("/api/admin/users/search", searchUsersByEmail);
-  app.get("/api/admin/users/:id", getUserById);
-  app.get("/api/admin/users", getAllUsers);
+  app.get("/api/admin/users/search", requireAdminSession, searchUsersByEmail);
+  app.get("/api/admin/users/:id", requireAdminSession, getUserById);
+  app.get("/api/admin/users", requireAdminSession, getAllUsers);
   
   // Register content import routes
   const contentImportRouter = (await import("./content-import-routes")).default;
