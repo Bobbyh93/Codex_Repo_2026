@@ -1,4 +1,4 @@
-import type { Express } from "express";
+import type { Express, Request } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { db } from "./db";
@@ -57,6 +57,27 @@ const normalizeGuestId = (sessionId: string): string => {
   }
   // Otherwise, add the 'guest_' prefix
   return `guest_${sessionId}`;
+};
+
+// Guest identity for an upload without a JWT. The client keeps a guest id in
+// localStorage, sends it as x-session-id on every upload, and stores the
+// guestId the server returns -- so that header is the identity, and it has to
+// be consulted first. express-session mints a fresh req.sessionID for every
+// request that carries no cookie, and nothing ever saves a session for an
+// anonymous visitor (saveUninitialized is false), so keying on req.sessionID
+// ahead of the header gave every upload a brand-new guest user and left the
+// previous report unreachable from the client's stored id.
+//
+// The header is client-controlled, so it is accepted only in the shape this
+// server generates; anything else falls back to the session id.
+const GUEST_ID_PATTERN = /^[A-Za-z0-9_-]{8,128}$/;
+const resolveGuestId = (req: Request): string => {
+  const header = req.headers['x-session-id'];
+  const supplied = Array.isArray(header) ? header[0] : header;
+  if (supplied && GUEST_ID_PATTERN.test(supplied)) {
+    return normalizeGuestId(supplied);
+  }
+  return normalizeGuestId(req.sessionID || `guest_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`);
 };
 
 // Helper function to ensure guest user exists in database
@@ -1680,16 +1701,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.log(`[Upload] Authenticated user upload: ${decoded.email}`);
         } else {
           // Guest access - create or use session-based guest ID
-          const sessionIdHeader = req.headers['x-session-id'];
-          const sessionId = req.sessionID || (Array.isArray(sessionIdHeader) ? sessionIdHeader[0] : sessionIdHeader) || `guest_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-          userId = normalizeGuestId(sessionId);
+          userId = resolveGuestId(req);
           console.log(`[Upload] Guest user upload: ${userId}`);
         }
       } catch (tokenError) {
         // Invalid token, treat as guest
-        const sessionIdHeader = req.headers['x-session-id'];
-        const sessionId = req.sessionID || (Array.isArray(sessionIdHeader) ? sessionIdHeader[0] : sessionIdHeader) || `guest_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-        userId = normalizeGuestId(sessionId);
+        userId = resolveGuestId(req);
         console.log(`[Upload] Invalid token, treating as guest: ${userId}`);
       }
 
