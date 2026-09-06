@@ -25,15 +25,36 @@ interface HealthCheck {
   details?: any;
 }
 
+// Bound a health probe so /health cannot hang. The pool has no statement
+// timeout, so a database that accepts the connection but never answers would
+// otherwise leave the request open until the platform health check gives up,
+// which reports nothing and looks identical to a slow deploy.
+async function withTimeout<T>(work: Promise<T>, ms: number, label: string): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const expiry = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => reject(new Error(`${label} timed out after ${ms}ms`)), ms);
+  });
+  try {
+    // Promise.race subscribes to `work`, so a later rejection stays handled.
+    return await Promise.race([work, expiry]);
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 export class HealthCheckService {
   private static startTime = Date.now();
+
+  // A SELECT 1 that has not answered in this long means the database is not
+  // serving, which is exactly what this endpoint should report.
+  private static readonly DB_TIMEOUT_MS = 5000;
 
   // Check database connectivity
   static async checkDatabase(): Promise<HealthCheck> {
     const start = Date.now();
     try {
       // Run a simple query to test connectivity
-      await db.execute(sql`SELECT 1`);
+      await withTimeout(db.execute(sql`SELECT 1`), this.DB_TIMEOUT_MS, 'Database health check');
       const responseTime = Date.now() - start;
       
       return {
@@ -89,12 +110,27 @@ export class HealthCheckService {
   // Check email service
   static async checkEmailService(): Promise<HealthCheck> {
     try {
+      // Email delivery is opt-in. When it is switched off this is a deliberate
+      // configuration, not a fault, so do not report it as a warning - /health
+      // is polled continuously and a permanent 'degraded' would log on every
+      // poll and bury real problems.
+      if (process.env.ENABLE_EMAIL_DELIVERY !== 'true') {
+        return {
+          status: 'ok',
+          message: 'Email delivery disabled',
+        };
+      }
+
       const { EmailService } = await import('./email-service');
-      const isConnected = await EmailService.testConnection();
-      
+      // testConnection resolves to { success, error? }; the object is always
+      // truthy, so this must read .success rather than the result itself.
+      const result = await EmailService.testConnection();
+
       return {
-        status: isConnected ? 'ok' : 'warning',
-        message: isConnected ? 'Email service configured' : 'Email service not configured',
+        status: result.success ? 'ok' : 'warning',
+        message: result.success
+          ? 'Email service configured'
+          : result.error ?? 'Email service not configured',
       };
     } catch (error) {
       return {
