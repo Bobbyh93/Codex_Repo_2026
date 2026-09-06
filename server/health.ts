@@ -1,4 +1,5 @@
 import { db } from './db';
+import { getHeapStatistics } from 'v8';
 import { sql } from 'drizzle-orm';
 import { AppLogger } from './logger';
 import type { Express } from 'express';
@@ -53,8 +54,14 @@ export class HealthCheckService {
   // Check memory usage
   static checkMemory(): HealthCheck {
     const usage = process.memoryUsage();
-    const heapUsedPercent = (usage.heapUsed / usage.heapTotal) * 100;
-    
+    // Measure against V8's hard heap ceiling, not heapTotal. heapTotal is only
+    // the currently committed heap, which V8 grows on demand, so a healthy
+    // process routinely sits above 90% of it right before a GC or a heap
+    // expansion. Using it here would report 'error' -> 'unhealthy' -> 503 on a
+    // process that is fine, and /health is the Render healthCheckPath.
+    const heapLimit = getHeapStatistics().heap_size_limit;
+    const heapUsedPercent = (usage.heapUsed / heapLimit) * 100;
+
     let status: 'ok' | 'warning' | 'error' = 'ok';
     let message = 'Memory usage normal';
     
@@ -72,6 +79,7 @@ export class HealthCheckService {
       details: {
         heapUsed: Math.round(usage.heapUsed / 1024 / 1024),
         heapTotal: Math.round(usage.heapTotal / 1024 / 1024),
+        heapLimit: Math.round(heapLimit / 1024 / 1024),
         rss: Math.round(usage.rss / 1024 / 1024),
         heapUsedPercent: heapUsedPercent.toFixed(2),
       },

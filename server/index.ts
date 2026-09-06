@@ -79,11 +79,6 @@ if (process.env.NODE_ENV === 'production') {
 // Setup security middleware first
 setupSecurityMiddleware(app);
 
-// Add simple health check endpoint at the root for deployment readiness
-app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'ok', message: 'Server is running' });
-});
-
 // Health check endpoints (before rate limiting)
 registerHealthEndpoints(app);
 
