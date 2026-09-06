@@ -1,8 +1,12 @@
 #!/usr/bin/env node
 
 const baseUrl = (process.env.APP_URL || "https://nursestudy-lesson-builder.onrender.com").replace(/\/+$/, "");
-const adminEmail = process.env.ADMIN_EMAIL || "admin@nurseprep.com";
-const adminPassword = process.env.ADMIN_PASSWORD || "admin123";
+const adminEmail = process.env.ADMIN_EMAIL;
+const adminPassword = process.env.ADMIN_PASSWORD;
+if (!adminEmail || !adminPassword) {
+  console.error("ADMIN_EMAIL and ADMIN_PASSWORD must be set; there is no default.");
+  process.exit(1);
+}
 const cookieJar = [];
 
 function rememberCookie(headers) {

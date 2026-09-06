@@ -4,8 +4,12 @@ import fs from "node:fs";
 import path from "node:path";
 
 const baseUrl = (process.env.APP_URL || "https://nursestudy-lesson-builder.onrender.com").replace(/\/+$/, "");
-const adminEmail = process.env.ADMIN_EMAIL || "admin@nurseprep.com";
-const adminPassword = process.env.ADMIN_PASSWORD || "admin123";
+const adminEmail = process.env.ADMIN_EMAIL;
+const adminPassword = process.env.ADMIN_PASSWORD;
+if (!adminEmail || !adminPassword) {
+  console.error("ADMIN_EMAIL and ADMIN_PASSWORD must be set; there is no default.");
+  process.exit(1);
+}
 const limit = Math.max(1, Number(process.env.ASSET_PACKET_LIMIT || 5));
 const outDir = process.env.ASSET_PACKET_OUT_DIR || "ops";
 const cookieJar = [];
