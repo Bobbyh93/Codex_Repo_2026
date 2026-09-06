@@ -25,15 +25,36 @@ interface HealthCheck {
   details?: any;
 }
 
+// Bound a health probe so /health cannot hang. The pool has no statement
+// timeout, so a database that accepts the connection but never answers would
+// otherwise leave the request open until the platform health check gives up,
+// which reports nothing and looks identical to a slow deploy.
+async function withTimeout<T>(work: Promise<T>, ms: number, label: string): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const expiry = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => reject(new Error(`${label} timed out after ${ms}ms`)), ms);
+  });
+  try {
+    // Promise.race subscribes to `work`, so a later rejection stays handled.
+    return await Promise.race([work, expiry]);
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 export class HealthCheckService {
   private static startTime = Date.now();
+
+  // A SELECT 1 that has not answered in this long means the database is not
+  // serving, which is exactly what this endpoint should report.
+  private static readonly DB_TIMEOUT_MS = 5000;
 
   // Check database connectivity
   static async checkDatabase(): Promise<HealthCheck> {
     const start = Date.now();
     try {
       // Run a simple query to test connectivity
-      await db.execute(sql`SELECT 1`);
+      await withTimeout(db.execute(sql`SELECT 1`), this.DB_TIMEOUT_MS, 'Database health check');
       const responseTime = Date.now() - start;
       
       return {
