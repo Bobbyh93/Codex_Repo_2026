@@ -254,8 +254,23 @@ export async function generateProfessionalStudyGuide(
     throw new Error('Assessment report not found');
   }
 
-  // Fetch performance data - using userId since simplified schema doesn't have reportId
-  // Get user from report first
+  // WARNING: this query is broken and will throw if ENABLE_PROFESSIONAL_STUDY_GUIDE
+  // is turned on.
+  //
+  // `db.query.*` resolves against the schema registered in server/db.ts, which is
+  // { ...schema, ...crosswalkSchema } -- NOT against the table object this module
+  // imported. So `db.query.topicPerformance` below is shared/schema.ts's table
+  // (id, report_id, topic_id, score, frequency, gap_score, priority,
+  // recommended_study_time), while `topicPerformance.userId` in the where clause
+  // comes from shared/simplified-schema.ts's table, which is a different table
+  // that happens to share the name. schema.ts's version has no user_id column.
+  //
+  // The comment previously here said the opposite -- that this used the simplified
+  // schema because it "doesn't have reportId". It does not: schema.ts's version is
+  // what runs, and that one has report_id and no user_id.
+  //
+  // Fixing it means deciding which table this feature should actually read, which
+  // is product work on a feature that is switched off. Left as-is deliberately.
   const userId = report.userId;
   if (!userId) {
     throw new Error('Assessment report has no associated user');

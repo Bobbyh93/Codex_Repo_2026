@@ -19,12 +19,30 @@ export default defineConfig({
   // crosswalk-schema.ts covers exactly those 9 and shares no table names with
   // shared/schema.ts, so adding it is safe.
   //
-  // simplified-schema.ts and topics-schema.ts are deliberately NOT listed:
-  // none of their tables exist in the database (verified against the live
-  // schema), and between them they redefine 7 names that shared/schema.ts
-  // already owns -- users, assessment_reports, study_plans, study_plan_items,
-  // topic_performance, topic_content, topic_relationships -- with differing
-  // columns. Adding them would corrupt the diff for tables that do exist.
+  // simplified-schema.ts is deliberately NOT listed. It redefines three names
+  // that shared/schema.ts owns and that DO exist in the database with different
+  // columns -- topic_performance, study_plans, study_plan_items -- so listing it
+  // would corrupt the diff for real tables. Its own three tables (review_topics,
+  // topic_content, study_resources) are created by
+  // db/manual/0002_create_simplified_topic_tables.sql instead.
+  //
+  // Corrects two errors in the note that stood here before:
+  //   - it claimed shared/schema.ts "already owns" all 7 colliding names. It does
+  //     not own topic_content -- that name is not in schema.ts at all. It was
+  //     defined only in simplified-schema.ts and topics-schema.ts, which collided
+  //     with each other rather than with schema.ts.
+  //   - it claimed none of those files' tables exist in the database. Three of
+  //     simplified-schema's now do, as of migration 0002.
+  //
+  // topics-schema.ts is gone -- deleted along with its only two importers,
+  // server/content-indexer.ts and server/admin-study-blueprint.ts, both of which
+  // were unreferenced. That removed four of the seven collisions.
+  //
+  // What remains before this file can list simplified-schema.ts and make
+  // `npm run db:push` safe: its studyPlans and studyPlanItems exports are
+  // imported nowhere (only reviewTopics, topicContent and topicPerformance are),
+  // so deleting those two definitions would leave topic_performance as the single
+  // remaining collision. That is the follow-up, not this change.
   schema: [
     "./shared/schema.ts",
     "./shared/crosswalk-schema.ts",
