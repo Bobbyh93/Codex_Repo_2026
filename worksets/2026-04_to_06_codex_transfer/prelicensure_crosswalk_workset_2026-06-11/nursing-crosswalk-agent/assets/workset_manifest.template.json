@@ -1,0 +1,18 @@
+{
+  "workflow_name": "nursing-crosswalk-workset",
+  "objective": "integrate and standardize nursing crosswalk sources into a canonical master workbook",
+  "deliverables": ["release-ready workbook", "provenance table", "data dictionary", "coverage summaries", "review queue"],
+  "source_priority": ["uploaded files", "file library / connected internal files", "public web only when necessary"],
+  "blocking_rules": ["do not invent grounded mappings from placeholder or incomplete sources", "preserve blocked reasons and needs_review flags"],
+  "stage_order": ["intake", "inventory", "normalize", "facts", "dimensions", "bridges", "governance", "master", "coverage", "release", "qa"],
+  "jobs": [
+    {"job_id": "J00-intake", "stage": "intake", "title": "define scope and deliverables", "prompt_key": "orchestrator"},
+    {"job_id": "J10-inventory", "stage": "inventory", "title": "inventory source workbooks", "depends_on": ["J00-intake"], "prompt_key": "inventory-worker"},
+    {"job_id": "J20-normalize-content", "stage": "normalize", "title": "normalize structured workbook sources", "depends_on": ["J10-inventory"]},
+    {"job_id": "J30-build-dimensions", "stage": "dimensions", "title": "build canonical dimensions", "depends_on": ["J20-normalize-content"]},
+    {"job_id": "J40-build-bridges", "stage": "bridges", "title": "build alias bridges", "depends_on": ["J30-build-dimensions"]},
+    {"job_id": "J50-build-master", "stage": "master", "title": "build canonical master", "depends_on": ["J40-build-bridges"]},
+    {"job_id": "J60-release", "stage": "release", "title": "package release workbook", "depends_on": ["J50-build-master"]},
+    {"job_id": "J70-qa", "stage": "qa", "title": "validate release workbook", "depends_on": ["J60-release"]}
+  ]
+}

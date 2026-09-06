@@ -1,0 +1,22 @@
+{
+  "batch_id": "ckm_batch_2026-06-13_022740__nursing__mRN-WPS-012_professional_practice__design_public_or_employee_he__workbook",
+  "created_at": "2026-06-13T02:27:40.454462",
+  "job_id": "workbook_20260613_022740_0001_Design_public_or_employee_health_programs.",
+  "record_counts": {
+    "cards": 7,
+    "objectives": 5,
+    "sources": 7,
+    "links": 49,
+    "notes": 14
+  },
+  "files": [
+    "card_links.csv",
+    "card_objective_map.csv",
+    "card_research_notes.csv",
+    "card_sources.csv",
+    "curriculum_objectives.csv",
+    "exception_report.csv",
+    "knowledge_cards.csv"
+  ],
+  "status": "ready_for_validation"
+}
