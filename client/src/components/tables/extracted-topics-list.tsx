@@ -31,14 +31,14 @@ export default function ExtractedTopicsList({ reportId }: ExtractedTopicsListPro
   }
 
   // Group topics by content area for better organization
-  const groupedTopics = data.reduce((acc: any, item: any) => {
+  const groupedTopics = data.reduce((acc: Record<string, any[]>, item: any) => {
     const area = item.topic?.contentArea?.name || "Uncategorized";
     if (!acc[area]) {
       acc[area] = [];
     }
     acc[area].push(item);
     return acc;
-  }, {});
+  }, {} as Record<string, any[]>);
 
   return (
     <Card>

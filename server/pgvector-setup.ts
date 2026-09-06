@@ -1,5 +1,6 @@
 import { pool } from "./db";
 import { AppLogger } from "./logger";
+import type { PoolClient } from "@neondatabase/serverless";
 
 /**
  * Idempotent pgvector setup — runs at server startup.
@@ -10,7 +11,7 @@ import { AppLogger } from "./logger";
  * All steps are guarded so re-running on an already-migrated database is safe.
  */
 export async function setupPgVector(): Promise<void> {
-  let client: Awaited<ReturnType<typeof pool.connect>> | undefined;
+  let client: PoolClient | undefined;
   try {
     client = await pool.connect();
 

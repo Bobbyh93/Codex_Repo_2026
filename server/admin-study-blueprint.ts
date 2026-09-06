@@ -150,15 +150,19 @@ export async function generateAdminStudyBlueprint(
     orderBy: [desc(topicPerformance.priority), desc(topicPerformance.gapScore)]
   });
   
+  const performanceTopicIds = performanceData
+    .map(p => p.topicId)
+    .filter((id): id is string => id !== null);
+
   // Fetch comparison data if needed
   const comparisons = await fetchComparativeData(
-    performanceData.map(p => p.topicId),
+    performanceTopicIds,
     input.customizationOptions
   );
-  
+
   // Fetch related topics
   const relatedTopicsMap = await fetchRelatedTopics(
-    performanceData.map(p => p.topicId)
+    performanceTopicIds
   );
   
   // Build topic comparisons with all analytics
@@ -220,7 +224,10 @@ async function fetchComparativeData(
   }
   
   // Fetch group analytics for each topic
-  const analytics = await db.query.groupAnalytics.findMany({
+  // NOTE: groupAnalytics has no table in the schema yet -- this branch is
+  // unreachable today since nothing sets compareToNational/compareToCohort,
+  // but the cast documents that gap rather than papering over a type error.
+  const analytics = await (db.query as any).groupAnalytics.findMany({
     where: and(
       sql`topic_id = ANY(${topicIds})`,
       sql`group_type IN ('national', 'program', 'cohort')`
@@ -322,7 +329,7 @@ async function buildTopicComparisons(
 }
 
 function calculatePercentileBelow(
-  score: number,
+  score: string,
   groupStats: any
 ): number {
   if (!groupStats.percentileScores) return 50;
@@ -499,9 +506,9 @@ function generateSmartRecommendations(
     
     // Get top topics for this subject
     const topTopics = subject.systemBreakdown
-      .flatMap(s => s.topics)
+      .flatMap((s: any) => s.topics)
       .slice(0, 10)
-      .map(t => t.topic);
+      .map((t: any) => t.topic);
     
     studySequence.push({
       week,

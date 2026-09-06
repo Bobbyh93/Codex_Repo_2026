@@ -22,3 +22,11 @@ __pycache__/
 *.py[cod]
 *api-key*.txt
 *apikey*.txt
+
+# Agent skills installed via `npx skills add`. Third-party content that runs
+# with full agent permissions; kept out of this public repo. Scoped to
+# .claude/skills/ rather than all of .claude/ so project settings can still be
+# tracked there.
+.agents/
+.claude/skills/
+skills-lock.json

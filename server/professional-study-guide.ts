@@ -257,7 +257,10 @@ export async function generateProfessionalStudyGuide(
   // Fetch performance data - using userId since simplified schema doesn't have reportId
   // Get user from report first
   const userId = report.userId;
-  
+  if (!userId) {
+    throw new Error('Assessment report has no associated user');
+  }
+
   const performanceData = await db.query.topicPerformance.findMany({
     where: eq(topicPerformance.userId, userId),
     with: {

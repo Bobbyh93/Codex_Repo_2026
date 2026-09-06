@@ -10,10 +10,10 @@ export function registerSimplifiedContentRoutes(app: Express) {
   app.post('/api/admin/migrate-topics', async (req, res) => {
     try {
       const result = await migrateToSimplifiedTopics();
-      res.json({ success: true, message: "Topics migrated successfully", ...result });
+      res.json({ ...result, message: "Topics migrated successfully" });
     } catch (error) {
       console.error('Migration error:', error);
-      res.status(500).json({ success: false, error: error.message });
+      res.status(500).json({ success: false, error: (error as Error).message });
     }
   });
 
@@ -24,7 +24,7 @@ export function registerSimplifiedContentRoutes(app: Express) {
       res.json(topics);
     } catch (error) {
       console.error('Error fetching topics:', error);
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: (error as Error).message });
     }
   });
 
@@ -45,7 +45,7 @@ export function registerSimplifiedContentRoutes(app: Express) {
       });
     } catch (error) {
       console.error('Error fetching topic:', error);
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: (error as Error).message });
     }
   });
 
@@ -108,7 +108,7 @@ export function registerSimplifiedContentRoutes(app: Express) {
         isReviewed: false
       };
 
-      const result = await db.insert(topicContent).values(newContent).returning();
+      const result = await db.insert(topicContent).values(newContent as typeof topicContent.$inferInsert).returning();
 
       res.json({ 
         success: true, 
@@ -120,7 +120,7 @@ export function registerSimplifiedContentRoutes(app: Express) {
 
     } catch (error) {
       console.error('Error mapping content:', error);
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: (error as Error).message });
     }
   });
 
@@ -182,7 +182,7 @@ export function registerSimplifiedContentRoutes(app: Express) {
             isReviewed: false
           };
 
-          const result = await db.insert(topicContent).values(newContent).returning();
+          const result = await db.insert(topicContent).values(newContent as typeof topicContent.$inferInsert).returning();
           
           results.push({
             success: true,
@@ -196,7 +196,7 @@ export function registerSimplifiedContentRoutes(app: Express) {
           results.push({
             success: false,
             title: item.title,
-            error: itemError.message
+            error: (itemError as Error).message
           });
         }
       }
@@ -211,7 +211,7 @@ export function registerSimplifiedContentRoutes(app: Express) {
 
     } catch (error) {
       console.error('Error importing content:', error);
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: (error as Error).message });
     }
   });
 
@@ -240,7 +240,7 @@ export function registerSimplifiedContentRoutes(app: Express) {
       res.json(stats);
     } catch (error) {
       console.error('Error fetching topic stats:', error);
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: (error as Error).message });
     }
   });
 }

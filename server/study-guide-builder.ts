@@ -1,6 +1,7 @@
 // Study guide template builder based on topic relationships and priorities
 import { analyzeTopicRelationships, generateStudyGuidePriorities } from "./topic-relationship-analyzer";
 import { db } from "./db";
+import { sql } from "drizzle-orm";
 
 interface StudyGuideSection {
   title: string;
@@ -135,35 +136,36 @@ async function getResourcesForTopics(topics: string[]): Promise<StudyResource[]>
   
   try {
     // Get content blocks for these topics
-    const placeholders = topics.map(() => '?').join(',');
-    const contentResult = await db.execute(`
+    const contentResult = await db.execute(sql`
       SELECT title, description, content, category, metadata
-      FROM content_blocks 
-      WHERE category IN (${placeholders})
+      FROM content_blocks
+      WHERE category = ANY(${topics})
       AND title IS NOT NULL
-      ORDER BY 
-        CASE 
-          WHEN json_extract(metadata, '$.confidence') IS NOT NULL 
-          THEN json_extract(metadata, '$.confidence') 
-          ELSE 0.5 
+      ORDER BY
+        CASE
+          WHEN metadata->>'confidence' IS NOT NULL
+          THEN (metadata->>'confidence')::float
+          ELSE 0.5
         END DESC
       LIMIT 20
-    `, topics);
-    
+    `);
+
     for (const content of contentResult.rows) {
-      const confidence = content.metadata ? 
-        JSON.parse(content.metadata as string)?.confidence || 0.5 : 0.5;
-      
+      const metadata = content.metadata as { confidence?: number } | string | null;
+      const confidence = metadata
+        ? (typeof metadata === 'string' ? JSON.parse(metadata)?.confidence : metadata.confidence) || 0.5
+        : 0.5;
+
       resources.push({
         type: 'content',
-        title: content.title,
-        description: content.description || 'Study content',
+        title: content.title as string,
+        description: (content.description as string) || 'Study content',
         source: 'Uploaded Content',
         topicRelevance: confidence
       });
     }
   } catch (error) {
-    console.log("Resource gathering skipped:", error.message);
+    console.log("Resource gathering skipped:", (error as Error).message);
   }
   
   // Add placeholder resources if no content available
@@ -197,7 +199,7 @@ function organizePriorityMatrix(highImpactTopics: any[]): {
   };
   
   for (const topic of highImpactTopics) {
-    matrix[topic.priority].push(topic.topicName);
+    matrix[topic.priority as keyof typeof matrix].push(topic.topicName);
   }
   
   return matrix;
