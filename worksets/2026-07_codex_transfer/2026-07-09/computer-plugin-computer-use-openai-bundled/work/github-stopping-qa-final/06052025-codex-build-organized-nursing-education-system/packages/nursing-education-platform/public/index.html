@@ -1,0 +1,702 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>CAT Testing Studio</title>
+    <style>
+      :root {
+        --bg: #eef5f7;
+        --ink: #102033;
+        --muted: #627286;
+        --line: #d8e4ea;
+        --accent: #0f5e7a;
+        --accent-2: #b98b13;
+        --pass: #dff8eb;
+        --fail: #ffe8e0;
+        --shadow: 0 18px 48px rgba(18, 44, 63, 0.1);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: radial-gradient(circle at top left, #f8fcfd 0, var(--bg) 44%, #edf2f5 100%);
+        color: var(--ink);
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      button,
+      select {
+        font: inherit;
+      }
+
+      button {
+        cursor: pointer;
+      }
+
+      button:disabled {
+        cursor: not-allowed;
+        opacity: 0.55;
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin: 0;
+      }
+
+      h1 {
+        font-size: clamp(30px, 5vw, 48px);
+        line-height: 0.95;
+        letter-spacing: 0;
+      }
+
+      h2 {
+        font-size: 24px;
+        line-height: 1.1;
+        letter-spacing: 0;
+      }
+
+      h3 {
+        font-size: 16px;
+        line-height: 1.25;
+      }
+
+      .shell {
+        width: min(1180px, calc(100vw - 28px));
+        margin: 0 auto;
+        padding: 22px 0 40px;
+      }
+
+      .topbar,
+      .brand,
+      .section-head,
+      .actions,
+      .path-row,
+      .attempt-row {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+
+      .topbar,
+      .section-head,
+      .path-row,
+      .attempt-row {
+        justify-content: space-between;
+      }
+
+      .topbar {
+        margin-bottom: 22px;
+      }
+
+      .brand {
+        align-items: center;
+        min-width: 0;
+      }
+
+      .brand > div:last-child {
+        min-width: 0;
+      }
+
+      .mark {
+        display: grid;
+        width: 52px;
+        height: 52px;
+        place-items: center;
+        border-radius: 8px;
+        background: #0d1b2a;
+        color: white;
+        font-weight: 850;
+      }
+
+      .layout {
+        display: grid;
+        grid-template-columns: 260px minmax(0, 1fr);
+        gap: 18px;
+      }
+
+      .sidebar,
+      .panel {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.92);
+        box-shadow: var(--shadow);
+      }
+
+      .sidebar {
+        position: sticky;
+        top: 16px;
+        align-self: start;
+        padding: 14px;
+      }
+
+      .nav,
+      .build-path,
+      .gate-list,
+      .attempt-list,
+      .bar-list,
+      .review-list,
+      .item-list,
+      .coverage-list,
+      .options,
+      .question-card {
+        display: grid;
+        gap: 10px;
+      }
+
+      .nav button {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        width: 100%;
+        border: 0;
+        border-radius: 8px;
+        padding: 13px 12px;
+        background: transparent;
+        color: var(--muted);
+        font-weight: 820;
+        text-align: left;
+      }
+
+      .nav button.active {
+        background: #0d1b2a;
+        color: white;
+        outline: 2px solid var(--accent-2);
+      }
+
+      .build-path {
+        margin-top: 20px;
+      }
+
+      .panel-inner {
+        padding: 20px;
+      }
+
+      .muted,
+      .subtitle {
+        color: var(--muted);
+      }
+
+      .small {
+        font-size: 13px;
+        line-height: 1.45;
+      }
+
+      .pill,
+      .status,
+      .tag {
+        display: inline-flex;
+        align-items: center;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 760;
+      }
+
+      .pill,
+      .tag {
+        border: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.78);
+        color: var(--muted);
+      }
+
+      .pill {
+        min-height: 30px;
+        padding: 5px 12px;
+      }
+
+      .tag {
+        padding: 4px 9px;
+      }
+
+      .status {
+        padding: 4px 9px;
+        font-weight: 820;
+      }
+
+      .status.pass {
+        background: var(--pass);
+        color: #086334;
+      }
+
+      .status.fail {
+        background: var(--fail);
+        color: #9b2d18;
+      }
+
+      .btn {
+        min-height: 42px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 10px 14px;
+        background: white;
+        color: var(--ink);
+        font-weight: 820;
+      }
+
+      .btn.primary {
+        border-color: var(--accent);
+        background: var(--accent);
+        color: white;
+      }
+
+      .btn.warning {
+        border-color: var(--accent-2);
+        color: #5c4308;
+      }
+
+      .grid-3,
+      .grid-4,
+      .metrics,
+      .remediation-grid,
+      .two-col {
+        display: grid;
+        gap: 12px;
+      }
+
+      .grid-3,
+      .remediation-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .grid-4,
+      .metrics {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .two-col {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        margin-top: 16px;
+      }
+
+      .field {
+        display: grid;
+        gap: 7px;
+      }
+
+      .field label {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 820;
+        text-transform: uppercase;
+      }
+
+      select {
+        min-height: 44px;
+        width: 100%;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 0 12px;
+        background: white;
+        color: var(--ink);
+        font-weight: 740;
+      }
+
+      .soft,
+      .metric,
+      .remediation-card,
+      .path-row,
+      .attempt-row,
+      .gate-row,
+      .result-row,
+      .map-row,
+      .coverage-row {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fff;
+        padding: 14px;
+      }
+
+      .soft {
+        background: #f8fbfc;
+      }
+
+      .metric-value,
+      .card-value {
+        margin-top: 8px;
+        font-size: 32px;
+        font-weight: 860;
+      }
+
+      .compact-value {
+        font-size: 20px;
+        line-height: 1.1;
+      }
+
+      .stem {
+        font-size: 21px;
+        line-height: 1.35;
+        font-weight: 780;
+      }
+
+      .option {
+        display: grid;
+        grid-template-columns: 34px minmax(0, 1fr);
+        gap: 10px;
+        width: 100%;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 12px;
+        background: white;
+        color: var(--ink);
+        text-align: left;
+      }
+
+      .option.selected {
+        border-color: var(--accent-2);
+        outline: 2px solid rgba(185, 139, 19, 0.25);
+      }
+
+      .option.correct {
+        background: var(--pass);
+      }
+
+      .option.incorrect {
+        background: var(--fail);
+      }
+
+      .key {
+        display: grid;
+        width: 30px;
+        height: 30px;
+        place-items: center;
+        border-radius: 999px;
+        background: #edf5f7;
+        font-weight: 850;
+      }
+
+      .tag-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 7px;
+        margin-top: 10px;
+      }
+
+      .bar-label {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 6px;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 760;
+      }
+
+      .bar-track,
+      .depth-meter {
+        overflow: hidden;
+        border-radius: 999px;
+        background: #dce9ef;
+      }
+
+      .bar-track {
+        height: 10px;
+      }
+
+      .bar-fill,
+      .depth-fill {
+        display: block;
+        height: 100%;
+        border-radius: inherit;
+        background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      }
+
+      .trend {
+        display: flex;
+        align-items: end;
+        height: 96px;
+        gap: 8px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 10px;
+        background: #fff;
+      }
+
+      .trend-bar {
+        flex: 1;
+        min-width: 8px;
+        border-radius: 5px 5px 0 0;
+        background: var(--accent);
+      }
+
+      .export-box {
+        max-height: 320px;
+        overflow: auto;
+        border: 1px solid #183149;
+        border-radius: 8px;
+        padding: 14px;
+        background: #071c2f;
+        color: #e8f6fb;
+        font: 12px/1.55 Consolas, "SFMono-Regular", monospace;
+        white-space: pre-wrap;
+      }
+
+      .coverage-row {
+        display: grid;
+        grid-template-columns: minmax(190px, 1.4fr) 80px minmax(170px, 1fr);
+        align-items: center;
+        gap: 12px;
+      }
+
+      .depth-meter {
+        display: block;
+        height: 8px;
+        margin-top: 6px;
+      }
+
+      .hidden {
+        display: none !important;
+      }
+
+      @media (max-width: 900px) {
+        .layout,
+        .two-col {
+          grid-template-columns: 1fr;
+        }
+
+        .sidebar {
+          position: static;
+        }
+      }
+
+      @media (max-width: 680px) {
+        .shell {
+          width: min(100vw - 20px, 640px);
+        }
+
+        .topbar,
+        .section-head,
+        .attempt-row {
+          display: grid;
+        }
+
+        .brand {
+          display: grid;
+          grid-template-columns: 1fr;
+          align-items: start;
+          gap: 10px;
+        }
+
+        .metrics,
+        .grid-3,
+        .grid-4,
+        .remediation-grid,
+        .coverage-row {
+          grid-template-columns: 1fr;
+        }
+
+        h1 {
+          font-size: 30px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="shell">
+      <header class="topbar">
+        <div class="brand">
+          <div class="mark" aria-hidden="true">HN</div>
+          <div>
+            <h1>CAT Testing Studio</h1>
+            <p class="subtitle">Adaptive nursing practice connected to NCLEX blueprint, concepts, items, and remediation.</p>
+          </div>
+        </div>
+        <div class="actions">
+          <span class="pill" id="sessionStatus">Prototype mode</span>
+          <span class="pill">NCLEX-RN 2026</span>
+        </div>
+      </header>
+
+      <div class="layout">
+        <aside class="sidebar">
+          <nav class="nav" aria-label="CAT studio sections">
+            <button type="button" data-view="practice" class="active"><span>CAT Practice</span><span>ready</span></button>
+            <button type="button" data-view="results"><span>Results</span><span id="navResults">empty</span></button>
+            <button type="button" data-view="mapping"><span>Content Map</span><span>items</span></button>
+            <button type="button" data-view="control"><span>Control Plane</span><span id="navControl">pass</span></button>
+          </nav>
+          <div class="build-path" id="buildPath"></div>
+        </aside>
+
+        <section>
+          <div class="panel view" id="view-practice">
+            <div class="panel-inner" id="setupScreen">
+              <div class="section-head">
+                <div>
+                  <h2>Start adaptive practice</h2>
+                  <p class="muted small">The selector prioritizes under-covered blueprint categories and difficulty match.</p>
+                </div>
+                <span class="status pass">ready</span>
+              </div>
+              <div class="grid-4">
+                <div class="field">
+                  <label for="scopeSelect">Scope</label>
+                  <select id="scopeSelect"></select>
+                </div>
+                <div class="field">
+                  <label for="lengthSelect">Session length</label>
+                  <select id="lengthSelect">
+                    <option value="4">4 item smoke test</option>
+                    <option value="8">8 item blueprint pass</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="startAbility">Starting estimate</label>
+                  <select id="startAbility">
+                    <option value="-0.5">developing</option>
+                    <option value="0" selected>baseline</option>
+                    <option value="0.5">advancing</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="stoppingRule">Stopping rule</label>
+                  <select id="stoppingRule">
+                    <option value="fixed" selected>fixed length</option>
+                    <option value="mastery">mastery threshold</option>
+                    <option value="precision">stable estimate</option>
+                  </select>
+                </div>
+              </div>
+              <div class="actions" style="margin-top: 16px">
+                <button class="btn primary" id="startButton" type="button">Start CAT practice</button>
+                <button class="btn" id="resetButton" type="button">Reset prototype</button>
+              </div>
+              <div class="soft" style="margin-top: 16px">
+                <div class="section-head">
+                  <div>
+                    <h3>Attempt history and exposure controls</h3>
+                    <p class="muted small" id="exposureSummary">No saved attempts yet; all approved items are eligible.</p>
+                  </div>
+                  <button class="btn" id="clearHistoryButton" type="button">Clear attempts</button>
+                </div>
+                <div class="attempt-list" id="attemptList" style="margin-top: 10px"></div>
+              </div>
+              <div class="soft" style="margin-top: 16px">
+                <h3>Readiness gates</h3>
+                <div class="gate-list" id="readinessList" style="margin-top: 10px"></div>
+              </div>
+            </div>
+
+            <div class="panel-inner hidden" id="examScreen">
+              <div class="section-head">
+                <div>
+                  <h2 id="progressTitle">Item 1 of 4</h2>
+                  <p class="muted small" id="selectionReason"></p>
+                </div>
+                <div class="actions"><span class="pill" id="abilityPill">ability 0.00</span></div>
+              </div>
+              <div class="question-card">
+                <div class="tag-list" id="questionMeta"></div>
+                <p class="stem" id="stem"></p>
+                <div class="options" id="options"></div>
+                <div class="soft hidden" id="rationaleBox"></div>
+                <div class="actions">
+                  <button class="btn primary" id="confirmButton" type="button" disabled>Confirm answer</button>
+                  <button class="btn primary hidden" id="nextButton" type="button">Next item</button>
+                  <button class="btn" id="endButton" type="button">End session</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel view hidden" id="view-results">
+            <div class="panel-inner">
+              <div class="section-head">
+                <div>
+                  <h2>Results and remediation</h2>
+                  <p class="muted small">Adaptive performance mapped back to concepts, lessons, and item rationales.</p>
+                </div>
+                <div class="actions">
+                  <button class="btn warning" id="exportButton" type="button" disabled>Export session</button>
+                  <button class="btn primary" id="retestButton" type="button" disabled>Retest weak concepts</button>
+                </div>
+              </div>
+              <div class="soft" id="resultsEmpty">
+                <h3>No completed session yet</h3>
+                <p class="muted small">Start CAT Practice to generate results.</p>
+              </div>
+              <div class="hidden" id="resultsContent">
+                <div class="metrics">
+                  <div class="metric"><p class="muted small">Score</p><p class="metric-value" id="scoreMetric">0%</p></div>
+                  <div class="metric"><p class="muted small">Ability estimate</p><p class="metric-value" id="abilityMetric">0.00</p></div>
+                  <div class="metric"><p class="muted small">Weak concepts</p><p class="metric-value" id="weakMetric">0</p></div>
+                  <div class="metric"><p class="muted small">Stop reason</p><p class="metric-value compact-value" id="stopMetric">Continue</p></div>
+                </div>
+                <section class="soft" style="margin-top: 16px">
+                  <h2>Remediation plan</h2>
+                  <p class="muted small">Generated from missed concepts, linked lessons, and rationales.</p>
+                  <div class="remediation-grid" id="remediationPlan" style="margin-top: 12px"></div>
+                </section>
+                <section class="soft hidden" id="exportPanel" style="margin-top: 16px">
+                  <h2>Session evidence</h2>
+                  <p class="muted small">Portable JSON for instructor review, analytics, or LMS integration.</p>
+                  <pre class="export-box" id="sessionExport" style="margin-top: 12px"></pre>
+                </section>
+                <div class="two-col">
+                  <section class="soft">
+                    <h2>Blueprint coverage</h2>
+                    <div class="bar-list" id="coverageBars" style="margin-top: 12px"></div>
+                    <h2 style="margin-top: 16px">Ability trend</h2>
+                    <div class="trend" id="abilityTrend" style="margin-top: 10px"></div>
+                  </section>
+                  <section class="soft">
+                    <h2>Review queue</h2>
+                    <div class="review-list" id="reviewList" style="margin-top: 12px"></div>
+                  </section>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel view hidden" id="view-mapping">
+            <div class="panel-inner">
+              <div class="section-head">
+                <div>
+                  <h2>Learning content mapping</h2>
+                  <p class="muted small">Every item traces to a client-needs category, concepts, lessons, and rationale.</p>
+                </div>
+              </div>
+              <div class="item-list" id="itemMap"></div>
+            </div>
+          </div>
+
+          <div class="panel view hidden" id="view-control">
+            <div class="panel-inner">
+              <div class="section-head">
+                <div>
+                  <h2>Control Plane Gates</h2>
+                  <p class="muted small">Gate status for CAT readiness and content integrity.</p>
+                </div>
+                <button class="btn" id="gateButton" type="button">Run gates</button>
+              </div>
+              <div class="two-col">
+                <section>
+                  <h2>CAT gates</h2>
+                  <div class="gate-list" id="controlGates" style="margin-top: 12px"></div>
+                </section>
+                <section>
+                  <h2>Source anchors</h2>
+                  <div class="soft" style="margin-top: 12px">
+                    <p class="small"><strong>Prototype boundary:</strong> educational CAT-style simulator; not official NCLEX scoring equivalence.</p>
+                  </div>
+                </section>
+              </div>
+              <section class="soft" style="margin-top: 16px">
+                <h2>Educator coverage matrix</h2>
+                <p class="muted small">Blueprint depth view for deciding which categories need more approved items before a real CAT pilot.</p>
+                <div class="coverage-list" id="coverageMatrix" style="margin-top: 12px"></div>
+              </section>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
