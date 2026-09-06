@@ -90,8 +90,8 @@ export async function analyzeTopicRelationships(): Promise<{
         relationships.push(relationship);
         
         // Accumulate impact scores
-        topicImpactScores[topicA.name] = (topicImpactScores[topicA.name] || 0) + relationship.impactScore;
-        topicImpactScores[topicB.name] = (topicImpactScores[topicB.name] || 0) + relationship.impactScore;
+        topicImpactScores[topicA.name as string] = (topicImpactScores[topicA.name as string] || 0) + relationship.impactScore;
+        topicImpactScores[topicB.name as string] = (topicImpactScores[topicB.name as string] || 0) + relationship.impactScore;
       }
     }
   }
@@ -213,17 +213,17 @@ async function analyzeContentBasedRelationships(): Promise<TopicRelationship[]> 
         const groupA = contentGroups[i];
         const groupB = contentGroups[j];
         
-        const tagsA = groupA.all_tags ? groupA.all_tags.split(',') : [];
-        const tagsB = groupB.all_tags ? groupB.all_tags.split(',') : [];
-        
-        const sharedTags = tagsA.filter((tag: string) => 
+        const tagsA = groupA.all_tags ? (groupA.all_tags as string).split(',') : [];
+        const tagsB = groupB.all_tags ? (groupB.all_tags as string).split(',') : [];
+
+        const sharedTags = tagsA.filter((tag: string) =>
           tagsB.some((t: string) => t.toLowerCase().trim() === tag.toLowerCase().trim())
         );
-        
+
         if (sharedTags.length >= 2) {
           relationships.push({
-            topicA: groupA.category,
-            topicB: groupB.category,
+            topicA: groupA.category as string,
+            topicB: groupB.category as string,
             sharedKeywords: sharedTags.slice(0, 5),
             relationshipType: 'intervention',
             impactScore: Math.min(sharedTags.length, 5)
@@ -232,7 +232,7 @@ async function analyzeContentBasedRelationships(): Promise<TopicRelationship[]> 
       }
     }
   } catch (error) {
-    console.log("Content-based relationship analysis skipped:", error.message);
+    console.log("Content-based relationship analysis skipped:", (error as Error).message);
   }
   
   return relationships;

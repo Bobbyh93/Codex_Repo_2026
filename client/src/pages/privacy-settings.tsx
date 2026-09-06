@@ -51,19 +51,19 @@ export function PrivacySettings() {
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
 
   // Fetch current privacy settings
-  const { data: privacySettings, isLoading: settingsLoading } = useQuery({
+  const { data: privacySettings, isLoading: settingsLoading } = useQuery<PrivacySettings>({
     queryKey: ['/api/privacy/settings'],
     enabled: !!user,
   });
 
   // Fetch current consent preferences
-  const { data: currentConsent } = useQuery({
+  const { data: currentConsent } = useQuery<Record<string, boolean>>({
     queryKey: ['/api/privacy/consent'],
     enabled: !!user,
   });
 
   // Fetch consent history
-  const { data: consentHistory } = useQuery({
+  const { data: consentHistory } = useQuery<ConsentHistory[]>({
     queryKey: ['/api/privacy/consent-history'],
     enabled: !!user,
   });

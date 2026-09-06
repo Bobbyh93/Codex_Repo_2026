@@ -110,27 +110,14 @@ export class HealthCheckService {
   // Check email service
   static async checkEmailService(): Promise<HealthCheck> {
     try {
-      // Email delivery is opt-in. When it is switched off this is a deliberate
-      // configuration, not a fault, so do not report it as a warning - /health
-      // is polled continuously and a permanent 'degraded' would log on every
-      // poll and bury real problems.
-      if (process.env.ENABLE_EMAIL_DELIVERY !== 'true') {
-        return {
-          status: 'ok',
-          message: 'Email delivery disabled',
-        };
-      }
-
       const { EmailService } = await import('./email-service');
-      // testConnection resolves to { success, error? }; the object is always
-      // truthy, so this must read .success rather than the result itself.
-      const result = await EmailService.testConnection();
-
+      // testConnection returns { success, error? }. The object is always
+      // truthy, so testing it directly reported 'ok' even when unconfigured.
+      const { success } = await EmailService.testConnection();
+      
       return {
-        status: result.success ? 'ok' : 'warning',
-        message: result.success
-          ? 'Email service configured'
-          : result.error ?? 'Email service not configured',
+        status: success ? 'ok' : 'warning',
+        message: success ? 'Email service configured' : 'Email service not configured',
       };
     } catch (error) {
       return {
@@ -142,10 +129,17 @@ export class HealthCheckService {
   }
 
   // Comprehensive health check
-  static async performHealthCheck(): Promise<HealthCheckResult> {
+  // includeEmail is opt-in to keep the probe path minimal: /health is the
+  // platform health probe and runs continuously, and email reachability is not
+  // part of whether this instance can serve requests. (checkEmailService is
+  // local-only -- it validates the SendGrid API key string and makes no network
+  // call -- so this is about scope, not latency.)
+  static async performHealthCheck(
+    options: { includeEmail?: boolean } = {},
+  ): Promise<HealthCheckResult> {
     const [database, email] = await Promise.all([
       this.checkDatabase(),
-      this.checkEmailService(),
+      options.includeEmail ? this.checkEmailService() : Promise.resolve(undefined),
     ]);
 
     const memory = this.checkMemory();
@@ -207,8 +201,15 @@ export function registerHealthEndpoints(app: Express) {
   // Comprehensive health check
   app.get('/health', async (req, res) => {
     try {
-      const health = await HealthCheckService.performHealthCheck();
-      const statusCode = health.status === 'healthy' ? 200 : health.status === 'degraded' ? 200 : 503;
+      const health = await HealthCheckService.performHealthCheck({
+        includeEmail: req.query.email === '1',
+      });
+      // The HTTP status answers one question only: can this instance serve
+      // requests? That is the database being reachable. Memory pressure is
+      // reported in the body but does not fail the probe -- an instance under
+      // memory pressure still serves, and failing here would have the platform
+      // restart it in a loop. health.status still carries the fuller verdict.
+      const statusCode = health.checks.database.status === 'error' ? 503 : 200;
       res.status(statusCode).json(health);
     } catch (error) {
       AppLogger.error('Health check endpoint error', error as Error);

@@ -51,7 +51,7 @@ export async function exportContent(options: ExportOptions): Promise<ExportResul
       success: false,
       filename: '',
       contentType: '',
-      error: error.message
+      error: (error as Error).message
     };
   }
 }
@@ -93,23 +93,25 @@ async function fetchTopicsData(options: ExportOptions): Promise<any[]> {
   // Apply filters
   let filteredResults = results;
   
-  if (options.filters) {
-    if (options.filters.nclexCategory) {
-      filteredResults = filteredResults.filter(r => r.nclexCategory === options.filters.nclexCategory);
+  const filters = options.filters;
+  if (filters) {
+    if (filters.nclexCategory) {
+      filteredResults = filteredResults.filter(r => r.nclexCategory === filters.nclexCategory);
     }
-    if (options.filters.difficulty) {
-      filteredResults = filteredResults.filter(r => r.difficulty === options.filters.difficulty);
+    if (filters.difficulty) {
+      filteredResults = filteredResults.filter(r => r.difficulty === filters.difficulty);
     }
-    if (options.filters.bodySystem) {
-      filteredResults = filteredResults.filter(r => r.bodySystem === options.filters.bodySystem);
+    if (filters.bodySystem) {
+      filteredResults = filteredResults.filter(r => r.bodySystem === filters.bodySystem);
     }
   }
-  
+
   // Apply sorting
-  if (options.sortBy) {
+  const sortBy = options.sortBy;
+  if (sortBy) {
     filteredResults.sort((a, b) => {
-      const aVal = a[options.sortBy] || '';
-      const bVal = b[options.sortBy] || '';
+      const aVal = (a as any)[sortBy] || '';
+      const bVal = (b as any)[sortBy] || '';
       return aVal.toString().localeCompare(bVal.toString());
     });
   }
@@ -161,7 +163,7 @@ async function fetchPriorityAnalysisData(options: ExportOptions): Promise<any[]>
       topicName: stat.topicName,
       frequency: stat.frequency,
       priority: stat.priority,
-      lastReviewed: stat.lastReviewed || 'Never',
+      lastReviewed: stat.lastSeen || 'Never',
       recommendedAction: generateRecommendedAction(stat)
     }));
   } catch (error) {
@@ -214,10 +216,10 @@ function formatAsCSV(data: any[], options: ExportOptions): string {
 // JSON formatter
 function formatAsJSON(data: any[], options: ExportOptions): string {
   // Filter fields if specified
-  let exportData = data;
+  let exportData: any = data;
   if (options.includeFields.length > 0) {
     exportData = data.map(item => {
-      const filtered = {};
+      const filtered: Record<string, any> = {};
       options.includeFields.forEach(field => {
         if (item[field] !== undefined) {
           filtered[field] = item[field];
@@ -226,12 +228,13 @@ function formatAsJSON(data: any[], options: ExportOptions): string {
       return filtered;
     });
   }
-  
+
   // Group data if specified
-  if (options.groupBy) {
-    const grouped = {};
-    exportData.forEach(item => {
-      const groupKey = item[options.groupBy] || 'Other';
+  const groupBy = options.groupBy;
+  if (groupBy) {
+    const grouped: Record<string, any[]> = {};
+    (exportData as any[]).forEach(item => {
+      const groupKey = item[groupBy] || 'Other';
       if (!grouped[groupKey]) grouped[groupKey] = [];
       grouped[groupKey].push(item);
     });
@@ -312,12 +315,12 @@ function formatStudyGuideText(data: any[], options: ExportOptions): string {
     
     if (topic.keyPoints) {
       output += `   Key Points:\n`;
-      topic.keyPoints.forEach(point => output += `     • ${point}\n`);
+      topic.keyPoints.forEach((point: string) => output += `     • ${point}\n`);
     }
-    
+
     if (topic.studyTips) {
       output += `   Study Tips:\n`;
-      topic.studyTips.forEach(tip => output += `     • ${tip}\n`);
+      topic.studyTips.forEach((tip: string) => output += `     • ${tip}\n`);
     }
     
     output += '\n' + '-'.repeat(40) + '\n\n';
@@ -334,7 +337,7 @@ function generateFilename(options: ExportOptions): string {
 }
 
 function getContentType(format: string): string {
-  const types = {
+  const types: Record<string, string> = {
     csv: 'text/csv',
     json: 'application/json',
     pdf: 'application/pdf',

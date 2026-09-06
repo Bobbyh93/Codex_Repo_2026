@@ -1,7 +1,7 @@
 import crypto from 'crypto';
 import { db } from './db';
 import { users, passwordResetTokens } from '@shared/schema';
-import { eq, and, gt } from 'drizzle-orm';
+import { eq, and, gt, sql } from 'drizzle-orm';
 import { AuthService } from './auth';
 import type { User } from '@shared/schema';
 

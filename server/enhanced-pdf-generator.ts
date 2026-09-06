@@ -1,8 +1,21 @@
 import PDFDocument from "pdfkit";
 import { PassThrough } from "stream";
 import { db } from './db';
-import { nursingTopics, contentAreas, topicPerformance, assessmentReports } from '../shared/schema';
+import { nursingTopics, contentAreas, topicPerformance, assessmentReports, users } from '../shared/schema';
 import { eq, desc } from 'drizzle-orm';
+
+// The relational query builder's inference falls back to a loose
+// { [x: string]: any } shape on this schema (too large for TS to resolve
+// precisely), so the shapes of `with:` results are asserted explicitly here.
+type TopicWithContentArea = typeof nursingTopics.$inferSelect & {
+  contentArea: typeof contentAreas.$inferSelect | null;
+};
+type PerformanceWithTopic = typeof topicPerformance.$inferSelect & {
+  topic: TopicWithContentArea | null;
+};
+type ReportWithUser = typeof assessmentReports.$inferSelect & {
+  user: typeof users.$inferSelect | null;
+};
 
 interface StudyGuideData {
   student: {
@@ -40,7 +53,7 @@ export async function generateProfessionalStudyGuide(reportId: string): Promise<
     with: {
       user: true
     }
-  });
+  }) as ReportWithUser | undefined;
 
   if (!report) {
     throw new Error('Report not found');
@@ -57,7 +70,7 @@ export async function generateProfessionalStudyGuide(reportId: string): Promise<
       }
     },
     orderBy: [desc(topicPerformance.priority), desc(topicPerformance.gapScore)]
-  });
+  }) as PerformanceWithTopic[];
 
   // Process and organize data
   const processedTopics = performanceData
