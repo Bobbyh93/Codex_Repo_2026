@@ -8,44 +8,37 @@ if (!process.env.DATABASE_URL) {
 export default defineConfig({
   out: "./migrations",
 
-  // Both schema files whose tables actually exist in the database.
+  // Every schema file whose tables exist in the database. All three are listed,
+  // which is what makes `npm run db:push` safe: drizzle-kit proposes DROP TABLE
+  // for any table it finds in the database but not in the configured schema.
   //
-  // This previously listed only shared/schema.ts (88 tables). The live
-  // database has 98 tables, so drizzle-kit push saw the other 10 as orphans
-  // and proposed DROP TABLE for each -- including the 9 crosswalk tables that
-  // crosswalk-routes.ts queries and db.ts registers at runtime. That made
-  // `npm run db:push` unsafe to run against real data.
+  // This once listed only shared/schema.ts (88 tables) against a 98-table
+  // database, so push proposed dropping the other 10 -- including the 9
+  // crosswalk tables that crosswalk-routes.ts queries and db.ts registers at
+  // runtime. It surfaced safely only because --force was withheld: the step hit
+  // a data-loss prompt and exited 1 on a disposable preview branch.
   //
-  // crosswalk-schema.ts covers exactly those 9 and shares no table names with
-  // shared/schema.ts, so adding it is safe.
+  // Adding the remaining two files took three changes, because drizzle-kit
+  // rejects a schema set that defines one table name twice:
   //
-  // simplified-schema.ts is deliberately NOT listed. It redefines three names
-  // that shared/schema.ts owns and that DO exist in the database with different
-  // columns -- topic_performance, study_plans, study_plan_items -- so listing it
-  // would corrupt the diff for real tables. Its own three tables (review_topics,
-  // topic_content, study_resources) are created by
-  // db/manual/0002_create_simplified_topic_tables.sql instead.
+  //   1. crosswalk-schema.ts shares no names with schema.ts, so it just went in.
+  //   2. topics-schema.ts was deleted with its only two importers, both dead
+  //      code, removing four duplicate names.
+  //   3. simplified-schema.ts's last three duplicates were removed -- see that
+  //      file's header. topic_performance was the one with live consumers; they
+  //      now import schema.ts's table, which is the only one the database has.
   //
-  // Corrects two errors in the note that stood here before:
-  //   - it claimed shared/schema.ts "already owns" all 7 colliding names. It does
-  //     not own topic_content -- that name is not in schema.ts at all. It was
-  //     defined only in simplified-schema.ts and topics-schema.ts, which collided
-  //     with each other rather than with schema.ts.
-  //   - it claimed none of those files' tables exist in the database. Three of
-  //     simplified-schema's now do, as of migration 0002.
+  // simplified-schema.ts's own three tables (review_topics, topic_content,
+  // study_resources) are created by
+  // db/manual/0002_create_simplified_topic_tables.sql. Until that migration is
+  // applied, push against production would propose creating them -- additive and
+  // matching the migration, but apply 0002 first so the two cannot diverge.
   //
-  // topics-schema.ts is gone -- deleted along with its only two importers,
-  // server/content-indexer.ts and server/admin-study-blueprint.ts, both of which
-  // were unreferenced. That removed four of the seven collisions.
-  //
-  // What remains before this file can list simplified-schema.ts and make
-  // `npm run db:push` safe: its studyPlans and studyPlanItems exports are
-  // imported nowhere (only reviewTopics, topicContent and topicPerformance are),
-  // so deleting those two definitions would leave topic_performance as the single
-  // remaining collision. That is the follow-up, not this change.
+  // server/tests/drizzle-push-safety.test.ts pins both properties this relies on.
   schema: [
     "./shared/schema.ts",
     "./shared/crosswalk-schema.ts",
+    "./shared/simplified-schema.ts",
   ],
 
   // user_sessions is the 10th orphan. It is created and owned by

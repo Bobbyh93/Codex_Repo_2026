@@ -1,8 +1,7 @@
 // Professional Study Guide Template Generator based on NCSBN Clinical Judgment Model
 import { db } from "./db";
 import { eq, desc } from "drizzle-orm";
-import { topicPerformance } from "@shared/simplified-schema";
-import { assessmentReports } from "@shared/schema";
+import { assessmentReports, topicPerformance } from "@shared/schema";
 
 // Professional study guide structure following PDF format
 export interface ProfessionalStudyGuide {
@@ -254,30 +253,25 @@ export async function generateProfessionalStudyGuide(
     throw new Error('Assessment report not found');
   }
 
-  // WARNING: this query is broken and will throw if ENABLE_PROFESSIONAL_STUDY_GUIDE
-  // is turned on.
+  // Fetch this report's performance rows.
   //
-  // `db.query.*` resolves against the schema registered in server/db.ts, which is
-  // { ...schema, ...crosswalkSchema } -- NOT against the table object this module
-  // imported. So `db.query.topicPerformance` below is shared/schema.ts's table
-  // (id, report_id, topic_id, score, frequency, gap_score, priority,
-  // recommended_study_time), while `topicPerformance.userId` in the where clause
-  // comes from shared/simplified-schema.ts's table, which is a different table
-  // that happens to share the name. schema.ts's version has no user_id column.
+  // PR #16 flagged this query as broken and left it: `db.query.*` resolves
+  // against the schema registered in server/db.ts -- shared/schema.ts's
+  // topic_performance, keyed on report_id -- while the where clause filtered on
+  // `topicPerformance.userId` from simplified-schema's same-named table, a
+  // column the real one has never had. Every call threw.
   //
-  // The comment previously here said the opposite -- that this used the simplified
-  // schema because it "doesn't have reportId". It does not: schema.ts's version is
-  // what runs, and that one has report_id and no user_id.
+  // It is fixed rather than re-documented here because no product decision was
+  // needed. The table this feature reads was never in doubt; only one
+  // topic_performance exists in the database, and it is schema.ts's. That table
+  // already keys on the reportId this function receives, so the detour through
+  // report.userId is gone -- it would also have pulled in rows from the user's
+  // *other* assessment reports, which this per-report guide should not include.
   //
-  // Fixing it means deciding which table this feature should actually read, which
-  // is product work on a feature that is switched off. Left as-is deliberately.
-  const userId = report.userId;
-  if (!userId) {
-    throw new Error('Assessment report has no associated user');
-  }
-
+  // The `topic` relation resolves to nursingTopics, which is what the
+  // downstream builders below already read (subject, system, specialty).
   const performanceData = await db.query.topicPerformance.findMany({
-    where: eq(topicPerformance.userId, userId),
+    where: eq(topicPerformance.reportId, reportId),
     with: {
       topic: true
     },
