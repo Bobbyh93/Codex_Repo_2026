@@ -54,7 +54,16 @@ BEGIN;
 -- review_topics must exist first: the other two reference it.
 CREATE TABLE IF NOT EXISTS review_topics (
   id                  varchar PRIMARY KEY DEFAULT gen_random_uuid(),
-  name                text NOT NULL UNIQUE,
+  -- The constraint is named explicitly. An inline UNIQUE would take
+  -- PostgreSQL's default name, review_topics_name_key, but drizzle-kit derives
+  -- <table>_<column>_unique from shared/simplified-schema.ts. Now that
+  -- drizzle.config.ts lists that file, a default-named constraint makes
+  -- `npm run db:push` propose dropping and re-adding it on every single run --
+  -- verified against a real PostgreSQL 16 before this name was pinned. The
+  -- churn is not data-destructive, but it leaves review_topics.name briefly
+  -- unconstrained, and the ATI seeder depends on that UNIQUE for its
+  -- skip-if-exists behaviour.
+  name                text NOT NULL CONSTRAINT review_topics_name_unique UNIQUE,
   description         text,
   nclex_category      text NOT NULL,
   nclex_subcategory   text,
@@ -118,6 +127,20 @@ BEGIN
     ALTER TABLE study_resources
       ADD CONSTRAINT study_resources_topic_id_review_topics_id_fk
       FOREIGN KEY (topic_id) REFERENCES review_topics(id);
+  END IF;
+
+  -- Repair path for a database where an earlier revision of this file already
+  -- ran. That version used an inline UNIQUE, so the constraint landed as
+  -- review_topics_name_key. Rename rather than drop-and-recreate: RENAME holds
+  -- the same lock but never leaves the column unconstrained, and it keeps the
+  -- underlying index. A fresh run creates the right name and skips this.
+  IF EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'review_topics_name_key'
+  ) AND NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'review_topics_name_unique'
+  ) THEN
+    ALTER TABLE review_topics
+      RENAME CONSTRAINT review_topics_name_key TO review_topics_name_unique;
   END IF;
 END $$;
 
