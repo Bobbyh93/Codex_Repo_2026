@@ -25,6 +25,7 @@ import {
   Download,
   Loader2
 } from "lucide-react";
+import { apiRequest } from "@/lib/queryClient";
 
 interface ExtractedTopic {
   name: string;
@@ -143,14 +144,7 @@ export default function AIAnalyzer() {
   // Normalize topics mutation
   const normalizeTopicsMutation = useMutation({
     mutationFn: async (topics: string[]) => {
-      const response = await fetch("/api/admin/ai/normalize-topics", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
-        },
-        body: JSON.stringify({ topics }),
-      });
+      const response = await apiRequest("POST", "/api/admin/ai/normalize-topics", { topics });
       
       if (!response.ok) throw new Error("Failed to normalize topics");
       return response.json();
@@ -218,13 +212,7 @@ export default function AIAnalyzer() {
     });
     
     try {
-      const response = await fetch("/api/admin/ai/bulk-process", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
-        },
-        body: formData,
-      });
+      const response = await apiRequest("POST", "/api/admin/ai/bulk-process", formData);
       
       if (!response.ok) throw new Error("Bulk processing failed");
       
