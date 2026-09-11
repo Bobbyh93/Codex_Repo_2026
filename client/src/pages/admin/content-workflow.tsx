@@ -47,6 +47,7 @@ interface ContentBlock {
 
 import { useLocation } from "wouter";
 import { AdminNavigation } from "@/components/admin/admin-navigation";
+import { apiRequest } from "@/lib/queryClient";
 
 export default function ContentWorkflow() {
   const [, navigate] = useLocation();
@@ -163,10 +164,7 @@ export default function ContentWorkflow() {
 
       formData.append('config', JSON.stringify(importConfig));
 
-      const response = await fetch('/api/admin/content/import', {
-        method: 'POST',
-        body: formData
-      });
+      const response = await apiRequest('POST', '/api/admin/content/import', formData);
 
       if (!response.ok) throw new Error('Import failed');
 
@@ -224,11 +222,7 @@ export default function ContentWorkflow() {
     if (!editedBlock) return;
 
     try {
-      const response = await fetch(`/api/admin/content/blocks/${editedBlock.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(editedBlock)
-      });
+      const response = await apiRequest('PUT', `/api/admin/content/blocks/${editedBlock.id}`, editedBlock);
 
       if (response.ok) {
         if (currentBlockIndex < processedBlocks.length - 1) {
