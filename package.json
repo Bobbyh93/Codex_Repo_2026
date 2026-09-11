@@ -144,6 +144,7 @@
     "zod-validation-error": "^3.4.0"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.5.8",
     "@replit/vite-plugin-cartographer": "^0.5.5",
     "@replit/vite-plugin-runtime-error-modal": "^0.0.3",
     "@tailwindcss/typography": "^0.5.15",
