@@ -1,4 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
+import { getHeapStatistics } from 'v8';
 import { AppLogger } from '../logger';
 
 // Request tracking
@@ -72,13 +73,21 @@ export function memoryMonitor() {
       external: Math.round(usage.external / 1024 / 1024),
     });
 
-    // Alert on high memory usage
-    const heapUsedPercent = (usage.heapUsed / usage.heapTotal) * 100;
+    // Alert on high memory usage, measured against V8's hard heap ceiling.
+    // heapTotal is only the currently committed heap, which V8 grows on demand
+    // and keeps just ahead of heapUsed, so a perfectly healthy process sits
+    // above 90% of it most of the time. Against heapTotal this fired every 60
+    // seconds on the live service at 57MB of a ~4GB ceiling -- a permanently
+    // on alarm that says nothing. server/health.ts:checkMemory already measures
+    // it this way; this is the same fix in the other consumer.
+    const heapLimit = getHeapStatistics().heap_size_limit;
+    const heapUsedPercent = (usage.heapUsed / heapLimit) * 100;
     if (heapUsedPercent > 90) {
       AppLogger.warn('High memory usage detected', {
         heapUsedPercent: heapUsedPercent.toFixed(2),
         heapUsed: Math.round(usage.heapUsed / 1024 / 1024),
         heapTotal: Math.round(usage.heapTotal / 1024 / 1024),
+        heapLimit: Math.round(heapLimit / 1024 / 1024),
       });
     }
   }, 60000); // Check every minute
