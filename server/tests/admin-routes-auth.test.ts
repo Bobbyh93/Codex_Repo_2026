@@ -7,44 +7,54 @@ import bcrypt from 'bcryptjs';
 import type { Server } from 'http';
 
 /**
- * What actually guards /api/admin, and the four admin features it breaks.
+ * What actually guards /api/admin, and which admin pages satisfy it.
  *
- * Nineteen /api/admin routes in server/routes.ts name no middleware at all.
- * They look unguarded. They are not: server/routes.ts:817 mounts
- * contentImportRouter at /api/admin, and that router opens with
+ * Which middleware an /api/admin route gets is decided by WHERE in
+ * server/routes.ts it is registered, not by what its own middleware list says:
+ *
+ *   780  registerAdminRoutes           session; CSRF only where a route names it
+ *   797  registerAdminDatabaseRoutes   session; CSRF only where a route names it
+ *   811  /api/admin/users*             session
+ *   817  app.use('/api/admin', contentImportRouter)
+ *   825  registerCrosswalkRoutes       the above, PLUS its own authenticateToken
+ *
+ * contentImportRouter opens with an unconditional
  *
  *     router.use(requireAdminSession);
  *     router.use(validateCSRFToken);
  *
- * An Express router runs its own router.use() middleware for every request
- * reaching its mount path, whether or not the router has a matching route, so
- * both guards cover the entire /api/admin namespace from line 817 onward.
- * Everything registered after it inherits them; everything before it does not.
- * That is why /api/admin/users* (registered at line 811, six lines earlier)
- * really was anonymous until PR #10, and these nineteen never were. Position
- * decided it, not intent.
+ * and an Express router runs its own router.use() middleware for every request
+ * reaching its mount path, matching route or not. So both guards cover the
+ * whole namespace from line 817 onward, and nothing above it. That is why
+ * /api/admin/users* -- six lines above the mount -- really was anonymous until
+ * PR #10, while the nineteen routes far below it never were.
  *
- * Two consequences, and this file pins both.
+ * The same accident decides CSRF, and that is what broke four admin features:
+ * PDF upload, study-guide customisation, emailing a guide, and content-to-topic
+ * mapping answered 403 CSRF_TOKEN_MISSING because they used a bare fetch().
+ * PR #21 fixed those. This file covers the rest of the admin UI, where the
+ * picture turned out to be more mixed than "they are all broken the same way":
  *
- * 1. The protection is an accident of mount order. Moving line 817, or
- *    narrowing its mount to /api/admin/content, silently opens nineteen
- *    routes, several of which return real student names, emails, scores and
- *    filenames. The routes now name requireAdminSession themselves; these
- *    tests fail if any /api/admin route loses its guard.
+ *   - content-workflow's two calls sit below the mount with no token at all:
+ *     the same live 403. Fixed here.
+ *   - crosswalk-manager needs THREE things at once, because crosswalk-routes.ts
+ *     is registered below the mount and also runs authenticateToken: session
+ *     cookie, CSRF token, and bearer. It sent only the bearer. Fixed here, via
+ *     apiRequest's headers option.
+ *   - ai-analyzer and data-mapping sent `Bearer ${localStorage.adminToken}`,
+ *     and nothing in this repo ever writes that key -- so the header was
+ *     literally "Bearer null". Their routes are session-guarded and the cookie
+ *     arrives on its own, so they worked in spite of it. The dead header is
+ *     gone; data-mapping's route does not exist at all (see DOCUMENTED below).
+ *   - call-bookings, database-manager, sql-console, import-export and
+ *     resource-manager were already correct. They stay as they are, with a
+ *     written reason each and a case here proving the server accepts what they
+ *     send.
  *
- * 2. The blanket validateCSRFToken 403s every non-GET arriving without an
- *    X-CSRF-Token header -- and four admin features sent no such header,
- *    because they called the API with a bare fetch() instead of apiRequest().
- *    Admin PDF upload, study-guide customisation, emailing a guide to a
- *    student, and content-to-topic mapping have been answering
- *    403 CSRF_TOKEN_MISSING in production. The client now routes them through
- *    apiRequest(), which attaches the token the login response returns.
- *
- * Everything here runs the real registerRoutes against a real PostgreSQL
- * (PGlite, via helpers/pglite-db.ts) behind the real session middleware, so
- * what is under test is the middleware stack that ships, in the order it
- * ships. A mocked app cannot reproduce either finding: both are about which
- * middleware a request passes through on the way to a handler.
+ * Everything runs the real registerRoutes against a real PostgreSQL (PGlite,
+ * via helpers/pglite-db.ts) behind the real session middleware. A mocked app
+ * cannot reproduce any of this: it is all about which middleware a request
+ * passes through on the way to a handler.
  */
 
 vi.mock('../db', async () => {
@@ -70,7 +80,15 @@ const ADMIN = { email: 'route-guard-admin@example.com', password: 'guard-test-on
 /** A well-formed uuid that matches no row. */
 const ABSENT_ID = '00000000-0000-4000-8000-000000000000';
 
-type Case = { method: 'GET' | 'POST'; path: string; body?: unknown };
+type Case = {
+  method: 'GET' | 'POST' | 'PUT' | 'DELETE';
+  path: string;
+  body?: unknown;
+  /** false when no validateCSRFToken sits on this route's chain. Default true. */
+  csrf?: boolean;
+  /** true when the route also runs authenticateToken and needs a bearer. */
+  jwt?: boolean;
+};
 
 /**
  * The nineteen routes registered in server/routes.ts without their own
@@ -101,21 +119,57 @@ const CASES: Case[] = [
   { method: 'GET', path: '/api/admin/topic-metrics' },
   { method: 'GET', path: '/api/admin/user-activity' },
   { method: 'GET', path: '/api/admin/resource-usage' },
+
+  // Routes reached by the admin pages this change touches. Each one's flags
+  // were read off its registration, not assumed -- which chain a route gets
+  // depends on where in server/routes.ts it is registered:
+  //
+  //   780  registerAdminRoutes            session; CSRF only where named
+  //   797  registerAdminDatabaseRoutes    session; CSRF only where named
+  //   817  app.use('/api/admin', contentImportRouter)   <-- session + CSRF for
+  //                                                         everything below
+  //   825  registerCrosswalkRoutes        the above, PLUS its own JWT check
+  //
+  // admin-routes.ts and admin-database-routes.ts sit above the mount, so a
+  // route there enforces CSRF only if its own middleware list says so.
+  { method: 'POST', path: '/api/admin/ai/normalize-topics', body: { topics: [] }, csrf: false },
+  { method: 'POST', path: '/api/admin/ai/bulk-process', csrf: false },
+  { method: 'POST', path: '/api/admin/resources/init-sample', csrf: false },
+  { method: 'POST', path: `/api/admin/database/tables/resources/import`, body: { data: [] }, csrf: false },
+
+  { method: 'PUT', path: `/api/admin/bookings/${ABSENT_ID}`, body: { status: 'confirmed' } },
+  { method: 'POST', path: `/api/admin/bookings/${ABSENT_ID}/notes`, body: { notes: 'n' } },
+  { method: 'PUT', path: `/api/admin/leads/${ABSENT_ID}`, body: { status: 'new' } },
+  { method: 'POST', path: '/api/admin/database/query', body: { query: 'SELECT 1' } },
+  { method: 'PUT', path: `/api/admin/database/tables/resources/update`, body: { data: {}, original: {} } },
+
+  // Below the mount: blanket session + CSRF.
+  { method: 'POST', path: '/api/admin/content/import' },
+  { method: 'PUT', path: `/api/admin/content/blocks/${ABSENT_ID}`, body: { title: 't' } },
+
+  // Below the mount AND running authenticateToken: bearer on top of the rest.
+  { method: 'POST', path: '/api/admin/crosswalk/nclex-topic', body: {}, jwt: true },
+  { method: 'PUT', path: `/api/admin/crosswalk/nclex-topic/${ABSENT_ID}`, body: {}, jwt: true },
+  { method: 'DELETE', path: `/api/admin/crosswalk/nclex-topic/${ABSENT_ID}`, jwt: true },
+  { method: 'POST', path: '/api/admin/crosswalk/import/nclex-topic', jwt: true },
 ];
 
-const POST_CASES = CASES.filter((c) => c.method === 'POST');
+/** Non-GET routes that actually have validateCSRFToken on their chain. */
+const CSRF_CASES = CASES.filter((c) => c.method !== 'GET' && c.csrf !== false);
 
 let app: express.Express;
 let server: Server;
 let base: string;
 let adminCookie: string;
 let csrfToken: string;
+let adminJwt: string;
 let sendGridKey: string | undefined;
 
-function call(c: Case, opts: { cookie?: string; csrf?: string } = {}) {
+function call(c: Case, opts: { cookie?: string; csrf?: string; bearer?: string } = {}) {
   const headers: Record<string, string> = {};
   if (opts.cookie) headers.cookie = opts.cookie;
   if (opts.csrf) headers['x-csrf-token'] = opts.csrf;
+  if (opts.bearer) headers.authorization = `Bearer ${opts.bearer}`;
   if (c.body !== undefined) headers['content-type'] = 'application/json';
   return fetch(`${base}${c.path}`, {
     method: c.method,
@@ -182,6 +236,11 @@ beforeAll(async () => {
   adminCookie = setCookie.split(';')[0];
   csrfToken = loginBody.csrfToken;
   expect(csrfToken).toMatch(/^[0-9a-f]{64}$/);
+
+  // crosswalk-routes.ts runs authenticateToken in addition to everything the
+  // mount imposes, so those cases need a real bearer as well as the cookie.
+  const { AuthService } = await import('../auth');
+  adminJwt = AuthService.generateToken({ userId: admin.id, email: ADMIN.email, role: 'admin' });
 }, 60_000);
 
 afterAll(async () => {
@@ -230,7 +289,11 @@ describe('the same routes reach their handler for a signed-in admin', () => {
     // POSTs also need the CSRF token, or the blanket validateCSRFToken at
     // routes.ts:817 answers 403 before the handler runs -- which is the bug
     // the next block is about.
-    const res = await call(c, { cookie: adminCookie, csrf: csrfToken });
+    const res = await call(c, {
+      cookie: adminCookie,
+      csrf: csrfToken,
+      bearer: c.jwt ? adminJwt : undefined,
+    });
     const text = await res.text();
 
     // The handler may still fail on its own terms (no file on the upload, an
@@ -243,55 +306,76 @@ describe('the same routes reach their handler for a signed-in admin', () => {
 });
 
 describe('admin writes need the CSRF token the client now sends', () => {
-  it.each(POST_CASES)('$path is 403 for a signed-in admin with no token', async (c) => {
+  it.each(CSRF_CASES)('$method $path is 403 for a signed-in admin with no token', async (c) => {
     // This is exactly what the four bare-fetch() call sites were doing.
     // Pinning it documents that the 403 is the middleware working as intended,
     // not a broken route: the fix belongs in the client, which the next test
     // checks.
-    const res = await call(c, { cookie: adminCookie });
+    const res = await call(c, { cookie: adminCookie, bearer: c.jwt ? adminJwt : undefined });
     expect(res.status).toBe(403);
     expect(await res.json()).toMatchObject({ code: 'CSRF_TOKEN_MISSING' });
   });
 
-  it('has no NEW admin page sending a state-changing request without apiRequest', () => {
-    // apiRequest() attaches X-CSRF-Token and credentials:"include". A bare
-    // fetch() carrying a method does neither, so against a route behind the
-    // session+CSRF stack it always 403s. Four features shipped that way and
-    // are fixed here.
+  it.each(CASES.filter((c) => c.jwt))('$method $path needs the bearer too, not just the session', async (c) => {
+    // The reason apiRequest gained a headers option. crosswalk-routes.ts is
+    // registered below the contentImportRouter mount AND runs its own
+    // authenticateToken, so a caller must satisfy both: session cookie and
+    // CSRF from the mount, bearer from the route. Dropping either one fails.
     //
-    // The rest of the admin UI has the same shape but NOT the same fix. It
-    // predates the session scheme and reaches for two others: a
-    // `Bearer ${localStorage.getItem('adminToken')}` header (ai-analyzer,
-    // data-mapping, crosswalk-manager's import) against routes guarded by
-    // authenticateToken, and a hand-attached X-CSRF-Token (call-bookings).
-    // Moving those to apiRequest() would strip the Authorization header they
-    // depend on, so each needs its route's guard identified first. That is a
-    // separate piece of work, listed here rather than hidden: this test fails
-    // on any call site not already on the list, so the backlog cannot grow.
-    const KNOWN_UNCONVERTED = new Set([
-      // Login cannot carry a CSRF token: it is what issues one.
-      'admin-login.tsx::/api/admin/login',
-      // Bearer adminToken from localStorage, against authenticateToken routes.
-      'ai-analyzer.tsx::/api/admin/ai/normalize-topics',
-      'ai-analyzer.tsx::/api/admin/ai/bulk-process',
-      'data-mapping.tsx::/api/admin/index/rebuild',
-      'crosswalk-manager.tsx::/api/admin/crosswalk/import/${activeTab}',
-      // getAdminHeaders() -- same Bearer scheme, via a helper.
-      'crosswalk-manager.tsx::/api/admin/crosswalk/${activeTab}',
-      'crosswalk-manager.tsx::/api/admin/crosswalk/${activeTab}/${id}',
-      // Attaches X-CSRF-Token by hand; correct today, just not centralised.
-      'call-bookings.tsx::/api/admin/bookings/${id}',
-      'call-bookings.tsx::/api/admin/bookings/${id}/notes',
-      'call-bookings.tsx::/api/admin/leads/${id}',
-      // Session-scheme pages with the same defect as the four fixed here,
-      // left alone only because nothing in this suite exercises their routes.
-      'content-workflow.tsx::/api/admin/content/import',
-      'content-workflow.tsx::/api/admin/content/blocks/${editedBlock.id}',
-      'database-manager.tsx::/api/admin/database/query',
-      'database-manager.tsx::/api/admin/database/tables/${tableName}/update',
-      'import-export.tsx::/api/admin/database/tables/${selectedTable}/import',
-      'resource-manager.tsx::/api/admin/resources/init-sample',
-      'sql-console.tsx::/api/admin/database/query',
+    // Without this, the jwt cases above would pass just as well if
+    // authenticateToken were not on the chain at all, and the bearer this
+    // change threads through apiRequest would be decoration.
+    const res = await call(c, { cookie: adminCookie, csrf: csrfToken });
+    const text = await res.text();
+    expect(res.status, `expected 401 without a bearer, got ${res.status}: ${text.slice(0, 200)}`).toBe(401);
+
+    // And it is authenticateToken refusing, not the session guard: the same
+    // request WITH the bearer gets past it.
+    const withBearer = await call(c, { cookie: adminCookie, csrf: csrfToken, bearer: adminJwt });
+    expect(withBearer.status).not.toBe(401);
+  });
+
+  it('leaves only documented bare-fetch call sites', () => {
+    // apiRequest() attaches X-CSRF-Token and credentials:"include" in one
+    // place. A bare fetch() carrying a method attaches neither by default, so
+    // against a route whose chain includes validateCSRFToken it always 403s.
+    //
+    // Every remaining bare fetch() is listed below with the reason it is
+    // acceptable, and every route named here has a case in CASES above proving
+    // the server accepts what that page actually sends. This test fails on any
+    // call site NOT on the list, so the exceptions cannot grow silently.
+    const DOCUMENTED = new Map<string, string>([
+      // Login is what issues the CSRF token; it cannot carry one.
+      ['admin-login.tsx::/api/admin/login', 'issues the token'],
+
+      // Attaches X-CSRF-Token by hand. The routes (admin-routes.ts, above the
+      // mount) name validateCSRFToken themselves, so this is correct as-is --
+      // see the bookings/leads cases in CASES.
+      ['call-bookings.tsx::/api/admin/bookings/${id}', 'hand-attached CSRF, route requires it'],
+      ['call-bookings.tsx::/api/admin/bookings/${id}/notes', 'hand-attached CSRF, route requires it'],
+      ['call-bookings.tsx::/api/admin/leads/${id}', 'hand-attached CSRF, route requires it'],
+
+      // Attach CSRF through admin-auth.ts's getAdminHeaders(). Converting them
+      // would be a regression, not a fix: each reads the response body on
+      // failure to show the server's own error (a SQL error, an import
+      // rejection), and apiRequest throws on non-ok after consuming the body.
+      ['database-manager.tsx::/api/admin/database/query', 'CSRF via getAdminHeaders; renders the SQL error body'],
+      ['database-manager.tsx::/api/admin/database/tables/${tableName}/update', 'CSRF via getAdminHeaders; renders the error body'],
+      ['sql-console.tsx::/api/admin/database/query', 'CSRF via getAdminHeaders; renders the SQL error body'],
+      ['import-export.tsx::/api/admin/database/tables/${selectedTable}/import', 'CSRF via getAdminHeaders; renders the import result body'],
+
+      // Sends a bearer and no CSRF. Correct by accident but correct: the route
+      // is in admin-routes.ts above the mount and names no validateCSRFToken,
+      // which the csrf:false case for it in CASES pins. If that route ever
+      // gains CSRF, that case fails before this page breaks in production.
+      ['resource-manager.tsx::/api/admin/resources/init-sample', 'route has no CSRF check; pinned by CASES'],
+
+      // Calls a route that does not exist. Nothing in server/ registers
+      // /api/admin/index/rebuild, so the Rebuild Index button is a 404 no
+      // matter what it sends. Converting it would only make a dead call
+      // tidier; it needs a product decision (implement or remove the button),
+      // which is outside this change.
+      ['data-mapping.tsx::/api/admin/index/rebuild', 'NO SUCH ROUTE -- dead button, needs a product decision'],
     ]);
 
     const adminPages = resolve(__dirname, '../../client/src/pages/admin');
@@ -308,35 +392,59 @@ describe('admin writes need the CSRF token the client now sends', () => {
     const files = walk(adminPages);
     expect(files.length).toBeGreaterThan(5);
 
-    const seen: string[] = [];
+    const seen = new Set<string>();
     const offenders: string[] = [];
     for (const file of files) {
       const name = file.slice(adminPages.length + 1);
       for (const hit of readFileSync(file, 'utf8').matchAll(bareWrite)) {
         const key = `${name}::${hit[1]}`;
-        seen.push(key);
-        if (!KNOWN_UNCONVERTED.has(key)) offenders.push(key);
+        seen.add(key);
+        if (!DOCUMENTED.has(key)) offenders.push(key);
       }
     }
-
-    // Non-vacuous: the pattern still matches the call sites the list names.
-    // Without this, a regex that stopped matching would pass silently.
-    expect(seen.length).toBeGreaterThanOrEqual(KNOWN_UNCONVERTED.size);
 
     expect(
       offenders,
       `these send a state-changing /api/admin request with a bare fetch(), which ` +
-        `carries no X-CSRF-Token and will 403. Use apiRequest(method, url, body):\n  ${offenders.join('\n  ')}`,
+        `carries no X-CSRF-Token. Use apiRequest(method, url, body) -- or add an ` +
+        `entry to DOCUMENTED saying why this one is safe:\n  ${offenders.join('\n  ')}`,
     ).toEqual([]);
 
-    // And the four this change fixed stay fixed.
-    for (const gone of [
-      'assessment-manager.tsx::/api/admin/upload-assessment',
-      'assessment-manager-carousel.tsx::/api/admin/upload-assessment',
-      'simplified-content-mapper.tsx::/api/admin/map-content-to-topics',
-    ]) {
-      expect(seen, `${gone} went back to a bare fetch()`).not.toContain(gone);
+    // Non-vacuous in both directions: the pattern still matches every site the
+    // list names, so neither a broken regex nor a silently-removed call site
+    // can make this pass for the wrong reason.
+    const missing = [...DOCUMENTED.keys()].filter((k) => !seen.has(k));
+    expect(
+      missing,
+      `DOCUMENTED names call sites that no longer exist. Remove them:\n  ${missing.join('\n  ')}`,
+    ).toEqual([]);
+  });
+
+  it('routes the converted pages through apiRequest', () => {
+    // The six call sites this change fixed. Named individually so a revert to
+    // bare fetch() fails here with the reason, not just on the scan above.
+    const converted: Array<[string, string]> = [
+      ['ai-analyzer.tsx', '/api/admin/ai/normalize-topics'],
+      ['ai-analyzer.tsx', '/api/admin/ai/bulk-process'],
+      ['content-workflow.tsx', '/api/admin/content/import'],
+      ['content-workflow.tsx', '/api/admin/content/blocks/'],
+      ['crosswalk-manager.tsx', '/api/admin/crosswalk/'],
+      ['crosswalk-manager.tsx', '/api/admin/crosswalk/import/'],
+    ];
+
+    const adminPages = resolve(__dirname, '../../client/src/pages/admin');
+    for (const [file, path] of converted) {
+      const source = readFileSync(resolve(adminPages, file), 'utf8');
+      const line = source.split('\n').find((l) => l.includes(path) && /await\s+apiRequest\(/.test(l));
+      expect(line, `${file} no longer calls ${path} through apiRequest`).toBeTruthy();
     }
+
+    // crosswalk's writes need the bearer passed through apiRequest's headers
+    // option as well -- its routes run authenticateToken on top of the mount's
+    // session and CSRF guards, so dropping either one 401s or 403s.
+    const crosswalk = readFileSync(resolve(adminPages, 'crosswalk-manager.tsx'), 'utf8');
+    expect(crosswalk).toContain('bearerHeader()');
+    expect(crosswalk.match(/headers:\s*bearerHeader\(\)/g) ?? []).toHaveLength(4);
   });
 });
 
