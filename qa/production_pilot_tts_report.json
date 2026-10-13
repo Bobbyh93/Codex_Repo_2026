@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "status": "pass",
+  "queue_id": "HLB-PRODUCTION-PILOT-019",
+  "verified_asset_count": 3,
+  "planned_asset_count": 3,
+  "binding_manifest_status": "ready_for_downstream_binding",
+  "secret_values_logged": false,
+  "errors": []
+}

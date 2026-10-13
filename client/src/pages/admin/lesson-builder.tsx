@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import AdminLayout from "@/components/admin/admin-layout";
+import { LessonGovernancePanel } from "@/components/admin/lesson-governance-panel";
+import type { GovernanceEvaluation } from "@shared/lesson-governance";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -987,6 +989,7 @@ export default function LessonBuilder() {
     decision: "comment",
     focusArea: "overall",
     comment: "",
+    licensedRn: false,
     rubric: { ...defaultFacultyRubric },
   });
   const [assignmentForm, setAssignmentForm] = useState({
@@ -1096,6 +1099,16 @@ export default function LessonBuilder() {
       if (!response.ok) throw new Error("Failed to load package detail");
       return response.json();
     },
+  });
+
+  const governanceWorkflowQuery = useQuery<{ evaluation: GovernanceEvaluation }>({
+    queryKey: ["/api/admin/lesson-builder/packages", selectedPackageId, "governance"],
+    queryFn: async () => {
+      const response = await fetch(`/api/admin/lesson-builder/packages/${selectedPackageId}/governance`, { credentials: "include" });
+      if (!response.ok) throw new Error("Failed to load governance release prerequisites");
+      return response.json();
+    },
+    enabled: Boolean(selectedPackageId),
   });
 
   const exportStatusQuery = useQuery<ExportStatus>({
@@ -1214,6 +1227,8 @@ export default function LessonBuilder() {
   const latestReview = detailQuery.data?.reviews?.[0];
   const latestFacultyReview = detailQuery.data?.reviews?.find((review) => review.reviewerRole !== "ai_reviewer");
   const latestFacultyRubric = latestFacultyReview?.metadata?.rubricSummary || detailQuery.data?.package.manifest?.facultyReview?.rubricSummary || null;
+  const governanceReleasePrerequisitesPassed = Boolean(governanceWorkflowQuery.data)
+    && governanceWorkflowQuery.data!.evaluation.blockers.every((blocker) => !["faculty_review", "licensed_rn_release"].includes(blocker.code));
   const currentRubricScores = facultyRubricCriteria
     .map((criterion) => Number(reviewForm.rubric[criterion.key]?.score || 0))
     .filter((score) => Number.isFinite(score) && score > 0);
@@ -1780,6 +1795,7 @@ export default function LessonBuilder() {
           rubric,
           rubricVersion: "faculty_review_rubric_v1",
           premiumFacultyReview: true,
+          licensedRn: reviewForm.licensedRn,
         },
       });
       return response.json();
@@ -3760,7 +3776,12 @@ export default function LessonBuilder() {
                       ) : null}
                     </div>
 
-                    <div className="grid gap-4 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
+                    <LessonGovernancePanel
+                      packageId={selectedPackageId}
+                      slides={detailQuery.data.slides.map((slide) => ({ id: slide.id, slideNumber: slide.slideNumber, title: slide.title }))}
+                    />
+
+                    <div id="faculty-review-workflow" className="grid scroll-mt-20 gap-4 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
                       <div className="rounded-md border bg-white p-4">
                         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
                           <div className="flex items-center gap-2 font-semibold text-slate-900">
@@ -3833,7 +3854,7 @@ export default function LessonBuilder() {
                                 <SelectItem value="comment">Comment only</SelectItem>
                                 <SelectItem value="changes_requested">Changes requested</SelectItem>
                                 <SelectItem value="approved_for_pilot">Approved for pilot</SelectItem>
-                                <SelectItem value="approved_for_release">Approved for release</SelectItem>
+                                <SelectItem value="approved_for_release" disabled={!governanceReleasePrerequisitesPassed}>Approved for release</SelectItem>
                               </SelectContent>
                             </Select>
                           </div>
@@ -3858,6 +3879,10 @@ export default function LessonBuilder() {
                           <Label>Review note</Label>
                           <Textarea value={reviewForm.comment} onChange={(event) => setReviewForm({ ...reviewForm, comment: event.target.value })} rows={3} />
                         </div>
+                        <label className="mt-3 flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-950">
+                          <Checkbox checked={reviewForm.licensedRn} onCheckedChange={(checked) => setReviewForm({ ...reviewForm, licensedRn: checked === true })} />
+                          <span><strong>Licensed RN attestation.</strong> Required when the decision is “Approved for release”; that action remains unavailable until the authoritative governance, QA, media, and playback prerequisites pass.</span>
+                        </label>
                         <div className="mt-4 rounded-md border bg-slate-50 p-3">
                           <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
                             <div>
@@ -3911,7 +3936,7 @@ export default function LessonBuilder() {
                           </div>
                         </div>
                         <div className="mt-3 flex justify-end">
-                          <Button onClick={() => saveReviewMutation.mutate()} disabled={saveReviewMutation.isPending || reviewForm.comment.trim().length < 3}>
+                          <Button onClick={() => saveReviewMutation.mutate()} disabled={saveReviewMutation.isPending || reviewForm.comment.trim().length < 3 || (reviewForm.decision === "approved_for_release" && (!reviewForm.licensedRn || !governanceReleasePrerequisitesPassed))}>
                             <ClipboardCheck className="mr-2 h-4 w-4" />
                             Save Premium Faculty Review
                           </Button>

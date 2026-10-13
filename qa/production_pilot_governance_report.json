@@ -1,0 +1,153 @@
+{
+  "report_version": 1,
+  "generated_at": "2026-08-19T20:40:14.522770+00:00",
+  "lesson_directory": "lessons/production_pilot",
+  "target": "production_ready",
+  "status": "blocked",
+  "eligible_next_stage": "remediation",
+  "summary": {
+    "blockers": 22,
+    "total_findings": 22
+  },
+  "metrics": {
+    "slide_count": 3,
+    "source_count": 1,
+    "objective_count": 1,
+    "tts_request_count": 3,
+    "current_approval_count": 0
+  },
+  "findings": [
+    {
+      "severity": "blocker",
+      "code": "required_value",
+      "location": "administrative.courseId",
+      "message": "Required value is not resolved."
+    },
+    {
+      "severity": "blocker",
+      "code": "required_value",
+      "location": "administrative.courseName",
+      "message": "Required value is not resolved."
+    },
+    {
+      "severity": "blocker",
+      "code": "required_value",
+      "location": "administrative.programLevel",
+      "message": "Required value is not resolved."
+    },
+    {
+      "severity": "blocker",
+      "code": "required_value",
+      "location": "administrative.contentOwner",
+      "message": "Required value is not resolved."
+    },
+    {
+      "severity": "blocker",
+      "code": "required_value",
+      "location": "administrative.facultyReviewer",
+      "message": "Required value is not resolved."
+    },
+    {
+      "severity": "blocker",
+      "code": "required_value",
+      "location": "taxonomy.aacnCompetencies",
+      "message": "Required value is not resolved."
+    },
+    {
+      "severity": "blocker",
+      "code": "accessibility",
+      "location": "slideTraceability.P01.accessibility.readingOrderChecked",
+      "message": "Accessibility check has not passed."
+    },
+    {
+      "severity": "blocker",
+      "code": "accessibility",
+      "location": "slideTraceability.P01.accessibility.contrastChecked",
+      "message": "Accessibility check has not passed."
+    },
+    {
+      "severity": "blocker",
+      "code": "accessibility",
+      "location": "slideTraceability.P01.accessibility.meaningNotColorOnly",
+      "message": "Accessibility check has not passed."
+    },
+    {
+      "severity": "blocker",
+      "code": "accessibility",
+      "location": "slideTraceability.P02.accessibility.readingOrderChecked",
+      "message": "Accessibility check has not passed."
+    },
+    {
+      "severity": "blocker",
+      "code": "accessibility",
+      "location": "slideTraceability.P02.accessibility.contrastChecked",
+      "message": "Accessibility check has not passed."
+    },
+    {
+      "severity": "blocker",
+      "code": "accessibility",
+      "location": "slideTraceability.P02.accessibility.meaningNotColorOnly",
+      "message": "Accessibility check has not passed."
+    },
+    {
+      "severity": "blocker",
+      "code": "accessibility",
+      "location": "slideTraceability.P03.accessibility.readingOrderChecked",
+      "message": "Accessibility check has not passed."
+    },
+    {
+      "severity": "blocker",
+      "code": "accessibility",
+      "location": "slideTraceability.P03.accessibility.contrastChecked",
+      "message": "Accessibility check has not passed."
+    },
+    {
+      "severity": "blocker",
+      "code": "accessibility",
+      "location": "slideTraceability.P03.accessibility.meaningNotColorOnly",
+      "message": "Accessibility check has not passed."
+    },
+    {
+      "severity": "blocker",
+      "code": "taxonomy_lock",
+      "location": "taxonomyStatus",
+      "message": "Taxonomy is not locked."
+    },
+    {
+      "severity": "blocker",
+      "code": "approval",
+      "location": "approvals.taxonomy",
+      "message": "Taxonomy approval is missing, revoked, or stale."
+    },
+    {
+      "severity": "blocker",
+      "code": "approval",
+      "location": "approvals.objectives",
+      "message": "Objectives approval is missing, revoked, or stale."
+    },
+    {
+      "severity": "blocker",
+      "code": "approval",
+      "location": "approvals.outline",
+      "message": "Outline approval is missing, revoked, or stale."
+    },
+    {
+      "severity": "blocker",
+      "code": "approval",
+      "location": "approvals.script",
+      "message": "Script approval is missing, revoked, or stale."
+    },
+    {
+      "severity": "blocker",
+      "code": "approval",
+      "location": "approvals.accessibility",
+      "message": "Accessibility approval is missing, revoked, or stale."
+    },
+    {
+      "severity": "blocker",
+      "code": "faculty_review",
+      "location": "faculty_review",
+      "message": "A current faculty approval is required."
+    }
+  ]
+}
