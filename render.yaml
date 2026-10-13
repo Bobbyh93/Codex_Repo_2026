@@ -19,6 +19,14 @@ services:
         sync: false
       - key: APP_URL
         sync: false
+      - key: N8N_AUTOMATION_TOKEN
+        sync: false
+      - key: SHORTS_WEEKLY_GENERATION_LIMIT
+        value: "7"
+      - key: NCLEX_AUTOMATION_ENABLED
+        value: "true"
+      - key: FFMPEG_PATH
+        sync: false
       - key: ENABLE_EMAIL_DELIVERY
         value: "false"
       - key: SENDGRID_API_KEY

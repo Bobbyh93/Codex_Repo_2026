@@ -14,17 +14,28 @@ from typing import Iterable
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_REPORT = ROOT / "manifests" / "credential_guard_report.json"
 
+# The scan covers repository files only. Vendored packages and build output are
+# git-ignored and full of third-party files named "*apikey*", so they are skipped;
+# otherwise the result depends on whether `npm ci` / `npm run build` ran first.
 SKIP_DIRS = {
     ".git",
     ".agents",
     ".codex",
+    ".worktrees",
     "__pycache__",
     ".pytest_cache",
+    "node_modules",
+    "dist",
+    "build",
+    "coverage",
+    ".venv",
+    "venv",
 }
 
 ALLOWLISTED_SENSITIVE_PATHS = {
     "scripts/credential_guard.py",
     "manifests/credential_guard_report.json",
+    "tests/test_credential_guard.py",
 }
 
 SENSITIVE_NAME_RE = re.compile(
