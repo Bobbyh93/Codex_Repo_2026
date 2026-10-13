@@ -29,6 +29,19 @@ class DailyWorksetTests(unittest.TestCase):
         self.assertEqual(selected["id"], "HLB-TTS-ASSET-VERIFICATION-022")
         self.assertEqual(workset["status"], "blocked_or_planning_only")
 
+    def test_production_pilot_blockers_match_the_release_report(self) -> None:
+        import json
+
+        queue = json.loads((ROOT / "state" / "work_queue.json").read_text(encoding="utf-8"))
+        report = json.loads((ROOT / "qa" / "production_pilot_release_report.json").read_text(encoding="utf-8"))
+        package = next(item for item in queue["work_packages"] if item["id"] == "HLB-PRODUCTION-PILOT-019")
+        if report["external_blockers"]:
+            self.assertEqual(package["status"], "blocked")
+            self.assertEqual(package["blockers"], report["external_blockers"])
+        else:
+            self.assertNotEqual(package["status"], "blocked")
+            self.assertEqual(package.get("blockers", []), [])
+
     def test_markdown_contains_blockers_and_actions(self) -> None:
         workset = build_workset(ROOT / "state", "2026-07-14")
         markdown = render_markdown(workset)

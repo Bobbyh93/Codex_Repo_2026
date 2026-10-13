@@ -92,9 +92,9 @@
         "No blocker or major defects remain."
       ],
       "blockers": [
-        "Production source package has not been selected.",
-        "Live OpenAI narration is not yet verified.",
-        "Target playback environment has not been selected."
+        "Release playback path has not been selected.",
+        "Final artifact path and checksum are not recorded.",
+        "No target-player playback records are recorded."
       ],
       "outputs": [
         "lessons/production_pilot/lesson_spec.json",
