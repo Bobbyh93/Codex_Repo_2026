@@ -1,0 +1,182 @@
+{
+  "name": "NCLEX Daily Short Publisher - Free First",
+  "nodes": [
+    {
+      "parameters": { "rule": { "interval": [{ "field": "cronExpression", "expression": "0 8 * * *" }] } },
+      "id": "20e8f59f-dda1-4d62-910f-4f75a34a478e",
+      "name": "Daily 8 AM Pacific",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [-900, 0]
+    },
+    {
+      "parameters": {
+        "url": "={{ ($vars.NCLEX_APP_BASE_URL || 'https://nursestudy-lesson-builder.onrender.com').replace(/\\/$/, '') + '/api/automation/nclex-shorts/next' }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": { "response": { "response": { "fullResponse": true, "neverError": true } } }
+      },
+      "id": "eb818759-00f7-4a69-b40a-d17826c76f6e",
+      "name": "Get One QA Passed Short",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-680, 0]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 2 },
+          "conditions": [{ "id": "3d0214e7-9c00-43a0-b65f-f9027751bcbb", "leftValue": "={{ $json.statusCode === 200 && Boolean($json.body?.id) }}", "rightValue": true, "operator": { "type": "boolean", "operation": "true", "singleValue": true } }],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "32f82cd1-2579-4dc8-8df7-069ef9987933",
+      "name": "Candidate Available?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [-460, 0]
+    },
+    {
+      "parameters": {},
+      "id": "10b1e7e0-601b-4bd9-94b9-7e7fa922699e",
+      "name": "No Publication Today",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [-240, 140]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($vars.NCLEX_APP_BASE_URL || 'https://nursestudy-lesson-builder.onrender.com').replace(/\\/$/, '') + '/api/automation/nclex-shorts/' + $('Get One QA Passed Short').item.json.body.id + '/render' }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": { "response": { "response": { "responseFormat": "file", "outputPropertyName": "data" } }, "timeout": 300000 }
+      },
+      "id": "5ef018c4-4b0b-4092-9458-3036538a6aee",
+      "name": "Render Deterministic MP4",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-240, -80],
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "name": "={{ 'nclex-' + $('Get One QA Passed Short').item.json.body.id + '.mp4' }}",
+        "driveId": { "__rl": true, "mode": "list", "value": "My Drive" },
+        "folderId": { "__rl": true, "mode": "id", "value": "={{ $vars.NURSESTUDY_SHORTS_MONTH_FOLDER_ID }}" },
+        "options": {},
+        "resource": "file",
+        "operation": "upload",
+        "authentication": "oAuth2",
+        "inputDataFieldName": "data"
+      },
+      "id": "423f7435-7921-4208-b8ac-d9014d2f9f9c",
+      "name": "Archive MP4 in Drive",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [-20, -80],
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "jsCode": "const rendered=$('Render Deterministic MP4').first(); const drive=$input.first().json; return [{json:{drive_id:drive.id,drive_url:drive.webViewLink||drive.webContentLink||null},binary:rendered.binary}];"
+      },
+      "id": "a7952b91-d401-4345-bc4b-744710a51e94",
+      "name": "Keep Drive IDs and MP4",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [200, -80]
+    },
+    {
+      "parameters": {
+        "resource": "video",
+        "operation": "upload",
+        "title": "={{ $('Get One QA Passed Short').item.json.body.generatedPayload.video_script.title + ' #Shorts [clip:' + $('Get One QA Passed Short').item.json.body.id + ']' }}",
+        "regionCode": "US",
+        "categoryId": "27",
+        "binaryProperty": "data",
+        "options": {
+          "description": "={{ $('Get One QA Passed Short').item.json.body.generatedPayload.caption + '\n\n' + $('Get One QA Passed Short').item.json.body.generatedPayload.cta + '\n[clip:' + $('Get One QA Passed Short').item.json.body.id + ']' }}",
+          "privacyStatus": "={{ $vars.NCLEX_YOUTUBE_PRIVACY || 'private' }}",
+          "selfDeclaredMadeForKids": false
+        }
+      },
+      "id": "7689bcf6-cb63-4a9b-be47-44a8ff5f833c",
+      "name": "Upload YouTube Short",
+      "type": "n8n-nodes-base.youTube",
+      "typeVersion": 1,
+      "position": [420, -80],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 2 },
+          "conditions": [{ "id": "2e78ff08-e9df-4d1d-9dbd-08c06628ae43", "leftValue": "={{ typeof $json.id === 'string' && $json.id.length > 0 }}", "rightValue": true, "operator": { "type": "boolean", "operation": "true", "singleValue": true } }],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "38bb7e89-f712-4bfe-99ea-b1dc3f490a18",
+      "name": "Upload Confirmed?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [640, -80]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($vars.NCLEX_APP_BASE_URL || 'https://nursestudy-lesson-builder.onrender.com').replace(/\\/$/, '') + '/api/automation/nclex-shorts/' + $('Get One QA Passed Short').item.json.body.id + '/publication' }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ {drive_file_id:$('Archive MP4 in Drive').item.json.id,drive_url:$('Archive MP4 in Drive').item.json.webViewLink||null,youtube_video_id:$json.id,youtube_url:'https://www.youtube.com/shorts/'+$json.id,status:($vars.NCLEX_YOUTUBE_PRIVACY||'private')==='public'?'published':'private'} }}",
+        "options": { "response": { "response": { "fullResponse": true, "neverError": true } } }
+      },
+      "id": "f543025a-d947-4756-b83b-c10a10604465",
+      "name": "Record Confirmed Publication",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [880, -140]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($vars.NCLEX_APP_BASE_URL || 'https://nursestudy-lesson-builder.onrender.com').replace(/\\/$/, '') + '/api/automation/nclex-shorts/' + $('Get One QA Passed Short').item.json.body.id + '/publication' }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ {drive_file_id:$('Archive MP4 in Drive').item.json.id,drive_url:$('Archive MP4 in Drive').item.json.webViewLink||null,status:'publish_unknown'} }}",
+        "options": { "response": { "response": { "fullResponse": true, "neverError": true } } }
+      },
+      "id": "d7a2f39b-d59b-4ae7-9230-ab562e1b88b4",
+      "name": "Quarantine Unknown Upload",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [880, 20]
+    }
+  ],
+  "connections": {
+    "Daily 8 AM Pacific": { "main": [[{ "node": "Get One QA Passed Short", "type": "main", "index": 0 }]] },
+    "Get One QA Passed Short": { "main": [[{ "node": "Candidate Available?", "type": "main", "index": 0 }]] },
+    "Candidate Available?": { "main": [[{ "node": "Render Deterministic MP4", "type": "main", "index": 0 }],[{ "node": "No Publication Today", "type": "main", "index": 0 }]] },
+    "Render Deterministic MP4": { "main": [[{ "node": "Archive MP4 in Drive", "type": "main", "index": 0 }]] },
+    "Archive MP4 in Drive": { "main": [[{ "node": "Keep Drive IDs and MP4", "type": "main", "index": 0 }]] },
+    "Keep Drive IDs and MP4": { "main": [[{ "node": "Upload YouTube Short", "type": "main", "index": 0 }]] },
+    "Upload YouTube Short": { "main": [[{ "node": "Upload Confirmed?", "type": "main", "index": 0 }]] },
+    "Upload Confirmed?": { "main": [[{ "node": "Record Confirmed Publication", "type": "main", "index": 0 }],[{ "node": "Quarantine Unknown Upload", "type": "main", "index": 0 }]] }
+  },
+  "pinData": {},
+  "active": false,
+  "settings": { "executionOrder": "v1", "timezone": "America/Los_Angeles", "saveManualExecutions": true },
+  "versionId": "583133e0-a7bc-4e70-8d64-68716fead341",
+  "meta": { "templateCredsSetupCompleted": false },
+  "tags": []
+}
