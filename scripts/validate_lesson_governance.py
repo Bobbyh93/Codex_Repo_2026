@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import importlib.util
 import json
 from datetime import datetime, timezone
 from pathlib import Path
@@ -15,6 +16,20 @@ ROOT = Path(__file__).resolve().parents[1]
 TARGETS = ("intake_complete", "faculty_review", "production_ready", "release_ready")
 GATES = ("taxonomy", "objectives", "outline", "script", "accessibility")
 ACCESSIBILITY_CHECKS = ("readingOrderChecked", "contrastChecked", "meaningNotColorOnly", "transcriptAvailable")
+# The playback evidence validator only knows this lesson's file layout.
+PLAYBACK_EVIDENCE_LESSON = "production_pilot"
+
+
+def _load_sibling(name: str) -> Any:
+    path = Path(__file__).resolve().with_name(f"{name}.py")
+    spec = importlib.util.spec_from_file_location(name, path)
+    assert spec and spec.loader
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+PLAYBACK = _load_sibling("validate_playback_evidence")
 
 
 def load_json(path: Path) -> dict[str, Any]:
@@ -60,7 +75,7 @@ def current_approvals(governance: dict[str, Any], fingerprints: dict[str, str]) 
     return result
 
 
-def validate_lesson(lesson_dir: Path, target: str) -> dict[str, Any]:
+def validate_lesson(lesson_dir: Path, target: str, root: Path = ROOT) -> dict[str, Any]:
     findings: list[dict[str, str]] = []
     target_index = TARGETS.index(target)
 
@@ -169,24 +184,39 @@ def validate_lesson(lesson_dir: Path, target: str) -> dict[str, Any]:
         review = load_json(review_path) if review_path.exists() else {}
         if review.get("decision") != "approved_for_release" or review.get("licensedRn") is not True or review.get("governanceFingerprint") != fingerprints["accessibility"]:
             finding("licensed_rn_release", "faculty_review", "A current licensed-RN release approval is required.")
-        validate_release_assets(lesson_dir, slide_ids, finding, metrics)
+        validate_release_assets(lesson_dir, slide_ids, finding, metrics, root)
 
     metrics["current_approval_count"] = sum(approvals.values())
     return build_report(lesson_dir, target, findings, metrics)
 
 
-def validate_release_assets(lesson_dir: Path, slide_ids: list[Any], finding: Callable[[str, str, str], None], metrics: dict[str, Any]) -> None:
+def validate_release_assets(lesson_dir: Path, slide_ids: list[Any], finding: Callable[[str, str, str], None], metrics: dict[str, Any], root: Path = ROOT) -> None:
     expected = {
-        "audio": ROOT / "manifests" / f"{lesson_dir.name}_audio_manifest.json",
-        "binding": ROOT / "manifests" / f"{lesson_dir.name}_binding_manifest.json",
-        "playback": ROOT / "qa" / f"{lesson_dir.name}_playback_report.json",
+        "audio": root / "manifests" / f"{lesson_dir.name}_audio_manifest.json",
+        "binding": root / "manifests" / f"{lesson_dir.name}_binding_manifest.json",
+        "playback": root / "qa" / f"{lesson_dir.name}_playback_report.json",
     }
     for name, path in expected.items():
         if not path.exists():
-            finding("missing_artifact", name, f"Missing {path.relative_to(ROOT).as_posix()}.")
+            finding("missing_artifact", name, f"Missing {path.relative_to(root).as_posix()}.")
     if any(not path.exists() for path in expected.values()):
         return
-    audio, binding, playback = (load_json(expected[name]) for name in ("audio", "binding", "playback"))
+    audio, binding = (load_json(expected[name]) for name in ("audio", "binding"))
+    try:
+        playback = load_json(expected["playback"])
+    except ValueError:
+        playback = None
+    if not isinstance(playback, dict):
+        finding("playback", "playback_report", f"{expected['playback'].relative_to(root).as_posix()} is not a JSON object.")
+        playback = {}
+    # Playback is re-evaluated from the evidence files rather than trusted from the committed
+    # report, which may be stale or hand-edited; the committed report must match the fresh
+    # result so that what is checked in is what was gated on.
+    if lesson_dir.name == PLAYBACK_EVIDENCE_LESSON:
+        fresh_playback = PLAYBACK.validate_playback_evidence(root)
+        if playback != fresh_playback:
+            finding("playback_stale", "playback_report", f"{expected['playback'].relative_to(root).as_posix()} is stale: re-run scripts/validate_playback_evidence.py.")
+        playback = fresh_playback
     verified = {item.get("slide_id") for item in audio.get("audio_assets", []) if item.get("status") == "verified" and item.get("sha256") and item.get("duration_seconds")}
     bound = {item.get("slide_id") for item in binding.get("bindings", []) if item.get("binding_status") == "ready_for_downstream_binding" and item.get("audio_sha256")}
     metrics.update({"verified_audio_count": len(verified), "binding_count": len(bound), "playback_status": playback.get("status")})
