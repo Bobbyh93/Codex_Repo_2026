@@ -2,6 +2,7 @@ import { BookOpen, ExternalLink } from "lucide-react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { currentOpenRnBooks, OPEN_RN_LICENSE, OPEN_RN_PUBLISHER } from "@shared/open-rn-sources";
 
 interface Textbook {
   title: string;
@@ -10,64 +11,13 @@ interface Textbook {
   url: string;
 }
 
-const OPENRN_TEXTBOOKS: Textbook[] = [
-  {
-    title: "Nursing Fundamentals",
-    subject: "Fundamentals",
-    description:
-      "Core nursing skills, safety, infection control, vital signs, hygiene, oxygenation, and patient care basics for beginning nursing students.",
-    url: "https://wtcs.pressbooks.pub/nursingfundamentals/",
-  },
-  {
-    title: "Clinical Nursing Skills",
-    subject: "Fundamentals",
-    description:
-      "Hands-on procedural skills including medication administration, wound care, catheterization, IV therapy, and other essential clinical competencies.",
-    url: "https://wtcs.pressbooks.pub/clinicalskills/",
-  },
-  {
-    title: "Nursing Pharmacology",
-    subject: "Pharmacology",
-    description:
-      "Drug classifications, mechanisms of action, adverse effects, and nursing implications across all major medication categories.",
-    url: "https://wtcs.pressbooks.pub/pharmacology/",
-  },
-  {
-    title: "Medical-Surgical Nursing",
-    subject: "Med-Surg",
-    description:
-      "Adult health conditions across all major body systems — pathophysiology, assessment, nursing interventions, and patient education aligned to NCLEX categories.",
-    url: "https://wtcs.pressbooks.pub/nursingmedicalsurgical/",
-  },
-  {
-    title: "Nursing Mental Health",
-    subject: "Mental Health",
-    description:
-      "Psychiatric disorders, therapeutic communication, psychopharmacology, and legal and ethical issues in mental health nursing.",
-    url: "https://wtcs.pressbooks.pub/nursingmentalhealth/",
-  },
-  {
-    title: "Nursing Maternal-Newborn",
-    subject: "Maternal/Newborn",
-    description:
-      "Prenatal through postpartum care, newborn assessment, high-risk obstetrics, and complications of labor and birth.",
-    url: "https://wtcs.pressbooks.pub/maternalnewborn/",
-  },
-  {
-    title: "Nursing Pediatrics",
-    subject: "Pediatrics",
-    description:
-      "Growth and development, pediatric assessment, and management of childhood illnesses across body systems.",
-    url: "https://wtcs.pressbooks.pub/nursingpediatrics/",
-  },
-  {
-    title: "Nursing Management of Pain and Nutrition",
-    subject: "Fundamentals",
-    description:
-      "Pain assessment, pharmacological and non-pharmacological pain management, nutritional assessment, and enteral and parenteral nutrition.",
-    url: "https://wtcs.pressbooks.pub/painnutrition/",
-  },
-];
+// Single source of truth: shared/open-rn-sources.ts (verified against the publisher's catalog).
+const OPENRN_TEXTBOOKS: Textbook[] = currentOpenRnBooks().map((book) => ({
+  title: book.title,
+  subject: book.subject,
+  description: book.description,
+  url: book.readUrl as string,
+}));
 
 const SUBJECT_COLORS: Record<string, string> = {
   Fundamentals: "bg-teal-100 text-teal-800",
@@ -76,6 +26,9 @@ const SUBJECT_COLORS: Record<string, string> = {
   "Mental Health": "bg-purple-100 text-purple-800",
   "Maternal/Newborn": "bg-pink-100 text-pink-800",
   Pediatrics: "bg-orange-100 text-orange-800",
+  "Clinical Skills": "bg-sky-100 text-sky-800",
+  Management: "bg-slate-100 text-slate-800",
+  "Health Promotion": "bg-green-100 text-green-800",
 };
 
 function subjectBadge(subject: string) {
@@ -102,8 +55,8 @@ export default function ReferencesPage() {
           <h1 className="text-2xl font-bold text-gray-900">Open RN Textbook References</h1>
         </div>
         <p className="text-muted-foreground mb-8">
-          All textbooks listed below are published by Open RN (Chippewa Valley Technical College) and are available
-          free online under an open license. Use them alongside your personalized study plan to deepen your understanding
+          All textbooks listed below are Open RN titles published by {OPEN_RN_PUBLISHER} and are available
+          free online under a {OPEN_RN_LICENSE} license. Use them alongside your personalized study plan to deepen your understanding
           of high-priority topics.
         </p>
 
@@ -135,8 +88,9 @@ export default function ReferencesPage() {
 
         <div className="mt-10 rounded-lg border border-gray-100 bg-gray-50 px-5 py-4 text-sm text-muted-foreground">
           <span className="font-semibold text-gray-700">About Open RN: </span>
-          These textbooks are developed by nursing faculty at Chippewa Valley Technical College and published under an
-          open Creative Commons license. They are freely available to all nursing students at no cost.
+          These textbooks are developed by nursing faculty at Wisconsin technical colleges and published by WisTech Open
+          under a Creative Commons Attribution ({OPEN_RN_LICENSE}) license, except where otherwise noted on individual
+          figures. They are freely available to all nursing students at no cost.
         </div>
 
         <div className="mt-6 text-center">

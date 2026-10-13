@@ -66,6 +66,7 @@ import {
   type GovernanceGate,
   type GovernanceRecordV1,
 } from "@shared/lesson-governance";
+import { buildOpenRnSourceRows } from "@shared/open-rn-sources";
 
 type EvidenceChunk = {
   sourceId?: string | null;
@@ -2250,6 +2251,35 @@ async function importOpenStaxNursingCatalog(data: z.infer<typeof openStaxNursing
     }).where(eq(sourceArchiveImports.id, importJob.id)).returning();
     return { importJob: failed, files: [], sources: [], duplicateOf: null };
   }
+}
+
+// Registers the Open RN catalog and each current title in the source registry. Idempotent: rows
+// whose kind and URI already exist are left untouched, so a repeat call inserts nothing.
+async function importOpenRnCatalog(createdBy?: string) {
+  await ensureLessonBuilderTables();
+  const rows = buildOpenRnSourceRows("pending");
+  const existing = await db
+    .select({ sourceUri: sourceRegistry.sourceUri, sourceKind: sourceRegistry.sourceKind })
+    .from(sourceRegistry)
+    .where(inArray(sourceRegistry.sourceKind, ["open_rn_catalog", "open_rn_book"]));
+  const have = new Set(existing.map((row) => `${row.sourceKind}|${row.sourceUri}`));
+  const missing = rows.filter((row) => !have.has(`${row.sourceKind}|${row.sourceUri}`));
+  const created = missing.length
+    ? await db.insert(sourceRegistry).values(missing.map((row) => ({ ...row, createdBy }))).returning()
+    : [];
+  return {
+    status: created.length ? "completed" : "duplicate",
+    requested: rows.length,
+    created: created.length,
+    alreadyRegistered: rows.length - created.length,
+    sources: created,
+    guardrails: {
+      license: "CC BY 4.0",
+      referenceOnly: true,
+      blockedForGeneration: true,
+      note: "Each title needs an explicit approval before it is used for AI generation or RAG.",
+    },
+  };
 }
 
 async function importDrivePackageHub(data: z.infer<typeof drivePackageImportSchema>, createdBy?: string) {
@@ -13230,6 +13260,15 @@ export function registerLessonBuilderRoutes(app: Express) {
       }
       console.error("Lesson builder OpenStax catalog import error:", error);
       res.status(500).json({ error: "Failed to import OpenStax nursing catalog", details: error instanceof Error ? error.message : undefined });
+    }
+  });
+
+  app.post("/api/admin/lesson-builder/open-rn/import", requireAdminSession, async (req: AdminAuthRequest, res: Response) => {
+    try {
+      res.json(await importOpenRnCatalog(req.session.adminUser?.userId));
+    } catch (error) {
+      console.error("Lesson builder Open RN catalog import error:", error);
+      res.status(500).json({ error: "Failed to import Open RN catalog", details: error instanceof Error ? error.message : undefined });
     }
   });
 
