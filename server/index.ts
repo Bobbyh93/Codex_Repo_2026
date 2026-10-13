@@ -79,12 +79,10 @@ if (process.env.NODE_ENV === 'production') {
 // Setup security middleware first
 setupSecurityMiddleware(app);
 
-// Add simple health check endpoint at the root for deployment readiness
-app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'ok', message: 'Server is running' });
-});
-
-// Health check endpoints (before rate limiting)
+// Health check endpoints (before rate limiting).
+// registerHealthEndpoints owns /health -- a second app.get('/health') must not
+// be registered before it, or Express first-match would shadow the real check
+// and the probe would report OK with the database down.
 registerHealthEndpoints(app);
 
 // Performance monitoring
@@ -194,10 +192,6 @@ app.use((req, res, next) => {
   // Other ports are firewalled. Default to 5000 if not specified.
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
-  // Set up pgvector extension and migrate embedding column before accepting traffic.
-  // Awaited here so semantic search is available from the first request.
-  await setupPgVector();
-
   const port = parseInt(process.env.PORT || '5000', 10);
   const listenOptions = {
     port,
@@ -206,6 +200,16 @@ app.use((req, res, next) => {
   };
   server.listen(listenOptions, async () => {
     log(`serving on port ${port}`);
+
+    // pgvector is an optional search enhancement. Run its idempotent setup after
+    // the HTTP listener is ready so a slow database connection or schema lock
+    // cannot prevent the application from passing its deployment health check.
+    setupPgVector().catch(error => {
+      AppLogger.error(
+        'pgvector background setup failed (non-critical):',
+        error instanceof Error ? error : new Error(String(error)),
+      );
+    });
 
     // Seed the database in background after server starts
     seedDatabase().then(() => {

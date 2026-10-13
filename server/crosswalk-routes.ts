@@ -1,4 +1,4 @@
-import type { Express } from "express";
+import type { Express, Response } from "express";
 import { db } from "./db";
 import { 
   nclexTopicCrosswalk,
@@ -60,11 +60,11 @@ export function registerCrosswalkRoutes(app: Express) {
   // ============== NCLEX Topic Crosswalk ==============
   
   // Get all NCLEX-Topic crosswalks with filtering
-  app.get('/api/admin/crosswalk/nclex-topic', requireAdmin, async (req, res) => {
+  app.get('/api/admin/crosswalk/nclex-topic', requireAdmin, async (req: AuthRequest, res: Response) => {
     try {
       const { nclexCategory, topicId, verified } = req.query;
       
-      let query = db.select().from(nclexTopicCrosswalk);
+      let query = db.select().from(nclexTopicCrosswalk).$dynamic();
       const conditions = [];
       
       if (nclexCategory) {
@@ -90,7 +90,7 @@ export function registerCrosswalkRoutes(app: Express) {
   });
 
   // Create new NCLEX-Topic crosswalk
-  app.post('/api/admin/crosswalk/nclex-topic', requireAdmin, async (req: AuthRequest, res) => {
+  app.post('/api/admin/crosswalk/nclex-topic', requireAdmin, async (req: AuthRequest, res: Response) => {
     try {
       const data = insertNclexTopicCrosswalkSchema.parse(req.body);
       const [crosswalk] = await db.insert(nclexTopicCrosswalk).values(data).returning();
@@ -102,7 +102,7 @@ export function registerCrosswalkRoutes(app: Express) {
   });
 
   // Update NCLEX-Topic crosswalk
-  app.put('/api/admin/crosswalk/nclex-topic/:id', requireAdmin, async (req: AuthRequest, res) => {
+  app.put('/api/admin/crosswalk/nclex-topic/:id', requireAdmin, async (req: AuthRequest, res: Response) => {
     try {
       const { id } = req.params;
       const updates = req.body;
@@ -126,7 +126,7 @@ export function registerCrosswalkRoutes(app: Express) {
   });
 
   // Delete NCLEX-Topic crosswalk
-  app.delete('/api/admin/crosswalk/nclex-topic/:id', requireAdmin, async (req, res) => {
+  app.delete('/api/admin/crosswalk/nclex-topic/:id', requireAdmin, async (req: AuthRequest, res: Response) => {
     try {
       const { id } = req.params;
       await db.delete(nclexTopicCrosswalk).where(eq(nclexTopicCrosswalk.id, id));
@@ -140,11 +140,11 @@ export function registerCrosswalkRoutes(app: Express) {
   // ============== Learning Objectives ==============
   
   // Get all learning objectives
-  app.get('/api/admin/learning-objectives', requireAdmin, async (req, res) => {
+  app.get('/api/admin/learning-objectives', requireAdmin, async (req: AuthRequest, res: Response) => {
     try {
       const { bloomsLevel, practiceArea, search } = req.query;
       
-      let query = db.select().from(learningObjectives);
+      let query = db.select().from(learningObjectives).$dynamic();
       const conditions = [];
       
       if (bloomsLevel) {
@@ -170,7 +170,7 @@ export function registerCrosswalkRoutes(app: Express) {
   });
 
   // Create learning objective
-  app.post('/api/admin/learning-objectives', requireAdmin, async (req: AuthRequest, res) => {
+  app.post('/api/admin/learning-objectives', requireAdmin, async (req: AuthRequest, res: Response) => {
     try {
       const data = insertLearningObjectiveSchema.parse(req.body);
       const [objective] = await db
@@ -187,11 +187,11 @@ export function registerCrosswalkRoutes(app: Express) {
   // ============== Topic-Objectives Crosswalk ==============
   
   // Get topic-objectives crosswalks
-  app.get('/api/admin/crosswalk/topic-objectives', requireAdmin, async (req, res) => {
+  app.get('/api/admin/crosswalk/topic-objectives', requireAdmin, async (req: AuthRequest, res: Response) => {
     try {
       const { topicId, objectiveId, isCore } = req.query;
       
-      let query = db.select().from(topicObjectivesCrosswalk);
+      let query = db.select().from(topicObjectivesCrosswalk).$dynamic();
       const conditions = [];
       
       if (topicId) {
@@ -217,10 +217,10 @@ export function registerCrosswalkRoutes(app: Express) {
   });
 
   // Create topic-objectives crosswalk
-  app.post('/api/admin/crosswalk/topic-objectives', requireAdmin, async (req, res) => {
+  app.post('/api/admin/crosswalk/topic-objectives', requireAdmin, async (req: AuthRequest, res: Response) => {
     try {
       const data = insertTopicObjectivesCrosswalkSchema.parse(req.body);
-      const [crosswalk] = await db.insert(topicObjectivesCrosswalk).values(data).returning();
+      const [crosswalk] = await db.insert(topicObjectivesCrosswalk).values(data as typeof topicObjectivesCrosswalk.$inferInsert).returning();
       res.json(crosswalk);
     } catch (error) {
       console.error('Error creating topic-objectives crosswalk:', error);
@@ -231,11 +231,11 @@ export function registerCrosswalkRoutes(app: Express) {
   // ============== Study Path Templates ==============
   
   // Get all study path templates
-  app.get('/api/admin/study-path-templates', requireAdmin, async (req, res) => {
+  app.get('/api/admin/study-path-templates', requireAdmin, async (req: AuthRequest, res: Response) => {
     try {
       const { pathType, targetAudience, isPublished } = req.query;
       
-      let query = db.select().from(studyPathTemplates);
+      let query = db.select().from(studyPathTemplates).$dynamic();
       const conditions = [];
       
       if (pathType) {
@@ -261,12 +261,12 @@ export function registerCrosswalkRoutes(app: Express) {
   });
 
   // Create study path template
-  app.post('/api/admin/study-path-templates', requireAdmin, async (req: AuthRequest, res) => {
+  app.post('/api/admin/study-path-templates', requireAdmin, async (req: AuthRequest, res: Response) => {
     try {
       const data = insertStudyPathTemplateSchema.parse(req.body);
       const [template] = await db
         .insert(studyPathTemplates)
-        .values({ ...data, createdBy: req.user?.email })
+        .values({ ...data, createdBy: req.user?.email } as typeof studyPathTemplates.$inferInsert)
         .returning();
       res.json(template);
     } catch (error) {
@@ -276,7 +276,7 @@ export function registerCrosswalkRoutes(app: Express) {
   });
 
   // Update study path template
-  app.put('/api/admin/study-path-templates/:id', requireAdmin, async (req, res) => {
+  app.put('/api/admin/study-path-templates/:id', requireAdmin, async (req: AuthRequest, res: Response) => {
     try {
       const { id } = req.params;
       const updates = req.body;
@@ -301,11 +301,11 @@ export function registerCrosswalkRoutes(app: Express) {
   // ============== Performance Path Crosswalk ==============
   
   // Get performance-path crosswalks
-  app.get('/api/admin/crosswalk/performance-path', requireAdmin, async (req, res) => {
+  app.get('/api/admin/crosswalk/performance-path', requireAdmin, async (req: AuthRequest, res: Response) => {
     try {
       const { performanceLevel, pathType } = req.query;
       
-      let query = db.select().from(performancePathCrosswalk);
+      let query = db.select().from(performancePathCrosswalk).$dynamic();
       const conditions = [];
       
       if (performanceLevel) {
@@ -328,10 +328,10 @@ export function registerCrosswalkRoutes(app: Express) {
   });
 
   // Create performance-path crosswalk
-  app.post('/api/admin/crosswalk/performance-path', requireAdmin, async (req, res) => {
+  app.post('/api/admin/crosswalk/performance-path', requireAdmin, async (req: AuthRequest, res: Response) => {
     try {
       const data = insertPerformancePathCrosswalkSchema.parse(req.body);
-      const [crosswalk] = await db.insert(performancePathCrosswalk).values(data).returning();
+      const [crosswalk] = await db.insert(performancePathCrosswalk).values(data as typeof performancePathCrosswalk.$inferInsert).returning();
       res.json(crosswalk);
     } catch (error) {
       console.error('Error creating performance-path crosswalk:', error);
@@ -342,11 +342,11 @@ export function registerCrosswalkRoutes(app: Express) {
   // ============== Content Coverage Matrix ==============
   
   // Get content coverage matrix
-  app.get('/api/admin/content-coverage', requireAdmin, async (req, res) => {
+  app.get('/api/admin/content-coverage', requireAdmin, async (req: AuthRequest, res: Response) => {
     try {
       const { topicId, resourceId, minCoverage } = req.query;
       
-      let query = db.select().from(contentCoverageMatrix);
+      let query = db.select().from(contentCoverageMatrix).$dynamic();
       const conditions = [];
       
       if (topicId) {
@@ -372,7 +372,7 @@ export function registerCrosswalkRoutes(app: Express) {
   });
 
   // Update content coverage
-  app.put('/api/admin/content-coverage', requireAdmin, async (req, res) => {
+  app.put('/api/admin/content-coverage', requireAdmin, async (req: AuthRequest, res: Response) => {
     try {
       const { topicId, resourceId, ...updates } = req.body;
       
@@ -413,7 +413,7 @@ export function registerCrosswalkRoutes(app: Express) {
   // ============== Bulk Import/Export ==============
   
   // Import crosswalk data from CSV
-  app.post('/api/admin/crosswalk/import/:type', requireAdmin, upload.single('file'), async (req: AuthRequest, res) => {
+  app.post('/api/admin/crosswalk/import/:type', requireAdmin, upload.single('file'), async (req: AuthRequest, res: Response) => {
     try {
       const { type } = req.params;
       const file = req.file;
@@ -423,7 +423,7 @@ export function registerCrosswalkRoutes(app: Express) {
       }
       
       const csvText = file.buffer.toString('utf-8');
-      const parsed = Papa.parse(csvText, { header: true, skipEmptyLines: true });
+      const parsed = Papa.parse<Record<string, string>>(csvText, { header: true, skipEmptyLines: true });
       
       if (parsed.errors.length > 0) {
         return res.status(400).json({ 
@@ -524,7 +524,7 @@ export function registerCrosswalkRoutes(app: Express) {
   });
 
   // Export crosswalk data to CSV
-  app.get('/api/admin/crosswalk/export/:type', requireAdmin, async (req, res) => {
+  app.get('/api/admin/crosswalk/export/:type', requireAdmin, async (req: AuthRequest, res: Response) => {
     try {
       const { type } = req.params;
       let data: any[] = [];
@@ -560,7 +560,7 @@ export function registerCrosswalkRoutes(app: Express) {
   // ============== Analytics Endpoints ==============
   
   // Get crosswalk statistics
-  app.get('/api/admin/crosswalk/stats', requireAdmin, async (req, res) => {
+  app.get('/api/admin/crosswalk/stats', requireAdmin, async (req: AuthRequest, res: Response) => {
     try {
       const stats = {
         nclexTopicCount: await db.select({ count: sql<number>`count(*)` }).from(nclexTopicCrosswalk),
@@ -591,7 +591,7 @@ export function registerCrosswalkRoutes(app: Express) {
   });
 
   // Get coverage gaps
-  app.get('/api/admin/crosswalk/coverage-gaps', requireAdmin, async (req, res) => {
+  app.get('/api/admin/crosswalk/coverage-gaps', requireAdmin, async (req: AuthRequest, res: Response) => {
     try {
       const { threshold = 50 } = req.query;
       

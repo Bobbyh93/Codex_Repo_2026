@@ -101,9 +101,9 @@ export async function apiRequest(
   method: string,
   url: string,
   data?: unknown | undefined,
-  options: { timeout?: number; retries?: number } = {}
+  options: { timeout?: number; retries?: number; headers?: Record<string, string> } = {}
 ): Promise<Response> {
-  const { timeout = 30000, retries = 3 } = options;
+  const { timeout = 30000, retries = 3, headers: extraHeaders } = options;
   const isFormData = data instanceof FormData;
   
   for (let attempt = 0; attempt <= retries; attempt++) {
@@ -131,6 +131,19 @@ export async function apiRequest(
           // Log warning for missing CSRF token on admin routes
           console.warn(`Missing CSRF token for admin route: ${method} ${url}`);
         }
+      }
+
+      // Caller-supplied headers, applied last so they win.
+      //
+      // This exists for one case: server/crosswalk-routes.ts is registered
+      // AFTER the contentImportRouter mount in server/routes.ts, so its routes
+      // need the blanket admin session and CSRF token like everything else
+      // under /api/admin -- and they ALSO run authenticateToken themselves, so
+      // they need an Authorization bearer on top. Neither alone gets through.
+      // Without this option a caller had to choose between apiRequest (CSRF,
+      // no bearer) and a bare fetch (bearer, no CSRF); both 401 or 403.
+      if (extraHeaders) {
+        Object.assign(headers, extraHeaders);
       }
 
       const res = await fetch(url, {

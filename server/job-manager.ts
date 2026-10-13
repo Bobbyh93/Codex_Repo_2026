@@ -236,7 +236,8 @@ export class JobManager {
     // Get paginated results
     let query = db
       .select()
-      .from(documentJobs);
+      .from(documentJobs)
+      .$dynamic();
     
     if (whereClause) {
       query = query.where(whereClause);

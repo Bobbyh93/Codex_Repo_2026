@@ -1,0 +1,115 @@
+{
+  "generated_at": "2026-06-13T00:50:32.970Z",
+  "workset_id": "rn_wps_prelicensure_crosswalk_workset_2026-06-12",
+  "output_workbook": "C:\\Users\\RHarrity\\Documents\\Codex\\rn_wps_prelicensure_crosswalk_workset_2026-06-12\\outputs\\rn_wps_prelicensure_crosswalk_release.xlsx",
+  "output_workbook_exists": true,
+  "output_workbook_size_bytes": 191461,
+  "required_sheets": [
+    "README",
+    "Summary",
+    "Provenance",
+    "Data_Dictionary",
+    "WPS_Source_Files",
+    "WPS_Metadata",
+    "Dim_WPS_Process",
+    "Fact_WPS_Tasks",
+    "Fact_Prelicensure_QSEN",
+    "Suggested_WPS_Prelic_Bridge",
+    "Variant_Delta",
+    "Coverage_Summary",
+    "Review_Queue"
+  ],
+  "output_sheet_count": 13,
+  "sheet_name_adjustments": {
+    "requested": "Suggested_WPS_Prelicensure_Bridge",
+    "actual": "Suggested_WPS_Prelic_Bridge",
+    "reason": "Excel sheet names are limited to 31 characters."
+  },
+  "source_file_hashes": [
+    {
+      "source_name": "Prelicensure Workbook.xlsx",
+      "source_kind": "prelicensure_workbook",
+      "source_hash": "sha256:7e711dd431e5f33993ae800f6749396b8ef7832b1b0ecb30bb9de0f8162ce78f"
+    },
+    {
+      "source_name": "wps_competency_2074.docx",
+      "source_kind": "wps_docx",
+      "source_hash": "sha256:8f10ba9b94c7fa0533e8e53a95138ece03533a9dd9caf01da5f919ed7716343d"
+    },
+    {
+      "source_name": "wps_competency_3056.docx",
+      "source_kind": "wps_docx",
+      "source_hash": "sha256:011417c69a7ab4dfdab7f4e4165d7a86f1343f35a089444a6e182f3b81d41729"
+    },
+    {
+      "source_name": "wps_hybrid_2074.docx",
+      "source_kind": "wps_docx",
+      "source_hash": "sha256:5532f732343cea49581e50d6ede1cdf0a291d54fd65fb93d19ed05523d997287"
+    },
+    {
+      "source_name": "wps_hybrid_3056.docx",
+      "source_kind": "wps_docx",
+      "source_hash": "sha256:380f226ed0f3c1a8477bb79c3886253385e2e97df8cf75295bfd22590eee6fb4"
+    },
+    {
+      "source_name": "wps_time_2074.docx",
+      "source_kind": "wps_docx",
+      "source_hash": "sha256:821f110e9598b1036cf68fafff9c4d1358b06a19d5312f04aa88f143079742b7"
+    },
+    {
+      "source_name": "wps_time_3056.docx",
+      "source_kind": "wps_docx",
+      "source_hash": "sha256:5f27e02980f2b8e3a45c1769ee570ef22afdb83cc5c6defeb7de9760964f699c"
+    },
+    {
+      "source_name": "Backup of wps_hybrid_2074.wbk",
+      "source_kind": "word_backup",
+      "source_hash": "sha256:604185532f12388a02ad585ef58aa6504748fd5057cf43c3ff263ec593de1479"
+    }
+  ],
+  "prelicensure_workbook_hash": "sha256:7e711dd431e5f33993ae800f6749396b8ef7832b1b0ecb30bb9de0f8162ce78f",
+  "prelicensure_sheet_count": 11,
+  "entry_level_present": true,
+  "entry_level_data_rows_from_6": 214,
+  "qsen_fact_row_count": 207,
+  "wps_docx_file_count": 6,
+  "wps_docx_table_counts": {
+    "wps_competency_2074.docx": 40,
+    "wps_competency_3056.docx": 40,
+    "wps_hybrid_2074.docx": 40,
+    "wps_hybrid_3056.docx": 40,
+    "wps_time_2074.docx": 40,
+    "wps_time_3056.docx": 40
+  },
+  "rapids_codes": [
+    "2074",
+    "2074CB",
+    "2074HY",
+    "3056",
+    "3056CB",
+    "3056HY"
+  ],
+  "wps_task_row_count": 402,
+  "suggested_bridge_row_count": 402,
+  "confident_bridge_row_count": 6,
+  "review_queue_count": 396,
+  "review_reason_counts": {
+    "ambiguous_match": 12,
+    "no_confident_match; duplicate_task_different_process": 156,
+    "no_confident_match": 228
+  },
+  "variant_delta_row_count": 68,
+  "reconciliation": {
+    "prelicensure_sheet_count_is_11": true,
+    "entry_level_present": true,
+    "wps_docx_file_count_is_6": true,
+    "all_wps_docx_have_40_tables": true,
+    "required_rapids_codes_present": true,
+    "all_wps_tasks_have_source_coordinates": true,
+    "source_files_modified": false
+  },
+  "reconciliation_status": "pass",
+  "source_files_modified": false,
+  "summary_preview": "C:\\Users\\RHarrity\\Documents\\Codex\\rn_wps_prelicensure_crosswalk_workset_2026-06-12\\build\\intermediate\\summary_preview.png",
+  "summary_preview_status": "success"
+}

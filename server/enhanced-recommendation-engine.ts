@@ -1,15 +1,12 @@
 import { db } from "./db";
-import { 
-  topicPerformance, 
-  nursingTopics, 
-  contentAreas,
+import {
   learningObjectives,
   nclexTopicCrosswalk,
   topicObjectivesCrosswalk,
   performancePathCrosswalk,
   studyPathTemplates
 } from "@shared/crosswalk-schema";
-import { assessmentReports } from "@shared/schema";
+import { assessmentReports, topicPerformance, nursingTopics, contentAreas } from "@shared/schema";
 import { eq, desc, asc, avg, count, and, or, sql } from "drizzle-orm";
 
 // Enhanced recommendation parameters for production
@@ -535,13 +532,17 @@ export class EnhancedRecommendationEngine {
     return averages;
   }
 
-  private async getTopicData(topicId: string) {
+  private async getTopicData(topicId: string): Promise<{ difficulty?: string; nclexCategory?: string }> {
+    // nursingTopics has no difficulty/nclexCategory columns; callers fall
+    // back to these defaults when a topic isn't found or lacks them.
     const [topic] = await db
       .select()
       .from(nursingTopics)
       .where(eq(nursingTopics.id, topicId));
-    
-    return topic || { difficulty: 'intermediate', nclexCategory: 'General' };
+
+    return topic
+      ? { difficulty: undefined, nclexCategory: undefined }
+      : { difficulty: 'intermediate', nclexCategory: 'General' };
   }
 
   private async getBloomsLevels(topicId: string): Promise<string[]> {
@@ -550,7 +551,7 @@ export class EnhancedRecommendationEngine {
       .from(topicObjectivesCrosswalk)
       .where(eq(topicObjectivesCrosswalk.topicId, topicId));
     
-    return [...new Set(objectives.map(obj => obj.bloomsLevel).filter(Boolean))];
+    return [...new Set(objectives.map(obj => obj.bloomsLevel).filter((level): level is string => Boolean(level)))];
   }
 
   private mapDifficultyLevel(difficulty: any): 'basic' | 'intermediate' | 'advanced' {

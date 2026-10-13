@@ -244,6 +244,8 @@ export default function CleanReportTable({ data, reportName, onTopicClick, class
     };
   };
 
+  const { totalTopics, averageScore, highPriorityCount, totalStudyTime } = stats.filtered;
+
   return (
     <div className="space-y-6">
       {/* Summary Card */}

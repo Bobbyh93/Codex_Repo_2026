@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAdminAuth } from "@/lib/admin-auth";
 import { useAuth } from "@/contexts/auth-context";
+import { apiRequest } from "@/lib/queryClient";
 import { 
   Link, Network, Database, GitBranch, Target, BookOpen, 
   Plus, Upload, Download, Edit, Trash2, CheckCircle, AlertCircle,
@@ -60,11 +61,19 @@ export default function CrosswalkManager() {
   const queryClient = useQueryClient();
   const { token } = useAuth();
 
-  // Create admin headers using JWT token
+  // Reads on these routes need the bearer AND the admin session cookie, which
+  // a same-origin fetch sends on its own.
   const getAdminHeaders = () => ({
     'Content-Type': 'application/json',
     'Authorization': `Bearer ${token}`
   });
+
+  // Writes need a third thing: the CSRF token. server/crosswalk-routes.ts is
+  // registered after the contentImportRouter mount in server/routes.ts, so
+  // every non-GET here also passes through that router's blanket
+  // validateCSRFToken. apiRequest() attaches the token and credentials; this
+  // adds the bearer its own authenticateToken still demands on top.
+  const bearerHeader = () => ({ Authorization: `Bearer ${token}` });
 
   // Fetch crosswalk data based on active tab
   const { data: crosswalkData = [], isLoading } = useQuery({
@@ -93,11 +102,7 @@ export default function CrosswalkManager() {
   // Create crosswalk mutation
   const createMutation = useMutation({
     mutationFn: async (data: any) => {
-      const response = await fetch(`/api/admin/crosswalk/${activeTab}`, {
-        method: 'POST',
-        headers: getAdminHeaders(),
-        body: JSON.stringify(data)
-      });
+      const response = await apiRequest('POST', `/api/admin/crosswalk/${activeTab}`, data, { headers: bearerHeader() });
       if (!response.ok) throw new Error('Failed to create crosswalk');
       return response.json();
     },
@@ -119,11 +124,7 @@ export default function CrosswalkManager() {
   // Update crosswalk mutation
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: any }) => {
-      const response = await fetch(`/api/admin/crosswalk/${activeTab}/${id}`, {
-        method: 'PUT',
-        headers: getAdminHeaders(),
-        body: JSON.stringify(data)
-      });
+      const response = await apiRequest('PUT', `/api/admin/crosswalk/${activeTab}/${id}`, data, { headers: bearerHeader() });
       if (!response.ok) throw new Error('Failed to update crosswalk');
       return response.json();
     },
@@ -144,10 +145,7 @@ export default function CrosswalkManager() {
   // Delete crosswalk mutation
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const response = await fetch(`/api/admin/crosswalk/${activeTab}/${id}`, {
-        method: 'DELETE',
-        headers: getAdminHeaders()
-      });
+      const response = await apiRequest('DELETE', `/api/admin/crosswalk/${activeTab}/${id}`, undefined, { headers: bearerHeader() });
       if (!response.ok) throw new Error('Failed to delete crosswalk');
       return response.json();
     },
@@ -173,13 +171,7 @@ export default function CrosswalkManager() {
     formData.append('file', importFile);
 
     try {
-      const response = await fetch(`/api/admin/crosswalk/import/${activeTab}`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        },
-        body: formData
-      });
+      const response = await apiRequest('POST', `/api/admin/crosswalk/import/${activeTab}`, formData, { headers: bearerHeader() });
 
       if (!response.ok) throw new Error('Failed to import data');
       

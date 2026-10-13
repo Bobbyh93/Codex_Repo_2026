@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, integer, decimal, timestamp, jsonb, boolean, customType } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, integer, decimal, timestamp, jsonb, boolean, customType, type AnyPgColumn } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
 // Custom Drizzle type for pgvector's native vector(dimensions) column
@@ -834,6 +834,8 @@ export const extractedTables = pgTable("extracted_tables", {
   status: text("status").default("pending"), // 'pending', 'approved', 'rejected', 'processing'
   approvedBy: varchar("approved_by").references(() => users.id),
   approvedAt: timestamp("approved_at"),
+  rejectedBy: varchar("rejected_by").references(() => users.id),
+  rejectedAt: timestamp("rejected_at"),
   rejectionReason: text("rejection_reason"),
   metadata: jsonb("metadata").$type<{
     extractionTimeMs?: number;
@@ -869,6 +871,7 @@ export const tableCells = pgTable("table_cells", {
   editedContent: text("edited_content"), // Manual corrections to content
   validationNotes: text("validation_notes"), // Admin notes about cell validation
   createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at"),
 });
 
 export const tableApprovals = pgTable("table_approvals", {
@@ -884,7 +887,7 @@ export const tableApprovals = pgTable("table_approvals", {
   }>().default({}),
   reviewedAt: timestamp("reviewed_at").defaultNow(),
   followUpRequired: boolean("follow_up_required").default(false),
-  previousApprovalId: varchar("previous_approval_id").references(() => tableApprovals.id), // For revision tracking
+  previousApprovalId: varchar("previous_approval_id").references((): AnyPgColumn => tableApprovals.id), // For revision tracking
 });
 
 export const tableTopicMappings = pgTable("table_topic_mappings", {

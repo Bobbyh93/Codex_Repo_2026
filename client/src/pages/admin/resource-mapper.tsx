@@ -17,14 +17,13 @@ import {
 } from '@/components/ui/alert-dialog';
 import { ResourceMappingForm } from '@/components/ui/resource-mapping-form';
 import { ResourceSuggestionCard } from '@/components/ui/resource-suggestion-card';
-import { MappingTable } from '@/components/ui/mapping-table';
+import { MappingTable, type ResourceMapping } from '@/components/ui/mapping-table';
 import { PageHeader } from '@/components/ui/page-header';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
-  Map,
   Upload,
   Download,
   RefreshCw,
@@ -52,6 +51,13 @@ interface ResourceSuggestion {
   keywords: string[];
 }
 
+interface MappingStats {
+  totalMappings: number;
+  aiSuggestedMappings: number;
+  activeMappings: number;
+  topicsWithMappings: number;
+}
+
 export default function ResourceMapperPage() {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('create');
@@ -64,17 +70,17 @@ export default function ResourceMapperPage() {
   const [editingMapping, setEditingMapping] = useState<any>(null);
 
   // Fetch topics
-  const { data: topics = [], isLoading: isLoadingTopics } = useQuery({
+  const { data: topics = [], isLoading: isLoadingTopics } = useQuery<Topic[]>({
     queryKey: ['/api/admin/topics'],
   });
 
   // Fetch mappings
-  const { data: mappings = [], isLoading: isLoadingMappings, error: mappingsError } = useQuery({
+  const { data: mappings = [], isLoading: isLoadingMappings, error: mappingsError } = useQuery<ResourceMapping[]>({
     queryKey: ['/api/admin/resources/mappings'],
   });
 
   // Fetch mapping statistics
-  const { data: stats } = useQuery({
+  const { data: stats } = useQuery<MappingStats>({
     queryKey: ['/api/admin/resources/mapping-stats'],
   });
 
@@ -82,30 +88,25 @@ export default function ResourceMapperPage() {
   const createMappingMutation = useMutation({
     mutationFn: async (data: any) => {
       // First create the resource
-      const resourceResponse = await apiRequest('/api/admin/learning-resources', {
-        method: 'POST',
-        body: JSON.stringify({
-          title: data.resourceTitle,
-          type: data.resourceType,
-          url: data.url || undefined,
-          duration: data.duration,
-          topicId: data.topicId,
-        }),
+      const resourceResponse = await apiRequest('POST', '/api/admin/learning-resources', {
+        title: data.resourceTitle,
+        type: data.resourceType,
+        url: data.url || undefined,
+        duration: data.duration,
+        topicId: data.topicId,
       });
-      
+      const resource = await resourceResponse.json();
+
       // Then create the mapping
-      const mappingResponse = await apiRequest('/api/admin/resources/mapping', {
-        method: 'POST',
-        body: JSON.stringify({
-          topicId: data.topicId,
-          resourceId: resourceResponse.resource.id,
-          notes: data.notes,
-          isAiSuggested: false,
-          confidence: 1.0,
-        }),
+      const mappingResponse = await apiRequest('POST', '/api/admin/resources/mapping', {
+        topicId: data.topicId,
+        resourceId: resource.resource.id,
+        notes: data.notes,
+        isAiSuggested: false,
+        confidence: 1.0,
       });
-      
-      return mappingResponse;
+
+      return mappingResponse.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/resources/mappings'] });
@@ -128,9 +129,7 @@ export default function ResourceMapperPage() {
   // Delete mapping mutation
   const deleteMappingMutation = useMutation({
     mutationFn: async (mappingId: string) => {
-      await apiRequest(`/api/admin/resources/mapping/${mappingId}`, {
-        method: 'DELETE',
-      });
+      await apiRequest('DELETE', `/api/admin/resources/mapping/${mappingId}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/resources/mappings'] });
@@ -152,10 +151,7 @@ export default function ResourceMapperPage() {
   // Toggle active status mutation
   const toggleActiveMutation = useMutation({
     mutationFn: async ({ mappingId, isActive }: { mappingId: string; isActive: boolean }) => {
-      await apiRequest(`/api/admin/resources/mapping/${mappingId}`, {
-        method: 'PUT',
-        body: JSON.stringify({ isActive }),
-      });
+      await apiRequest('PUT', `/api/admin/resources/mapping/${mappingId}`, { isActive });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/resources/mappings'] });
@@ -176,10 +172,8 @@ export default function ResourceMapperPage() {
   // Bulk import mutation
   const bulkImportMutation = useMutation({
     mutationFn: async (data: any[]) => {
-      await apiRequest('/api/admin/resources/bulk-map', {
-        method: 'POST',
-        body: JSON.stringify({ mappings: data }),
-      });
+      const response = await apiRequest('POST', '/api/admin/resources/bulk-map', { mappings: data });
+      return response.json();
     },
     onSuccess: (data: any) => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/resources/mappings'] });
@@ -207,15 +201,13 @@ export default function ResourceMapperPage() {
     
     setIsLoadingSuggestions(true);
     try {
-      const response = await apiRequest('/api/admin/resources/ai-suggest', {
-        method: 'POST',
-        body: JSON.stringify({
-          topicName: topic.name,
-          difficulty,
-          count: 5,
-        }),
+      const response = await apiRequest('POST', '/api/admin/resources/ai-suggest', {
+        topicName: topic.name,
+        difficulty,
+        count: 5,
       });
-      setSuggestions(response.suggestions || []);
+      const data = await response.json();
+      setSuggestions(data.suggestions || []);
     } catch (error: any) {
       toast({
         title: 'Error',
@@ -231,26 +223,21 @@ export default function ResourceMapperPage() {
   const handleAcceptSuggestion = useCallback(async (suggestion: ResourceSuggestion) => {
     try {
       // Create the resource
-      const resourceResponse = await apiRequest('/api/admin/learning-resources', {
-        method: 'POST',
-        body: JSON.stringify({
-          title: suggestion.title,
-          type: suggestion.type,
-          url: suggestion.url,
-          duration: suggestion.duration,
-        }),
+      const resourceResponse = await apiRequest('POST', '/api/admin/learning-resources', {
+        title: suggestion.title,
+        type: suggestion.type,
+        url: suggestion.url,
+        duration: suggestion.duration,
       });
-      
+      const resource = await resourceResponse.json();
+
       // Create the mapping with AI flag
-      await apiRequest('/api/admin/resources/mapping', {
-        method: 'POST',
-        body: JSON.stringify({
-          topicId: topics[0]?.id, // You should track which topic the suggestions are for
-          resourceId: resourceResponse.resource.id,
-          isAiSuggested: true,
-          confidence: suggestion.confidence,
-          notes: `AI-generated resource: ${suggestion.description}`,
-        }),
+      await apiRequest('POST', '/api/admin/resources/mapping', {
+        topicId: topics[0]?.id, // You should track which topic the suggestions are for
+        resourceId: resource.resource.id,
+        isAiSuggested: true,
+        confidence: suggestion.confidence,
+        notes: `AI-generated resource: ${suggestion.description}`,
       });
       
       const suggestionId = suggestion.id || `suggestion-${suggestion.title}`;
@@ -342,7 +329,6 @@ export default function ResourceMapperPage() {
       <PageHeader
         title="Resource Mapper"
         description="Map learning resources to nursing topics with AI-powered suggestions"
-        icon={<Map className="h-6 w-6" />}
       />
 
       {/* Statistics Cards */}
@@ -406,7 +392,7 @@ export default function ResourceMapperPage() {
               ) : (
                 <ResourceMappingForm
                   topics={topics}
-                  onSubmit={createMappingMutation.mutateAsync}
+                  onSubmit={async (data) => { await createMappingMutation.mutateAsync(data); }}
                   onAiSuggest={handleAiSuggest}
                   defaultValues={editingMapping}
                   isEditing={!!editingMapping}

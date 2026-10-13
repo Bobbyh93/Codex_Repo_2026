@@ -1,0 +1,116 @@
+{
+  "ingest_pack_id": "ngn_ckm_rn_wps_ingest_workset_2026-06-12",
+  "generated_at": "2026-06-12T19:20:34",
+  "source_policy": "local_read_only_sources",
+  "generation_policy": "process_level_ngn_ckm_source_control_rows",
+  "ai_api_use": "none",
+  "engine_zip": "C:\\Users\\RHarrity\\Downloads\\NGN_CKM_Production_Engine_v2_3.zip",
+  "source_table_csv": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\source_tables\\rn_wps_process_lesson_ingest_queue.csv",
+  "source_table_xlsx": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\source_tables\\rn_wps_process_lesson_ingest_queue.xlsx",
+  "sheet_name": "Lesson_Ingest_Queue",
+  "required_headers": [
+    "concept",
+    "exemplars",
+    "subject_area",
+    "content_area",
+    "specialty_area",
+    "nclex_category",
+    "ncjmm_primary",
+    "priority_framework",
+    "source_anchor",
+    "evidence_status",
+    "needs_review",
+    "module_number"
+  ],
+  "review_policy": "Rows are needs_review=true when WPS-to-prelicensure review_count exceeds confident_count. Engine include_review_rows=false excludes those rows by default.",
+  "sources": [
+    {
+      "source_kind": "crosswalk_data_json",
+      "source_name": "rn_wps_prelicensure_crosswalk_data.json",
+      "source_path": "C:\\Users\\RHarrity\\Documents\\Codex\\rn_wps_prelicensure_crosswalk_workset_2026-06-12\\build\\intermediate\\rn_wps_prelicensure_crosswalk_data.json",
+      "source_hash": "sha256:4452ab0ec6284d1b9e0734e884a2ce74c2dc59afb67c3a09dac2f921039aaecd",
+      "source_size_bytes": 1350692,
+      "source_modified": "2026-06-12T17:50:05"
+    },
+    {
+      "source_kind": "crosswalk_release_workbook",
+      "source_name": "rn_wps_prelicensure_crosswalk_release.xlsx",
+      "source_path": "C:\\Users\\RHarrity\\Documents\\Codex\\rn_wps_prelicensure_crosswalk_workset_2026-06-12\\outputs\\rn_wps_prelicensure_crosswalk_release.xlsx",
+      "source_hash": "sha256:acae07d549ca9b5ff8812c2397c4f0c6fc23dec25d7805a8a791cada30121afa",
+      "source_size_bytes": 191461,
+      "source_modified": "2026-06-12T17:50:32"
+    },
+    {
+      "source_kind": "ngn_ckm_engine_zip",
+      "source_name": "NGN_CKM_Production_Engine_v2_3.zip",
+      "source_path": "C:\\Users\\RHarrity\\Downloads\\NGN_CKM_Production_Engine_v2_3.zip",
+      "source_hash": "sha256:52c1a016496c6239e76f5a7717b405a15799654f2fe77ceb56d2f95ede14adb2",
+      "source_size_bytes": 259472,
+      "source_modified": "2026-04-28T21:03:12"
+    },
+    {
+      "source_kind": "prelicensure_workbook",
+      "source_name": "Prelicensure Workbook.xlsx",
+      "source_path": "C:\\Users\\RHarrity\\Documents\\Prelicensure Workbook.xlsx",
+      "source_hash": "sha256:7e711dd431e5f33993ae800f6749396b8ef7832b1b0ecb30bb9de0f8162ce78f",
+      "source_size_bytes": 152019,
+      "source_modified": "2026-05-06T06:31:53"
+    },
+    {
+      "source_kind": "wps_docx",
+      "source_name": "wps_competency_2074.docx",
+      "source_path": "C:\\Users\\RHarrity\\Downloads\\Registered Nurse training Department of Education\\wps_competency_2074.docx",
+      "source_hash": "sha256:8f10ba9b94c7fa0533e8e53a95138ece03533a9dd9caf01da5f919ed7716343d",
+      "source_size_bytes": 1939435,
+      "source_modified": "2026-05-06T01:20:35"
+    },
+    {
+      "source_kind": "wps_docx",
+      "source_name": "wps_competency_3056.docx",
+      "source_path": "C:\\Users\\RHarrity\\Downloads\\Registered Nurse training Department of Education\\wps_competency_3056.docx",
+      "source_hash": "sha256:011417c69a7ab4dfdab7f4e4165d7a86f1343f35a089444a6e182f3b81d41729",
+      "source_size_bytes": 1939427,
+      "source_modified": "2026-05-06T01:20:55"
+    },
+    {
+      "source_kind": "wps_docx",
+      "source_name": "wps_hybrid_2074.docx",
+      "source_path": "C:\\Users\\RHarrity\\Downloads\\Registered Nurse training Department of Education\\wps_hybrid_2074.docx",
+      "source_hash": "sha256:5532f732343cea49581e50d6ede1cdf0a291d54fd65fb93d19ed05523d997287",
+      "source_size_bytes": 296588,
+      "source_modified": "2026-05-06T01:17:53"
+    },
+    {
+      "source_kind": "wps_docx",
+      "source_name": "wps_hybrid_3056.docx",
+      "source_path": "C:\\Users\\RHarrity\\Downloads\\Registered Nurse training Department of Education\\wps_hybrid_3056.docx",
+      "source_hash": "sha256:380f226ed0f3c1a8477bb79c3886253385e2e97df8cf75295bfd22590eee6fb4",
+      "source_size_bytes": 2159577,
+      "source_modified": "2026-05-06T01:20:59"
+    },
+    {
+      "source_kind": "wps_docx",
+      "source_name": "wps_time_2074.docx",
+      "source_path": "C:\\Users\\RHarrity\\Downloads\\Registered Nurse training Department of Education\\wps_time_2074.docx",
+      "source_hash": "sha256:821f110e9598b1036cf68fafff9c4d1358b06a19d5312f04aa88f143079742b7",
+      "source_size_bytes": 2360556,
+      "source_modified": "2026-05-06T01:20:28"
+    },
+    {
+      "source_kind": "wps_docx",
+      "source_name": "wps_time_3056.docx",
+      "source_path": "C:\\Users\\RHarrity\\Downloads\\Registered Nurse training Department of Education\\wps_time_3056.docx",
+      "source_hash": "sha256:5f27e02980f2b8e3a45c1769ee570ef22afdb83cc5c6defeb7de9760964f699c",
+      "source_size_bytes": 2360548,
+      "source_modified": "2026-05-06T01:20:49"
+    }
+  ],
+  "counts": {
+    "source_process_count": 39,
+    "source_task_count": 402,
+    "source_bridge_count": 402,
+    "ingest_row_count": 39,
+    "clean_default_row_count": 1,
+    "review_held_row_count": 38
+  }
+}

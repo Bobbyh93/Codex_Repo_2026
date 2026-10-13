@@ -43,7 +43,7 @@ import {
   Sparkles
 } from 'lucide-react';
 
-interface ResourceMapping {
+export interface ResourceMapping {
   id: string;
   topicId: string;
   topicName: string;

@@ -3,17 +3,30 @@ import { db } from "./db";
 import { reviewTopics, topicContent, type InsertTopicContent } from "@shared/simplified-schema";
 import { migrateToSimplifiedTopics, mapContentToTopics, CORE_REVIEW_TOPICS } from "./topic-migration";
 import { eq, like, or } from "drizzle-orm";
+import { requireAdminSession } from "./admin-auth-session";
 
+// NOTE: registerSimplifiedContentRoutes is not called anywhere -- this module
+// is unregistered, so none of these routes are live. Its /api/admin routes are
+// guarded anyway, for the same reason as the ones in routes.ts: whether they
+// are protected currently depends on where they would be registered relative
+// to the contentImportRouter mount at routes.ts:817, not on anything visible
+// here. Two of its paths, /api/admin/map-content-to-topics and
+// /api/review-topics, are also declared in routes.ts, where they ARE live. If
+// this module were registered first, Express would match these handlers
+// instead -- the same duplicate-route shape as the hardcoded /api/admin/login
+// removed in #11. server/tests/admin-routes-auth.test.ts asserts that no
+// /api/admin registration in this tree lacks a guard, so the invariant holds
+// whether or not this file is ever wired up.
 export function registerSimplifiedContentRoutes(app: Express) {
   
   // Migration endpoint to create simplified topics
-  app.post('/api/admin/migrate-topics', async (req, res) => {
+  app.post('/api/admin/migrate-topics', requireAdminSession, async (req, res) => {
     try {
       const result = await migrateToSimplifiedTopics();
-      res.json({ success: true, message: "Topics migrated successfully", ...result });
+      res.json({ ...result, message: "Topics migrated successfully" });
     } catch (error) {
       console.error('Migration error:', error);
-      res.status(500).json({ success: false, error: error.message });
+      res.status(500).json({ success: false, error: (error as Error).message });
     }
   });
 
@@ -24,7 +37,7 @@ export function registerSimplifiedContentRoutes(app: Express) {
       res.json(topics);
     } catch (error) {
       console.error('Error fetching topics:', error);
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: (error as Error).message });
     }
   });
 
@@ -45,12 +58,12 @@ export function registerSimplifiedContentRoutes(app: Express) {
       });
     } catch (error) {
       console.error('Error fetching topic:', error);
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: (error as Error).message });
     }
   });
 
   // Smart content mapping endpoint - map content to topics automatically
-  app.post('/api/admin/map-content-to-topics', async (req, res) => {
+  app.post('/api/admin/map-content-to-topics', requireAdminSession, async (req, res) => {
     try {
       const { content, title, source } = req.body;
       
@@ -108,7 +121,7 @@ export function registerSimplifiedContentRoutes(app: Express) {
         isReviewed: false
       };
 
-      const result = await db.insert(topicContent).values(newContent).returning();
+      const result = await db.insert(topicContent).values(newContent as typeof topicContent.$inferInsert).returning();
 
       res.json({ 
         success: true, 
@@ -120,12 +133,12 @@ export function registerSimplifiedContentRoutes(app: Express) {
 
     } catch (error) {
       console.error('Error mapping content:', error);
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: (error as Error).message });
     }
   });
 
   // Bulk content import with automatic topic mapping
-  app.post('/api/admin/import-content-to-topics', async (req, res) => {
+  app.post('/api/admin/import-content-to-topics', requireAdminSession, async (req, res) => {
     try {
       const { contentItems } = req.body; // Array of { title, content, source }
       
@@ -182,7 +195,7 @@ export function registerSimplifiedContentRoutes(app: Express) {
             isReviewed: false
           };
 
-          const result = await db.insert(topicContent).values(newContent).returning();
+          const result = await db.insert(topicContent).values(newContent as typeof topicContent.$inferInsert).returning();
           
           results.push({
             success: true,
@@ -196,7 +209,7 @@ export function registerSimplifiedContentRoutes(app: Express) {
           results.push({
             success: false,
             title: item.title,
-            error: itemError.message
+            error: (itemError as Error).message
           });
         }
       }
@@ -211,12 +224,12 @@ export function registerSimplifiedContentRoutes(app: Express) {
 
     } catch (error) {
       console.error('Error importing content:', error);
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: (error as Error).message });
     }
   });
 
   // Get topic statistics
-  app.get('/api/admin/topic-stats', async (req, res) => {
+  app.get('/api/admin/topic-stats', requireAdminSession, async (req, res) => {
     try {
       const topics = await db.select().from(reviewTopics);
       const stats = [];
@@ -240,7 +253,7 @@ export function registerSimplifiedContentRoutes(app: Express) {
       res.json(stats);
     } catch (error) {
       console.error('Error fetching topic stats:', error);
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: (error as Error).message });
     }
   });
 }

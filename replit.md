@@ -49,7 +49,7 @@ A comprehensive platform helping nursing students pass the NCLEX exam through in
 _Populate as you build_
 
 ## Gotchas
-- **Admin Login**: Admin credentials are `admin@nurseprep.com` / `admin123` (password hash was invalidated).
+- **Admin Login**: Session-based admin auth (`AdminAuthSession`, CSRF + audit log). Credentials are not documented here; set them per environment.
 - **Date Handling**: `new Date(value)` calls require null/invalid value guarding to prevent crashes.
 - **External Curriculum API**: Currently returns 503; expected behavior until the service is active.
 - **Progress API Polling**: Ensure `mvp-action-plan.tsx` only calls `/api/progress/topics` when authenticated to avoid 401 errors.

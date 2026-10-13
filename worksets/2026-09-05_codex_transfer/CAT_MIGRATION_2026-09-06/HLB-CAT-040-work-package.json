@@ -1,0 +1,39 @@
+{
+  "_note": "Ready to insert into Codex_Repo_2026/state/work_queue.json under work_packages. Schema matches the existing entries: id, title, status, priority, owner, summary, acceptance_criteria, blockers, outputs.",
+  "id": "HLB-CAT-040",
+  "title": "Migrate the CAT testing slice into the Lesson Builder as a control-plane-gated feature",
+  "status": "pending",
+  "priority": 4,
+  "owner": "Codex",
+  "summary": "Port the adaptive-testing logic prototyped on 2026-07-09 (selector, provisional ability update, readiness gates, results and remediation surfaces) into the NurseStudy app. Derive the blueprint from shared/nclex-rn-2026.ts rather than importing the prototype's duplicate JSON, and build a CAT-grade item pool rather than reusing the linear exemplar items unchanged. Closes the product gap named in PRODUCT_CONSOLIDATION_LOG.md.",
+  "acceptance_criteria": [
+    "A CAT blueprint adapter derives client-needs targets from NCLEX_CATEGORIES in shared/nclex-rn-2026.ts; the prototype's nclex-rn-2026-blueprint.json is not committed as a second source of truth.",
+    "A documented mapping exists between the repo's kebab-case category ids and the test plan's category/subcategory pair, and between NCJMM_FUNCTIONS title case and the prototype's snake_case clinical judgment steps.",
+    "An item-pool builder produces CAT items with a numeric difficulty in the range -3 to 3, a randomized correct-option position, and per-item distractors; items whose distractors come from the shared placeholder triple are rejected by the readiness gate.",
+    "Near-duplicate items generated from the same ClinicalFact under different context phrasings are grouped so the selector treats them as one exposure unit.",
+    "lib/cat/selectNextItem, lib/cat/updateAbility, and lib/cat/evaluateGates are ported with unit tests covering under-covered-category selection, ability clamping at -3 and 3, and each blocking gate reason.",
+    "CAT readiness is enforced by the eight gates in the prototype spec and reports a machine-readable blocked artifact naming the failing item ids.",
+    "A learner can complete a 20-item adaptive session; confirmed answers cannot be changed; results show ability estimate, blueprint coverage, weak concepts, rationales, and linked remediation lessons.",
+    "CAT results emit PerformanceSignal records with sourceKind 'quiz' into server/directed-remediation-engine.ts rather than introducing a second remediation path.",
+    "The CAT student and educator routes are registered in client/src/lib/mvp-navigation.tsx, per the navigation registry established in PRODUCT_CONSOLIDATION_LOG.md.",
+    "npm run check:cat passes, and npm run check:launch and npm run smoke:launch-surfaces still pass.",
+    "No CAT surface claims to replicate official NCLEX scoring; the prototype's educational-simulation disclaimer is carried into the UI."
+  ],
+  "blockers": [
+    "Item pool is not CAT-ready: all 40 ClinicalFact entries in shared/nclex-rn-2026.ts share one placeholder distractor triple, buildAssessmentItems always places the correct answer at option A, and difficulty is the string 'application' or 'analysis' rather than a number. A CAT selector cannot run on this pool as it stands.",
+    "Licensed RN review of the exemplar content is still pending (curriculum_exports/nclex-rn-2026/execution-status.json reports reviewQueue.awaitingLicensedRn = 8, approved = 0). CAT items must not be presented to learners ahead of that review.",
+    "Four blueprint fields in the prototype are unverified against the official 2026 RN test plan PDF: timeLimitHours, pretestItems, minimumLengthScoredContentItems, and minimumLengthClinicalJudgmentCaseStudyItems. The stop rules depend on them."
+  ],
+  "outputs": [
+    "shared/cat-blueprint.ts",
+    "shared/cat-item-schema.ts",
+    "lib/cat/selectNextItem.ts",
+    "lib/cat/updateAbility.ts",
+    "lib/cat/evaluateGates.ts",
+    "server/cat-session-service.ts",
+    "server/tests/cat.test.ts",
+    "client/src/pages/CatPractice.tsx",
+    "client/src/pages/CatResults.tsx",
+    "docs/CAT_FEATURE_SPEC.md"
+  ]
+}

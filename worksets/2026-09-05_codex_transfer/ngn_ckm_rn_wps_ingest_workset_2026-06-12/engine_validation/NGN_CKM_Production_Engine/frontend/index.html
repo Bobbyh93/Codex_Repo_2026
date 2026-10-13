@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Curriculum Lesson Production Studio</title>
+<style>
+:root{--bg:#f5f7fb;--card:#fff;--ink:#111827;--muted:#64748b;--line:#d7dee9;--blue:#1d4ed8;--green:#047857;--amber:#b45309;--red:#b91c1c;--softBlue:#eff6ff;--softGreen:#ecfdf5;--softAmber:#fffbeb;--softRed:#fef2f2;--shadow:0 12px 34px rgba(15,23,42,.08)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:Inter,Segoe UI,Arial,sans-serif;color:var(--ink)}header{background:linear-gradient(135deg,#0f172a,#1d4ed8);color:white;padding:26px 34px}header h1{margin:0;font-size:31px;letter-spacing:-.03em}header p{margin:7px 0 0;color:#dbeafe;max-width:980px;line-height:1.45}.wrap{max-width:1160px;margin:0 auto;padding:22px}.card{background:var(--card);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);padding:20px;margin-bottom:18px}.hero{display:grid;grid-template-columns:1fr .9fr;gap:18px}.h2,h2{margin:0 0 10px;font-size:22px}.big{font-size:18px;line-height:1.45}.muted{color:var(--muted)}.small{font-size:13px}.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:16px 0}.step{border:1px solid var(--line);border-radius:16px;padding:14px;background:#fff;color:#475569}.step.active{background:var(--blue);color:#fff;border-color:var(--blue)}.step.done{background:var(--softGreen);color:#065f46;border-color:#bbf7d0}.step.locked{opacity:.46}.step strong{display:block}.step span{font-size:12px}.ready{display:grid;gap:8px}.readyRow{display:flex;justify-content:space-between;gap:8px;border:1px solid var(--line);border-radius:14px;padding:10px 12px;background:#f8fafc;font-size:13px}.readyRow.good{background:var(--softGreen);border-color:#bbf7d0;color:#065f46}.readyRow.warn{background:var(--softAmber);border-color:#fde68a;color:#92400e}.panel{display:none}.panel.active{display:block}.choiceGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.choice{border:2px solid var(--line);background:#fff;border-radius:20px;padding:18px;text-align:left;cursor:pointer;min-height:160px}.choice:hover,.choice.active{border-color:var(--blue);background:var(--softBlue)}.emoji{font-size:36px}.choice strong{display:block;margin:7px 0 5px;font-size:18px}.choice span{display:block;color:var(--muted);font-size:13px;line-height:1.4}.callout{border-radius:16px;padding:14px;line-height:1.45;background:var(--softBlue);border:1px solid #bfdbfe}.goodBox{border-radius:16px;padding:14px;background:var(--softGreen);border:1px solid #bbf7d0;color:#064e3b}.warnBox{border-radius:16px;padding:14px;background:var(--softAmber);border:1px solid #fde68a;color:#78350f}.errorBox{border-radius:16px;padding:14px;background:var(--softRed);border:1px solid #fecaca;color:#991b1b}.toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:12px 0}button{border:0;border-radius:14px;background:var(--blue);color:white;padding:12px 16px;font-weight:800;cursor:pointer;font-size:14px}button:hover{filter:brightness(.94)}button.secondary{background:#e2e8f0;color:#172033}button.green{background:var(--green)}button:disabled{opacity:.45;cursor:not-allowed}.input{width:100%;border:1px solid var(--line);border-radius:14px;padding:12px;background:#fff;color:var(--ink);font-size:14px}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.field{margin:12px 0}.field label{display:block;font-weight:800;font-size:13px;margin-bottom:6px;color:#334155}.topicList{max-height:430px;overflow:auto;border:1px solid var(--line);border-radius:16px;background:#fff}.topicRow{display:grid;grid-template-columns:34px 1fr 1.6fr .8fr;gap:10px;align-items:start;padding:12px;border-bottom:1px solid #eef2f7;cursor:pointer}.topicRow:hover{background:#f8fbff}.topicRow strong{display:block}.sub{font-size:12px;color:#667085;line-height:1.35}.summary{background:#f8fafc;border:1px solid var(--line);border-radius:16px;padding:14px}.plainSteps{display:grid;gap:10px}.plainStep{display:grid;grid-template-columns:38px 1fr;gap:10px;align-items:start;background:#f8fafc;border:1px solid var(--line);border-radius:14px;padding:12px}.num{width:30px;height:30px;border-radius:999px;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900}.pill{display:inline-flex;border-radius:999px;background:#e2e8f0;color:#334155;padding:5px 9px;font-size:12px;margin:3px}.pill.good{background:var(--softGreen);color:#065f46}.pill.warn{background:var(--softAmber);color:#92400e}pre{white-space:pre-wrap;word-break:break-word;background:#0f172a;color:#e5e7eb;border-radius:16px;padding:14px;max-height:320px;overflow:auto;font-size:12px}.loading{display:none;position:fixed;inset:0;background:rgba(15,23,42,.58);z-index:50;align-items:center;justify-content:center;padding:22px}.loading.active{display:flex}.loadingCard{width:min(620px,96vw);background:#fff;border-radius:24px;padding:28px;box-shadow:0 30px 80px rgba(0,0,0,.25)}.spinner{width:52px;height:52px;border-radius:999px;border:7px solid #dbeafe;border-top-color:var(--blue);animation:spin 1s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}details{border-top:1px solid var(--line);margin-top:16px;padding-top:12px}summary{cursor:pointer;font-weight:800}.resultLinks a{display:block;margin:7px 0;color:var(--blue)}@media(max-width:900px){.hero,.steps,.choiceGrid,.grid2,.grid3{grid-template-columns:1fr}.topicRow{grid-template-columns:30px 1fr}.hideMobile{display:none}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Curriculum Lesson Production Studio</h1>
+  <p>Put content in. Pick a topic. Click build. The app cleans the source, detects topics, creates lesson materials, and writes curriculum records.</p>
+</header>
+<div class="wrap">
+  <section class="hero">
+    <div class="card">
+      <h2>So easy a caveman could do it</h2>
+      <div class="big"><strong>1.</strong> Use the built-in topics, or send Data Chunker Pro JSON into the one intake folder.<br><strong>2.</strong> Pick one topic and subtopics.<br><strong>3.</strong> Click Build.</div>
+      <p class="muted small">The app uses the ChatGPT API when available to clean chunks, detect topics, standardize subtopics, preserve source anchors, and reduce manual entry.</p>
+    </div>
+    <div class="card">
+      <h2>System readiness</h2>
+      <div class="ready" id="readinessBox"></div>
+      <div class="toolbar"><button class="secondary" onclick="goStep(5)">Help / API key</button></div>
+    </div>
+  </section>
+
+  <div class="steps">
+    <div class="step active" id="nav1"><strong>1. Start</strong><span>Choose source</span></div>
+    <div class="step locked" id="nav2"><strong>2. Topic</strong><span>Select scope</span></div>
+    <div class="step locked" id="nav3"><strong>3. Build</strong><span>Run package</span></div>
+    <div class="step locked" id="nav4"><strong>4. Results</strong><span>Download</span></div>
+  </div>
+
+  <section class="card panel active" id="step1">
+    <h2>Step 1 - Choose the easiest content path</h2>
+    <div class="choiceGrid">
+      <button class="choice" id="choiceCatalog" onclick="chooseSource('catalog')"><div class="emoji">📚</div><strong>Use built-in topics</strong><span>Fastest path. No Data Chunker Pro needed.</span></button>
+      <button class="choice" id="choiceChunker" onclick="chooseSource('chunker')"><div class="emoji">🧩</div><strong>I have source documents</strong><span>Use Data Chunker Pro once, then the app processes the intake folder.</span></button>
+      <button class="choice" id="choiceTable" onclick="chooseSource('table')"><div class="emoji">📄</div><strong>I have a topic table</strong><span>Upload a CSV or Excel table with one row per topic.</span></button>
+    </div>
+
+    <div id="catalogPanel" class="panel">
+      <div class="callout"><strong>Recommended for testing:</strong> load the built-in curriculum topic list and skip all folders.</div>
+      <div class="toolbar"><button onclick="loadCatalogTopics()">Load built-in topics</button></div>
+    </div>
+
+    <div id="chunkerPanel" class="panel">
+      <div class="goodBox"><strong>Only one folder matters:</strong> Data Chunker Pro should save JSON output directly into the app intake folder below. Do not select the app output folder. Do not select CKM export folders.</div>
+      <div class="plainSteps" style="margin-top:12px">
+        <div class="plainStep"><div class="num">1</div><div><strong>Copy the intake folder path.</strong><br><span class="muted small">Paste this as the Data Chunker Pro output folder.</span><div class="toolbar"><button class="secondary" onclick="copyIntakePath()">Copy intake folder path</button><button class="secondary" onclick="refreshIntakeStatus()">Check folder</button></div><div id="intakePathBox" class="summary small">Loading intake folder...</div></div></div>
+        <div class="plainStep"><div class="num">2</div><div><strong>Use this Data Chunker Pro preset.</strong><br><span class="muted small">Output format: JSON. Destination: app intake folder. Chunk size: 900-1,200 tokens or about 3-5 paragraphs. Overlap: 100-150 tokens. Split by headings and pages. Preserve metadata: source file, page number, heading/section. One source document per run when possible.</span></div></div>
+        <div class="plainStep"><div class="num">3</div><div><strong>Process the folder.</strong><br><span class="muted small">ChatGPT API extraction will clean the chunks and detect topics if your API key is saved. Otherwise local extraction is used.</span><label class="small"><input type="checkbox" id="useAiExtraction" checked> Use ChatGPT API to clean and detect topics</label><div class="toolbar"><button onclick="processIntakeFolder()">Process intake folder</button></div></div></div>
+      </div>
+    </div>
+
+    <div id="tablePanel" class="panel">
+      <div class="callout"><strong>Use this when:</strong> you already have a course/topic spreadsheet. Required columns can be simple: concept, exemplars, source_anchor.</div>
+      <div class="field"><label>Source topic table</label><input class="input" id="sourceTableFile" type="file" accept=".csv,.xlsx" /></div>
+      <div class="toolbar"><button onclick="uploadTopicTable()">Upload and preview</button></div>
+    </div>
+
+    <div id="sourceStatus" class="summary muted small">Choose one of the three paths above.</div>
+  </section>
+
+  <section class="card panel" id="step2">
+    <h2>Step 2 - Pick the lesson topic</h2>
+    <p class="muted">The app found these topics. Pick one. Then choose the subtopics to include.</p>
+    <div class="grid2">
+      <div>
+        <input class="input" id="topicSearch" placeholder="Search topics" oninput="renderTopics()" />
+        <div class="topicList" id="topicList"><div class="muted small" style="padding:14px">Load content first.</div></div>
+      </div>
+      <div>
+        <div id="selectedTopicBox" class="summary">No topic selected yet.</div>
+        <div class="field"><label>Subtopics</label><div id="subtopicBox" class="summary small">Select a topic first.</div></div>
+        <div class="field"><label>Source reference</label><input class="input" id="sourceAnchor" /></div>
+        <div class="toolbar"><button id="goBuildBtn" onclick="goToBuild()" disabled>Continue to Build</button><button class="secondary" onclick="clearTopicSelection()">Clear</button></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card panel" id="step3">
+    <h2>Step 3 - Build package</h2>
+    <div id="buildSummary" class="summary"></div>
+    <div class="grid3">
+      <div class="field"><label>Lesson depth</label><select class="input" id="buildProfile"><option value="standard">Standard</option><option value="fast">Fast draft</option><option value="enhanced">Enhanced</option><option value="comprehensive">Comprehensive</option></select></div>
+      <div class="field"><label>Slide design</label><select class="input" id="deckStyle"><option value="clean">Clean and readable</option><option value="engage">Engage-style instructional</option><option value="diagram_heavy">More diagrams</option></select></div>
+      <div class="field"><label>Duplicate handling</label><select class="input" id="duplicatePolicy"><option value="create_new_version">Create new version</option><option value="skip_exact_duplicate">Skip exact duplicate</option><option value="replace_existing">Replace existing</option></select></div>
+    </div>
+    <label><input type="checkbox" id="outputSlides" checked> PowerPoint deck</label><br>
+    <label><input type="checkbox" id="outputScript" checked> Instructor script</label><br>
+    <label><input type="checkbox" id="outputCase" checked> Case practice and answer key</label><br>
+    <label><input type="checkbox" id="outputRemediation" checked> Remediation map</label>
+    <div class="toolbar"><button class="green" onclick="buildPackage()">Build lesson package</button><button class="secondary" onclick="goStep(2)">Back</button></div>
+    <div id="buildStatus" class="summary muted small">Ready.</div>
+  </section>
+
+  <section class="card panel" id="step4">
+    <h2>Step 4 - Results</h2>
+    <div class="toolbar"><button class="secondary" onclick="loadJobs()">Refresh results</button><button class="secondary" onclick="resetWizard()">Start over</button></div>
+    <div id="resultSummary" class="summary">No result loaded.</div>
+    <h3>Generated files</h3>
+    <div id="resultLinks" class="resultLinks"></div>
+    <details><summary>Technical log</summary><pre id="debugLog"></pre></details>
+  </section>
+
+  <section class="card panel" id="step5">
+    <h2>Help and settings</h2>
+    <div class="plainSteps">
+      <div class="plainStep"><div class="num">1</div><div><strong>Best first run:</strong> choose <em>Use built-in topics</em>, pick a topic, then build. No folders required.</div></div>
+      <div class="plainStep"><div class="num">2</div><div><strong>When using Data Chunker Pro:</strong> set the output folder to the app intake folder only. The app will read JSON files from there.</div></div>
+      <div class="plainStep"><div class="num">3</div><div><strong>ChatGPT API use:</strong> save your API key below. The app will use it to clean chunks, detect concepts and subtopics, and reduce manual entry.</div></div>
+    </div>
+    <div class="grid2">
+      <div class="field"><label>OpenAI API key</label><input class="input" id="apiKey" type="password" placeholder="sk-..." /></div>
+      <div class="field"><label>Text model for extraction</label><input class="input" id="textModel" value="gpt-4.1-mini" /></div>
+    </div>
+    <label><input type="checkbox" id="useAiSetting" checked> Use ChatGPT API for source cleaning/topic detection</label>
+    <div class="toolbar"><button onclick="saveSettings()">Save settings</button><button class="secondary" onclick="goStep(1)">Back to Start</button></div>
+    <div id="settingsStatus" class="summary muted small">Settings not loaded yet.</div>
+  </section>
+</div>
+<div id="loading" class="loading"><div class="loadingCard"><div class="spinner"></div><h2 id="loadingTitle">Working</h2><p id="loadingText" class="muted"></p></div></div>
+<script>
+const $=id=>document.getElementById(id);
+let state={sourceType:null,topics:[],selected:null,packages:[],sourceTablePath:null,lastJob:null,selectedSubtopics:[]};
+async function api(url,opts={}){const r=await fetch(url,opts); if(!r.ok){let t=await r.text(); throw new Error(t)} return await r.json()}
+function escapeHtml(s){return String(s??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
+function setHtml(id,html){$(id).innerHTML=html}
+function showLoading(t,m){$('loadingTitle').textContent=t;$('loadingText').textContent=m;$('loading').classList.add('active')}
+function hideLoading(){$('loading').classList.remove('active')}
+function goStep(n){[1,2,3,4,5].forEach(i=>{const e=$('step'+i); if(e)e.classList.toggle('active',i===n)}); updateNav(n); const e=$('step'+n); if(e)e.scrollIntoView({behavior:'smooth',block:'start'})}
+function canEnter(i){if(i===2)return state.topics.length>0;if(i===3)return !!state.selected;if(i===4)return !!state.lastJob;return true}
+function updateNav(active=1){for(let i=1;i<=4;i++){const nav=$('nav'+i);nav.classList.remove('active','done','locked'); if(i===active)nav.classList.add('active'); else if((i===1&&state.sourceType)||(i===2&&state.selected)||(i===3&&state.lastJob))nav.classList.add('done'); else if(i>1&&!canEnter(i))nav.classList.add('locked')}}
+function updateReadiness(){const content=state.topics.length>0, topic=!!state.selected, build=!!state.lastJob;setHtml('readinessBox',`<div class="readyRow ${content?'good':'warn'}"><span>Content</span><strong>${content?'loaded':'not loaded'}</strong></div><div class="readyRow ${topic?'good':'warn'}"><span>Topic</span><strong>${topic?'selected':'not selected'}</strong></div><div class="readyRow ${build?'good':(topic?'good':'warn')}"><span>Build</span><strong>${build?'complete':(topic?'ready':'not ready')}</strong></div>`);updateNav([1,2,3,4].find(i=>{const e=$('step'+i);return e&&e.classList.contains('active')})||1)}
+function chooseSource(type){state.sourceType=type;['catalog','chunker','table'].forEach(x=>{$('choice'+x[0].toUpperCase()+x.slice(1)).classList.toggle('active',x===type);$(x+'Panel').classList.toggle('active',x===type)});if(type==='chunker')refreshIntakeStatus();updateReadiness()}
+function normalizeTopics(rows,packages=[]){const map=new Map();rows.forEach((r,idx)=>{const concept=String(r.concept||r.topic||r.entity_name||r.concept_name||r.card_title||'').trim();if(!concept)return;const raw=r.exemplars||r.subtopics||r.subtopic||r.exemplar||'';const subs=Array.isArray(raw)?raw:String(raw).split(/[,;|]/).map(x=>x.trim()).filter(Boolean);if(!map.has(concept))map.set(concept,{concept,subtopics:new Set(),source:r.source_anchor||r.source||r.module_title||r.source_family||'',row:r,package:packages[idx]||null});const obj=map.get(concept);subs.forEach(s=>obj.subtopics.add(s))});return [...map.values()].map(x=>({...x,subtopics:[...x.subtopics]})).sort((a,b)=>a.concept.localeCompare(b.concept))}
+async function loadCatalogTopics(){try{showLoading('Loading built-in topics','Reading bundled curriculum topics.');const res=await api('/catalog/topics');state.topics=normalizeTopics(res.topics||[]);state.packages=[];state.sourceTablePath=null;setHtml('sourceStatus',`<div class="goodBox">Loaded <strong>${state.topics.length}</strong> topics. Next: pick one topic.</div>`);hideLoading();renderTopics();goStep(2);updateReadiness()}catch(e){hideLoading();setHtml('sourceStatus',`<div class="errorBox">Could not load topics: ${escapeHtml(e.message)}</div>`)}}
+async function refreshIntakeStatus(){try{const s=await api('/intake/status');setHtml('intakePathBox',`<strong>Copy this path into Data Chunker Pro:</strong><br>${escapeHtml(s.data_chunker_output)}<br><br><strong>JSON files currently found:</strong> ${s.chunk_json_count}`)}catch(e){setHtml('intakePathBox',`Could not read intake folder: ${escapeHtml(e.message)}`)}}
+async function copyIntakePath(){const s=await api('/intake/status');try{await navigator.clipboard.writeText(s.data_chunker_output);setHtml('sourceStatus','<div class="goodBox">Copied. Paste that path into Data Chunker Pro as the output folder.</div>')}catch{setHtml('sourceStatus',`<div class="warnBox">Copy failed. Manually copy this path:<br><strong>${escapeHtml(s.data_chunker_output)}</strong></div>`)}}
+async function processIntakeFolder(){try{const useAi=$('useAiExtraction').checked;showLoading('Processing intake folder',useAi?'Using ChatGPT API to clean chunks and detect topics.':'Using local extraction to detect topics.');const res=await api('/intake/process-chunks?use_ai='+encodeURIComponent(useAi),{method:'POST'});state.topics=normalizeTopics(res.topics||[],res.packages||[]);state.packages=res.packages||[];state.sourceTablePath=res.source_table_path||null;const mode=res.openai_used?'ChatGPT API extraction':'local extraction';setHtml('sourceStatus',`<div class="goodBox">Processed <strong>${res.chunk_count||res.chunk_file_count}</strong> chunks using <strong>${mode}</strong>. Found <strong>${res.detected_topic_count}</strong> topics.</div>${(res.warnings||[]).map(w=>`<div class="warnBox small">${escapeHtml(w)}</div>`).join('')}`);hideLoading();renderTopics();goStep(2);updateReadiness()}catch(e){hideLoading();setHtml('sourceStatus',`<div class="errorBox"><strong>No readable Data Chunker Pro JSON found.</strong><br>Use built-in topics, or set Data Chunker Pro output to the app intake folder and run it first.<br><br>${escapeHtml(e.message)}</div>`)}}
+async function uploadTopicTable(){const f=$('sourceTableFile').files[0];if(!f){setHtml('sourceStatus','Choose a CSV or Excel file first.');return}try{showLoading('Uploading topic table','Reading table rows.');const data=await f.arrayBuffer();const upload=await fetch('/workbook/upload?filename='+encodeURIComponent(f.name),{method:'POST',body:data});if(!upload.ok)throw new Error(await upload.text());const u=await upload.json();const prev=await api('/workbook/preview',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({workbook_path:u.workbook_path})});state.sourceTablePath=u.workbook_path;state.topics=normalizeTopics(prev.preview_rows||[]);setHtml('sourceStatus',`<div class="goodBox">Uploaded table. Found <strong>${prev.row_count}</strong> rows.</div>`);hideLoading();renderTopics();goStep(2);updateReadiness()}catch(e){hideLoading();setHtml('sourceStatus',`<div class="errorBox">Could not read table: ${escapeHtml(e.message)}</div>`)}}
+function renderTopics(){const q=$('topicSearch').value.toLowerCase().trim();let rows=state.topics.filter(t=>!q||t.concept.toLowerCase().includes(q)||t.subtopics.join(' ').toLowerCase().includes(q));if(!rows.length){setHtml('topicList','<div class="muted small" style="padding:14px">No topics found.</div>');return}setHtml('topicList',rows.map(t=>`<div class="topicRow" onclick="selectTopic('${escapeHtml(t.concept).replace(/'/g,'&#39;')}')"><input type="radio" ${state.selected&&state.selected.concept===t.concept?'checked':''}/><div><strong>${escapeHtml(t.concept)}</strong><div class="sub">${t.subtopics.length} subtopics</div></div><div class="sub hideMobile">${escapeHtml(t.subtopics.slice(0,8).join(', ')||'No subtopics listed')}</div><div class="sub hideMobile">${escapeHtml(t.source||'built index')}</div></div>`).join(''))}
+function selectTopic(concept){const t=state.topics.find(x=>x.concept===concept);if(!t)return;state.selected=t;state.selectedSubtopics=[...t.subtopics];$('sourceAnchor').value=t.source||'built catalog';renderTopics();renderSelectedTopic();$('goBuildBtn').disabled=false;updateReadiness()}
+function renderSelectedTopic(){const t=state.selected;if(!t){setHtml('selectedTopicBox','No topic selected yet.');setHtml('subtopicBox','Select a topic first.');return}setHtml('selectedTopicBox',`<strong>${escapeHtml(t.concept)}</strong><br><span class="muted small">Source: ${escapeHtml(t.source||'built catalog')}</span>`);setHtml('subtopicBox',(t.subtopics.length?t.subtopics:[t.concept]).map(s=>`<label class="pill"><input type="checkbox" checked onchange="toggleSubtopic('${escapeHtml(s).replace(/'/g,'&#39;')}',this.checked)"> ${escapeHtml(s)}</label>`).join(''))}
+function toggleSubtopic(s,on){if(on&&!state.selectedSubtopics.includes(s))state.selectedSubtopics.push(s);if(!on)state.selectedSubtopics=state.selectedSubtopics.filter(x=>x!==s)}
+function clearTopicSelection(){state.selected=null;state.selectedSubtopics=[];$('goBuildBtn').disabled=true;renderSelectedTopic();renderTopics();updateReadiness()}
+function goToBuild(){if(!state.selected)return;const t=state.selected;setHtml('buildSummary',`<strong>${escapeHtml(t.concept)}</strong><br>Subtopics: ${escapeHtml((state.selectedSubtopics.length?state.selectedSubtopics:[t.concept]).join(', '))}<br>Source: ${escapeHtml($('sourceAnchor').value||t.source||'built catalog')}`);goStep(3);updateReadiness()}
+function buildPayload(){const t=state.selected;const outputs={slides:$('outputSlides').checked,script:$('outputScript').checked,case_practice:$('outputCase').checked,answer_key:$('outputCase').checked,remediation_map:$('outputRemediation').checked,ckm:true};return{run_type:'single_topic',project_name:'lesson_package',source_type:state.sourceType||'catalog',source_table_path:state.sourceTablePath||undefined,source_package:t.package||undefined,build_profile:$('buildProfile').value,deck_style:$('deckStyle').value,duplicate_policy:$('duplicatePolicy').value,requested_outputs:outputs,live_import:false,taxonomy:{course_name:'Nursing Curriculum',subject_area:'Nursing',content_area:t.row?.content_area||'General',specialty_area:t.row?.specialty_area||'General',concept:t.concept,exemplars:state.selectedSubtopics.length?state.selectedSubtopics:[t.concept],source_anchor:$('sourceAnchor').value||t.source||'built catalog',evidence_status:state.sourceType==='chunker'?'source-grounded':'source-grounded',needs_review:false,nclex_category:t.row?.nclex_category||'Unspecified',ncjmm_primary:t.row?.ncjmm_primary||'Recognize Cues',priority_framework:t.row?.priority_framework||'General Priority'}}}
+async function buildPackage(){if(!state.selected){setHtml('buildStatus','Pick a topic first.');return}try{showLoading('Building lesson package','Creating files and validating outputs.');const payload=buildPayload();const valid=await api('/workflow/validate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});if(!valid.ready)throw new Error('Not ready: '+valid.issues.join(', '));const res=await api('/submit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});state.lastJob=res.job_id;hideLoading();setHtml('buildStatus',`Build complete/submitted: <strong>${escapeHtml(res.job_id)}</strong>`);await showJob(res.job_id);goStep(4);updateReadiness()}catch(e){hideLoading();setHtml('buildStatus',`<div class="errorBox">Build failed: ${escapeHtml(e.message)}</div>`)}}
+async function showJob(jobId){try{const job=await api('/status/'+jobId);setHtml('resultSummary',`Status: <span class="pill good">${escapeHtml(job.status)}</span><br>Job ID: ${escapeHtml(jobId)}<br>Phase: ${escapeHtml(job.phase||'complete')}`);$('debugLog').textContent=JSON.stringify(job,null,2);const arts=await api('/artifacts?job_id='+encodeURIComponent(jobId));const links=(arts.artifacts||[]).map(a=>`<a href="/download?path=${encodeURIComponent(a.file_path)}" target="_blank">${escapeHtml(a.file_type||a.file_path.split(/[\\/]/).pop())}</a>`).join('');setHtml('resultLinks',links||'<div class="muted small">No artifact rows found yet. Check technical log.</div>')}catch(e){setHtml('resultSummary',`Could not load job: ${escapeHtml(e.message)}`)}}
+async function loadJobs(){try{const j=await api('/jobs');const first=(j.jobs||[])[0];if(first){state.lastJob=first.job_id||first[0];await showJob(state.lastJob);goStep(4)}}catch(e){setHtml('resultSummary',`Could not refresh: ${escapeHtml(e.message)}`)}}
+function resetWizard(){state={sourceType:null,topics:[],selected:null,packages:[],sourceTablePath:null,lastJob:null,selectedSubtopics:[]};['catalogPanel','chunkerPanel','tablePanel'].forEach(id=>$(id).classList.remove('active'));document.querySelectorAll('.choice').forEach(x=>x.classList.remove('active'));setHtml('sourceStatus','Choose one of the three paths above.');setHtml('topicList','<div class="muted small" style="padding:14px">Load content first.</div>');renderSelectedTopic();goStep(1);updateReadiness()}
+async function loadSettings(){try{const s=await api('/settings');$('textModel').value=s.openai_text_model||'gpt-4.1-mini';$('useAiSetting').checked=s.use_openai_for_extraction!==false;setHtml('settingsStatus',`API key: ${s.openai_api_key_masked?escapeHtml(s.openai_api_key_masked):'not saved'}`)}catch(e){setHtml('settingsStatus','Could not load settings.')}}
+async function saveSettings(){try{const payload={openai_api_key:$('apiKey').value,openai_text_model:$('textModel').value,use_openai_for_extraction:$('useAiSetting').checked};const s=await api('/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});$('apiKey').value='';setHtml('settingsStatus',`Saved. API key: ${s.openai_api_key_masked||'not saved'}`)}catch(e){setHtml('settingsStatus',`<div class="errorBox">Could not save: ${escapeHtml(e.message)}</div>`)}}
+window.addEventListener('load',()=>{refreshIntakeStatus();loadSettings();updateReadiness()});
+</script>
+</body>
+</html>

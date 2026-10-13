@@ -1,0 +1,182 @@
+"""FastAPI application entrypoint."""
+from __future__ import annotations
+
+from pathlib import Path
+from uuid import uuid4
+
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse, HTMLResponse
+from fastapi.staticfiles import StaticFiles
+
+from .api_ckm_browser import router as ckm_router
+from .api_diagram import router as diagram_router
+from .cpi_engine import get_cpi_summary
+from .db import init_db
+from .full_workbook_runner import run_full_workbook
+from .job_store import list_artifacts, list_jobs, list_logs, load_job
+from .run_pipeline import run_pipeline
+from .scheduler import (
+    autostart_if_enabled,
+    build_cpi_report,
+    load_config,
+    run_nightly_once,
+    save_config,
+    start_scheduler,
+    status as scheduler_status,
+)
+
+ROOT = Path(__file__).resolve().parents[1]
+FRONTEND = ROOT / "frontend"
+OUTPUT = ROOT / "output"
+INPUT_WORKBOOKS = ROOT / "input_workbooks"
+SAMPLES = ROOT / "samples"
+
+app = FastAPI(title="NGN CKM Production Engine", version="1.2.0")
+app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
+app.include_router(ckm_router)
+app.include_router(diagram_router)
+
+if OUTPUT.exists():
+    app.mount("/output", StaticFiles(directory=str(OUTPUT)), name="output")
+
+
+@app.on_event("startup")
+def startup():
+    init_db()
+    OUTPUT.mkdir(exist_ok=True)
+    INPUT_WORKBOOKS.mkdir(exist_ok=True)
+    autostart_if_enabled()
+
+
+@app.get("/", response_class=HTMLResponse)
+def index():
+    index_path = FRONTEND / "index.html"
+    if index_path.exists():
+        return index_path.read_text(encoding="utf-8")
+    return "<h1>NGN CKM Production Engine</h1>"
+
+
+@app.post("/submit")
+def submit_job(payload: dict):
+    job_id = payload.get("job_id") or uuid4().hex
+    live_import = bool(payload.get("live_import", False))
+    result = run_pipeline(payload, job_id=job_id, live_import=live_import)
+    return {"job_id": job_id, "status": result.get("status"), "phase": result.get("phase"), "result": result}
+
+
+@app.post("/workbook/upload")
+async def upload_workbook(request: Request, filename: str = "workbook"):
+    safe_name = "".join(ch if ch.isalnum() or ch in {".", "_", "-"} else "_" for ch in filename).strip("._") or "workbook"
+    ext = Path(safe_name).suffix.lower()
+    if ext not in {".xlsx", ".csv"}:
+        raise HTTPException(400, "unsupported_workbook_type: upload .xlsx or .csv")
+    data = await request.body()
+    if not data:
+        raise HTTPException(400, "empty_upload")
+    INPUT_WORKBOOKS.mkdir(exist_ok=True)
+    stamp = __import__("datetime").datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+    dest = INPUT_WORKBOOKS / f"{stamp}_{safe_name}"
+    dest.write_bytes(data)
+    return {"status": "uploaded", "workbook_path": str(dest), "filename": safe_name, "size": len(data)}
+
+
+@app.get("/workbook/sample-path")
+def workbook_sample_path():
+    sample = SAMPLES / "multi_topic_input_template.csv"
+    return {"workbook_path": str(sample), "exists": sample.exists(), "message": "Use this as a source-table example for full-workbook runs."}
+
+
+@app.post("/workbook/run-full")
+def run_workbook(payload: dict):
+    workbook_path = payload.get("workbook_path")
+    if not workbook_path:
+        raise HTTPException(400, "workbook_path_required")
+    try:
+        return run_full_workbook(
+            workbook_path,
+            sheet_name=payload.get("sheet_name"),
+            live_import=bool(payload.get("live_import", True)),
+            include_review_rows=bool(payload.get("include_review_rows", False)),
+            max_rows=payload.get("max_rows"),
+        )
+    except FileNotFoundError:
+        raise HTTPException(400, f"workbook_not_found:{workbook_path}")
+    except ValueError as exc:
+        raise HTTPException(400, str(exc))
+
+
+@app.get("/status/{job_id}")
+def get_status(job_id: str):
+    state = load_job(job_id)
+    if not state:
+        raise HTTPException(404, "job_not_found")
+    return state
+
+
+@app.get("/jobs")
+def jobs():
+    return {"jobs": list_jobs()}
+
+
+@app.get("/artifacts")
+def artifacts(job_id: str | None = None):
+    return {"artifacts": list_artifacts(job_id)}
+
+
+@app.get("/logs")
+def logs(job_id: str | None = None):
+    return {"logs": list_logs(job_id)}
+
+
+@app.get("/download")
+def download(path: str):
+    p = Path(path)
+    if not p.exists():
+        raise HTTPException(404, "file_not_found")
+    return FileResponse(str(p), filename=p.name)
+
+
+@app.get("/cpi/summary")
+def cpi_summary():
+    return get_cpi_summary()
+
+
+@app.post("/reports/cpi/build")
+def build_cpi_report_endpoint():
+    return build_cpi_report()
+
+
+@app.get("/scheduler/status")
+def scheduler_get_status():
+    return scheduler_status()
+
+
+@app.post("/scheduler/start")
+def scheduler_start():
+    return start_scheduler()
+
+
+@app.get("/scheduler/config")
+def scheduler_get_config():
+    return load_config()
+
+
+@app.post("/scheduler/config")
+def scheduler_set_config(payload: dict):
+    config = load_config()
+    config.update(payload)
+    return save_config(config)
+
+
+@app.post("/scheduler/run-nightly")
+def scheduler_run_nightly(payload: dict | None = None):
+    config = load_config()
+    if payload:
+        config.update(payload)
+    return run_nightly_once(config)
+
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}

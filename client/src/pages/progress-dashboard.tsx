@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { 
   TrendingUp, Target, Clock, CheckCircle, 
-  AlertCircle, Award, Calendar, BarChart3,
+  AlertCircle, Award, BarChart3,
   ArrowUp, ArrowDown, Minus, Home, LogIn, UserPlus
 } from "lucide-react";
 import { useLocation } from "wouter";
@@ -18,11 +18,13 @@ import { LearningHeatmap } from "@/components/learning-heatmap";
 interface StudyProgress {
   topicId: string;
   topicName: string;
-  startScore: number;
+  /** Baseline score at first assessment. null when no baseline is recorded. */
+  startScore: number | null;
   currentScore: number;
   targetScore: number;
-  completedResources: number;
-  totalResources: number;
+  /** null when the resource catalogue for the topic is unknown. */
+  completedResources: number | null;
+  totalResources: number | null;
   timeSpent: number;
   lastStudied: string;
 }
@@ -30,8 +32,20 @@ interface StudyProgress {
 interface PerformanceMetric {
   metric: string;
   value: number;
-  change: number;
+  /** Delta vs. a prior period. null when no historical baseline is available. */
+  change: number | null;
   trend: "up" | "down" | "stable";
+}
+
+interface DashboardStats {
+  totalStudyTime: number;
+  averageScore: number;
+  topicsStudied: number;
+  topicsMastered: number;
+  questionsAnswered: number;
+  correctAnswers: number;
+  currentStreak: number;
+  assessmentsCompleted: number;
 }
 
 export default function ProgressDashboard() {
@@ -40,13 +54,13 @@ export default function ProgressDashboard() {
   const { isAuthenticated, user } = useAuth();
 
   // Fetch user dashboard stats
-  const { data: dashboardStats, isLoading: isLoadingStats } = useQuery({
+  const { data: dashboardStats, isLoading: isLoadingStats } = useQuery<DashboardStats>({
     queryKey: ["/api/user/dashboard-stats"],
     enabled: isAuthenticated,
   });
 
   // Fetch user progress by topic
-  const { data: userProgress, isLoading: isLoadingProgress } = useQuery({
+  const { data: userProgress, isLoading: isLoadingProgress } = useQuery<any[]>({
     queryKey: ["/api/progress/topics"],
     enabled: isAuthenticated,
   });
@@ -64,53 +78,61 @@ export default function ProgressDashboard() {
     return userProgress.map((progress: any) => ({
       topicId: progress.topicId,
       topicName: progress.topic?.name || "Unknown Topic",
-      startScore: 60, // Could calculate from first assessment
-      currentScore: Math.round(progress.averageScore || 70),
-      targetScore: 85,
-      completedResources: Math.round((progress.totalStudyTime || 0) / 30), // Estimate from study time
-      totalResources: 6, // Could be calculated from available resources
+      // No baseline snapshot is stored per topic yet, so improvement is not
+      // shown rather than being derived from an assumed starting score.
+      startScore: null,
+      currentScore: Math.round(progress.averageScore || 0),
+      targetScore: Number(progress.targetScore) || 85,
+      // Resource completion is not tracked per topic yet.
+      completedResources: null,
+      totalResources: null,
       timeSpent: progress.totalStudyTime || 0,
       lastStudied: progress.lastStudiedAt ? new Date(progress.lastStudiedAt).toLocaleDateString() : "Never"
     }));
   };
 
   // Calculate metrics from real user data
-  const calculateMetricsFromData = () => {
+  const calculateMetricsFromData = (): PerformanceMetric[] => {
     if (!dashboardStats) {
-      return [
-        { metric: "Overall Progress", value: 0, change: 0, trend: "stable" as const },
-        { metric: "Study Streak", value: 0, change: 0, trend: "stable" as const },
-        { metric: "Topics Mastered", value: 0, change: 0, trend: "stable" as const },
-        { metric: "Hours Studied", value: 0, change: 0, trend: "stable" as const }
+      const empty: PerformanceMetric[] = [
+        { metric: "Overall Progress", value: 0, change: null, trend: "stable" },
+        { metric: "Study Streak", value: 0, change: null, trend: "stable" },
+        { metric: "Topics Mastered", value: 0, change: null, trend: "stable" },
+        { metric: "Hours Studied", value: 0, change: null, trend: "stable" }
       ];
+      return empty;
     }
 
-    return [
-      { 
-        metric: "Overall Progress", 
-        value: Math.round(dashboardStats.averageScore || 0), 
-        change: 12, // Could calculate from historical data
-        trend: "up" as const 
+    // Period-over-period deltas require historical snapshots the API does not
+    // yet return, so change is left null and the delta is hidden rather than
+    // showing an invented number.
+    const metrics: PerformanceMetric[] = [
+      {
+        metric: "Overall Progress",
+        value: Math.round(dashboardStats.averageScore || 0),
+        change: null,
+        trend: "stable"
       },
-      { 
-        metric: "Study Streak", 
-        value: dashboardStats.currentStreak || 0, 
-        change: 2, 
-        trend: "up" as const 
+      {
+        metric: "Study Streak",
+        value: dashboardStats.currentStreak || 0,
+        change: null,
+        trend: "stable"
       },
-      { 
-        metric: "Topics Mastered", 
-        value: dashboardStats.topicsMastered || 0, 
-        change: 1, 
-        trend: "up" as const 
+      {
+        metric: "Topics Mastered",
+        value: dashboardStats.topicsMastered || 0,
+        change: null,
+        trend: "stable"
       },
-      { 
-        metric: "Hours Studied", 
-        value: Math.round((dashboardStats.totalStudyTime || 0) / 60 * 10) / 10, 
-        change: -0.5, 
-        trend: "down" as const 
+      {
+        metric: "Hours Studied",
+        value: Math.round((dashboardStats.totalStudyTime || 0) / 60 * 10) / 10,
+        change: null,
+        trend: "stable"
       }
     ];
+    return metrics;
   };
 
   const progress = calculateProgressFromData();
@@ -186,16 +208,11 @@ export default function ProgressDashboard() {
               <Home className="h-4 w-4 mr-2" />
               Home
             </Button>
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm">
-                <Calendar className="h-4 w-4 mr-2" />
-                Schedule Study
-              </Button>
-              <Button variant="outline" size="sm">
-                <BarChart3 className="h-4 w-4 mr-2" />
-                Export Report
-              </Button>
-            </div>
+            {/*
+              "Schedule Study" and "Export Report" buttons were removed: neither
+              had an onClick handler, and there is no scheduling or progress-export
+              endpoint on the server to back them. Re-add once those exist.
+            */}
           </div>
           
           <h1 className="text-2xl font-bold mb-2">Your Learning Progress</h1>
@@ -216,13 +233,15 @@ export default function ProgressDashboard() {
                     {metric.metric === "Hours Studied" ? metric.value.toFixed(1) : metric.value}
                     {metric.metric === "Overall Progress" && "%"}
                   </span>
-                  <span className={`text-xs ${
-                    metric.trend === "up" ? "text-green-600" : 
-                    metric.trend === "down" ? "text-red-600" : "text-gray-600"
-                  }`}>
-                    {metric.change > 0 ? "+" : ""}{metric.change}
-                    {metric.metric === "Overall Progress" && "%"}
-                  </span>
+                  {metric.change !== null && (
+                    <span className={`text-xs ${
+                      metric.trend === "up" ? "text-green-600" :
+                      metric.trend === "down" ? "text-red-600" : "text-gray-600"
+                    }`}>
+                      {metric.change > 0 ? "+" : ""}{metric.change}
+                      {metric.metric === "Overall Progress" && "%"}
+                    </span>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -265,11 +284,14 @@ export default function ProgressDashboard() {
                           <p className="font-medium">{topic.topicName}</p>
                           <p className="text-xs text-gray-500">Last studied: {topic.lastStudied}</p>
                         </div>
-                        <Badge 
-                          className={getProgressColor(topic.currentScore, topic.startScore)}
-                        >
-                          +{topic.currentScore - topic.startScore}%
-                        </Badge>
+                        {topic.startScore !== null && (
+                          <Badge
+                            className={getProgressColor(topic.currentScore, topic.startScore)}
+                          >
+                            {topic.currentScore - topic.startScore > 0 ? "+" : ""}
+                            {topic.currentScore - topic.startScore}%
+                          </Badge>
+                        )}
                       </div>
                       
                       <div className="space-y-1">
@@ -284,10 +306,12 @@ export default function ProgressDashboard() {
                       </div>
                       
                       <div className="flex items-center gap-4 text-xs text-gray-600">
-                        <span className="flex items-center gap-1">
-                          <CheckCircle className="h-3 w-3" />
-                          {topic.completedResources}/{topic.totalResources} resources
-                        </span>
+                        {topic.completedResources !== null && topic.totalResources !== null && (
+                          <span className="flex items-center gap-1">
+                            <CheckCircle className="h-3 w-3" />
+                            {topic.completedResources}/{topic.totalResources} resources
+                          </span>
+                        )}
                         <span className="flex items-center gap-1">
                           <Clock className="h-3 w-3" />
                           {topic.timeSpent} min

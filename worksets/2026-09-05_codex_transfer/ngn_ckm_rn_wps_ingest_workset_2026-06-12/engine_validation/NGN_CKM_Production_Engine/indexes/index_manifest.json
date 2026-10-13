@@ -1,0 +1,9 @@
+{
+  "concept_module_catalog": "concept_module_catalog.json",
+  "module_record_count": 50,
+  "course_area_options": "course_area_options.json",
+  "specialty_area_options": "specialty_area_options.json",
+  "priority_framework_options": "priority_framework_options.json",
+  "lesson_goal_options": "lesson_goal_options.json",
+  "duplicate_policy_options": "duplicate_policy_options.json"
+}

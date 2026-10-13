@@ -115,7 +115,7 @@ export async function parseContentForReviewTopics(buffer: Buffer): Promise<Parse
     
   } catch (error) {
     console.error("Topic-focused parsing error:", error);
-    throw new Error(`Failed to parse content for review topics: ${error.message}`);
+    throw new Error(`Failed to parse content for review topics: ${(error as Error).message}`);
   }
 }
 

@@ -7,7 +7,9 @@ import { AssessmentToTemplateMapper, type AssessmentAnalysis, type TopicGap } fr
 import { TemplateRenderer, type OutputFormat } from './template-renderer';
 import { db } from "./db";
 import { eq, desc } from "drizzle-orm";
-import { topicPerformance } from "@shared/simplified-schema";
+// shared/schema.ts owns topic_performance; simplified-schema's second
+// declaration of it (with columns the real table lacks) has been removed.
+import { topicPerformance } from "@shared/schema";
 
 export interface StudyGuideGenerationRequest {
   format: OutputFormat;

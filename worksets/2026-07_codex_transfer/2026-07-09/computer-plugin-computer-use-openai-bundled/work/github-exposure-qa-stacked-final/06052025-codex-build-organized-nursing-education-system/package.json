@@ -1,0 +1,27 @@
+{
+  "name": "packages",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "create": "node scripts/create",
+    "lint": "pnpm recursive run lint",
+    "test": "pnpm recursive run test",
+    "build": "pnpm recursive run build",
+    "prepare": "husky install"
+  },
+  "workspaces": [
+    "packages/*"
+  ],
+  "devDependencies": {
+    "args": "^5.0.3",
+    "fs-extra": "^11.2.0",
+    "husky": "^9.1.3",
+    "prettier": "^3.3.3"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "msw"
+    ]
+  }
+}

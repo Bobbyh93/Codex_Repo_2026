@@ -12,5 +12,10 @@ if (!process.env.DATABASE_URL) {
   );
 }
 
-export const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+export const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  // Fail an unreachable database instead of waiting on the OS TCP timeout.
+  // This bounds acquiring a connection only, not how long a query may run.
+  connectionTimeoutMillis: 10_000,
+});
 export const db = drizzle({ client: pool, schema: { ...schema, ...crosswalkSchema } });

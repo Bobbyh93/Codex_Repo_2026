@@ -1,0 +1,109 @@
+{
+  "source_path": "C:\\Users\\RHarrity\\Downloads\\Prelicensure Workbook.xlsx",
+  "source_name": "Prelicensure Workbook.xlsx",
+  "source_hash": "sha256:7e711dd431e5f33993ae800f6749396b8ef7832b1b0ecb30bb9de0f8162ce78f",
+  "source_size_bytes": 152019,
+  "source_modified": "2026-05-06T06:31:40",
+  "sheet_count": 11,
+  "sheets": [
+    {
+      "sheet_name": "Entry Level",
+      "dimension": "A1:AV222",
+      "max_row": 222,
+      "max_column": 48,
+      "data_rows_from_6": 214,
+      "competency_column_count": 45,
+      "mapped_cells_pre_split": 651
+    },
+    {
+      "sheet_name": "Domain 1 Knowledge",
+      "dimension": "A1:F222",
+      "max_row": 222,
+      "max_column": 6,
+      "data_rows_from_6": 214,
+      "competency_column_count": 3,
+      "mapped_cells_pre_split": 34
+    },
+    {
+      "sheet_name": "Domain 2 PCC",
+      "dimension": "A1:L222",
+      "max_row": 222,
+      "max_column": 12,
+      "data_rows_from_6": 214,
+      "competency_column_count": 9,
+      "mapped_cells_pre_split": 165
+    },
+    {
+      "sheet_name": "Domain 3 Pop Health",
+      "dimension": "A1:I222",
+      "max_row": 222,
+      "max_column": 9,
+      "data_rows_from_6": 214,
+      "competency_column_count": 6,
+      "mapped_cells_pre_split": 21
+    },
+    {
+      "sheet_name": "Domain 4 Scholarship",
+      "dimension": "A1:F222",
+      "max_row": 222,
+      "max_column": 6,
+      "data_rows_from_6": 214,
+      "competency_column_count": 3,
+      "mapped_cells_pre_split": 44
+    },
+    {
+      "sheet_name": "Domain 5 Q & S",
+      "dimension": "A1:F222",
+      "max_row": 222,
+      "max_column": 6,
+      "data_rows_from_6": 214,
+      "competency_column_count": 3,
+      "mapped_cells_pre_split": 79
+    },
+    {
+      "sheet_name": "Domain 6 Partnerships",
+      "dimension": "A1:G222",
+      "max_row": 222,
+      "max_column": 7,
+      "data_rows_from_6": 214,
+      "competency_column_count": 4,
+      "mapped_cells_pre_split": 107
+    },
+    {
+      "sheet_name": "Domain 7 Systems",
+      "dimension": "A1:F222",
+      "max_row": 222,
+      "max_column": 6,
+      "data_rows_from_6": 214,
+      "competency_column_count": 3,
+      "mapped_cells_pre_split": 39
+    },
+    {
+      "sheet_name": "Domain 8 Informatics",
+      "dimension": "A1:H222",
+      "max_row": 222,
+      "max_column": 8,
+      "data_rows_from_6": 214,
+      "competency_column_count": 5,
+      "mapped_cells_pre_split": 52
+    },
+    {
+      "sheet_name": "Domain 9 Professionalism",
+      "dimension": "A1:I222",
+      "max_row": 222,
+      "max_column": 9,
+      "data_rows_from_6": 214,
+      "competency_column_count": 6,
+      "mapped_cells_pre_split": 94
+    },
+    {
+      "sheet_name": "Domain 10 Development",
+      "dimension": "A1:F222",
+      "max_row": 222,
+      "max_column": 6,
+      "data_rows_from_6": 214,
+      "competency_column_count": 3,
+      "mapped_cells_pre_split": 16
+    }
+  ]
+}
