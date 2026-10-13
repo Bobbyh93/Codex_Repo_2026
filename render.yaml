@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: pipeline-console
+    runtime: python
+    plan: free
+    branch: pipeline-console-web
+    rootDir: console-web
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        sync: false
+      - key: CONSOLE_PASSWORD
+        sync: false
