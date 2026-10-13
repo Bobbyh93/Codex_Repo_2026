@@ -1,0 +1,52 @@
+name: Publish package
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  publish-npm:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.release.tag_name }}
+
+      - name: Set up node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+          registry-url: https://registry.npmjs.org
+
+      - name: Install PNPM
+        run: npm i pnpm -g
+
+      - name: Install dependencies
+        run: pnpm i
+
+      - name: Build packages
+        run: pnpm run build
+
+      - name: Extract package name and determine publish tag
+        id: extract
+        run: |
+          FULL_TAG_NAME=${{ github.event.release.tag_name }}
+          PACKAGE_NAME=$(echo "$FULL_TAG_NAME" | rev | cut -d'@' -f2- | rev)
+          if [[ "$FULL_TAG_NAME" == *"beta"* ]]; then
+            PUBLISH_TAG="beta"
+          else
+            PUBLISH_TAG="latest"
+          fi
+          echo "PACKAGE_NAME=$PACKAGE_NAME" >> $GITHUB_ENV
+          echo "PUBLISH_TAG=$PUBLISH_TAG" >> $GITHUB_ENV
+
+      - name: Print package name and publish tag
+        run: |
+          echo "Package name is $PACKAGE_NAME"
+          echo "Publish tag is $PUBLISH_TAG"
+
+      - name: Publish package
+        run: pnpm --filter $PACKAGE_NAME publish --access=public --no-git-checks --tag $PUBLISH_TAG
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.ELEVENLABS_NPM_TOKEN }}

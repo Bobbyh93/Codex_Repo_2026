@@ -35,6 +35,17 @@ jobs:
       - name: Run launch surface typecheck
         run: npm run check:launch
 
+      # check:launch only fails on diagnostics inside a hardcoded 23-path
+      # "launch surface" allowlist; everything else it counts and lets pass.
+      # That is how 337 type errors accumulated outside the allowlist, taking
+      # a batch of genuinely broken features with them. The legacy count is
+      # now 0, so the full project typecheck is enforced here to keep it there.
+      - name: Typecheck full project
+        run: npm run check
+
+      - name: Run unit tests
+        run: npm test
+
       - name: Start local launch preview
         shell: bash
         run: |

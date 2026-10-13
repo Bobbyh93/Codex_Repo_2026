@@ -1,4 +1,4 @@
-import type { Express } from "express";
+import type { Express, Response } from "express";
 import { contentGenerationEngine } from "./content-generation-engine";
 import { authenticateToken, requireRole, type AuthRequest } from "./middleware/auth";
 import { z } from "zod";
@@ -27,7 +27,7 @@ export function registerContentGenerationRoutes(app: Express) {
   /**
    * Generate personalized study path based on assessment report
    */
-  app.post('/api/admin/content/generate-study-path', requireAdmin, async (req, res) => {
+  app.post('/api/admin/content/generate-study-path', requireAdmin, async (req: AuthRequest, res: Response) => {
     try {
       const data = generateStudyPathSchema.parse(req.body);
       
@@ -62,7 +62,7 @@ export function registerContentGenerationRoutes(app: Express) {
   /**
    * Generate study content for a specific topic
    */
-  app.post('/api/admin/content/generate-content', requireAdmin, async (req, res) => {
+  app.post('/api/admin/content/generate-content', requireAdmin, async (req: AuthRequest, res: Response) => {
     try {
       const data = generateContentSchema.parse(req.body);
       
@@ -93,7 +93,7 @@ export function registerContentGenerationRoutes(app: Express) {
   /**
    * Analyze content coverage for a topic
    */
-  app.post('/api/admin/content/analyze-coverage', requireAdmin, async (req, res) => {
+  app.post('/api/admin/content/analyze-coverage', requireAdmin, async (req: AuthRequest, res: Response) => {
     try {
       const data = analyzeCoverageSchema.parse(req.body);
       
@@ -121,7 +121,7 @@ export function registerContentGenerationRoutes(app: Express) {
   /**
    * Generate batch study paths for multiple reports
    */
-  app.post('/api/admin/content/generate-batch-paths', requireAdmin, async (req, res) => {
+  app.post('/api/admin/content/generate-batch-paths', requireAdmin, async (req: AuthRequest, res: Response) => {
     try {
       const { reportIds, options = {} } = req.body;
       
@@ -160,7 +160,7 @@ export function registerContentGenerationRoutes(app: Express) {
   /**
    * Get content generation templates
    */
-  app.get('/api/admin/content/templates', requireAdmin, async (req, res) => {
+  app.get('/api/admin/content/templates', requireAdmin, async (req: AuthRequest, res: Response) => {
     try {
       // Return available templates for content generation
       const templates = {
@@ -186,7 +186,7 @@ export function registerContentGenerationRoutes(app: Express) {
   /**
    * Preview generated content before saving
    */
-  app.post('/api/admin/content/preview', requireAdmin, async (req, res) => {
+  app.post('/api/admin/content/preview', requireAdmin, async (req: AuthRequest, res: Response) => {
     try {
       const { topicId, includeAll = false } = req.body;
       
@@ -226,7 +226,7 @@ export function registerContentGenerationRoutes(app: Express) {
   /**
    * Get content generation statistics
    */
-  app.get('/api/admin/content/generation-stats', requireAdmin, async (req, res) => {
+  app.get('/api/admin/content/generation-stats', requireAdmin, async (req: AuthRequest, res: Response) => {
     try {
       // This would typically query the database for actual stats
       // For now, returning mock statistics

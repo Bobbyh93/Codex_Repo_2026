@@ -179,9 +179,9 @@ function isMajorSectionHeader(line: string): boolean {
 
 // Check if line is a subsection header
 function isSubsectionHeader(line: string): boolean {
-  return (line.length < 80 && 
-          (line.includes(':') || 
-           line.match(/^[A-Z\s]+$/) ||
+  return (line.length < 80 &&
+          (line.includes(':') ||
+           line.match(/^[A-Z\s]+$/) !== null ||
            (line.split(' ').length < 8 && line.charAt(0) === line.charAt(0).toUpperCase())));
 }
 

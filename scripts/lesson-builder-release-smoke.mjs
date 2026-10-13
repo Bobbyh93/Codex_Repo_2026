@@ -1,8 +1,12 @@
 #!/usr/bin/env node
 
 const baseUrl = (process.env.APP_URL || "http://localhost:5000").replace(/\/+$/, "");
-const adminEmail = process.env.ADMIN_EMAIL || "admin@nurseprep.com";
-const adminPassword = process.env.ADMIN_PASSWORD || "admin123";
+const adminEmail = process.env.ADMIN_EMAIL;
+const adminPassword = process.env.ADMIN_PASSWORD;
+if (!adminEmail || !adminPassword) {
+  console.error("ADMIN_EMAIL and ADMIN_PASSWORD must be set; there is no default.");
+  process.exit(1);
+}
 const smokeRunId = Date.now();
 const smokeClientIp = process.env.SMOKE_CLIENT_IP || `198.51.${Math.floor(smokeRunId / 256) % 256}.${smokeRunId % 256}`;
 const cookieJar = new Map();

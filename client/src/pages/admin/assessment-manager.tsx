@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { queryClient } from "@/lib/queryClient";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -74,10 +74,7 @@ export default function AssessmentManager() {
       formData.append("studentEmail", data.studentInfo.email);
       formData.append("instructorNotes", data.studentInfo.instructorNotes);
       
-      const response = await fetch("/api/admin/upload-assessment", {
-        method: "POST",
-        body: formData,
-      });
+      const response = await apiRequest("POST", "/api/admin/upload-assessment", formData);
       
       if (!response.ok) throw new Error("Upload failed");
       return response.json();
@@ -104,11 +101,7 @@ export default function AssessmentManager() {
   // Save customizations
   const saveCustomizationsMutation = useMutation({
     mutationFn: async (data: { assessmentId: string; customizations: typeof customizations }) => {
-      const response = await fetch(`/api/admin/assessments/${data.assessmentId}/customize`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data.customizations),
-      });
+      const response = await apiRequest("POST", `/api/admin/assessments/${data.assessmentId}/customize`, data.customizations);
       
       if (!response.ok) throw new Error("Save failed");
       return response.json();
@@ -134,14 +127,10 @@ export default function AssessmentManager() {
       subject: string; 
       message: string 
     }) => {
-      const response = await fetch(`/api/admin/assessments/${data.assessmentId}/email`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          recipientEmail: data.email,
-          subject: data.subject,
-          message: data.message,
-        }),
+      const response = await apiRequest("POST", `/api/admin/assessments/${data.assessmentId}/email`, {
+        recipientEmail: data.email,
+        subject: data.subject,
+        message: data.message,
       });
       
       if (!response.ok) throw new Error("Email failed");

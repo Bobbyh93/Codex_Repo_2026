@@ -1,0 +1,131 @@
+[
+  {
+    "sequence": 1,
+    "job_id": "J00-intake",
+    "stage": "intake",
+    "title": "Confirm local workset inputs and output contract",
+    "objective": "Confirm source files, workset folder, release workbook name, QA artifact names, and read-only source policy.",
+    "depends_on": [],
+    "outputs": [
+      "workset_manifest.json"
+    ],
+    "prompt_key": ""
+  },
+  {
+    "sequence": 2,
+    "job_id": "J10-inventory",
+    "stage": "inventory",
+    "title": "Inventory workbook sheets and source shape",
+    "objective": "Profile sheet names, dimensions, header rows, data rows, mapped cells, and source hash.",
+    "depends_on": [
+      "J00-intake"
+    ],
+    "outputs": [
+      "build/intermediate/source_inventory.json"
+    ],
+    "prompt_key": ""
+  },
+  {
+    "sequence": 3,
+    "job_id": "J20-normalize",
+    "stage": "normalize",
+    "title": "Normalize canonical QSEN rows and AACN mapping cells",
+    "objective": "Forward-fill merged QSEN fields, split comma-separated subcompetency codes, preserve raw cells, and flag review conditions.",
+    "depends_on": [
+      "J10-inventory"
+    ],
+    "outputs": [
+      "build/intermediate/crosswalk_data.json"
+    ],
+    "prompt_key": ""
+  },
+  {
+    "sequence": 4,
+    "job_id": "J30-dimensions",
+    "stage": "dimensions",
+    "title": "Build dimensions and fact table",
+    "objective": "Build QSEN domain, KSA, AACN domain, AACN competency, and QSEN statement tables.",
+    "depends_on": [
+      "J20-normalize"
+    ],
+    "outputs": [
+      "Dim_QSEN_Domain",
+      "Dim_KSA",
+      "Dim_AACN_Domain",
+      "Dim_AACN_Competency",
+      "Fact_QSEN_Statements"
+    ],
+    "prompt_key": ""
+  },
+  {
+    "sequence": 5,
+    "job_id": "J40-bridges",
+    "stage": "bridges",
+    "title": "Build QSEN to AACN bridge table",
+    "objective": "Create one bridge row per QSEN statement to AACN subcompetency code while preserving source row and cell provenance.",
+    "depends_on": [
+      "J30-dimensions"
+    ],
+    "outputs": [
+      "Bridge_QSEN_AACN"
+    ],
+    "prompt_key": ""
+  },
+  {
+    "sequence": 6,
+    "job_id": "J50-master",
+    "stage": "master",
+    "title": "Build flattened canonical master",
+    "objective": "Join normalized QSEN rows, AACN competency metadata, subcompetency mappings, provenance, and review status into a release table.",
+    "depends_on": [
+      "J40-bridges"
+    ],
+    "outputs": [
+      "Master_Canonical"
+    ],
+    "prompt_key": ""
+  },
+  {
+    "sequence": 7,
+    "job_id": "J60-coverage",
+    "stage": "coverage",
+    "title": "Build coverage and review outputs",
+    "objective": "Summarize mapping coverage by QSEN domain, KSA, AACN domain, and review reason.",
+    "depends_on": [
+      "J50-master"
+    ],
+    "outputs": [
+      "Coverage_Summary",
+      "Review_Queue"
+    ],
+    "prompt_key": ""
+  },
+  {
+    "sequence": 8,
+    "job_id": "J70-release",
+    "stage": "release",
+    "title": "Assemble Excel release workbook",
+    "objective": "Create the final local workbook with README, Summary, Provenance, Data Dictionary, dimensions, fact, bridge, master, coverage, and review queue sheets.",
+    "depends_on": [
+      "J60-coverage"
+    ],
+    "outputs": [
+      "outputs/prelicensure_qsen_aacn_crosswalk_release.xlsx"
+    ],
+    "prompt_key": ""
+  },
+  {
+    "sequence": 9,
+    "job_id": "J80-qa",
+    "stage": "qa",
+    "title": "Validate release and write QA manifest",
+    "objective": "Write QA JSON with source hash, source counts, bridge counts, review queue count, and reconciliation status.",
+    "depends_on": [
+      "J70-release"
+    ],
+    "outputs": [
+      "prelicensure_crosswalk_qa.json"
+    ],
+    "prompt_key": ""
+  }
+]

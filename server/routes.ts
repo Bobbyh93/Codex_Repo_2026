@@ -1,4 +1,4 @@
-import type { Express } from "express";
+import type { Express, Request } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { db } from "./db";
@@ -57,6 +57,27 @@ const normalizeGuestId = (sessionId: string): string => {
   }
   // Otherwise, add the 'guest_' prefix
   return `guest_${sessionId}`;
+};
+
+// Guest identity for an upload without a JWT. The client keeps a guest id in
+// localStorage, sends it as x-session-id on every upload, and stores the
+// guestId the server returns -- so that header is the identity, and it has to
+// be consulted first. express-session mints a fresh req.sessionID for every
+// request that carries no cookie, and nothing ever saves a session for an
+// anonymous visitor (saveUninitialized is false), so keying on req.sessionID
+// ahead of the header gave every upload a brand-new guest user and left the
+// previous report unreachable from the client's stored id.
+//
+// The header is client-controlled, so it is accepted only in the shape this
+// server generates; anything else falls back to the session id.
+const GUEST_ID_PATTERN = /^[A-Za-z0-9_-]{8,128}$/;
+const resolveGuestId = (req: Request): string => {
+  const header = req.headers['x-session-id'];
+  const supplied = Array.isArray(header) ? header[0] : header;
+  if (supplied && GUEST_ID_PATTERN.test(supplied)) {
+    return normalizeGuestId(supplied);
+  }
+  return normalizeGuestId(req.sessionID || `guest_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`);
 };
 
 // Helper function to ensure guest user exists in database
@@ -306,7 +327,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const emailSent = await EmailService.sendMagicLinkEmail(
         email, 
         magicLinkUrl,
-        result.user?.firstName
+        result.user?.firstName || undefined
       );
       
       if (!emailSent) {
@@ -534,6 +555,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Get progress error:", error);
       res.status(500).json({ error: "Failed to fetch user progress" });
+    }
+  });
+
+  // Aggregate stats backing the progress dashboard header metrics.
+  app.get("/api/user/dashboard-stats", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const stats = await storage.getUserDashboardStats(req.user.userId);
+      res.json(stats);
+    } catch (error) {
+      console.error("Dashboard stats error:", error);
+      res.status(500).json({ error: "Failed to fetch dashboard stats" });
     }
   });
 
@@ -765,11 +801,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const { registerAdminDatabaseRoutes } = await import("./admin-database-routes");
   registerAdminDatabaseRoutes(app);
   
-  // Register user search routes
+  // Register user search routes.
+  //
+  // These return real PII -- email, first/last name, and assessment scores --
+  // so they carry the same session guard as every other /api/admin route (see
+  // `requireAdmin` in admin-routes.ts). They were registered with no middleware
+  // at all until this change; the omission went unnoticed because the handlers
+  // selected columns that did not exist and so failed before returning
+  // anything. Fixing the columns made them work, which is what exposed the
+  // data. No CSRF here on purpose: these are GETs, and validateCSRFToken
+  // guards state changes.
+  const { requireAdminSession } = await import("./admin-auth-session");
   const { searchUsersByEmail, getUserById, getAllUsers } = await import("./user-search-routes");
-  app.get("/api/admin/users/search", searchUsersByEmail);
-  app.get("/api/admin/users/:id", getUserById);
-  app.get("/api/admin/users", getAllUsers);
+  app.get("/api/admin/users/search", requireAdminSession, searchUsersByEmail);
+  app.get("/api/admin/users/:id", requireAdminSession, getUserById);
+  app.get("/api/admin/users", requireAdminSession, getAllUsers);
   
   // Register content import routes
   const contentImportRouter = (await import("./content-import-routes")).default;
@@ -1185,7 +1231,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Admin endpoints
-  app.post("/api/admin/upload-assessment", upload.single('file'), async (req, res) => {
+  //
+  // Every route below carries requireAdminSession explicitly. Until this
+  // change none of them named any middleware at all -- and yet all of them
+  // were already authenticated, because line 817 mounts contentImportRouter
+  // at /api/admin and that router opens with an unconditional
+  //
+  //     router.use(requireAdminSession);
+  //     router.use(validateCSRFToken);
+  //
+  // An Express router runs its own router.use() middleware for every request
+  // that reaches its mount path, matching route or not, so those two guard
+  // the whole /api/admin namespace from line 817 onward. Verified, not
+  // assumed: against main, anonymous requests to all nineteen return 401
+  // SESSION_EXPIRED and /api/admin/assessments returns no student row.
+  //
+  // That is protection by accident. It depends entirely on an unrelated
+  // router's mount position -- move line 817 below these, or narrow its mount
+  // to /api/admin/content, and nineteen routes silently open. Several return
+  // real student names, email addresses, scores and filenames
+  // (GET /api/admin/assessments), render a named student's study guide
+  // (/assessments/:id/pdf), or mail it to any address the caller supplies
+  // (/assessments/:id/email). Naming the guard here makes it survive that
+  // edit, and costs one redundant session check per request: it reads
+  // req.session.adminUser and makes no database call.
+  //
+  // The contrast with /api/admin/users* above is the whole point. Those three
+  // are registered at line 811, BEFORE the mount, so the blanket guard never
+  // saw them and they really were anonymous until PR #10. Position, not
+  // intent, is what decided which of these were exposed.
+  //
+  // validateCSRFToken is deliberately NOT repeated here -- the blanket one at
+  // 817 already enforces it on every non-GET, which is what broke four of
+  // these POSTs for the admin UI. See server/tests/admin-routes-auth.test.ts.
+  app.post("/api/admin/upload-assessment", requireAdminSession, upload.single('file'), async (req, res) => {
     try {
       const file = req.file;
       const { studentName, studentEmail, instructorNotes } = req.body;
@@ -1284,7 +1363,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/admin/assessments", async (req, res) => {
+  app.get("/api/admin/assessments", requireAdminSession, async (req, res) => {
     try {
       const reports = await storage.getRecentAssessmentReports(10);
       res.json(reports.map(r => ({
@@ -1303,7 +1382,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/admin/assessments/:assessmentId/customize", async (req, res) => {
+  app.post("/api/admin/assessments/:assessmentId/customize", requireAdminSession, async (req, res) => {
     try {
       const { assessmentId } = req.params;
       const customizations = req.body;
@@ -1319,7 +1398,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/admin/assessments/:assessmentId/pdf", async (req, res) => {
+  app.get("/api/admin/assessments/:assessmentId/pdf", requireAdminSession, async (req, res) => {
     try {
       const { assessmentId } = req.params;
       const { customized } = req.query;
@@ -1342,7 +1421,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/admin/assessments/:assessmentId/email", async (req, res) => {
+  app.post("/api/admin/assessments/:assessmentId/email", requireAdminSession, async (req, res) => {
     try {
       const { assessmentId } = req.params;
       const { recipientEmail, subject, message } = req.body;
@@ -1410,7 +1489,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Simple endpoint to map content to topics
-  app.post("/api/admin/map-content-to-topics", async (req, res) => {
+  app.post("/api/admin/map-content-to-topics", requireAdminSession, async (req, res) => {
     try {
       const { content, title, source } = req.body;
       
@@ -1429,7 +1508,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Topic relationship analysis endpoint
-  app.get("/api/admin/topic-relationships", async (req, res) => {
+  app.get("/api/admin/topic-relationships", requireAdminSession, async (req, res) => {
     try {
       const { analyzeTopicRelationships } = await import('./topic-relationship-analyzer');
       const analysis = await analyzeTopicRelationships();
@@ -1466,7 +1545,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Topic frequency and priority endpoints (simplified)
-  app.get("/api/admin/topic-frequency", async (req, res) => {
+  app.get("/api/admin/topic-frequency", requireAdminSession, async (req, res) => {
     try {
       const { getSimpleTopicStats } = await import('./simple-topic-tracker');
       const frequencyData = await getSimpleTopicStats();
@@ -1477,7 +1556,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/admin/content-development-priorities", async (req, res) => {
+  app.get("/api/admin/content-development-priorities", requireAdminSession, async (req, res) => {
     try {
       const { getSimpleTopicStats } = await import('./simple-topic-tracker');
       const stats = await getSimpleTopicStats();
@@ -1502,7 +1581,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/admin/priority-metrics", async (req, res) => {
+  app.get("/api/admin/priority-metrics", requireAdminSession, async (req, res) => {
     try {
       const { getSimpleMetrics } = await import('./simple-topic-tracker');
       const metrics = await getSimpleMetrics();
@@ -1520,7 +1599,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Manual topic tracking endpoint
-  app.post("/api/admin/track-topic-review", async (req, res) => {
+  app.post("/api/admin/track-topic-review", requireAdminSession, async (req, res) => {
     try {
       const { topics, source, userIdentifier } = req.body;
       const { trackTopicReview } = await import('./topic-frequency-tracker');
@@ -1541,7 +1620,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // ATI topic extraction endpoints
-  app.post("/api/admin/extract-ati-topics", async (req, res) => {
+  app.post("/api/admin/extract-ati-topics", requireAdminSession, async (req, res) => {
     try {
       const { reportText, reportId } = req.body;
       const { extractAndAddATITopics } = await import('./ati-topic-extractor');
@@ -1554,7 +1633,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/admin/topic-extraction-stats", async (req, res) => {
+  app.get("/api/admin/topic-extraction-stats", requireAdminSession, async (req, res) => {
     try {
       const { getTopicExtractionStats } = await import('./ati-topic-extractor');
       const stats = await getTopicExtractionStats();
@@ -1566,7 +1645,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Reference book parsing endpoints
-  app.post("/api/admin/parse-reference-book", async (req, res) => {
+  app.post("/api/admin/parse-reference-book", requireAdminSession, async (req, res) => {
     try {
       const { bookText, bookTitle } = req.body;
       const { parseReferenceBook } = await import('./reference-book-parser');
@@ -1579,7 +1658,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/admin/reference-book-stats", async (req, res) => {
+  app.get("/api/admin/reference-book-stats", requireAdminSession, async (req, res) => {
     try {
       const { getReferenceBookStats } = await import('./reference-book-parser');
       const stats = await getReferenceBookStats();
@@ -1660,14 +1739,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.log(`[Upload] Authenticated user upload: ${decoded.email}`);
         } else {
           // Guest access - create or use session-based guest ID
-          const sessionId = req.sessionID || req.headers['x-session-id'] || `guest_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-          userId = normalizeGuestId(sessionId);
+          userId = resolveGuestId(req);
           console.log(`[Upload] Guest user upload: ${userId}`);
         }
       } catch (tokenError) {
         // Invalid token, treat as guest
-        const sessionId = req.sessionID || req.headers['x-session-id'] || `guest_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-        userId = normalizeGuestId(sessionId);
+        userId = resolveGuestId(req);
         console.log(`[Upload] Invalid token, treating as guest: ${userId}`);
       }
 
@@ -2336,28 +2413,16 @@ Physiological Adaptation: Alterations in Body Systems`;
     }
   });
 
-  // Admin authentication endpoint
-  app.post("/api/admin/login", async (req, res) => {
-    try {
-      const { email, password } = req.body;
-      
-      // Simple admin check (in production, use proper authentication)
-      if (email === "admin@nurseprep.com" && password === "admin123") {
-        res.json({ 
-          token: "admin-token-" + Date.now(),
-          role: "admin"
-        });
-      } else {
-        res.status(401).json({ error: "Invalid credentials" });
-      }
-    } catch (error) {
-      console.error("Admin login error:", error);
-      res.status(500).json({ error: "Authentication failed" });
-    }
-  });
+  // Admin authentication lives in admin-routes.ts, registered above via
+  // registerAdminRoutes(app): session auth through AdminAuthSession, with CSRF
+  // and an audit log. A second /api/admin/login used to be declared here that
+  // string-compared a hardcoded email and password and handed back an
+  // unsigned "admin-token-<timestamp>". Registering later, it never matched a
+  // request - but it was one reordering away from shadowing the real handler,
+  // and its credentials were published in this public repo. Removed.
 
   // Admin analytics endpoint
-  app.get("/api/admin/analytics", async (req, res) => {
+  app.get("/api/admin/analytics", requireAdminSession, async (req, res) => {
     try {
       // Aggregate analytics data
       const totalUsers = 8453;
@@ -2383,7 +2448,7 @@ Physiological Adaptation: Alterations in Body Systems`;
   });
 
   // Admin topic metrics endpoint
-  app.get("/api/admin/topic-metrics", async (req, res) => {
+  app.get("/api/admin/topic-metrics", requireAdminSession, async (req, res) => {
     try {
       const metrics = [
         { topic: "Pharmacology Calculations", missRate: 82, students: 1543, priority: "critical" },
@@ -2401,7 +2466,7 @@ Physiological Adaptation: Alterations in Body Systems`;
   });
 
   // Admin user activity endpoint
-  app.get("/api/admin/user-activity", async (req, res) => {
+  app.get("/api/admin/user-activity", requireAdminSession, async (req, res) => {
     try {
       const activity = {
         dailyActive: [320, 380, 350, 420, 390, 280, 240],
@@ -2421,7 +2486,7 @@ Physiological Adaptation: Alterations in Body Systems`;
   });
 
   // Admin resource usage endpoint
-  app.get("/api/admin/resource-usage", async (req, res) => {
+  app.get("/api/admin/resource-usage", requireAdminSession, async (req, res) => {
     try {
       const usage = {
         totalResources: 1847,

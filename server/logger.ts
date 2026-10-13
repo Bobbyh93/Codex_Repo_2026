@@ -28,9 +28,17 @@ winston.addColors(colors);
 const consoleFormat = winston.format.combine(
   winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
   winston.format.colorize({ all: true }),
-  winston.format.printf(
-    (info) => `${info.timestamp} ${info.level}: ${info.message}`
-  )
+  // Append the error and stack that AppLogger.error attaches as metadata.
+  // Without this the console -- which on Render IS the log, since the file
+  // transports write to an ephemeral disk nobody reads -- showed only the
+  // message. That is how "Assessment topic seeding failed (non-critical):"
+  // ran on every boot for weeks without anyone learning the cause.
+  winston.format.printf((info) => {
+    let line = `${info.timestamp} ${info.level}: ${info.message}`;
+    if (info.error) line += ` ${info.error}`;
+    if (info.stack) line += `\n${String(info.stack).replace(/^/gm, '    ')}`;
+    return line;
+  })
 );
 
 // Format for file output

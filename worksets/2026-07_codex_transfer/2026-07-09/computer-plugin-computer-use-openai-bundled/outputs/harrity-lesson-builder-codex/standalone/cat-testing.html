@@ -1,0 +1,1715 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Harrity Nursing CAT Prototype</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f5f7fb;
+        --surface: #ffffff;
+        --surface-2: #eef4f8;
+        --ink: #142033;
+        --muted: #66748a;
+        --line: #d9e1eb;
+        --line-strong: #bdcad8;
+        --accent: #0f7b68;
+        --accent-2: #225ea8;
+        --accent-soft: #dff5ee;
+        --blue-soft: #e4efff;
+        --warn: #a15c12;
+        --warn-soft: #fff3db;
+        --danger: #b42318;
+        --danger-soft: #ffe7e5;
+        --pass: #147646;
+        --pass-soft: #dff7eb;
+        --shadow: 0 18px 45px rgba(37, 48, 72, 0.1);
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        min-height: 100vh;
+        margin: 0;
+        background:
+          linear-gradient(135deg, rgba(15, 123, 104, 0.09), transparent 32rem),
+          linear-gradient(315deg, rgba(34, 94, 168, 0.08), transparent 28rem),
+          var(--bg);
+        color: var(--ink);
+      }
+
+      button,
+      input,
+      select {
+        font: inherit;
+      }
+
+      button {
+        border: 0;
+        cursor: pointer;
+      }
+
+      button:disabled {
+        cursor: not-allowed;
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin: 0;
+      }
+
+      .app-shell {
+        width: min(1440px, calc(100vw - 28px));
+        margin: 0 auto;
+        padding: 22px 0 32px;
+      }
+
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 18px;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        min-width: 0;
+      }
+
+      .brand-mark {
+        width: 48px;
+        height: 48px;
+        display: grid;
+        place-items: center;
+        border-radius: 8px;
+        background: var(--ink);
+        color: #fff;
+        font-weight: 800;
+        font-size: 20px;
+        box-shadow: var(--shadow);
+        flex: 0 0 auto;
+      }
+
+      h1 {
+        font-size: clamp(28px, 4vw, 40px);
+        line-height: 1.05;
+        font-weight: 760;
+      }
+
+      .subtitle {
+        margin-top: 4px;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .top-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        min-height: 32px;
+        border-radius: 999px;
+        padding: 0 11px;
+        background: #fff;
+        border: 1px solid var(--line);
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 720;
+        white-space: nowrap;
+      }
+
+      .layout {
+        display: grid;
+        grid-template-columns: 270px minmax(0, 1fr);
+        gap: 18px;
+        align-items: start;
+      }
+
+      .sidebar,
+      .panel {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.92);
+        box-shadow: var(--shadow);
+      }
+
+      .sidebar {
+        position: sticky;
+        top: 16px;
+        padding: 14px;
+      }
+
+      .nav {
+        display: grid;
+        gap: 8px;
+      }
+
+      .nav button {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 42px;
+        border-radius: 8px;
+        padding: 0 12px;
+        background: transparent;
+        color: var(--muted);
+        text-align: left;
+        font-size: 14px;
+        font-weight: 720;
+      }
+
+      .nav button.active {
+        background: var(--ink);
+        color: #fff;
+      }
+
+      .nav-kicker {
+        margin: 18px 8px 8px;
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+
+      .main {
+        display: grid;
+        gap: 18px;
+      }
+
+      .panel-inner {
+        padding: 20px;
+      }
+
+      .hero-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.18fr) minmax(320px, 0.82fr);
+        gap: 18px;
+      }
+
+      .section-head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 14px;
+        margin-bottom: 16px;
+      }
+
+      h2 {
+        font-size: 22px;
+        line-height: 1.2;
+      }
+
+      h3 {
+        font-size: 15px;
+        line-height: 1.25;
+      }
+
+      .muted {
+        color: var(--muted);
+      }
+
+      .small {
+        font-size: 12px;
+        line-height: 1.45;
+      }
+
+      .grid-2,
+      .grid-3,
+      .metrics {
+        display: grid;
+        gap: 12px;
+      }
+
+      .grid-2 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .grid-3,
+      .metrics {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .metric,
+      .soft-box,
+      .item-card,
+      .result-row {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fff;
+      }
+
+      .metric {
+        padding: 14px;
+      }
+
+      .metric-value {
+        margin-top: 8px;
+        font-size: 28px;
+        font-weight: 780;
+      }
+
+      .metric-label {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 740;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 7px;
+        color: #334158;
+        font-size: 13px;
+        font-weight: 760;
+      }
+
+      select,
+      input {
+        width: 100%;
+        min-height: 42px;
+        border: 1px solid var(--line-strong);
+        border-radius: 8px;
+        background: #fff;
+        color: var(--ink);
+        padding: 0 12px;
+        outline: none;
+      }
+
+      select:focus,
+      input:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(15, 123, 104, 0.16);
+      }
+
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 16px;
+      }
+
+      .btn {
+        min-height: 42px;
+        border-radius: 8px;
+        padding: 0 15px;
+        font-size: 14px;
+        font-weight: 780;
+      }
+
+      .btn.primary {
+        background: var(--accent);
+        color: #fff;
+      }
+
+      .btn.primary:hover {
+        background: #0a6757;
+      }
+
+      .btn.secondary {
+        border: 1px solid var(--line-strong);
+        background: #fff;
+        color: var(--ink);
+      }
+
+      .btn.danger {
+        background: var(--danger-soft);
+        color: var(--danger);
+      }
+
+      .btn:disabled {
+        background: #bfccd8;
+        color: #fff;
+      }
+
+      .readiness {
+        display: grid;
+        gap: 9px;
+      }
+
+      .gate-row {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 12px;
+        align-items: start;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 11px;
+        background: #fbfcfe;
+      }
+
+      .status {
+        border-radius: 999px;
+        padding: 4px 8px;
+        font-size: 12px;
+        font-weight: 780;
+      }
+
+      .status.pass {
+        background: var(--pass-soft);
+        color: var(--pass);
+      }
+
+      .status.warn {
+        background: var(--warn-soft);
+        color: var(--warn);
+      }
+
+      .status.fail {
+        background: var(--danger-soft);
+        color: var(--danger);
+      }
+
+      .exam-card {
+        display: grid;
+        gap: 18px;
+      }
+
+      .question-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .stem {
+        font-size: 22px;
+        line-height: 1.42;
+        font-weight: 720;
+      }
+
+      .options {
+        display: grid;
+        gap: 10px;
+      }
+
+      .option {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        gap: 12px;
+        align-items: start;
+        width: 100%;
+        min-height: 56px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fff;
+        padding: 13px;
+        color: var(--ink);
+        text-align: left;
+      }
+
+      .option:hover {
+        border-color: var(--accent);
+      }
+
+      .option.selected {
+        border-color: var(--accent);
+        background: var(--accent-soft);
+      }
+
+      .option.correct {
+        border-color: var(--pass);
+        background: var(--pass-soft);
+      }
+
+      .option.incorrect {
+        border-color: var(--danger);
+        background: var(--danger-soft);
+      }
+
+      .option-key {
+        display: grid;
+        place-items: center;
+        width: 28px;
+        height: 28px;
+        border-radius: 999px;
+        background: var(--surface-2);
+        color: var(--ink);
+        font-size: 13px;
+        font-weight: 800;
+      }
+
+      .rationale {
+        border: 1px solid var(--line);
+        border-left: 4px solid var(--accent);
+        border-radius: 8px;
+        background: #fbfffd;
+        padding: 13px;
+      }
+
+      .progress {
+        height: 10px;
+        overflow: hidden;
+        border-radius: 999px;
+        background: #dfe7f0;
+      }
+
+      .progress-fill {
+        height: 100%;
+        width: 0%;
+        border-radius: inherit;
+        background: linear-gradient(90deg, var(--accent), var(--accent-2));
+        transition: width 180ms ease;
+      }
+
+      .bar-list {
+        display: grid;
+        gap: 10px;
+      }
+
+      .bar-row {
+        display: grid;
+        gap: 6px;
+      }
+
+      .bar-label {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        color: #334158;
+        font-size: 12px;
+        font-weight: 760;
+      }
+
+      .bar-track {
+        height: 10px;
+        overflow: hidden;
+        border-radius: 999px;
+        background: #e5ebf2;
+      }
+
+      .bar-fill {
+        height: 100%;
+        width: 0%;
+        border-radius: inherit;
+        background: var(--accent-2);
+      }
+
+      .item-list,
+      .review-list {
+        display: grid;
+        gap: 10px;
+      }
+
+      .item-card {
+        padding: 13px;
+      }
+
+      .item-card-top,
+      .result-row-top {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .tag-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 8px;
+      }
+
+      .tag {
+        display: inline-flex;
+        align-items: center;
+        min-height: 24px;
+        border-radius: 999px;
+        padding: 0 8px;
+        background: var(--blue-soft);
+        color: #174b84;
+        font-size: 11px;
+        font-weight: 760;
+      }
+
+      .result-row {
+        padding: 13px;
+      }
+
+      .result-row.correct {
+        border-left: 4px solid var(--pass);
+      }
+
+      .result-row.incorrect {
+        border-left: 4px solid var(--danger);
+      }
+
+      .hidden {
+        display: none !important;
+      }
+
+      .two-column-results {
+        display: grid;
+        grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+        gap: 18px;
+      }
+
+      .trend {
+        display: flex;
+        align-items: end;
+        gap: 5px;
+        height: 130px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 10px;
+        background: linear-gradient(180deg, #fff, #f8fbfd);
+      }
+
+      .trend-bar {
+        flex: 1;
+        min-width: 8px;
+        border-radius: 6px 6px 0 0;
+        background: var(--accent);
+      }
+
+      .sources {
+        display: grid;
+        gap: 8px;
+      }
+
+      .source-link {
+        color: var(--accent-2);
+        font-weight: 760;
+      }
+
+      .section-actions {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: 10px;
+      }
+
+      .section-actions .btn {
+        min-height: 40px;
+      }
+
+      .remediation-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+        margin-top: 18px;
+      }
+
+      .remediation-card {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 14px;
+        background: #fff;
+      }
+
+      .remediation-card h3 {
+        font-size: 13px;
+        line-height: 1.3;
+      }
+
+      .remediation-card .count {
+        margin-top: 8px;
+        font-size: 28px;
+        font-weight: 820;
+      }
+
+      .export-box {
+        margin-top: 16px;
+        max-height: 320px;
+        overflow: auto;
+        border: 1px solid #183149;
+        border-radius: 8px;
+        padding: 14px;
+        background: #071c2f;
+        color: #e8f6fb;
+        font: 12px/1.6 Consolas, "SFMono-Regular", monospace;
+        white-space: pre-wrap;
+      }
+
+      .coverage-matrix {
+        display: grid;
+        gap: 8px;
+        margin-top: 18px;
+      }
+
+      .coverage-row {
+        display: grid;
+        grid-template-columns: minmax(180px, 1.3fr) 92px minmax(180px, 1fr);
+        gap: 10px;
+        align-items: center;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 10px;
+        background: #fff;
+      }
+
+      .coverage-row.header {
+        background: #f8fbfd;
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 820;
+        letter-spacing: 0;
+        text-transform: uppercase;
+      }
+
+      .depth-meter {
+        display: block;
+        margin-top: 6px;
+        height: 8px;
+        overflow: hidden;
+        border-radius: 999px;
+        background: #dbe9f0;
+      }
+
+      .depth-fill {
+        height: 100%;
+        border-radius: inherit;
+        background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      }
+
+      @media (max-width: 1060px) {
+        .layout,
+        .hero-grid,
+        .two-column-results {
+          grid-template-columns: 1fr;
+        }
+
+        .sidebar {
+          position: static;
+        }
+      }
+
+      @media (max-width: 720px) {
+        .app-shell {
+          width: min(100vw - 20px, 640px);
+          padding-top: 14px;
+        }
+
+        .topbar,
+        .section-head,
+        .item-card-top,
+        .result-row-top {
+          display: grid;
+          justify-content: stretch;
+        }
+
+        .top-actions,
+        .section-actions,
+        .actions,
+        .question-meta {
+          width: 100%;
+        }
+
+        .grid-2,
+        .grid-3,
+        .remediation-grid,
+        .metrics {
+          grid-template-columns: 1fr;
+        }
+
+        .coverage-row {
+          grid-template-columns: 1fr;
+        }
+
+        .stem {
+          font-size: 18px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="topbar">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true">HN</div>
+          <div>
+            <h1>CAT Testing Studio</h1>
+            <p class="subtitle">Adaptive nursing practice connected to NCLEX blueprint, concepts, items, and remediation.</p>
+          </div>
+        </div>
+        <div class="top-actions">
+          <span class="pill" id="sessionStatusPill">Prototype mode</span>
+          <span class="pill">NCLEX-RN 2026</span>
+        </div>
+      </header>
+
+      <div class="layout">
+        <aside class="sidebar">
+          <nav class="nav" aria-label="CAT prototype sections">
+            <button type="button" class="active" data-view="practice">
+              <span>CAT Practice</span><span id="navPracticeMeta">ready</span>
+            </button>
+            <button type="button" data-view="results">
+              <span>Results</span><span id="navResultsMeta">empty</span>
+            </button>
+            <button type="button" data-view="mapping">
+              <span>Content Map</span><span>items</span>
+            </button>
+            <button type="button" data-view="control">
+              <span>Control Plane</span><span id="navControlMeta">pass</span>
+            </button>
+          </nav>
+          <div class="nav-kicker">Build path</div>
+          <div class="readiness" id="buildPath"></div>
+        </aside>
+
+        <section class="main">
+          <div class="panel view" id="view-practice">
+            <div class="panel-inner">
+              <div class="hero-grid" id="setupScreen">
+                <section>
+                  <div class="section-head">
+                    <div>
+                      <h2>Start adaptive practice</h2>
+                      <p class="muted small">This prototype selects unused items by blueprint need and difficulty match.</p>
+                    </div>
+                    <span class="status pass" id="readinessBadge">ready</span>
+                  </div>
+
+                  <div class="grid-3">
+                    <div>
+                      <label for="scopeSelect">Scope</label>
+                      <select id="scopeSelect"></select>
+                    </div>
+                    <div>
+                      <label for="lengthSelect">Session length</label>
+                      <select id="lengthSelect">
+                        <option value="4">4 item smoke test</option>
+                        <option value="8">8 item blueprint pass</option>
+                        <option value="12">12 item prototype</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label for="startAbility">Starting estimate</label>
+                      <select id="startAbility">
+                        <option value="-0.6">developing</option>
+                        <option value="0" selected>baseline</option>
+                        <option value="0.6">advanced</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="metrics" style="margin-top: 16px">
+                    <div class="metric">
+                      <p class="metric-label">Approved items</p>
+                      <p class="metric-value" id="approvedMetric">0</p>
+                    </div>
+                    <div class="metric">
+                      <p class="metric-label">Mapped concepts</p>
+                      <p class="metric-value" id="conceptMetric">0</p>
+                    </div>
+                    <div class="metric">
+                      <p class="metric-label">Blueprint categories</p>
+                      <p class="metric-value" id="categoryMetric">0</p>
+                    </div>
+                  </div>
+
+                  <div class="actions">
+                    <button class="btn primary" type="button" id="startExamButton">Start CAT practice</button>
+                    <button class="btn secondary" type="button" id="resetButton">Reset prototype</button>
+                  </div>
+                </section>
+
+                <section class="soft-box panel-inner">
+                  <div class="section-head">
+                    <div>
+                      <h2>Readiness gates</h2>
+                      <p class="muted small">CAT mode blocks when required item metadata is missing.</p>
+                    </div>
+                  </div>
+                  <div class="readiness" id="readinessList"></div>
+                </section>
+              </div>
+
+              <section class="exam-card hidden" id="examScreen">
+                <div class="section-head">
+                  <div>
+                    <h2 id="examProgressTitle">Item 1 of 4</h2>
+                    <p class="muted small" id="selectionReason">Selected by blueprint need.</p>
+                  </div>
+                  <button class="btn danger" type="button" id="endExamButton">End session</button>
+                </div>
+                <div class="progress" aria-label="Exam progress">
+                  <div class="progress-fill" id="examProgressFill"></div>
+                </div>
+                <div class="question-meta" id="questionMeta"></div>
+                <p class="stem" id="itemStem"></p>
+                <div class="options" id="optionsList"></div>
+                <div class="rationale hidden" id="rationaleBox"></div>
+                <div class="actions">
+                  <button class="btn primary" type="button" id="confirmButton" disabled>Confirm answer</button>
+                  <button class="btn secondary hidden" type="button" id="nextButton">Next item</button>
+                </div>
+              </section>
+            </div>
+          </div>
+
+          <div class="panel view hidden" id="view-results">
+            <div class="panel-inner">
+              <div class="section-head">
+                <div>
+                  <h2>Results and remediation</h2>
+                  <p class="muted small">Adaptive performance is mapped back to concepts and lessons.</p>
+                </div>
+                <div class="section-actions">
+                  <button class="btn secondary" type="button" id="exportSessionButton">Export session</button>
+                  <button class="btn primary" type="button" id="retakeMissedButton">Retest weak concepts</button>
+                </div>
+              </div>
+              <div id="resultsEmpty" class="soft-box panel-inner">
+                <h3>No completed session yet</h3>
+                <p class="muted small" style="margin-top: 6px">Start CAT Practice to generate results.</p>
+              </div>
+              <div id="resultsContent" class="hidden">
+                <div class="metrics">
+                  <div class="metric">
+                    <p class="metric-label">Score</p>
+                    <p class="metric-value" id="scoreMetric">0%</p>
+                  </div>
+                  <div class="metric">
+                    <p class="metric-label">Ability estimate</p>
+                    <p class="metric-value" id="abilityMetric">0.00</p>
+                  </div>
+                  <div class="metric">
+                    <p class="metric-label">Weak concepts</p>
+                    <p class="metric-value" id="weakMetric">0</p>
+                  </div>
+                </div>
+
+                <section class="soft-box panel-inner" style="margin-top: 18px">
+                  <div class="section-head">
+                    <div>
+                      <h2>Remediation plan</h2>
+                      <p class="muted small">Actionable review targets generated from missed concepts, lessons, and item rationales.</p>
+                    </div>
+                  </div>
+                  <div class="remediation-grid" id="remediationPlan"></div>
+                </section>
+
+                <section class="soft-box panel-inner hidden" id="sessionExportPanel">
+                  <div class="section-head">
+                    <div>
+                      <h2>Session evidence</h2>
+                      <p class="muted small">Portable JSON for instructor review, analytics, or future LMS integration.</p>
+                    </div>
+                  </div>
+                  <pre class="export-box" id="sessionExport"></pre>
+                </section>
+
+                <div class="two-column-results" style="margin-top: 18px">
+                  <section>
+                    <div class="section-head">
+                      <div>
+                        <h2>Blueprint coverage</h2>
+                        <p class="muted small">Observed distribution in this session.</p>
+                      </div>
+                    </div>
+                    <div class="bar-list" id="coverageBars"></div>
+                    <div style="height: 16px"></div>
+                    <h2>Ability trend</h2>
+                    <div class="trend" id="abilityTrend" style="margin-top: 10px"></div>
+                  </section>
+                  <section>
+                    <div class="section-head">
+                      <div>
+                        <h2>Review queue</h2>
+                        <p class="muted small">Missed items point back to lessons and concepts.</p>
+                      </div>
+                    </div>
+                    <div class="review-list" id="reviewList"></div>
+                  </section>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel view hidden" id="view-mapping">
+            <div class="panel-inner">
+              <div class="section-head">
+                <div>
+                  <h2>Learning content mapping</h2>
+                  <p class="muted small">Every item should trace to concepts, lessons, rationales, and NCLEX blueprint categories.</p>
+                </div>
+              </div>
+              <div class="item-list" id="itemMapList"></div>
+            </div>
+          </div>
+
+          <div class="panel view hidden" id="view-control">
+            <div class="panel-inner">
+              <div class="section-head">
+                <div>
+                  <h2>Control Plane Gates</h2>
+                  <p class="muted small">Gate status for CAT readiness and content integrity.</p>
+                </div>
+                <button class="btn secondary" type="button" id="rerunGatesButton">Run gates</button>
+              </div>
+              <div class="grid-2">
+                <section>
+                  <h2>CAT gates</h2>
+                  <div class="readiness" id="controlGateList" style="margin-top: 12px"></div>
+                </section>
+                <section>
+                  <h2>Source anchors</h2>
+                  <div class="sources" style="margin-top: 12px">
+                    <a class="source-link" href="https://www.nclex.com/test-plans.page">NCLEX Test Plans</a>
+                    <a class="source-link" href="https://www.nclex.com/files/2026_RN_Test%20Plan_English-F.pdf">2026 NCLEX-RN Test Plan PDF</a>
+                    <a class="source-link" href="https://www.nclex.com/computerized-adaptive-testing.page">NCLEX CAT overview</a>
+                    <a class="source-link" href="https://www.nclex.com/clinical-judgment-measurement-model.page">NCJMM overview</a>
+                  </div>
+                  <div class="soft-box panel-inner" style="margin-top: 14px">
+                    <h3>Prototype boundary</h3>
+                    <p class="muted small" style="margin-top: 6px">
+                      This is an educational CAT-style simulator. It does not claim official NCLEX scoring equivalence.
+                    </p>
+                  </div>
+                </section>
+              </div>
+              <section class="soft-box panel-inner" style="margin-top: 18px">
+                <div class="section-head">
+                  <div>
+                    <h2>Educator coverage matrix</h2>
+                    <p class="muted small">Blueprint depth view for deciding which categories need more approved items before a real CAT pilot.</p>
+                  </div>
+                </div>
+                <div class="coverage-matrix" id="controlCoverageMatrix"></div>
+              </section>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <script>
+      const BLUEPRINT = {
+        exam: "NCLEX-RN",
+        testPlanYear: 2026,
+        effectiveStart: "2026-04-01",
+        effectiveEnd: "2029-03-31",
+        clientNeeds: [
+          ["Management of Care", 15, 21, 18],
+          ["Safety and Infection Prevention and Control", 10, 16, 13],
+          ["Health Promotion and Maintenance", 6, 12, 9],
+          ["Psychosocial Integrity", 6, 12, 9],
+          ["Basic Care and Comfort", 6, 12, 9],
+          ["Pharmacological and Parenteral Therapies", 13, 19, 16],
+          ["Reduction of Risk Potential", 9, 15, 12],
+          ["Physiological Adaptation", 11, 17, 14],
+        ].map(([subcategory, minPercent, maxPercent, midpointPercent]) => ({
+          subcategory,
+          minPercent,
+          maxPercent,
+          midpointPercent,
+        })),
+      };
+
+      const ITEMS = [
+        item("ITEM-0001", "Physiological Adaptation", "take_action", ["oxygenation", "priority-setting", "acute-change"], "LESSON-OXYGENATION-001", 0.1, "A nurse is caring for an adult client with oxygen saturation of 88% on room air and new confusion. Which action should the nurse take first?", ["Document the finding and reassess in one hour.", "Apply oxygen per protocol and assess respiratory status.", "Encourage oral fluids.", "Ask the family about baseline cognition."], "B", "Hypoxemia with acute confusion requires immediate support of oxygenation and respiratory assessment."),
+        item("ITEM-0002", "Pharmacological and Parenteral Therapies", "analyze_cues", ["medication-safety", "electrolytes", "iv-therapy"], "LESSON-MED-SAFETY-001", 0.4, "A nurse receives prescriptions for four clients. Which prescription should the nurse question?", ["Administer regular insulin using a sliding scale.", "Give potassium chloride IV push for hypokalemia.", "Start oxygen at 2 L/min by nasal cannula for dyspnea.", "Obtain a serum trough level before the next antibiotic dose."], "B", "Potassium chloride should not be administered by IV push because it can cause fatal dysrhythmias."),
+        item("ITEM-0003", "Management of Care", "prioritize_hypotheses", ["delegation", "wound-care", "scope-of-practice"], "LESSON-DELEGATION-001", -0.2, "A charge nurse assigns care for a client who requires sterile wound irrigation. Which staff member is appropriate to assign?", ["Experienced RN", "Unit clerk", "Unlicensed assistive personnel", "Transport aide"], "A", "Sterile wound irrigation requires nursing assessment, sterile technique, and accountability within RN scope."),
+        item("ITEM-0004", "Safety and Infection Prevention and Control", "recognize_cues", ["infection-control", "airborne-precautions", "ppe"], "LESSON-INFECTION-CONTROL-001", -0.5, "A nurse is preparing to enter the room of a client with suspected airborne infection. Which personal protective equipment is required?", ["Surgical mask only", "N95 respirator or equivalent", "Sterile gloves only", "Face shield only"], "B", "Airborne precautions require respiratory protection such as an N95 respirator or equivalent."),
+        item("ITEM-0005", "Reduction of Risk Potential", "recognize_cues", ["diagnostics", "post-procedure-care", "bleeding-risk"], "LESSON-RISK-REDUCTION-001", 0.2, "Four hours after a liver biopsy, which finding requires immediate follow-up?", ["Mild soreness at the puncture site", "Blood pressure 88/54 mm Hg", "Temperature 99.1 F", "Reports wanting to sleep"], "B", "Hypotension after liver biopsy can indicate internal bleeding and requires immediate intervention."),
+        item("ITEM-0006", "Basic Care and Comfort", "generate_solutions", ["mobility", "skin-integrity", "comfort"], "LESSON-BASIC-CARE-001", -0.6, "Which intervention best reduces pressure injury risk for an immobile client?", ["Reposition at scheduled intervals.", "Limit oral fluids.", "Keep the head of bed at 90 degrees.", "Massage reddened bony prominences."], "A", "Regular repositioning reduces pressure duration and helps protect skin integrity."),
+        item("ITEM-0007", "Psychosocial Integrity", "analyze_cues", ["therapeutic-communication", "anxiety", "coping"], "LESSON-PSYCHOSOCIAL-001", -0.1, "A client says, 'I cannot stop worrying about surgery tomorrow.' Which response is therapeutic?", ["You should not worry because surgery is routine.", "Tell me what concerns you most right now.", "The surgeon will explain everything later.", "I will ask for a sedative."], "B", "Open-ended exploration supports therapeutic communication and assessment of anxiety."),
+        item("ITEM-0008", "Health Promotion and Maintenance", "generate_solutions", ["patient-education", "screening", "prevention"], "LESSON-HEALTH-PROMOTION-001", -0.3, "Which instruction supports health promotion for an adult client with hypertension?", ["Stop medication when blood pressure improves.", "Use a home blood pressure log.", "Avoid all physical activity.", "Increase sodium intake during hot weather."], "B", "Home blood pressure monitoring supports self-management and follow-up."),
+        item("ITEM-0009", "Management of Care", "take_action", ["priority-setting", "staffing", "client-safety"], "LESSON-MANAGEMENT-CARE-002", 0.7, "The nurse has four tasks due. Which task should be completed first?", ["Discharge teaching for a stable client", "Pain reassessment after oral analgesic", "Assessment of a client reporting chest pressure", "Routine dressing change"], "C", "New chest pressure may indicate compromised circulation and requires immediate assessment."),
+        item("ITEM-0010", "Safety and Infection Prevention and Control", "evaluate_outcomes", ["fall-prevention", "safety", "quality-improvement"], "LESSON-SAFETY-002", 0.1, "After fall precautions are initiated, which observation shows the plan is effective?", ["Call light is clipped behind the bed.", "Client wears nonskid footwear when ambulating.", "Bed is left in high position for transfers.", "Side rails are all raised at all times."], "B", "Nonskid footwear during ambulation is an appropriate fall-prevention outcome."),
+        item("ITEM-0011", "Pharmacological and Parenteral Therapies", "recognize_cues", ["adverse-effects", "anticoagulation", "labs"], "LESSON-ANTICOAGULATION-001", 0.8, "A client taking warfarin reports black tarry stools. Which interpretation is most concerning?", ["Expected dietary change", "Possible gastrointestinal bleeding", "Improved anticoagulation control", "Normal medication effect"], "B", "Black tarry stools may indicate gastrointestinal bleeding in a client taking warfarin."),
+        item("ITEM-0012", "Physiological Adaptation", "analyze_cues", ["fluid-volume", "shock", "perfusion"], "LESSON-PERFUSION-001", 1.0, "A client with sepsis has cool extremities, decreasing blood pressure, and new oliguria. What do these cues suggest?", ["Improving renal perfusion", "Compensated fluid balance", "Worsening tissue perfusion", "Expected antibiotic response"], "C", "Hypotension, cool extremities, and oliguria suggest worsening perfusion and possible shock."),
+        item("ITEM-0013", "Reduction of Risk Potential", "prioritize_hypotheses", ["lab-values", "electrolytes", "cardiac-risk"], "LESSON-LABS-001", 0.5, "Which laboratory value should the nurse report promptly?", ["Potassium 6.1 mEq/L", "Sodium 138 mEq/L", "Hemoglobin 13.8 g/dL", "Calcium 9.4 mg/dL"], "A", "Hyperkalemia can cause life-threatening dysrhythmias and requires prompt follow-up."),
+        item("ITEM-0014", "Basic Care and Comfort", "take_action", ["nutrition", "aspiration-risk", "feeding"], "LESSON-NUTRITION-001", -0.1, "Which action is best before feeding a client with dysphagia?", ["Place the client supine.", "Check alertness and ability to swallow.", "Offer thin liquids first.", "Encourage rapid eating while food is warm."], "B", "Assessing alertness and swallowing ability reduces aspiration risk."),
+        item("ITEM-0015", "Psychosocial Integrity", "take_action", ["suicide-risk", "safety", "crisis"], "LESSON-CRISIS-SAFETY-001", 1.2, "A client states, 'I have a plan to kill myself tonight.' What is the nurse's priority action?", ["Leave the client alone to rest.", "Ask the client to sign a no-harm contract and return later.", "Stay with the client and initiate safety precautions.", "Tell the client the thoughts will pass."], "C", "A stated suicide plan requires immediate safety precautions and continuous supervision until help arrives."),
+        item("ITEM-0016", "Health Promotion and Maintenance", "evaluate_outcomes", ["maternal-newborn", "teaching", "postpartum"], "LESSON-POSTPARTUM-001", 0.3, "Which postpartum statement indicates teaching was effective?", ["I will report soaking a pad in an hour.", "I should avoid hand hygiene before breastfeeding.", "A fever is expected for two weeks.", "I should ignore calf pain if it is mild."], "A", "Heavy bleeding, such as soaking a pad in an hour, should be reported promptly.")
+      ];
+
+      function item(id, subcategory, clinicalJudgmentStep, concepts, lesson, difficulty, stem, optionTexts, correctKey, rationale) {
+        return {
+          id,
+          status: "approved",
+          stem,
+          format: "single_choice",
+          options: optionTexts.map((text, index) => ({ id: String.fromCharCode(65 + index), text })),
+          correctResponse: [correctKey],
+          scoring: { method: "zero_one", points: 1 },
+          rationale: { correct: rationale, incorrect: {} },
+          blueprint: {
+            exam: "NCLEX-RN",
+            testPlanYear: 2026,
+            clientNeedsCategory:
+              ["Management of Care", "Safety and Infection Prevention and Control"].includes(subcategory)
+                ? "Safe and Effective Care Environment"
+                : ["Basic Care and Comfort", "Pharmacological and Parenteral Therapies", "Reduction of Risk Potential", "Physiological Adaptation"].includes(subcategory)
+                  ? "Physiological Integrity"
+                  : subcategory,
+            clientNeedsSubcategory: subcategory,
+            clinicalJudgmentStep,
+          },
+          concepts,
+          lessons: [lesson],
+          difficulty,
+          discrimination: 1,
+          sourceRefs: [`SRC-${id}`],
+        };
+      }
+
+      const state = {
+        view: "practice",
+        session: null,
+        currentSelection: null,
+        selectedOption: null,
+        lastResults: null,
+        weakScope: null,
+        sessionExportOpen: false,
+      };
+
+      const els = {
+        views: [...document.querySelectorAll(".view")],
+        navButtons: [...document.querySelectorAll(".nav button")],
+        buildPath: document.querySelector("#buildPath"),
+        scopeSelect: document.querySelector("#scopeSelect"),
+        lengthSelect: document.querySelector("#lengthSelect"),
+        startAbility: document.querySelector("#startAbility"),
+        startExamButton: document.querySelector("#startExamButton"),
+        resetButton: document.querySelector("#resetButton"),
+        setupScreen: document.querySelector("#setupScreen"),
+        examScreen: document.querySelector("#examScreen"),
+        readinessList: document.querySelector("#readinessList"),
+        readinessBadge: document.querySelector("#readinessBadge"),
+        approvedMetric: document.querySelector("#approvedMetric"),
+        conceptMetric: document.querySelector("#conceptMetric"),
+        categoryMetric: document.querySelector("#categoryMetric"),
+        examProgressTitle: document.querySelector("#examProgressTitle"),
+        examProgressFill: document.querySelector("#examProgressFill"),
+        selectionReason: document.querySelector("#selectionReason"),
+        questionMeta: document.querySelector("#questionMeta"),
+        itemStem: document.querySelector("#itemStem"),
+        optionsList: document.querySelector("#optionsList"),
+        rationaleBox: document.querySelector("#rationaleBox"),
+        confirmButton: document.querySelector("#confirmButton"),
+        nextButton: document.querySelector("#nextButton"),
+        endExamButton: document.querySelector("#endExamButton"),
+        resultsEmpty: document.querySelector("#resultsEmpty"),
+        resultsContent: document.querySelector("#resultsContent"),
+        scoreMetric: document.querySelector("#scoreMetric"),
+        abilityMetric: document.querySelector("#abilityMetric"),
+        weakMetric: document.querySelector("#weakMetric"),
+        remediationPlan: document.querySelector("#remediationPlan"),
+        sessionExportPanel: document.querySelector("#sessionExportPanel"),
+        sessionExport: document.querySelector("#sessionExport"),
+        exportSessionButton: document.querySelector("#exportSessionButton"),
+        coverageBars: document.querySelector("#coverageBars"),
+        abilityTrend: document.querySelector("#abilityTrend"),
+        reviewList: document.querySelector("#reviewList"),
+        itemMapList: document.querySelector("#itemMapList"),
+        controlGateList: document.querySelector("#controlGateList"),
+        controlCoverageMatrix: document.querySelector("#controlCoverageMatrix"),
+        rerunGatesButton: document.querySelector("#rerunGatesButton"),
+        retakeMissedButton: document.querySelector("#retakeMissedButton"),
+        navResultsMeta: document.querySelector("#navResultsMeta"),
+        navControlMeta: document.querySelector("#navControlMeta"),
+        navPracticeMeta: document.querySelector("#navPracticeMeta"),
+        sessionStatusPill: document.querySelector("#sessionStatusPill"),
+      };
+
+      function init() {
+        renderScopeOptions();
+        renderBuildPath();
+        renderSetup();
+        renderMapping();
+        renderControl();
+        bindEvents();
+      }
+
+      function bindEvents() {
+        els.navButtons.forEach((button) =>
+          button.addEventListener("click", () => setView(button.dataset.view)),
+        );
+        els.startExamButton.addEventListener("click", startExam);
+        els.resetButton.addEventListener("click", resetPrototype);
+        els.confirmButton.addEventListener("click", confirmAnswer);
+        els.nextButton.addEventListener("click", advanceItem);
+        els.endExamButton.addEventListener("click", finishExam);
+        els.rerunGatesButton.addEventListener("click", renderControl);
+        els.retakeMissedButton.addEventListener("click", startWeakConceptRetest);
+        els.exportSessionButton.addEventListener("click", toggleSessionExport);
+        els.scopeSelect.addEventListener("change", () => {
+          if (els.scopeSelect.value !== "weak") state.weakScope = null;
+          renderSetup();
+        });
+        els.lengthSelect.addEventListener("change", renderSetup);
+      }
+
+      function renderScopeOptions() {
+        const categoryOptions = BLUEPRINT.clientNeeds.map(
+          (entry) => `<option value="${entry.subcategory}">${entry.subcategory}</option>`,
+        );
+        const hasWeakScope = Array.isArray(state.weakScope) && state.weakScope.length > 0;
+        els.scopeSelect.innerHTML = [
+          `<option value="full">Full RN blueprint</option>`,
+          `<option value="weak"${hasWeakScope ? "" : " disabled"}>Weak concepts retest${hasWeakScope ? ` (${state.weakScope.length})` : ""}</option>`,
+          ...categoryOptions,
+        ].join("");
+        if (hasWeakScope) els.scopeSelect.value = "weak";
+      }
+
+      function setView(view) {
+        state.view = view;
+        els.views.forEach((node) => node.classList.toggle("hidden", node.id !== `view-${view}`));
+        els.navButtons.forEach((button) => button.classList.toggle("active", button.dataset.view === view));
+        if (view === "results") renderResults();
+        if (view === "control") renderControl();
+      }
+
+      function evaluateGates() {
+        const approved = ITEMS.filter((item) => item.status === "approved");
+        const categories = new Set(approved.map((item) => item.blueprint.clientNeedsSubcategory));
+        const conceptless = approved.filter((item) => !item.concepts?.length);
+        const lessonless = approved.filter((item) => !item.lessons?.length);
+        const rationaleless = approved.filter((item) => !item.rationale?.correct);
+        const responseMissing = approved.filter((item) => !item.correctResponse?.length || !item.scoring);
+        const categoryCoverage = BLUEPRINT.clientNeeds.map((entry) => ({
+          category: entry.subcategory,
+          count: approved.filter((item) => item.blueprint.clientNeedsSubcategory === entry.subcategory).length,
+        }));
+        const thinCategories = categoryCoverage.filter((entry) => entry.count < 2);
+
+        return [
+          gate("Approved item pool", approved.length >= 12, `${approved.length} approved items available`),
+          gate("Blueprint mapping", categories.size === BLUEPRINT.clientNeeds.length, `${categories.size} of ${BLUEPRINT.clientNeeds.length} categories represented`),
+          gate("Concept mapping", conceptless.length === 0, conceptless.length ? `${conceptless.length} items missing concepts` : "all approved items mapped to concepts"),
+          gate("Lesson remediation links", lessonless.length === 0, lessonless.length ? `${lessonless.length} items missing lessons` : "all approved items link to lessons"),
+          gate("Rationales", rationaleless.length === 0, rationaleless.length ? `${rationaleless.length} items missing rationales` : "all approved items include rationales"),
+          gate("Scoring metadata", responseMissing.length === 0, responseMissing.length ? `${responseMissing.length} items missing scoring` : "all approved items have answer/scoring metadata"),
+          gate("Category depth", thinCategories.length === 0, thinCategories.length ? `${thinCategories.length} categories have fewer than 2 items` : "each category has at least 2 items"),
+        ];
+      }
+
+      function gate(name, pass, detail) {
+        return { name, pass, detail, status: pass ? "pass" : "fail" };
+      }
+
+      function renderGateList(target, gates) {
+        target.innerHTML = gates
+          .map(
+            (gate) => `
+              <div class="gate-row">
+                <div>
+                  <h3>${gate.name}</h3>
+                  <p class="muted small" style="margin-top: 3px">${gate.detail}</p>
+                </div>
+                <span class="status ${gate.status}">${gate.status}</span>
+              </div>
+            `,
+          )
+          .join("");
+      }
+
+      function renderSetup() {
+        const gates = evaluateGates();
+        const ready = gates.every((gate) => gate.pass);
+        const scopedItems = getScopedItems();
+        const concepts = new Set(scopedItems.flatMap((item) => item.concepts));
+        const categories = new Set(scopedItems.map((item) => item.blueprint.clientNeedsSubcategory));
+
+        els.approvedMetric.textContent = scopedItems.length;
+        els.conceptMetric.textContent = concepts.size;
+        els.categoryMetric.textContent = categories.size;
+        els.readinessBadge.textContent = ready ? "ready" : "blocked";
+        els.readinessBadge.className = `status ${ready ? "pass" : "fail"}`;
+        els.startExamButton.disabled = !ready || scopedItems.length === 0;
+        els.navControlMeta.textContent = ready ? "pass" : "blocked";
+        renderGateList(els.readinessList, gates);
+      }
+
+      function renderBuildPath() {
+        const steps = [
+          ["Lesson builder", "imported"],
+          ["Concept map", "active"],
+          ["Item bank", "seeded"],
+          ["CAT selector", "prototype"],
+          ["Remediation", "linked"],
+        ];
+        els.buildPath.innerHTML = steps
+          .map(
+            ([name, status]) => `
+              <div class="gate-row">
+                <div>
+                  <h3>${name}</h3>
+                  <p class="muted small">${status}</p>
+                </div>
+                <span class="status pass">ok</span>
+              </div>
+            `,
+          )
+          .join("");
+      }
+
+      function getScopedItems() {
+        const scope = els.scopeSelect.value;
+        const approved = ITEMS.filter((item) => item.status === "approved");
+        if (scope === "full") return approved;
+        if (scope === "weak" && Array.isArray(state.weakScope)) {
+          return approved.filter((item) => item.concepts.some((concept) => state.weakScope.includes(concept)));
+        }
+        return approved.filter((item) => item.blueprint.clientNeedsSubcategory === scope);
+      }
+
+      function startExam() {
+        const length = Math.min(Number(els.lengthSelect.value), getScopedItems().length);
+        state.sessionExportOpen = false;
+        state.session = {
+          id: `CAT-${Date.now()}`,
+          status: "in_progress",
+          length,
+          ability: Number(els.startAbility.value),
+          abilityHistory: [Number(els.startAbility.value)],
+          responses: [],
+          usedItemIds: [],
+          coverage: {},
+        };
+        state.selectedOption = null;
+        els.setupScreen.classList.add("hidden");
+        els.examScreen.classList.remove("hidden");
+        els.sessionStatusPill.textContent = "Session in progress";
+        advanceItem();
+      }
+
+      function selectNextItem() {
+        const pool = getScopedItems().filter((item) => !state.session.usedItemIds.includes(item.id));
+        if (!pool.length) return null;
+        const coverage = state.session.coverage;
+        const totalSeen = Object.values(coverage).reduce((sum, count) => sum + count, 0);
+        const rankedCategories = BLUEPRINT.clientNeeds
+          .map((entry) => {
+            const seen = coverage[entry.subcategory] || 0;
+            const observedShare = totalSeen ? seen / totalSeen : 0;
+            const targetShare = entry.midpointPercent / 100;
+            return { ...entry, gap: targetShare - observedShare };
+          })
+          .sort((a, b) => b.gap - a.gap);
+
+        for (const category of rankedCategories) {
+          const candidates = pool
+            .filter((item) => item.blueprint.clientNeedsSubcategory === category.subcategory)
+            .sort((a, b) => Math.abs(a.difficulty - state.session.ability) - Math.abs(b.difficulty - state.session.ability));
+          if (candidates.length) {
+            return {
+              item: candidates[0],
+              reason: `Selected ${category.subcategory} because it is under target coverage; difficulty ${candidates[0].difficulty.toFixed(1)} is closest to ability ${state.session.ability.toFixed(2)}.`,
+            };
+          }
+        }
+
+        const fallback = pool.sort((a, b) => Math.abs(a.difficulty - state.session.ability) - Math.abs(b.difficulty - state.session.ability))[0];
+        return {
+          item: fallback,
+          reason: `Fallback selection by difficulty match near ability ${state.session.ability.toFixed(2)}.`,
+        };
+      }
+
+      function advanceItem() {
+        if (!state.session || state.session.responses.length >= state.session.length) {
+          finishExam();
+          return;
+        }
+        const selection = selectNextItem();
+        if (!selection) {
+          finishExam();
+          return;
+        }
+        state.currentSelection = selection;
+        state.selectedOption = null;
+        state.session.usedItemIds.push(selection.item.id);
+        renderCurrentItem();
+      }
+
+      function renderCurrentItem() {
+        const { item, reason } = state.currentSelection;
+        const currentNumber = state.session.responses.length + 1;
+        els.examProgressTitle.textContent = `Item ${currentNumber} of ${state.session.length}`;
+        els.examProgressFill.style.width = `${((currentNumber - 1) / state.session.length) * 100}%`;
+        els.selectionReason.textContent = reason;
+        els.questionMeta.innerHTML = [
+          item.blueprint.clientNeedsSubcategory,
+          item.blueprint.clinicalJudgmentStep.replaceAll("_", " "),
+          `difficulty ${item.difficulty.toFixed(1)}`,
+          item.concepts.join(", "),
+        ]
+          .map((text) => `<span class="pill">${text}</span>`)
+          .join("");
+        els.itemStem.textContent = item.stem;
+        els.optionsList.innerHTML = item.options
+          .map(
+            (option) => `
+              <button class="option" type="button" data-option="${option.id}">
+                <span class="option-key">${option.id}</span>
+                <span>${option.text}</span>
+              </button>
+            `,
+          )
+          .join("");
+        [...els.optionsList.querySelectorAll(".option")].forEach((button) =>
+          button.addEventListener("click", () => selectOption(button.dataset.option)),
+        );
+        els.rationaleBox.classList.add("hidden");
+        els.rationaleBox.innerHTML = "";
+        els.confirmButton.disabled = true;
+        els.confirmButton.classList.remove("hidden");
+        els.nextButton.classList.add("hidden");
+      }
+
+      function selectOption(optionId) {
+        state.selectedOption = optionId;
+        [...els.optionsList.querySelectorAll(".option")].forEach((button) => {
+          button.classList.toggle("selected", button.dataset.option === optionId);
+        });
+        els.confirmButton.disabled = false;
+      }
+
+      function confirmAnswer() {
+        const item = state.currentSelection.item;
+        const correct = item.correctResponse.includes(state.selectedOption);
+        const previousAbility = state.session.ability;
+        const updatedAbility = updateAbility(previousAbility, item.difficulty, correct);
+        state.session.ability = updatedAbility;
+        state.session.abilityHistory.push(updatedAbility);
+        state.session.coverage[item.blueprint.clientNeedsSubcategory] =
+          (state.session.coverage[item.blueprint.clientNeedsSubcategory] || 0) + 1;
+        state.session.responses.push({
+          itemId: item.id,
+          selectedOption: state.selectedOption,
+          correct,
+          abilityBefore: previousAbility,
+          abilityAfter: updatedAbility,
+        });
+
+        [...els.optionsList.querySelectorAll(".option")].forEach((button) => {
+          button.disabled = true;
+          if (item.correctResponse.includes(button.dataset.option)) button.classList.add("correct");
+          if (button.dataset.option === state.selectedOption && !correct) button.classList.add("incorrect");
+        });
+        els.rationaleBox.classList.remove("hidden");
+        els.rationaleBox.innerHTML = `
+          <h3>${correct ? "Correct" : "Needs review"}</h3>
+          <p class="small muted" style="margin-top: 6px">${item.rationale.correct}</p>
+          <p class="small" style="margin-top: 8px"><strong>Ability:</strong> ${previousAbility.toFixed(2)} to ${updatedAbility.toFixed(2)}</p>
+        `;
+        els.confirmButton.classList.add("hidden");
+        els.nextButton.classList.remove("hidden");
+        els.nextButton.textContent =
+          state.session.responses.length >= state.session.length ? "Finish and review" : "Next item";
+        els.examProgressFill.style.width = `${(state.session.responses.length / state.session.length) * 100}%`;
+      }
+
+      function updateAbility(ability, difficulty, correct) {
+        const mismatch = Math.abs(difficulty - ability);
+        const base = 0.22 + Math.min(0.18, mismatch * 0.08);
+        const direction = correct ? 1 : -1;
+        const challengeBoost = correct && difficulty > ability ? 0.08 : 0;
+        const missPenalty = !correct && difficulty < ability ? 0.08 : 0;
+        return clamp(ability + direction * (base + challengeBoost + missPenalty), -3, 3);
+      }
+
+      function clamp(value, min, max) {
+        return Math.max(min, Math.min(max, value));
+      }
+
+      function finishExam() {
+        if (!state.session) return;
+        state.session.status = "complete";
+        state.lastResults = state.session;
+        state.session = null;
+        state.currentSelection = null;
+        state.selectedOption = null;
+        els.setupScreen.classList.remove("hidden");
+        els.examScreen.classList.add("hidden");
+        els.sessionStatusPill.textContent = "Prototype mode";
+        els.navResultsMeta.textContent = "ready";
+        setView("results");
+      }
+
+      function renderResults() {
+        if (!state.lastResults) {
+          els.resultsEmpty.classList.remove("hidden");
+          els.resultsContent.classList.add("hidden");
+          els.sessionExportPanel.classList.add("hidden");
+          state.sessionExportOpen = false;
+          els.exportSessionButton.disabled = true;
+          els.exportSessionButton.textContent = "Export session";
+          els.retakeMissedButton.disabled = true;
+          els.retakeMissedButton.textContent = "Retest weak concepts";
+          return;
+        }
+        const responses = state.lastResults.responses;
+        const correctCount = responses.filter((response) => response.correct).length;
+        const score = Math.round((correctCount / responses.length) * 100);
+        const missedItems = responses
+          .filter((response) => !response.correct)
+          .map((response) => ITEMS.find((item) => item.id === response.itemId));
+        const weakConcepts = [...new Set(missedItems.flatMap((item) => item.concepts))];
+        els.resultsEmpty.classList.add("hidden");
+        els.resultsContent.classList.remove("hidden");
+        els.scoreMetric.textContent = `${score}%`;
+        els.abilityMetric.textContent = state.lastResults.ability.toFixed(2);
+        els.weakMetric.textContent = weakConcepts.length;
+        els.retakeMissedButton.disabled = weakConcepts.length === 0;
+        els.retakeMissedButton.textContent = weakConcepts.length === 0 ? "No weak concepts to retest" : "Retest weak concepts";
+        els.exportSessionButton.disabled = false;
+        renderCoverageBars(state.lastResults.coverage, responses.length);
+        renderAbilityTrend(state.lastResults.abilityHistory);
+        renderReviewList(responses);
+        renderRemediationPlan(missedItems, weakConcepts);
+        renderSessionExport();
+      }
+
+      function renderCoverageBars(coverage, total) {
+        els.coverageBars.innerHTML = BLUEPRINT.clientNeeds
+          .map((entry) => {
+            const count = coverage[entry.subcategory] || 0;
+            const percent = total ? Math.round((count / total) * 100) : 0;
+            return `
+              <div class="bar-row">
+                <div class="bar-label">
+                  <span>${entry.subcategory}</span>
+                  <span>${count} item${count === 1 ? "" : "s"} · target ${entry.midpointPercent}%</span>
+                </div>
+                <div class="bar-track"><div class="bar-fill" style="width: ${percent}%"></div></div>
+              </div>
+            `;
+          })
+          .join("");
+      }
+
+      function renderAbilityTrend(history) {
+        const min = -3;
+        const max = 3;
+        els.abilityTrend.innerHTML = history
+          .map((value) => {
+            const height = Math.max(6, ((value - min) / (max - min)) * 100);
+            return `<div class="trend-bar" title="${value.toFixed(2)}" style="height: ${height}%"></div>`;
+          })
+          .join("");
+      }
+
+      function renderReviewList(responses) {
+        els.reviewList.innerHTML = responses
+          .map((response) => {
+            const item = ITEMS.find((candidate) => candidate.id === response.itemId);
+            return `
+              <article class="result-row ${response.correct ? "correct" : "incorrect"}">
+                <div class="result-row-top">
+                  <div>
+                    <h3>${item.id} · ${item.blueprint.clientNeedsSubcategory}</h3>
+                    <p class="muted small" style="margin-top: 4px">${item.stem}</p>
+                  </div>
+                  <span class="status ${response.correct ? "pass" : "fail"}">${response.correct ? "correct" : "missed"}</span>
+                </div>
+                <p class="small" style="margin-top: 9px"><strong>Rationale:</strong> ${item.rationale.correct}</p>
+                <div class="tag-list">
+                  ${item.concepts.map((concept) => `<span class="tag">${concept}</span>`).join("")}
+                  ${item.lessons.map((lesson) => `<span class="tag">${lesson}</span>`).join("")}
+                </div>
+              </article>
+            `;
+          })
+          .join("");
+      }
+
+      function renderRemediationPlan(missedItems, weakConcepts) {
+        const lessonIds = [...new Set(missedItems.flatMap((item) => item.lessons))];
+        if (!missedItems.length) {
+          els.remediationPlan.innerHTML = [
+            remediationCard("Maintain proficiency", "0", "No weak concepts detected in this session."),
+            remediationCard("Next practice", "Full", "Run a longer mixed session to increase blueprint coverage evidence."),
+            remediationCard("Instructor note", "Ready", "Learner can move to higher difficulty items or a proctored readiness check."),
+          ].join("");
+          return;
+        }
+
+        els.remediationPlan.innerHTML = [
+          remediationCard("Priority concepts", String(weakConcepts.length), weakConcepts.slice(0, 5).join(", ")),
+          remediationCard("Linked lessons", String(lessonIds.length), lessonIds.slice(0, 5).join(", ")),
+          remediationCard(
+            "Retest pool",
+            String(ITEMS.filter((item) => item.status === "approved" && item.concepts.some((concept) => weakConcepts.includes(concept))).length),
+            "Use weak-concepts retest to pull items tagged to missed concepts.",
+          ),
+        ].join("");
+      }
+
+      function remediationCard(title, count, detail) {
+        return `
+          <article class="remediation-card">
+            <h3>${title}</h3>
+            <p class="count">${count}</p>
+            <p class="muted small">${detail}</p>
+          </article>
+        `;
+      }
+
+      function buildSessionExport() {
+        if (!state.lastResults) return null;
+        const responses = state.lastResults.responses;
+        const correctCount = responses.filter((response) => response.correct).length;
+        const missedItems = responses
+          .filter((response) => !response.correct)
+          .map((response) => ITEMS.find((item) => item.id === response.itemId));
+        const weakConcepts = [...new Set(missedItems.flatMap((item) => item.concepts))];
+        return {
+          sessionId: state.lastResults.id,
+          prototypeBoundary: "Educational CAT-style simulator; not official NCLEX scoring equivalence.",
+          blueprint: {
+            exam: BLUEPRINT.exam,
+            testPlanYear: BLUEPRINT.testPlanYear,
+            effectiveStart: BLUEPRINT.effectiveStart,
+            effectiveEnd: BLUEPRINT.effectiveEnd,
+          },
+          summary: {
+            completedItems: responses.length,
+            correctItems: correctCount,
+            scorePercent: Math.round((correctCount / responses.length) * 100),
+            finalAbilityEstimate: Number(state.lastResults.ability.toFixed(2)),
+            weakConcepts,
+          },
+          coverage: state.lastResults.coverage,
+          abilityHistory: state.lastResults.abilityHistory.map((value) => Number(value.toFixed(2))),
+          responses: responses.map((response) => {
+            const item = ITEMS.find((candidate) => candidate.id === response.itemId);
+            return {
+              itemId: item.id,
+              selectedResponse: response.selectedOption,
+              correctResponse: item.correctResponse,
+              correct: response.correct,
+              difficulty: item.difficulty,
+              category: item.blueprint.clientNeedsSubcategory,
+              clinicalJudgmentStep: item.blueprint.clinicalJudgmentStep,
+              concepts: item.concepts,
+              lessons: item.lessons,
+            };
+          }),
+        };
+      }
+
+      function renderSessionExport() {
+        if (!state.lastResults || !state.sessionExportOpen) {
+          els.sessionExportPanel.classList.add("hidden");
+          els.exportSessionButton.textContent = "Export session";
+          return;
+        }
+        els.sessionExportPanel.classList.remove("hidden");
+        els.exportSessionButton.textContent = "Hide export";
+        els.sessionExport.textContent = JSON.stringify(buildSessionExport(), null, 2);
+      }
+
+      function toggleSessionExport() {
+        if (!state.lastResults) return;
+        state.sessionExportOpen = !state.sessionExportOpen;
+        renderSessionExport();
+      }
+
+      function startWeakConceptRetest() {
+        if (!state.lastResults) return;
+        const missedItems = state.lastResults.responses
+          .filter((response) => !response.correct)
+          .map((response) => ITEMS.find((item) => item.id === response.itemId));
+        const weakConcepts = [...new Set(missedItems.flatMap((item) => item.concepts))];
+        if (!weakConcepts.length) return;
+        state.weakScope = weakConcepts;
+        renderScopeOptions();
+        els.lengthSelect.value = String(Math.min(4, getScopedItems().length));
+        setView("practice");
+        renderSetup();
+      }
+
+      function renderMapping() {
+        els.itemMapList.innerHTML = ITEMS.map(
+          (item) => `
+            <article class="item-card">
+              <div class="item-card-top">
+                <div>
+                  <h3>${item.id} · ${item.blueprint.clientNeedsSubcategory}</h3>
+                  <p class="muted small" style="margin-top: 4px">${item.stem}</p>
+                </div>
+                <span class="status pass">${item.status}</span>
+              </div>
+              <div class="tag-list">
+                <span class="tag">${item.blueprint.clinicalJudgmentStep.replaceAll("_", " ")}</span>
+                <span class="tag">difficulty ${item.difficulty.toFixed(1)}</span>
+                ${item.concepts.map((concept) => `<span class="tag">${concept}</span>`).join("")}
+                ${item.lessons.map((lesson) => `<span class="tag">${lesson}</span>`).join("")}
+              </div>
+            </article>
+          `,
+        ).join("");
+      }
+
+      function renderControl() {
+        const gates = evaluateGates();
+        renderGateList(els.controlGateList, gates);
+        renderControlCoverageMatrix();
+        els.navControlMeta.textContent = gates.every((gate) => gate.pass) ? "pass" : "blocked";
+      }
+
+      function renderControlCoverageMatrix() {
+        const approved = ITEMS.filter((item) => item.status === "approved");
+        els.controlCoverageMatrix.innerHTML = [
+          `
+            <div class="coverage-row header">
+              <span>Client needs category</span>
+              <span>Items</span>
+              <span>Depth</span>
+            </div>
+          `,
+          ...BLUEPRINT.clientNeeds.map((entry) => {
+            const count = approved.filter((item) => item.blueprint.clientNeedsSubcategory === entry.subcategory).length;
+            const depthPercent = Math.min(100, (count / 2) * 100);
+            const status = count >= 2 ? "pilot-ready" : "needs depth";
+            return `
+              <div class="coverage-row">
+                <span><strong>${entry.subcategory}</strong><br><span class="muted small">Target midpoint ${entry.midpointPercent}%</span></span>
+                <span>${count}</span>
+                <span>
+                  <span class="muted small">${status}</span>
+                  <span class="depth-meter"><span class="depth-fill" style="width: ${depthPercent}%"></span></span>
+                </span>
+              </div>
+            `;
+          }),
+        ].join("");
+      }
+
+      function resetPrototype() {
+        state.session = null;
+        state.currentSelection = null;
+        state.selectedOption = null;
+        state.lastResults = null;
+        state.weakScope = null;
+        state.sessionExportOpen = false;
+        renderScopeOptions();
+        els.scopeSelect.value = "full";
+        els.lengthSelect.value = "4";
+        els.setupScreen.classList.remove("hidden");
+        els.examScreen.classList.add("hidden");
+        els.navResultsMeta.textContent = "empty";
+        els.sessionExportPanel.classList.add("hidden");
+        els.exportSessionButton.disabled = true;
+        els.exportSessionButton.textContent = "Export session";
+        els.retakeMissedButton.disabled = true;
+        els.retakeMissedButton.textContent = "Retest weak concepts";
+        renderSetup();
+        setView("practice");
+      }
+
+      init();
+    </script>
+  </body>
+</html>

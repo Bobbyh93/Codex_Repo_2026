@@ -58,7 +58,7 @@ export async function extractAndAddATITopics(reportText: string, reportId?: stri
       await trackNewTopicReview(topic.name, reportId);
       
     } catch (error) {
-      result.processingNotes.push(`Error processing topic ${topic.name}: ${error.message}`);
+      result.processingNotes.push(`Error processing topic ${topic.name}: ${(error as Error).message}`);
     }
   }
 
@@ -294,7 +294,7 @@ async function addNewReviewTopic(topic: ExtractedTopic): Promise<void> {
     nursingSpecialty: determineNursingSpecialty(topic),
     difficulty,
     estimatedStudyTime: estimatedTime,
-    keywords: JSON.stringify(keywords),
+    keywords,
     isActive: true,
     createdAt: new Date()
   });
@@ -302,7 +302,7 @@ async function addNewReviewTopic(topic: ExtractedTopic): Promise<void> {
 
 // Map NCLEX category to difficulty
 function mapToStandardDifficulty(nclexCategory: string): string {
-  const difficultyMap = {
+  const difficultyMap: Record<string, string> = {
     'Clinical Judgment': 'Advanced',
     'Physiological Adaptation': 'Advanced', 
     'Pharmacological and Parenteral Therapies': 'Intermediate',
@@ -319,7 +319,7 @@ function mapToStandardDifficulty(nclexCategory: string): string {
 
 // Estimate study time
 function estimateStudyTime(topicName: string, difficulty: string): number {
-  const baseTime = {
+  const baseTime: Record<string, number> = {
     'Basic': 30,
     'Intermediate': 45,
     'Advanced': 60
@@ -402,7 +402,7 @@ async function trackExistingTopicReview(topicName: string, reportId?: string): P
     const { trackSimpleTopicReview } = await import('./simple-topic-tracker');
     await trackSimpleTopicReview(topicName, 'ati_assessment');
   } catch (error) {
-    console.log('Topic tracking skipped:', error.message);
+    console.log('Topic tracking skipped:', (error as Error).message);
   }
 }
 
@@ -412,7 +412,7 @@ async function trackNewTopicReview(topicName: string, reportId?: string): Promis
     const { trackSimpleTopicReview } = await import('./simple-topic-tracker');
     await trackSimpleTopicReview(topicName, 'ati_assessment');
   } catch (error) {
-    console.log('New topic tracking skipped:', error.message);
+    console.log('New topic tracking skipped:', (error as Error).message);
   }
 }
 

@@ -1,0 +1,43 @@
+{
+  "schemaVersion": "1.0.0",
+  "purpose": "Provenance for deploy-excluded OpenStax PDF source assets",
+  "storagePolicy": "Do not store these large PDFs in the deploy repository. Resolve them from the canonical OpenStax URLs when an authorized source-review workflow requires them.",
+  "citationPolicy": "Verify the current license and locator at the canonical source before using any claim or excerpt.",
+  "assets": [
+    {
+      "title": "Clinical Nursing Skills",
+      "formerPath": "attached_assets/Clinical-Nursing-Skills-WEB_1778074111137.pdf",
+      "lfsOid": "sha256:cd5224b3f6c3096362c33a3e3af1f08f04a593e85ba444b82955689c50157175",
+      "sizeBytes": 95717314,
+      "canonicalUrl": "https://assets.openstax.org/oscms-prodcms/media/documents/Clinical-Nursing-Skills-WEB.pdf"
+    },
+    {
+      "title": "Fundamentals of Nursing",
+      "formerPath": "attached_assets/Fundamentals_of_Nursing_-_WEB_1778073903932.pdf",
+      "lfsOid": "sha256:3818e4964b45513119d676c06e5dc3e81cb4424ae8db53891bff2619773a1cb9",
+      "sizeBytes": 96583335,
+      "canonicalUrl": "https://assets.openstax.org/oscms-prodcms/media/documents/Fundamentals_of_Nursing_-_WEB.pdf"
+    },
+    {
+      "title": "Maternal-Newborn Nursing",
+      "formerPath": "attached_assets/Maternal-Newborn_Nursing-WEB_1778074538887.pdf",
+      "lfsOid": "sha256:d4e4b9ef18e0c5f7b06a958432f3128fc85819b64e4b24ffe0bd07a3f1798703",
+      "sizeBytes": 60793393,
+      "canonicalUrl": "https://assets.openstax.org/oscms-prodcms/media/documents/Maternal-Newborn_Nursing-WEB.pdf"
+    },
+    {
+      "title": "Medical-Surgical Nursing",
+      "formerPath": "attached_assets/Medical-Surgical_Nursing-WEB_1778074523065.pdf",
+      "lfsOid": "sha256:b91956fbef2a405f3c31a2cf19481df9d6b404bddbeb567f2012035a32ff868a",
+      "sizeBytes": 72785345,
+      "canonicalUrl": "https://assets.openstax.org/oscms-prodcms/media/documents/Medical-Surgical_Nursing-WEB.pdf"
+    },
+    {
+      "title": "Population Health for Nurses",
+      "formerPath": "attached_assets/Population_Health_for_Nurses_-_WEB_1778074436704.pdf",
+      "lfsOid": "sha256:7fa848cef34723891cfcc2d3acfe0df481ab8b66e294d2044f19db9f4ff546bd",
+      "sizeBytes": 60769717,
+      "canonicalUrl": "https://assets.openstax.org/oscms-prodcms/media/documents/Population_Health_for_Nurses_-_WEB.pdf"
+    }
+  ]
+}

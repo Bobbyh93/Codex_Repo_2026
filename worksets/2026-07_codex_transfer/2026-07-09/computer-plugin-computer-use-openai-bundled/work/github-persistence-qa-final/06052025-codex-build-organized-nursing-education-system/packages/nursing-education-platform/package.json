@@ -1,0 +1,20 @@
+{
+  "name": "@harrity/nursing-education-platform",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "NCLEX-aligned CAT testing and remediation prototype for nursing education.",
+  "scripts": {
+    "dev": "node server.mjs",
+    "start": "node server.mjs",
+    "test": "node test/run-tests.mjs"
+  },
+  "keywords": [
+    "nursing-education",
+    "nclex",
+    "cat-testing",
+    "adaptive-practice",
+    "remediation"
+  ],
+  "license": "UNLICENSED"
+}

@@ -1,0 +1,39 @@
+{
+  "generated_at": "2026-09-06T03:50:24.251708+00:00",
+  "status": "drafted_pending_human_review",
+  "drafted_by": "claude-opus-5 (Claude, via Cowork session)",
+  "model_note": "Drafted by Claude in place of the gpt-5.4-mini call in build_mapping_resolution.py.",
+  "openai_api_calls_made": false,
+  "openai_api_key_present": false,
+  "credential_safe_status": "no_key_read_no_key_value_printed",
+  "source_files_modified": false,
+  "original_artifacts_overwritten": false,
+  "lesson_generation_run": false,
+  "drive_or_notion_changed": false,
+  "process_row_count": 36,
+  "drafted_count": 36,
+  "missing_modules": [],
+  "mapping_status_counts": {
+    "draft_mapping": 23,
+    "insufficient_evidence": 4,
+    "not_mappable": 9
+  },
+  "confidence_counts": {
+    "medium": 5,
+    "low": 30,
+    "high": 1
+  },
+  "hallucination_validation_error_count": 0,
+  "validation_contract": "validate_suggestion() rules from build_mapping_resolution.py, reimplemented verbatim",
+  "review_required": true,
+  "review_instrument": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\mapping_resolution_claude\\wps_process_mapping_resolution_claude_draft.csv",
+  "hard_stop": "These are drafts. No row may enter the ingest queue or the binding manifest without a reviewer decision in review_decision.",
+  "outputs": {
+    "jsonl": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\mapping_resolution_claude\\claude_mapping_suggestions.jsonl",
+    "csv": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\mapping_resolution_claude\\wps_process_mapping_resolution_claude_draft.csv",
+    "qa": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\mapping_resolution_claude\\claude_mapping_resolution_qa.json"
+  },
+  "workset_path": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12",
+  "source_of_record": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\mapping_resolution\\mapping_resolution_rows.json",
+  "note_on_confidence_counts": "confidence is required on every row by the schema, so the 13 not_mappable/insufficient_evidence rows are also recorded as low. The genuinely low-confidence drafts are the 17 draft_mapping rows with confidence=low."
+}

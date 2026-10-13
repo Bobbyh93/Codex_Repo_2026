@@ -1,0 +1,43 @@
+{
+  "lesson_title": "Design public or employee health programs. lesson package",
+  "lesson_summary": "Source-grounded lesson package for Design public or employee health programs..",
+  "teaching_sequence": [
+    "Orient the learner to the lesson goal and source scope",
+    "Define the concept and identify high-risk cues",
+    "Work through each selected subtopic",
+    "Practice the decision cycle with case prompts",
+    "Compare patterns and assign remediation"
+  ],
+  "sections": [
+    {
+      "title": "Instruct individuals - families - or other groups on topics such as health education - disease prevention - or childbirth and develop health improvement programs.",
+      "points": [
+        "Instruct individuals - families - or other groups on topics such as health education - di\u2026",
+        "includes a recognition phase, a priority decision phase, and an evaluation phase.",
+        "The first safe action should be linked to the highest-risk cue pattern in Instruct indivi\u2026"
+      ],
+      "source_refs": [
+        "WPS process: Design public or employee health programs.; variants: 2074:time_based, 2074CB:competency_based, 2074HY:hybrid, 3056:time_based, 3056CB:competency_based, 3056HY:hybrid; source rows: wps_competency_2074.docx#T20:R3; wps_competency_2074.docx#T20:R4; wps_competency_3056.docx#T20:R3; wps_competency_3056.docx#T20:R4; wps_hybrid_2074.docx#T20:R2; wps_hybrid_2074.docx#T20:R3; wps_hybrid_3056.docx#T20:R2; wps_hybrid_3056.docx#T20:R3; wps_time_2074.docx#T20:R2; wps_time_2074.docx#T20:R3; wps_time_3056.docx#T20:R2; wps_time_3056.docx#T20:R3; crosswalk_data: C:\\Users\\RHarrity\\Documents\\Codex\\rn_wps_prelicensure_crosswalk_workset_2026-06-12\\build\\intermediate\\rn_wps_prelicensure_crosswalk_data.json"
+      ]
+    },
+    {
+      "title": "Work with individuals - groups - or families to plan or implement programs designed to improve the overall health of communities.",
+      "points": [
+        "Work with individuals - groups - or families to plan or implement programs designed to im\u2026",
+        "includes a recognition phase, a priority decision phase, and an evaluation phase.",
+        "The first safe action should be linked to the highest-risk cue pattern in Work with indiv\u2026"
+      ],
+      "source_refs": [
+        "WPS process: Design public or employee health programs.; variants: 2074:time_based, 2074CB:competency_based, 2074HY:hybrid, 3056:time_based, 3056CB:competency_based, 3056HY:hybrid; source rows: wps_competency_2074.docx#T20:R3; wps_competency_2074.docx#T20:R4; wps_competency_3056.docx#T20:R3; wps_competency_3056.docx#T20:R4; wps_hybrid_2074.docx#T20:R2; wps_hybrid_2074.docx#T20:R3; wps_hybrid_3056.docx#T20:R2; wps_hybrid_3056.docx#T20:R3; wps_time_2074.docx#T20:R2; wps_time_2074.docx#T20:R3; wps_time_3056.docx#T20:R2; wps_time_3056.docx#T20:R3; crosswalk_data: C:\\Users\\RHarrity\\Documents\\Codex\\rn_wps_prelicensure_crosswalk_workset_2026-06-12\\build\\intermediate\\rn_wps_prelicensure_crosswalk_data.json"
+      ]
+    }
+  ],
+  "source_coverage_map": {
+    "Instruct individuals - families - or other groups on topics such as health education - disease prevention - or childbirth and develop health improvement programs.": [
+      "WPS process: Design public or employee health programs.; variants: 2074:time_based, 2074CB:competency_based, 2074HY:hybrid, 3056:time_based, 3056CB:competency_based, 3056HY:hybrid; source rows: wps_competency_2074.docx#T20:R3; wps_competency_2074.docx#T20:R4; wps_competency_3056.docx#T20:R3; wps_competency_3056.docx#T20:R4; wps_hybrid_2074.docx#T20:R2; wps_hybrid_2074.docx#T20:R3; wps_hybrid_3056.docx#T20:R2; wps_hybrid_3056.docx#T20:R3; wps_time_2074.docx#T20:R2; wps_time_2074.docx#T20:R3; wps_time_3056.docx#T20:R2; wps_time_3056.docx#T20:R3; crosswalk_data: C:\\Users\\RHarrity\\Documents\\Codex\\rn_wps_prelicensure_crosswalk_workset_2026-06-12\\build\\intermediate\\rn_wps_prelicensure_crosswalk_data.json"
+    ],
+    "Work with individuals - groups - or families to plan or implement programs designed to improve the overall health of communities.": [
+      "WPS process: Design public or employee health programs.; variants: 2074:time_based, 2074CB:competency_based, 2074HY:hybrid, 3056:time_based, 3056CB:competency_based, 3056HY:hybrid; source rows: wps_competency_2074.docx#T20:R3; wps_competency_2074.docx#T20:R4; wps_competency_3056.docx#T20:R3; wps_competency_3056.docx#T20:R4; wps_hybrid_2074.docx#T20:R2; wps_hybrid_2074.docx#T20:R3; wps_hybrid_3056.docx#T20:R2; wps_hybrid_3056.docx#T20:R3; wps_time_2074.docx#T20:R2; wps_time_2074.docx#T20:R3; wps_time_3056.docx#T20:R2; wps_time_3056.docx#T20:R3; crosswalk_data: C:\\Users\\RHarrity\\Documents\\Codex\\rn_wps_prelicensure_crosswalk_workset_2026-06-12\\build\\intermediate\\rn_wps_prelicensure_crosswalk_data.json"
+    ]
+  }
+}

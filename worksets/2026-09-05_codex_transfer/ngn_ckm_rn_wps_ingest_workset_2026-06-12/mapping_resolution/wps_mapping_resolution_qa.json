@@ -1,0 +1,67 @@
+{
+  "generated_at": "2026-06-12T21:37:41",
+  "status": "prepared_pending_ai",
+  "model": "gpt-5.4-mini",
+  "openai_api_key_present": false,
+  "credential_safe_status": "no_key_value_printed",
+  "api_status": "missing",
+  "api_error_count": 0,
+  "api_errors": [],
+  "original_process_count": 39,
+  "excluded_metadata_count": 2,
+  "true_process_count": 37,
+  "held_true_process_draft_count": 36,
+  "existing_clean_true_process_count": 1,
+  "ai_drafted_count": 0,
+  "unresolved_count": 36,
+  "hallucination_validation_error_count": 0,
+  "lesson_generation_run": false,
+  "drive_or_notion_changed": false,
+  "source_files_modified": false,
+  "clean_default_run_status": "pass",
+  "outputs": {
+    "workbook": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\mapping_resolution\\wps_process_mapping_resolution_draft.xlsx",
+    "csv": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\mapping_resolution\\wps_process_mapping_resolution_draft.csv",
+    "suggestions_jsonl": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\mapping_resolution\\ai_mapping_suggestions.jsonl",
+    "qa_json": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\mapping_resolution\\wps_mapping_resolution_qa.json",
+    "handoff": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\mapping_resolution\\handoff_wps_mapping_resolution.md"
+  },
+  "source_hash_checks": [
+    {
+      "path": "C:\\Users\\RHarrity\\Documents\\Codex\\rn_wps_prelicensure_crosswalk_workset_2026-06-12\\build\\intermediate\\rn_wps_prelicensure_crosswalk_data.json",
+      "hash": "sha256:4452ab0ec6284d1b9e0734e884a2ce74c2dc59afb67c3a09dac2f921039aaecd"
+    },
+    {
+      "path": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\support\\source_trace.json",
+      "hash": "sha256:b323f6ce13902d7a85725043573f61cdbd8edba0c59f01dfbfa924671f87c7d5"
+    },
+    {
+      "path": "C:\\Users\\RHarrity\\Documents\\Prelicensure Workbook.xlsx",
+      "hash": "sha256:7e711dd431e5f33993ae800f6749396b8ef7832b1b0ecb30bb9de0f8162ce78f"
+    },
+    {
+      "path": "C:\\Users\\RHarrity\\Downloads\\Registered Nurse training Department of Education\\wps_competency_2074.docx",
+      "hash": "sha256:8f10ba9b94c7fa0533e8e53a95138ece03533a9dd9caf01da5f919ed7716343d"
+    },
+    {
+      "path": "C:\\Users\\RHarrity\\Downloads\\Registered Nurse training Department of Education\\wps_competency_3056.docx",
+      "hash": "sha256:011417c69a7ab4dfdab7f4e4165d7a86f1343f35a089444a6e182f3b81d41729"
+    },
+    {
+      "path": "C:\\Users\\RHarrity\\Downloads\\Registered Nurse training Department of Education\\wps_hybrid_2074.docx",
+      "hash": "sha256:5532f732343cea49581e50d6ede1cdf0a291d54fd65fb93d19ed05523d997287"
+    },
+    {
+      "path": "C:\\Users\\RHarrity\\Downloads\\Registered Nurse training Department of Education\\wps_hybrid_3056.docx",
+      "hash": "sha256:380f226ed0f3c1a8477bb79c3886253385e2e97df8cf75295bfd22590eee6fb4"
+    },
+    {
+      "path": "C:\\Users\\RHarrity\\Downloads\\Registered Nurse training Department of Education\\wps_time_2074.docx",
+      "hash": "sha256:821f110e9598b1036cf68fafff9c4d1358b06a19d5312f04aa88f143079742b7"
+    },
+    {
+      "path": "C:\\Users\\RHarrity\\Downloads\\Registered Nurse training Department of Education\\wps_time_3056.docx",
+      "hash": "sha256:5f27e02980f2b8e3a45c1769ee570ef22afdb83cc5c6defeb7de9760964f699c"
+    }
+  ]
+}

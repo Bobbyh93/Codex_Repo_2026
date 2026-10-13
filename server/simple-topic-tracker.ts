@@ -1,5 +1,6 @@
 // Simplified topic frequency tracker without complex SQL queries
 import { db } from "./db";
+import { sql } from "drizzle-orm";
 
 interface SimpleTopicStats {
   topicName: string;
@@ -12,19 +13,19 @@ interface SimpleTopicStats {
 export async function trackSimpleTopicReview(topicName: string, source: string = 'analysis'): Promise<void> {
   try {
     // Simple insert for tracking
-    await db.execute(`
-      INSERT INTO topic_review_instances 
+    await db.execute(sql`
+      INSERT INTO topic_review_instances
       (review_topic_name, source, confidence_score, created_at)
-      VALUES ($1, $2, $3, CURRENT_TIMESTAMP)
-    `, [topicName, source, 1.0]);
+      VALUES (${topicName}, ${source}, 1.0, CURRENT_TIMESTAMP)
+    `);
 
     // Update simple counter
-    await db.execute(`
-      UPDATE review_topics 
+    await db.execute(sql`
+      UPDATE review_topics
       SET review_frequency = review_frequency + 1,
           last_reviewed_at = CURRENT_TIMESTAMP
-      WHERE name = $1
-    `, [topicName]);
+      WHERE name = ${topicName}
+    `);
     
   } catch (error) {
     console.error(`Simple tracking error for ${topicName}:`, error);

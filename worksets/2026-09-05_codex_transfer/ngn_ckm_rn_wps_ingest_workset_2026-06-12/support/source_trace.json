@@ -1,0 +1,4166 @@
+[
+  {
+    "module_number": "RN-WPS-001",
+    "concept": "*CIP Code",
+    "needs_review": true,
+    "review_policy": "needs_review=true when review_count > confident_count",
+    "task_count": 132,
+    "bridge_count": 132,
+    "review_count": 132,
+    "confident_count": 0,
+    "review_rate": 1.0,
+    "source_anchor": "WPS process: *CIP Code; variants: 2074:time_based, 2074CB:competency_based, 2074HY:hybrid, 3056:time_based, 3056CB:competency_based, 3056HY:hybrid; source rows: wps_competency_2074.docx#T40:R2; wps_competency_2074.docx#T40:R3; wps_competency_2074.docx#T40:R4; wps_competency_2074.docx#T40:R5; wps_competency_2074.docx#T40:R6; wps_competency_2074.docx#T40:R7; wps_competency_2074.docx#T40:R8; wps_competency_2074.docx#T40:R9; wps_competency_2074.docx#T40:R10; wps_competency_2074.docx#T40:R11; wps_competency_2074.docx#T40:R12; wps_competency_2074.docx#T40:R13; +120 more; crosswalk_data: C:\\Users\\RHarrity\\Documents\\Codex\\rn_wps_prelicensure_crosswalk_workset_2026-06-12\\build\\intermediate\\rn_wps_prelicensure_crosswalk_data.json",
+    "tasks": [
+      {
+        "wps_task_id": "WPS_2074CB_COMPETENCY_BASED_T40_R02_X",
+        "source_file": "wps_competency_2074.docx",
+        "rapids_code": "2074CB",
+        "variant": "competency_based",
+        "source_table_index": 40,
+        "source_row_index": 2,
+        "task_raw": "51.3818"
+      },
+      {
+        "wps_task_id": "WPS_2074CB_COMPETENCY_BASED_T40_R03_X",
+        "source_file": "wps_competency_2074.docx",
+        "rapids_code": "2074CB",
+        "variant": "competency_based",
+        "source_table_index": 40,
+        "source_row_index": 3,
+        "task_raw": "51.3806"
+      },
+      {
+        "wps_task_id": "WPS_2074CB_COMPETENCY_BASED_T40_R04_X",
+        "source_file": "wps_competency_2074.docx",
+        "rapids_code": "2074CB",
+        "variant": "competency_based",
+        "source_table_index": 40,
+        "source_row_index": 4,
+        "task_raw": "51.3801"
+      },
+      {
+        "wps_task_id": "WPS_2074CB_COMPETENCY_BASED_T40_R05_X",
+        "source_file": "wps_competency_2074.docx",
+        "rapids_code": "2074CB",
+        "variant": "competency_based",
+        "source_table_index": 40,
+        "source_row_index": 5,
+        "task_raw": "51.3805"
+      },
+      {
+        "wps_task_id": "WPS_2074CB_COMPETENCY_BASED_T40_R06_X",
+        "source_file": "wps_competency_2074.docx",
+        "rapids_code": "2074CB",
+        "variant": "competency_based",
+        "source_table_index": 40,
+        "source_row_index": 6,
+        "task_raw": "51.3820"
+      },
+      {
+        "wps_task_id": "WPS_2074CB_COMPETENCY_BASED_T40_R07_X",
+        "source_file": "wps_competency_2074.docx",
+        "rapids_code": "2074CB",
+        "variant": "competency_based",
+        "source_table_index": 40,
+        "source_row_index": 7,
+        "task_raw": "51.3899"
+      },
+      {
+        "wps_task_id": "WPS_2074CB_COMPETENCY_BASED_T40_R08_X",
+        "source_file": "wps_competency_2074.docx",
+        "rapids_code": "2074CB",
+        "variant": "competency_based",
+        "source_table_index": 40,
+        "source_row_index": 8,
+        "task_raw": "51.3812"
+      },
+      {
+        "wps_task_id": "WPS_2074CB_COMPETENCY_BASED_T40_R09_X",
+        "source_file": "wps_competency_2074.docx",
+        "rapids_code": "2074CB",
+        "variant": "competency_based",
+        "source_table_index": 40,
+        "source_row_index": 9,
+        "task_raw": "51.3802"
+      },
+      {
+        "wps_task_id": "WPS_2074CB_COMPETENCY_BASED_T40_R10_X",
+        "source_file": "wps_competency_2074.docx",
+        "rapids_code": "2074CB",
+        "variant": "competency_based",
+        "source_table_index": 40,
+        "source_row_index": 10,
+        "task_raw": "51.3803"
+      },
+      {
+        "wps_task_id": "WPS_2074CB_COMPETENCY_BASED_T40_R11_X",
+        "source_file": "wps_competency_2074.docx",
+        "rapids_code": "2074CB",
+        "variant": "competency_based",
+        "source_table_index": 40,
+        "source_row_index": 11,
+        "task_raw": "51.3810"
+      },
+      {
+        "wps_task_id": "WPS_2074CB_COMPETENCY_BASED_T40_R12_X",
+        "source_file": "wps_competency_2074.docx",
+        "rapids_code": "2074CB",
+        "variant": "competency_based",
+        "source_table_index": 40,
+        "source_row_index": 12,
+        "task_raw": "51.3815"
+      },
+      {
+        "wps_task_id": "WPS_2074CB_COMPETENCY_BASED_T40_R13_X",
+        "source_file": "wps_competency_2074.docx",
+        "rapids_code": "2074CB",
+        "variant": "competency_based",
+        "source_table_index": 40,
+        "source_row_index": 13,
+        "task_raw": "51.3821"
+      },
+      {
+        "wps_task_id": "WPS_2074CB_COMPETENCY_BASED_T40_R14_X",
+        "source_file": "wps_competency_2074.docx",
+        "rapids_code": "2074CB",
+        "variant": "competency_based",
+        "source_table_index": 40,
+        "source_row_index": 14,
+        "task_raw": "51.3816"
+      },
+      {
+        "wps_task_id": "WPS_2074CB_COMPETENCY_BASED_T40_R15_X",
+        "source_file": "wps_competency_2074.docx",
+        "rapids_code": "2074CB",
+        "variant": "competency_based",
+        "source_table_index": 40,
+        "source_row_index": 15,
+        "task_raw": "51.3814"
+      },
+      {
+        "wps_task_id": "WPS_2074CB_COMPETENCY_BASED_T40_R16_X",
+        "source_file": "wps_competency_2074.docx",
+        "rapids_code": "2074CB",
+        "variant": "competency_based",
+        "source_table_index": 40,
+        "source_row_index": 16,
+        "task_raw": "51.3819"
+      },
+      {
+        "wps_task_id": "WPS_2074CB_COMPETENCY_BASED_T40_R17_X",
+        "source_file": "wps_competency_2074.docx",
+        "rapids_code": "2074CB",
+        "variant": "competency_based",
+        "source_table_index": 40,
+        "source_row_index": 17,
+        "task_raw": "51.3822"
+      },
+      {
+        "wps_task_id": "WPS_2074CB_COMPETENCY_BASED_T40_R18_X",
+        "source_file": "wps_competency_2074.docx",
+        "rapids_code": "2074CB",
+        "variant": "competency_based",
+        "source_table_index": 40,
+        "source_row_index": 18,
+        "task_raw": "51.3808"
+      },
+      {
+        "wps_task_id": "WPS_2074CB_COMPETENCY_BASED_T40_R19_X",
+        "source_file": "wps_competency_2074.docx",
+        "rapids_code": "2074CB",
+        "variant": "competency_based",
+        "source_table_index": 40,
+        "source_row_index": 19,
+        "task_raw": "51.3824"
+      },
+      {
+        "wps_task_id": "WPS_2074CB_COMPETENCY_BASED_T40_R20_X",
+        "source_file": "wps_competency_2074.docx",
+        "rapids_code": "2074CB",
+        "variant": "competency_based",
+        "source_table_index": 40,
+        "source_row_index": 20,
+        "task_raw": "51.3811"
+      },
+      {
+        "wps_task_id": "WPS_2074CB_COMPETENCY_BASED_T40_R21_X",
+        "source_file": "wps_competency_2074.docx",
+        "rapids_code": "2074CB",
+        "variant": "competency_based",
+        "source_table_index": 40,
+        "source_row_index": 21,
+        "task_raw": "51.3813"
+      },
+      {
+        "wps_task_id": "WPS_2074CB_COMPETENCY_BASED_T40_R22_X",
+        "source_file": "wps_competency_2074.docx",
+        "rapids_code": "2074CB",
+        "variant": "competency_based",
+        "source_table_index": 40,
+        "source_row_index": 22,
+        "task_raw": "51.3809"
+      },
+      {
+        "wps_task_id": "WPS_2074CB_COMPETENCY_BASED_T40_R23_X",
+        "source_file": "wps_competency_2074.docx",
+        "rapids_code": "2074CB",
+        "variant": "competency_based",
+        "source_table_index": 40,
+        "source_row_index": 23,
+        "task_raw": "Total"
+      },
+      {
+        "wps_task_id": "WPS_3056CB_COMPETENCY_BASED_T40_R02_X",
+        "source_file": "wps_competency_3056.docx",
+        "rapids_code": "3056CB",
+        "variant": "competency_based",
+        "source_table_index": 40,
+        "source_row_index": 2,
+        "task_raw": "51.3818"
+      },
+      {
+        "wps_task_id": "WPS_3056CB_COMPETENCY_BASED_T40_R03_X",
+        "source_file": "wps_competency_3056.docx",
+        "rapids_code": "3056CB",
+        "variant": "competency_based",
+        "source_table_index": 40,
+        "source_row_index": 3,
+        "task_raw": "51.3806"
+      },
+      {
+        "wps_task_id": "WPS_3056CB_COMPETENCY_BASED_T40_R04_X",
+        "source_file": "wps_competency_3056.docx",
+        "rapids_code": "3056CB",
+        "variant": "competency_based",
+        "source_table_index": 40,
+        "source_row_index": 4,
+        "task_raw": "51.3801"
+      },
+      {
+        "wps_task_id": "WPS_3056CB_COMPETENCY_BASED_T40_R05_X",
+        "source_file": "wps_competency_3056.docx",
+        "rapids_code": "3056CB",
+        "variant": "competency_based",
+        "source_table_index": 40,
+        "source_row_index": 5,
+        "task_raw": "51.3805"
+      },
+      {
+        "wps_task_id": "WPS_3056CB_COMPETENCY_BASED_T40_R06_X",
+        "source_file": "wps_competency_3056.docx",
+        "rapids_code": "3056CB",
+        "variant": "competency_based",
+        "source_table_index": 40,
+        "source_row_index": 6,
+        "task_raw": "51.3820"
+      },
+      {
+        "wps_task_id": "WPS_3056CB_COMPETENCY_BASED_T40_R07_X",
+        "source_file": "wps_competency_3056.docx",
+        "rapids_code": "3056CB",
+        "variant": "competency_based",
+        "source_table_index": 40,
+        "source_row_index": 7,
+        "task_raw": "51.3899"
+      },
+      {
+        "wps_task_id": "WPS_3056CB_COMPETENCY_BASED_T40_R08_X",
+        "source_file": "wps_competency_3056.docx",
+        "rapids_code": "3056CB",
+        "variant": "competency_based",
+        "source_table_index": 40,
+        "source_row_index": 8,
+        "task_raw": "51.3812"
+      },
+      {
+        "wps_task_id": "WPS_3056CB_COMPETENCY_BASED_T40_R09_X",
+        "source_file": "wps_competency_3056.docx",
+        "rapids_code": "3056CB",
+        "variant": "competency_based",
+        "source_table_index": 40,
+        "source_row_index": 9,
+        "task_raw": "51.3802"
+      },
+      {
+        "wps_task_id": "WPS_3056CB_COMPETENCY_BASED_T40_R10_X",
+        "source_file": "wps_competency_3056.docx",
+        "rapids_code": "3056CB",
+        "variant": "competency_based",
+        "source_table_index": 40,
+        "source_row_index": 10,
+        "task_raw": "51.3803"
+      },
+      {
+        "wps_task_id": "WPS_3056CB_COMPETENCY_BASED_T40_R11_X",
+        "source_file": "wps_competency_3056.docx",
+        "rapids_code": "3056CB",
+        "variant": "competency_based",
+        "source_table_index": 40,
+        "source_row_index": 11,
+        "task_raw": "51.3810"
+      },
+      {
+        "wps_task_id": "WPS_3056CB_COMPETENCY_BASED_T40_R12_X",
+        "source_file": "wps_competency_3056.docx",
+        "rapids_code": "3056CB",
+        "variant": "competency_based",
+        "source_table_index": 40,
+        "source_row_index": 12,
+        "task_raw": "51.3815"
+      },
+      {
+        "wps_task_id": "WPS_3056CB_COMPETENCY_BASED_T40_R13_X",
+        "source_file": "wps_competency_3056.docx",
+        "rapids_code": "3056CB",
+        "variant": "competency_based",
+        "source_table_index": 40,
+        "source_row_index": 13,
+        "task_raw": "51.3821"
+      },
+      {
+        "wps_task_id": "WPS_3056CB_COMPETENCY_BASED_T40_R14_X",
+        "source_file": "wps_competency_3056.docx",
+        "rapids_code": "3056CB",
+        "variant": "competency_based",
+        "source_table_index": 40,
+        "source_row_index": 14,
+        "task_raw": "51.3816"
+      },
+      {
+        "wps_task_id": "WPS_3056CB_COMPETENCY_BASED_T40_R15_X",
+        "source_file": "wps_competency_3056.docx",
+        "rapids_code": "3056CB",
+        "variant": "competency_based",
+        "source_table_index": 40,
+        "source_row_index": 15,
+        "task_raw": "51.3814"
+      },
+      {
+        "wps_task_id": "WPS_3056CB_COMPETENCY_BASED_T40_R16_X",
+        "source_file": "wps_competency_3056.docx",
+        "rapids_code": "3056CB",
+        "variant": "competency_based",
+        "source_table_index": 40,
+        "source_row_index": 16,
+        "task_raw": "51.3819"
+      },
+      {
+        "wps_task_id": "WPS_3056CB_COMPETENCY_BASED_T40_R17_X",
+        "source_file": "wps_competency_3056.docx",
+        "rapids_code": "3056CB",
+        "variant": "competency_based",
+        "source_table_index": 40,
+        "source_row_index": 17,
+        "task_raw": "51.3822"
+      },
+      {
+        "wps_task_id": "WPS_3056CB_COMPETENCY_BASED_T40_R18_X",
+        "source_file": "wps_competency_3056.docx",
+        "rapids_code": "3056CB",
+        "variant": "competency_based",
+        "source_table_index": 40,
+        "source_row_index": 18,
+        "task_raw": "51.3808"
+      },
+      {
+        "wps_task_id": "WPS_3056CB_COMPETENCY_BASED_T40_R19_X",
+        "source_file": "wps_competency_3056.docx",
+        "rapids_code": "3056CB",
+        "variant": "competency_based",
+        "source_table_index": 40,
+        "source_row_index": 19,
+        "task_raw": "51.3824"
+      },
+      {
+        "wps_task_id": "WPS_3056CB_COMPETENCY_BASED_T40_R20_X",
+        "source_file": "wps_competency_3056.docx",
+        "rapids_code": "3056CB",
+        "variant": "competency_based",
+        "source_table_index": 40,
+        "source_row_index": 20,
+        "task_raw": "51.3811"
+      },
+      {
+        "wps_task_id": "WPS_3056CB_COMPETENCY_BASED_T40_R21_X",
+        "source_file": "wps_competency_3056.docx",
+        "rapids_code": "3056CB",
+        "variant": "competency_based",
+        "source_table_index": 40,
+        "source_row_index": 21,
+        "task_raw": "51.3813"
+      },
+      {
+        "wps_task_id": "WPS_3056CB_COMPETENCY_BASED_T40_R22_X",
+        "source_file": "wps_competency_3056.docx",
+        "rapids_code": "3056CB",
+        "variant": "competency_based",
+        "source_table_index": 40,
+        "source_row_index": 22,
+        "task_raw": "51.3809"
+      },
+      {
+        "wps_task_id": "WPS_3056CB_COMPETENCY_BASED_T40_R23_X",
+        "source_file": "wps_competency_3056.docx",
+        "rapids_code": "3056CB",
+        "variant": "competency_based",
+        "source_table_index": 40,
+        "source_row_index": 23,
+        "task_raw": "Total"
+      },
+      {
+        "wps_task_id": "WPS_2074HY_HYBRID_T40_R02_X",
+        "source_file": "wps_hybrid_2074.docx",
+        "rapids_code": "2074HY",
+        "variant": "hybrid",
+        "source_table_index": 40,
+        "source_row_index": 2,
+        "task_raw": "51.3818"
+      },
+      {
+        "wps_task_id": "WPS_2074HY_HYBRID_T40_R03_X",
+        "source_file": "wps_hybrid_2074.docx",
+        "rapids_code": "2074HY",
+        "variant": "hybrid",
+        "source_table_index": 40,
+        "source_row_index": 3,
+        "task_raw": "51.3806"
+      },
+      {
+        "wps_task_id": "WPS_2074HY_HYBRID_T40_R04_X",
+        "source_file": "wps_hybrid_2074.docx",
+        "rapids_code": "2074HY",
+        "variant": "hybrid",
+        "source_table_index": 40,
+        "source_row_index": 4,
+        "task_raw": "51.3801"
+      },
+      {
+        "wps_task_id": "WPS_2074HY_HYBRID_T40_R05_X",
+        "source_file": "wps_hybrid_2074.docx",
+        "rapids_code": "2074HY",
+        "variant": "hybrid",
+        "source_table_index": 40,
+        "source_row_index": 5,
+        "task_raw": "51.3805"
+      },
+      {
+        "wps_task_id": "WPS_2074HY_HYBRID_T40_R06_X",
+        "source_file": "wps_hybrid_2074.docx",
+        "rapids_code": "2074HY",
+        "variant": "hybrid",
+        "source_table_index": 40,
+        "source_row_index": 6,
+        "task_raw": "51.3820"
+      },
+      {
+        "wps_task_id": "WPS_2074HY_HYBRID_T40_R07_X",
+        "source_file": "wps_hybrid_2074.docx",
+        "rapids_code": "2074HY",
+        "variant": "hybrid",
+        "source_table_index": 40,
+        "source_row_index": 7,
+        "task_raw": "51.3899"
+      },
+      {
+        "wps_task_id": "WPS_2074HY_HYBRID_T40_R08_X",
+        "source_file": "wps_hybrid_2074.docx",
+        "rapids_code": "2074HY",
+        "variant": "hybrid",
+        "source_table_index": 40,
+        "source_row_index": 8,
+        "task_raw": "51.3812"
+      },
+      {
+        "wps_task_id": "WPS_2074HY_HYBRID_T40_R09_X",
+        "source_file": "wps_hybrid_2074.docx",
+        "rapids_code": "2074HY",
+        "variant": "hybrid",
+        "source_table_index": 40,
+        "source_row_index": 9,
+        "task_raw": "51.3802"
+      },
+      {
+        "wps_task_id": "WPS_2074HY_HYBRID_T40_R10_X",
+        "source_file": "wps_hybrid_2074.docx",
+        "rapids_code": "2074HY",
+        "variant": "hybrid",
+        "source_table_index": 40,
+        "source_row_index": 10,
+        "task_raw": "51.3803"
+      },
+      {
+        "wps_task_id": "WPS_2074HY_HYBRID_T40_R11_X",
+        "source_file": "wps_hybrid_2074.docx",
+        "rapids_code": "2074HY",
+        "variant": "hybrid",
+        "source_table_index": 40,
+        "source_row_index": 11,
+        "task_raw": "51.3810"
+      },
+      {
+        "wps_task_id": "WPS_2074HY_HYBRID_T40_R12_X",
+        "source_file": "wps_hybrid_2074.docx",
+        "rapids_code": "2074HY",
+        "variant": "hybrid",
+        "source_table_index": 40,
+        "source_row_index": 12,
+        "task_raw": "51.3815"
+      },
+      {
+        "wps_task_id": "WPS_2074HY_HYBRID_T40_R13_X",
+        "source_file": "wps_hybrid_2074.docx",
+        "rapids_code": "2074HY",
+        "variant": "hybrid",
+        "source_table_index": 40,
+        "source_row_index": 13,
+        "task_raw": "51.3821"
+      },
+      {
+        "wps_task_id": "WPS_2074HY_HYBRID_T40_R14_X",
+        "source_file": "wps_hybrid_2074.docx",
+        "rapids_code": "2074HY",
+        "variant": "hybrid",
+        "source_table_index": 40,
+        "source_row_index": 14,
+        "task_raw": "51.3816"
+      },
+      {
+        "wps_task_id": "WPS_2074HY_HYBRID_T40_R15_X",
+        "source_file": "wps_hybrid_2074.docx",
+        "rapids_code": "2074HY",
+        "variant": "hybrid",
+        "source_table_index": 40,
+        "source_row_index": 15,
+        "task_raw": "51.3814"
+      },
+      {
+        "wps_task_id": "WPS_2074HY_HYBRID_T40_R16_X",
+        "source_file": "wps_hybrid_2074.docx",
+        "rapids_code": "2074HY",
+        "variant": "hybrid",
+        "source_table_index": 40,
+        "source_row_index": 16,
+        "task_raw": "51.3819"
+      },
+      {
+        "wps_task_id": "WPS_2074HY_HYBRID_T40_R17_X",
+        "source_file": "wps_hybrid_2074.docx",
+        "rapids_code": "2074HY",
+        "variant": "hybrid",
+        "source_table_index": 40,
+        "source_row_index": 17,
+        "task_raw": "51.3822"
+      },
+      {
+        "wps_task_id": "WPS_2074HY_HYBRID_T40_R18_X",
+        "source_file": "wps_hybrid_2074.docx",
+        "rapids_code": "2074HY",
+        "variant": "hybrid",
+        "source_table_index": 40,
+        "source_row_index": 18,
+        "task_raw": "51.3808"
+      },
+      {
+        "wps_task_id": "WPS_2074HY_HYBRID_T40_R19_X",
+        "source_file": "wps_hybrid_2074.docx",
+        "rapids_code": "2074HY",
+        "variant": "hybrid",
+        "source_table_index": 40,
+        "source_row_index": 19,
+        "task_raw": "51.3824"
+      },
+      {
+        "wps_task_id": "WPS_2074HY_HYBRID_T40_R20_X",
+        "source_file": "wps_hybrid_2074.docx",
+        "rapids_code": "2074HY",
+        "variant": "hybrid",
+        "source_table_index": 40,
+        "source_row_index": 20,
+        "task_raw": "51.3811"
+      },
+      {
+        "wps_task_id": "WPS_2074HY_HYBRID_T40_R21_X",
+        "source_file": "wps_hybrid_2074.docx",
+        "rapids_code": "2074HY",
+        "variant": "hybrid",
+        "source_table_index": 40,
+        "source_row_index": 21,
+        "task_raw": "51.3813"
+      },
+      {
+        "wps_task_id": "WPS_2074HY_HYBRID_T40_R22_X",
+        "source_file": "wps_hybrid_2074.docx",
+        "rapids_code": "2074HY",
+        "variant": "hybrid",
+        "source_table_index": 40,
+        "source_row_index": 22,
+        "task_raw": "51.3809"
+      },
+      {
+        "wps_task_id": "WPS_2074HY_HYBRID_T40_R23_X",
+        "source_file": "wps_hybrid_2074.docx",
+        "rapids_code": "2074HY",
+        "variant": "hybrid",
+        "source_table_index": 40,
+        "source_row_index": 23,
+        "task_raw": "Total"
+      },
+      {
+        "wps_task_id": "WPS_3056HY_HYBRID_T40_R02_X",
+        "source_file": "wps_hybrid_3056.docx",
+        "rapids_code": "3056HY",
+        "variant": "hybrid",
+        "source_table_index": 40,
+        "source_row_index": 2,
+        "task_raw": "51.3818"
+      },
+      {
+        "wps_task_id": "WPS_3056HY_HYBRID_T40_R03_X",
+        "source_file": "wps_hybrid_3056.docx",
+        "rapids_code": "3056HY",
+        "variant": "hybrid",
+        "source_table_index": 40,
+        "source_row_index": 3,
+        "task_raw": "51.3806"
+      },
+      {
+        "wps_task_id": "WPS_3056HY_HYBRID_T40_R04_X",
+        "source_file": "wps_hybrid_3056.docx",
+        "rapids_code": "3056HY",
+        "variant": "hybrid",
+        "source_table_index": 40,
+        "source_row_index": 4,
+        "task_raw": "51.3801"
+      },
+      {
+        "wps_task_id": "WPS_3056HY_HYBRID_T40_R05_X",
+        "source_file": "wps_hybrid_3056.docx",
+        "rapids_code": "3056HY",
+        "variant": "hybrid",
+        "source_table_index": 40,
+        "source_row_index": 5,
+        "task_raw": "51.3805"
+      },
+      {
+        "wps_task_id": "WPS_3056HY_HYBRID_T40_R06_X",
+        "source_file": "wps_hybrid_3056.docx",
+        "rapids_code": "3056HY",
+        "variant": "hybrid",
+        "source_table_index": 40,
+        "source_row_index": 6,
+        "task_raw": "51.3820"
+      },
+      {
+        "wps_task_id": "WPS_3056HY_HYBRID_T40_R07_X",
+        "source_file": "wps_hybrid_3056.docx",
+        "rapids_code": "3056HY",
+        "variant": "hybrid",
+        "source_table_index": 40,
+        "source_row_index": 7,
+        "task_raw": "51.3899"
+      },
+      {
+        "wps_task_id": "WPS_3056HY_HYBRID_T40_R08_X",
+        "source_file": "wps_hybrid_3056.docx",
+        "rapids_code": "3056HY",
+        "variant": "hybrid",
+        "source_table_index": 40,
+        "source_row_index": 8,
+        "task_raw": "51.3812"
+      },
+      {
+        "wps_task_id": "WPS_3056HY_HYBRID_T40_R09_X",
+        "source_file": "wps_hybrid_3056.docx",
+        "rapids_code": "3056HY",
+        "variant": "hybrid",
+        "source_table_index": 40,
+        "source_row_index": 9,
+        "task_raw": "51.3802"
+      },
+      {
+        "wps_task_id": "WPS_3056HY_HYBRID_T40_R10_X",
+        "source_file": "wps_hybrid_3056.docx",
+        "rapids_code": "3056HY",
+        "variant": "hybrid",
+        "source_table_index": 40,
+        "source_row_index": 10,
+        "task_raw": "51.3803"
+      },
+      {
+        "wps_task_id": "WPS_3056HY_HYBRID_T40_R11_X",
+        "source_file": "wps_hybrid_3056.docx",
+        "rapids_code": "3056HY",
+        "variant": "hybrid",
+        "source_table_index": 40,
+        "source_row_index": 11,
+        "task_raw": "51.3810"
+      },
+      {
+        "wps_task_id": "WPS_3056HY_HYBRID_T40_R12_X",
+        "source_file": "wps_hybrid_3056.docx",
+        "rapids_code": "3056HY",
+        "variant": "hybrid",
+        "source_table_index": 40,
+        "source_row_index": 12,
+        "task_raw": "51.3815"
+      },
+      {
+        "wps_task_id": "WPS_3056HY_HYBRID_T40_R13_X",
+        "source_file": "wps_hybrid_3056.docx",
+        "rapids_code": "3056HY",
+        "variant": "hybrid",
+        "source_table_index": 40,
+        "source_row_index": 13,
+        "task_raw": "51.3821"
+      },
+      {
+        "wps_task_id": "WPS_3056HY_HYBRID_T40_R14_X",
+        "source_file": "wps_hybrid_3056.docx",
+        "rapids_code": "3056HY",
+        "variant": "hybrid",
+        "source_table_index": 40,
+        "source_row_index": 14,
+        "task_raw": "51.3816"
+      },
+      {
+        "wps_task_id": "WPS_3056HY_HYBRID_T40_R15_X",
+        "source_file": "wps_hybrid_3056.docx",
+        "rapids_code": "3056HY",
+        "variant": "hybrid",
+        "source_table_index": 40,
+        "source_row_index": 15,
+        "task_raw": "51.3814"
+      },
+      {
+        "wps_task_id": "WPS_3056HY_HYBRID_T40_R16_X",
+        "source_file": "wps_hybrid_3056.docx",
+        "rapids_code": "3056HY",
+        "variant": "hybrid",
+        "source_table_index": 40,
+        "source_row_index": 16,
+        "task_raw": "51.3819"
+      },
+      {
+        "wps_task_id": "WPS_3056HY_HYBRID_T40_R17_X",
+        "source_file": "wps_hybrid_3056.docx",
+        "rapids_code": "3056HY",
+        "variant": "hybrid",
+        "source_table_index": 40,
+        "source_row_index": 17,
+        "task_raw": "51.3822"
+      },
+      {
+        "wps_task_id": "WPS_3056HY_HYBRID_T40_R18_X",
+        "source_file": "wps_hybrid_3056.docx",
+        "rapids_code": "3056HY",
+        "variant": "hybrid",
+        "source_table_index": 40,
+        "source_row_index": 18,
+        "task_raw": "51.3808"
+      },
+      {
+        "wps_task_id": "WPS_3056HY_HYBRID_T40_R19_X",
+        "source_file": "wps_hybrid_3056.docx",
+        "rapids_code": "3056HY",
+        "variant": "hybrid",
+        "source_table_index": 40,
+        "source_row_index": 19,
+        "task_raw": "51.3824"
+      },
+      {
+        "wps_task_id": "WPS_3056HY_HYBRID_T40_R20_X",
+        "source_file": "wps_hybrid_3056.docx",
+        "rapids_code": "3056HY",
+        "variant": "hybrid",
+        "source_table_index": 40,
+        "source_row_index": 20,
+        "task_raw": "51.3811"
+      },
+      {
+        "wps_task_id": "WPS_3056HY_HYBRID_T40_R21_X",
+        "source_file": "wps_hybrid_3056.docx",
+        "rapids_code": "3056HY",
+        "variant": "hybrid",
+        "source_table_index": 40,
+        "source_row_index": 21,
+        "task_raw": "51.3813"
+      },
+      {
+        "wps_task_id": "WPS_3056HY_HYBRID_T40_R22_X",
+        "source_file": "wps_hybrid_3056.docx",
+        "rapids_code": "3056HY",
+        "variant": "hybrid",
+        "source_table_index": 40,
+        "source_row_index": 22,
+        "task_raw": "51.3809"
+      },
+      {
+        "wps_task_id": "WPS_3056HY_HYBRID_T40_R23_X",
+        "source_file": "wps_hybrid_3056.docx",
+        "rapids_code": "3056HY",
+        "variant": "hybrid",
+        "source_table_index": 40,
+        "source_row_index": 23,
+        "task_raw": "Total"
+      },
+      {
+        "wps_task_id": "WPS_2074_TIME_BASED_T40_R02_X",
+        "source_file": "wps_time_2074.docx",
+        "rapids_code": "2074",
+        "variant": "time_based",
+        "source_table_index": 40,
+        "source_row_index": 2,
+        "task_raw": "51.3818"
+      },
+      {
+        "wps_task_id": "WPS_2074_TIME_BASED_T40_R03_X",
+        "source_file": "wps_time_2074.docx",
+        "rapids_code": "2074",
+        "variant": "time_based",
+        "source_table_index": 40,
+        "source_row_index": 3,
+        "task_raw": "51.3806"
+      },
+      {
+        "wps_task_id": "WPS_2074_TIME_BASED_T40_R04_X",
+        "source_file": "wps_time_2074.docx",
+        "rapids_code": "2074",
+        "variant": "time_based",
+        "source_table_index": 40,
+        "source_row_index": 4,
+        "task_raw": "51.3801"
+      },
+      {
+        "wps_task_id": "WPS_2074_TIME_BASED_T40_R05_X",
+        "source_file": "wps_time_2074.docx",
+        "rapids_code": "2074",
+        "variant": "time_based",
+        "source_table_index": 40,
+        "source_row_index": 5,
+        "task_raw": "51.3805"
+      },
+      {
+        "wps_task_id": "WPS_2074_TIME_BASED_T40_R06_X",
+        "source_file": "wps_time_2074.docx",
+        "rapids_code": "2074",
+        "variant": "time_based",
+        "source_table_index": 40,
+        "source_row_index": 6,
+        "task_raw": "51.3820"
+      },
+      {
+        "wps_task_id": "WPS_2074_TIME_BASED_T40_R07_X",
+        "source_file": "wps_time_2074.docx",
+        "rapids_code": "2074",
+        "variant": "time_based",
+        "source_table_index": 40,
+        "source_row_index": 7,
+        "task_raw": "51.3899"
+      },
+      {
+        "wps_task_id": "WPS_2074_TIME_BASED_T40_R08_X",
+        "source_file": "wps_time_2074.docx",
+        "rapids_code": "2074",
+        "variant": "time_based",
+        "source_table_index": 40,
+        "source_row_index": 8,
+        "task_raw": "51.3812"
+      },
+      {
+        "wps_task_id": "WPS_2074_TIME_BASED_T40_R09_X",
+        "source_file": "wps_time_2074.docx",
+        "rapids_code": "2074",
+        "variant": "time_based",
+        "source_table_index": 40,
+        "source_row_index": 9,
+        "task_raw": "51.3802"
+      },
+      {
+        "wps_task_id": "WPS_2074_TIME_BASED_T40_R10_X",
+        "source_file": "wps_time_2074.docx",
+        "rapids_code": "2074",
+        "variant": "time_based",
+        "source_table_index": 40,
+        "source_row_index": 10,
+        "task_raw": "51.3803"
+      },
+      {
+        "wps_task_id": "WPS_2074_TIME_BASED_T40_R11_X",
+        "source_file": "wps_time_2074.docx",
+        "rapids_code": "2074",
+        "variant": "time_based",
+        "source_table_index": 40,
+        "source_row_index": 11,
+        "task_raw": "51.3810"
+      },
+      {
+        "wps_task_id": "WPS_2074_TIME_BASED_T40_R12_X",
+        "source_file": "wps_time_2074.docx",
+        "rapids_code": "2074",
+        "variant": "time_based",
+        "source_table_index": 40,
+        "source_row_index": 12,
+        "task_raw": "51.3815"
+      },
+      {
+        "wps_task_id": "WPS_2074_TIME_BASED_T40_R13_X",
+        "source_file": "wps_time_2074.docx",
+        "rapids_code": "2074",
+        "variant": "time_based",
+        "source_table_index": 40,
+        "source_row_index": 13,
+        "task_raw": "51.3821"
+      },
+      {
+        "wps_task_id": "WPS_2074_TIME_BASED_T40_R14_X",
+        "source_file": "wps_time_2074.docx",
+        "rapids_code": "2074",
+        "variant": "time_based",
+        "source_table_index": 40,
+        "source_row_index": 14,
+        "task_raw": "51.3816"
+      },
+      {
+        "wps_task_id": "WPS_2074_TIME_BASED_T40_R15_X",
+        "source_file": "wps_time_2074.docx",
+        "rapids_code": "2074",
+        "variant": "time_based",
+        "source_table_index": 40,
+        "source_row_index": 15,
+        "task_raw": "51.3814"
+      },
+      {
+        "wps_task_id": "WPS_2074_TIME_BASED_T40_R16_X",
+        "source_file": "wps_time_2074.docx",
+        "rapids_code": "2074",
+        "variant": "time_based",
+        "source_table_index": 40,
+        "source_row_index": 16,
+        "task_raw": "51.3819"
+      },
+      {
+        "wps_task_id": "WPS_2074_TIME_BASED_T40_R17_X",
+        "source_file": "wps_time_2074.docx",
+        "rapids_code": "2074",
+        "variant": "time_based",
+        "source_table_index": 40,
+        "source_row_index": 17,
+        "task_raw": "51.3822"
+      },
+      {
+        "wps_task_id": "WPS_2074_TIME_BASED_T40_R18_X",
+        "source_file": "wps_time_2074.docx",
+        "rapids_code": "2074",
+        "variant": "time_based",
+        "source_table_index": 40,
+        "source_row_index": 18,
+        "task_raw": "51.3808"
+      },
+      {
+        "wps_task_id": "WPS_2074_TIME_BASED_T40_R19_X",
+        "source_file": "wps_time_2074.docx",
+        "rapids_code": "2074",
+        "variant": "time_based",
+        "source_table_index": 40,
+        "source_row_index": 19,
+        "task_raw": "51.3824"
+      },
+      {
+        "wps_task_id": "WPS_2074_TIME_BASED_T40_R20_X",
+        "source_file": "wps_time_2074.docx",
+        "rapids_code": "2074",
+        "variant": "time_based",
+        "source_table_index": 40,
+        "source_row_index": 20,
+        "task_raw": "51.3811"
+      },
+      {
+        "wps_task_id": "WPS_2074_TIME_BASED_T40_R21_X",
+        "source_file": "wps_time_2074.docx",
+        "rapids_code": "2074",
+        "variant": "time_based",
+        "source_table_index": 40,
+        "source_row_index": 21,
+        "task_raw": "51.3813"
+      },
+      {
+        "wps_task_id": "WPS_2074_TIME_BASED_T40_R22_X",
+        "source_file": "wps_time_2074.docx",
+        "rapids_code": "2074",
+        "variant": "time_based",
+        "source_table_index": 40,
+        "source_row_index": 22,
+        "task_raw": "51.3809"
+      },
+      {
+        "wps_task_id": "WPS_2074_TIME_BASED_T40_R23_X",
+        "source_file": "wps_time_2074.docx",
+        "rapids_code": "2074",
+        "variant": "time_based",
+        "source_table_index": 40,
+        "source_row_index": 23,
+        "task_raw": "Total"
+      },
+      {
+        "wps_task_id": "WPS_3056_TIME_BASED_T40_R02_X",
+        "source_file": "wps_time_3056.docx",
+        "rapids_code": "3056",
+        "variant": "time_based",
+        "source_table_index": 40,
+        "source_row_index": 2,
+        "task_raw": "51.3818"
+      },
+      {
+        "wps_task_id": "WPS_3056_TIME_BASED_T40_R03_X",
+        "source_file": "wps_time_3056.docx",
+        "rapids_code": "3056",
+        "variant": "time_based",
+        "source_table_index": 40,
+        "source_row_index": 3,
+        "task_raw": "51.3806"
+      },
+      {
+        "wps_task_id": "WPS_3056_TIME_BASED_T40_R04_X",
+        "source_file": "wps_time_3056.docx",
+        "rapids_code": "3056",
+        "variant": "time_based",
+        "source_table_index": 40,
+        "source_row_index": 4,
+        "task_raw": "51.3801"
+      },
+      {
+        "wps_task_id": "WPS_3056_TIME_BASED_T40_R05_X",
+        "source_file": "wps_time_3056.docx",
+        "rapids_code": "3056",
+        "variant": "time_based",
+        "source_table_index": 40,
+        "source_row_index": 5,
+        "task_raw": "51.3805"
+      },
+      {
+        "wps_task_id": "WPS_3056_TIME_BASED_T40_R06_X",
+        "source_file": "wps_time_3056.docx",
+        "rapids_code": "3056",
+        "variant": "time_based",
+        "source_table_index": 40,
+        "source_row_index": 6,
+        "task_raw": "51.3820"
+      },
+      {
+        "wps_task_id": "WPS_3056_TIME_BASED_T40_R07_X",
+        "source_file": "wps_time_3056.docx",
+        "rapids_code": "3056",
+        "variant": "time_based",
+        "source_table_index": 40,
+        "source_row_index": 7,
+        "task_raw": "51.3899"
+      },
+      {
+        "wps_task_id": "WPS_3056_TIME_BASED_T40_R08_X",
+        "source_file": "wps_time_3056.docx",
+        "rapids_code": "3056",
+        "variant": "time_based",
+        "source_table_index": 40,
+        "source_row_index": 8,
+        "task_raw": "51.3812"
+      },
+      {
+        "wps_task_id": "WPS_3056_TIME_BASED_T40_R09_X",
+        "source_file": "wps_time_3056.docx",
+        "rapids_code": "3056",
+        "variant": "time_based",
+        "source_table_index": 40,
+        "source_row_index": 9,
+        "task_raw": "51.3802"
+      },
+      {
+        "wps_task_id": "WPS_3056_TIME_BASED_T40_R10_X",
+        "source_file": "wps_time_3056.docx",
+        "rapids_code": "3056",
+        "variant": "time_based",
+        "source_table_index": 40,
+        "source_row_index": 10,
+        "task_raw": "51.3803"
+      },
+      {
+        "wps_task_id": "WPS_3056_TIME_BASED_T40_R11_X",
+        "source_file": "wps_time_3056.docx",
+        "rapids_code": "3056",
+        "variant": "time_based",
+        "source_table_index": 40,
+        "source_row_index": 11,
+        "task_raw": "51.3810"
+      },
+      {
+        "wps_task_id": "WPS_3056_TIME_BASED_T40_R12_X",
+        "source_file": "wps_time_3056.docx",
+        "rapids_code": "3056",
+        "variant": "time_based",
+        "source_table_index": 40,
+        "source_row_index": 12,
+        "task_raw": "51.3815"
+      },
+      {
+        "wps_task_id": "WPS_3056_TIME_BASED_T40_R13_X",
+        "source_file": "wps_time_3056.docx",
+        "rapids_code": "3056",
+        "variant": "time_based",
+        "source_table_index": 40,
+        "source_row_index": 13,
+        "task_raw": "51.3821"
+      },
+      {
+        "wps_task_id": "WPS_3056_TIME_BASED_T40_R14_X",
+        "source_file": "wps_time_3056.docx",
+        "rapids_code": "3056",
+        "variant": "time_based",
+        "source_table_index": 40,
+        "source_row_index": 14,
+        "task_raw": "51.3816"
+      },
+      {
+        "wps_task_id": "WPS_3056_TIME_BASED_T40_R15_X",
+        "source_file": "wps_time_3056.docx",
+        "rapids_code": "3056",
+        "variant": "time_based",
+        "source_table_index": 40,
+        "source_row_index": 15,
+        "task_raw": "51.3814"
+      },
+      {
+        "wps_task_id": "WPS_3056_TIME_BASED_T40_R16_X",
+        "source_file": "wps_time_3056.docx",
+        "rapids_code": "3056",
+        "variant": "time_based",
+        "source_table_index": 40,
+        "source_row_index": 16,
+        "task_raw": "51.3819"
+      },
+      {
+        "wps_task_id": "WPS_3056_TIME_BASED_T40_R17_X",
+        "source_file": "wps_time_3056.docx",
+        "rapids_code": "3056",
+        "variant": "time_based",
+        "source_table_index": 40,
+        "source_row_index": 17,
+        "task_raw": "51.3822"
+      },
+      {
+        "wps_task_id": "WPS_3056_TIME_BASED_T40_R18_X",
+        "source_file": "wps_time_3056.docx",
+        "rapids_code": "3056",
+        "variant": "time_based",
+        "source_table_index": 40,
+        "source_row_index": 18,
+        "task_raw": "51.3808"
+      },
+      {
+        "wps_task_id": "WPS_3056_TIME_BASED_T40_R19_X",
+        "source_file": "wps_time_3056.docx",
+        "rapids_code": "3056",
+        "variant": "time_based",
+        "source_table_index": 40,
+        "source_row_index": 19,
+        "task_raw": "51.3824"
+      },
+      {
+        "wps_task_id": "WPS_3056_TIME_BASED_T40_R20_X",
+        "source_file": "wps_time_3056.docx",
+        "rapids_code": "3056",
+        "variant": "time_based",
+        "source_table_index": 40,
+        "source_row_index": 20,
+        "task_raw": "51.3811"
+      },
+      {
+        "wps_task_id": "WPS_3056_TIME_BASED_T40_R21_X",
+        "source_file": "wps_time_3056.docx",
+        "rapids_code": "3056",
+        "variant": "time_based",
+        "source_table_index": 40,
+        "source_row_index": 21,
+        "task_raw": "51.3813"
+      },
+      {
+        "wps_task_id": "WPS_3056_TIME_BASED_T40_R22_X",
+        "source_file": "wps_time_3056.docx",
+        "rapids_code": "3056",
+        "variant": "time_based",
+        "source_table_index": 40,
+        "source_row_index": 22,
+        "task_raw": "51.3809"
+      },
+      {
+        "wps_task_id": "WPS_3056_TIME_BASED_T40_R23_X",
+        "source_file": "wps_time_3056.docx",
+        "rapids_code": "3056",
+        "variant": "time_based",
+        "source_table_index": 40,
+        "source_row_index": 23,
+        "task_raw": "Total"
+      }
+    ]
+  },
+  {
+    "module_number": "RN-WPS-002",
+    "concept": "Administer anesthetics or sedatives to control pain.",
+    "needs_review": true,
+    "review_policy": "needs_review=true when review_count > confident_count",
+    "task_count": 6,
+    "bridge_count": 6,
+    "review_count": 6,
+    "confident_count": 0,
+    "review_rate": 1.0,
+    "source_anchor": "WPS process: Administer anesthetics or sedatives to control pain.; variants: 2074:time_based, 2074CB:competency_based, 2074HY:hybrid, 3056:time_based, 3056CB:competency_based, 3056HY:hybrid; source rows: wps_competency_2074.docx#T29:R3; wps_competency_3056.docx#T29:R3; wps_hybrid_2074.docx#T29:R2; wps_hybrid_3056.docx#T29:R2; wps_time_2074.docx#T29:R2; wps_time_3056.docx#T29:R2; crosswalk_data: C:\\Users\\RHarrity\\Documents\\Codex\\rn_wps_prelicensure_crosswalk_workset_2026-06-12\\build\\intermediate\\rn_wps_prelicensure_crosswalk_data.json",
+    "tasks": [
+      {
+        "wps_task_id": "WPS_2074CB_COMPETENCY_BASED_T29_R03_A",
+        "source_file": "wps_competency_2074.docx",
+        "rapids_code": "2074CB",
+        "variant": "competency_based",
+        "source_table_index": 29,
+        "source_row_index": 3,
+        "task_raw": "A. Administer local, inhalation, intravenous, or other anesthetics."
+      },
+      {
+        "wps_task_id": "WPS_3056CB_COMPETENCY_BASED_T29_R03_A",
+        "source_file": "wps_competency_3056.docx",
+        "rapids_code": "3056CB",
+        "variant": "competency_based",
+        "source_table_index": 29,
+        "source_row_index": 3,
+        "task_raw": "A. Administer local, inhalation, intravenous, or other anesthetics."
+      },
+      {
+        "wps_task_id": "WPS_2074HY_HYBRID_T29_R02_A",
+        "source_file": "wps_hybrid_2074.docx",
+        "rapids_code": "2074HY",
+        "variant": "hybrid",
+        "source_table_index": 29,
+        "source_row_index": 2,
+        "task_raw": "A. Administer local, inhalation, intravenous, or other anesthetics."
+      },
+      {
+        "wps_task_id": "WPS_3056HY_HYBRID_T29_R02_A",
+        "source_file": "wps_hybrid_3056.docx",
+        "rapids_code": "3056HY",
+        "variant": "hybrid",
+        "source_table_index": 29,
+        "source_row_index": 2,
+        "task_raw": "A. Administer local, inhalation, intravenous, or other anesthetics."
+      },
+      {
+        "wps_task_id": "WPS_2074_TIME_BASED_T29_R02_A",
+        "source_file": "wps_time_2074.docx",
+        "rapids_code": "2074",
+        "variant": "time_based",
+        "source_table_index": 29,
+        "source_row_index": 2,
+        "task_raw": "A. Administer local, inhalation, intravenous, or other anesthetics."
+      },
+      {
+        "wps_task_id": "WPS_3056_TIME_BASED_T29_R02_A",
+        "source_file": "wps_time_3056.docx",
+        "rapids_code": "3056",
+        "variant": "time_based",
+        "source_table_index": 29,
+        "source_row_index": 2,
+        "task_raw": "A. Administer local, inhalation, intravenous, or other anesthetics."
+      }
+    ]
+  },
+  {
+    "module_number": "RN-WPS-003",
+    "concept": "Administer non-intravenous medications.",
+    "needs_review": true,
+    "review_policy": "needs_review=true when review_count > confident_count",
+    "task_count": 6,
+    "bridge_count": 6,
+    "review_count": 6,
+    "confident_count": 0,
+    "review_rate": 1.0,
+    "source_anchor": "WPS process: Administer non-intravenous medications.; variants: 2074:time_based, 2074CB:competency_based, 2074HY:hybrid, 3056:time_based, 3056CB:competency_based, 3056HY:hybrid; source rows: wps_competency_2074.docx#T4:R3; wps_competency_3056.docx#T4:R3; wps_hybrid_2074.docx#T4:R2; wps_hybrid_3056.docx#T4:R2; wps_time_2074.docx#T4:R2; wps_time_3056.docx#T4:R2; crosswalk_data: C:\\Users\\RHarrity\\Documents\\Codex\\rn_wps_prelicensure_crosswalk_workset_2026-06-12\\build\\intermediate\\rn_wps_prelicensure_crosswalk_data.json",
+    "tasks": [
+      {
+        "wps_task_id": "WPS_2074CB_COMPETENCY_BASED_T04_R03_A",
+        "source_file": "wps_competency_2074.docx",
+        "rapids_code": "2074CB",
+        "variant": "competency_based",
+        "source_table_index": 4,
+        "source_row_index": 3,
+        "task_raw": "A. Administer medications to patients and monitor patients for reactions or side effects."
+      },
+      {
+        "wps_task_id": "WPS_3056CB_COMPETENCY_BASED_T04_R03_A",
+        "source_file": "wps_competency_3056.docx",
+        "rapids_code": "3056CB",
+        "variant": "competency_based",
+        "source_table_index": 4,
+        "source_row_index": 3,
+        "task_raw": "A. Administer medications to patients and monitor patients for reactions or side effects."
+      },
+      {
+        "wps_task_id": "WPS_2074HY_HYBRID_T04_R02_A",
+        "source_file": "wps_hybrid_2074.docx",
+        "rapids_code": "2074HY",
+        "variant": "hybrid",
+        "source_table_index": 4,
+        "source_row_index": 2,
+        "task_raw": "A. Administer medications to patients and monitor patients for reactions or side effects."
+      },
+      {
+        "wps_task_id": "WPS_3056HY_HYBRID_T04_R02_A",
+        "source_file": "wps_hybrid_3056.docx",
+        "rapids_code": "3056HY",
+        "variant": "hybrid",
+        "source_table_index": 4,
+        "source_row_index": 2,
+        "task_raw": "A. Administer medications to patients and monitor patients for reactions or side effects."
+      },
+      {
+        "wps_task_id": "WPS_2074_TIME_BASED_T04_R02_A",
+        "source_file": "wps_time_2074.docx",
+        "rapids_code": "2074",
+        "variant": "time_based",
+        "source_table_index": 4,
+        "source_row_index": 2,
+        "task_raw": "A. Administer medications to patients and monitor patients for reactions or side effects."
+      },
+      {
+        "wps_task_id": "WPS_3056_TIME_BASED_T04_R02_A",
+        "source_file": "wps_time_3056.docx",
+        "rapids_code": "3056",
+        "variant": "time_based",
+        "source_table_index": 4,
+        "source_row_index": 2,
+        "task_raw": "A. Administer medications to patients and monitor patients for reactions or side effects."
+      }
+    ]
+  },
+  {
+    "module_number": "RN-WPS-004",
+    "concept": "Advise communities or institutions regarding health or safety issues.",
+    "needs_review": true,
+    "review_policy": "needs_review=true when review_count > confident_count",
+    "task_count": 6,
+    "bridge_count": 6,
+    "review_count": 6,
+    "confident_count": 0,
+    "review_rate": 1.0,
+    "source_anchor": "WPS process: Advise communities or institutions regarding health or safety issues.; variants: 2074:time_based, 2074CB:competency_based, 2074HY:hybrid, 3056:time_based, 3056CB:competency_based, 3056HY:hybrid; source rows: wps_competency_2074.docx#T37:R3; wps_competency_3056.docx#T37:R3; wps_hybrid_2074.docx#T37:R2; wps_hybrid_3056.docx#T37:R2; wps_time_2074.docx#T37:R2; wps_time_3056.docx#T37:R2; crosswalk_data: C:\\Users\\RHarrity\\Documents\\Codex\\rn_wps_prelicensure_crosswalk_workset_2026-06-12\\build\\intermediate\\rn_wps_prelicensure_crosswalk_data.json",
+    "tasks": [
+      {
+        "wps_task_id": "WPS_2074CB_COMPETENCY_BASED_T37_R03_A",
+        "source_file": "wps_competency_2074.docx",
+        "rapids_code": "2074CB",
+        "variant": "competency_based",
+        "source_table_index": 37,
+        "source_row_index": 3,
+        "task_raw": "A. Consult with institutions or associations regarding issues or concerns relevant to the practice and profession of nursing."
+      },
+      {
+        "wps_task_id": "WPS_3056CB_COMPETENCY_BASED_T37_R03_A",
+        "source_file": "wps_competency_3056.docx",
+        "rapids_code": "3056CB",
+        "variant": "competency_based",
+        "source_table_index": 37,
+        "source_row_index": 3,
+        "task_raw": "A. Consult with institutions or associations regarding issues or concerns relevant to the practice and profession of nursing."
+      },
+      {
+        "wps_task_id": "WPS_2074HY_HYBRID_T37_R02_A",
+        "source_file": "wps_hybrid_2074.docx",
+        "rapids_code": "2074HY",
+        "variant": "hybrid",
+        "source_table_index": 37,
+        "source_row_index": 2,
+        "task_raw": "A. Consult with institutions or associations regarding issues or concerns relevant to the practice and profession of nursing."
+      },
+      {
+        "wps_task_id": "WPS_3056HY_HYBRID_T37_R02_A",
+        "source_file": "wps_hybrid_3056.docx",
+        "rapids_code": "3056HY",
+        "variant": "hybrid",
+        "source_table_index": 37,
+        "source_row_index": 2,
+        "task_raw": "A. Consult with institutions or associations regarding issues or concerns relevant to the practice and profession of nursing."
+      },
+      {
+        "wps_task_id": "WPS_2074_TIME_BASED_T37_R02_A",
+        "source_file": "wps_time_2074.docx",
+        "rapids_code": "2074",
+        "variant": "time_based",
+        "source_table_index": 37,
+        "source_row_index": 2,
+        "task_raw": "A. Consult with institutions or associations regarding issues or concerns relevant to the practice and profession of nursing."
+      },
+      {
+        "wps_task_id": "WPS_3056_TIME_BASED_T37_R02_A",
+        "source_file": "wps_time_3056.docx",
+        "rapids_code": "3056",
+        "variant": "time_based",
+        "source_table_index": 37,
+        "source_row_index": 2,
+        "task_raw": "A. Consult with institutions or associations regarding issues or concerns relevant to the practice and profession of nursing."
+      }
+    ]
+  },
+  {
+    "module_number": "RN-WPS-005",
+    "concept": "Advise medical personnel regarding healthcare issues.",
+    "needs_review": true,
+    "review_policy": "needs_review=true when review_count > confident_count",
+    "task_count": 6,
+    "bridge_count": 6,
+    "review_count": 6,
+    "confident_count": 0,
+    "review_rate": 1.0,
+    "source_anchor": "WPS process: Advise medical personnel regarding healthcare issues.; variants: 2074:time_based, 2074CB:competency_based, 2074HY:hybrid, 3056:time_based, 3056CB:competency_based, 3056HY:hybrid; source rows: wps_competency_2074.docx#T14:R3; wps_competency_3056.docx#T14:R3; wps_hybrid_2074.docx#T14:R2; wps_hybrid_3056.docx#T14:R2; wps_time_2074.docx#T14:R2; wps_time_3056.docx#T14:R2; crosswalk_data: C:\\Users\\RHarrity\\Documents\\Codex\\rn_wps_prelicensure_crosswalk_workset_2026-06-12\\build\\intermediate\\rn_wps_prelicensure_crosswalk_data.json",
+    "tasks": [
+      {
+        "wps_task_id": "WPS_2074CB_COMPETENCY_BASED_T14_R03_A",
+        "source_file": "wps_competency_2074.docx",
+        "rapids_code": "2074CB",
+        "variant": "competency_based",
+        "source_table_index": 14,
+        "source_row_index": 3,
+        "task_raw": "A. Direct or coordinate infection control programs, advising or consulting with specified personnel about necessary precautions."
+      },
+      {
+        "wps_task_id": "WPS_3056CB_COMPETENCY_BASED_T14_R03_A",
+        "source_file": "wps_competency_3056.docx",
+        "rapids_code": "3056CB",
+        "variant": "competency_based",
+        "source_table_index": 14,
+        "source_row_index": 3,
+        "task_raw": "A. Direct or coordinate infection control programs, advising or consulting with specified personnel about necessary precautions."
+      },
+      {
+        "wps_task_id": "WPS_2074HY_HYBRID_T14_R02_A",
+        "source_file": "wps_hybrid_2074.docx",
+        "rapids_code": "2074HY",
+        "variant": "hybrid",
+        "source_table_index": 14,
+        "source_row_index": 2,
+        "task_raw": "A. Direct or coordinate infection control programs, advising or consulting with specified personnel about necessary precautions."
+      },
+      {
+        "wps_task_id": "WPS_3056HY_HYBRID_T14_R02_A",
+        "source_file": "wps_hybrid_3056.docx",
+        "rapids_code": "3056HY",
+        "variant": "hybrid",
+        "source_table_index": 14,
+        "source_row_index": 2,
+        "task_raw": "A. Direct or coordinate infection control programs, advising or consulting with specified personnel about necessary precautions."
+      },
+      {
+        "wps_task_id": "WPS_2074_TIME_BASED_T14_R02_A",
+        "source_file": "wps_time_2074.docx",
+        "rapids_code": "2074",
+        "variant": "time_based",
+        "source_table_index": 14,
+        "source_row_index": 2,
+        "task_raw": "A. Direct or coordinate infection control programs, advising or consulting with specified personnel about necessary precautions."
+      },
+      {
+        "wps_task_id": "WPS_3056_TIME_BASED_T14_R02_A",
+        "source_file": "wps_time_3056.docx",
+        "rapids_code": "3056",
+        "variant": "time_based",
+        "source_table_index": 14,
+        "source_row_index": 2,
+        "task_raw": "A. Direct or coordinate infection control programs, advising or consulting with specified personnel about necessary precautions."
+      }
+    ]
+  },
+  {
+    "module_number": "RN-WPS-006",
+    "concept": "Analyze test data or images to inform diagnosis or treatment.",
+    "needs_review": true,
+    "review_policy": "needs_review=true when review_count > confident_count",
+    "task_count": 6,
+    "bridge_count": 6,
+    "review_count": 6,
+    "confident_count": 0,
+    "review_rate": 1.0,
+    "source_anchor": "WPS process: Analyze test data or images to inform diagnosis or treatment.; variants: 2074:time_based, 2074CB:competency_based, 2074HY:hybrid, 3056:time_based, 3056CB:competency_based, 3056HY:hybrid; source rows: wps_competency_2074.docx#T15:R3; wps_competency_3056.docx#T15:R3; wps_hybrid_2074.docx#T15:R2; wps_hybrid_3056.docx#T15:R2; wps_time_2074.docx#T15:R2; wps_time_3056.docx#T15:R2; crosswalk_data: C:\\Users\\RHarrity\\Documents\\Codex\\rn_wps_prelicensure_crosswalk_workset_2026-06-12\\build\\intermediate\\rn_wps_prelicensure_crosswalk_data.json",
+    "tasks": [
+      {
+        "wps_task_id": "WPS_2074CB_COMPETENCY_BASED_T15_R03_A",
+        "source_file": "wps_competency_2074.docx",
+        "rapids_code": "2074CB",
+        "variant": "competency_based",
+        "source_table_index": 15,
+        "source_row_index": 3,
+        "task_raw": "A. Order, interpret, and evaluate diagnostic tests to identify and assess patient's condition."
+      },
+      {
+        "wps_task_id": "WPS_3056CB_COMPETENCY_BASED_T15_R03_A",
+        "source_file": "wps_competency_3056.docx",
+        "rapids_code": "3056CB",
+        "variant": "competency_based",
+        "source_table_index": 15,
+        "source_row_index": 3,
+        "task_raw": "A. Order, interpret, and evaluate diagnostic tests to identify and assess patient's condition."
+      },
+      {
+        "wps_task_id": "WPS_2074HY_HYBRID_T15_R02_A",
+        "source_file": "wps_hybrid_2074.docx",
+        "rapids_code": "2074HY",
+        "variant": "hybrid",
+        "source_table_index": 15,
+        "source_row_index": 2,
+        "task_raw": "A. Order, interpret, and evaluate diagnostic tests to identify and assess patient's condition."
+      },
+      {
+        "wps_task_id": "WPS_3056HY_HYBRID_T15_R02_A",
+        "source_file": "wps_hybrid_3056.docx",
+        "rapids_code": "3056HY",
+        "variant": "hybrid",
+        "source_table_index": 15,
+        "source_row_index": 2,
+        "task_raw": "A. Order, interpret, and evaluate diagnostic tests to identify and assess patient's condition."
+      },
+      {
+        "wps_task_id": "WPS_2074_TIME_BASED_T15_R02_A",
+        "source_file": "wps_time_2074.docx",
+        "rapids_code": "2074",
+        "variant": "time_based",
+        "source_table_index": 15,
+        "source_row_index": 2,
+        "task_raw": "A. Order, interpret, and evaluate diagnostic tests to identify and assess patient's condition."
+      },
+      {
+        "wps_task_id": "WPS_3056_TIME_BASED_T15_R02_A",
+        "source_file": "wps_time_3056.docx",
+        "rapids_code": "3056",
+        "variant": "time_based",
+        "source_table_index": 15,
+        "source_row_index": 2,
+        "task_raw": "A. Order, interpret, and evaluate diagnostic tests to identify and assess patient's condition."
+      }
+    ]
+  },
+  {
+    "module_number": "RN-WPS-007",
+    "concept": "Assess patient work, living, or social environments.",
+    "needs_review": true,
+    "review_policy": "needs_review=true when review_count > confident_count",
+    "task_count": 6,
+    "bridge_count": 6,
+    "review_count": 6,
+    "confident_count": 0,
+    "review_rate": 1.0,
+    "source_anchor": "WPS process: Assess patient work, living, or social environments.; variants: 2074:time_based, 2074CB:competency_based, 2074HY:hybrid, 3056:time_based, 3056CB:competency_based, 3056HY:hybrid; source rows: wps_competency_2074.docx#T28:R3; wps_competency_3056.docx#T28:R3; wps_hybrid_2074.docx#T28:R2; wps_hybrid_3056.docx#T28:R2; wps_time_2074.docx#T28:R2; wps_time_3056.docx#T28:R2; crosswalk_data: C:\\Users\\RHarrity\\Documents\\Codex\\rn_wps_prelicensure_crosswalk_workset_2026-06-12\\build\\intermediate\\rn_wps_prelicensure_crosswalk_data.json",
+    "tasks": [
+      {
+        "wps_task_id": "WPS_2074CB_COMPETENCY_BASED_T28_R03_A",
+        "source_file": "wps_competency_2074.docx",
+        "rapids_code": "2074CB",
+        "variant": "competency_based",
+        "source_table_index": 28,
+        "source_row_index": 3,
+        "task_raw": "A. Assess the needs of individuals, families, or communities, including assessment of individuals' home or work environments, to identify potential health or safety problems."
+      },
+      {
+        "wps_task_id": "WPS_3056CB_COMPETENCY_BASED_T28_R03_A",
+        "source_file": "wps_competency_3056.docx",
+        "rapids_code": "3056CB",
+        "variant": "competency_based",
+        "source_table_index": 28,
+        "source_row_index": 3,
+        "task_raw": "A. Assess the needs of individuals, families, or communities, including assessment of individuals' home or work environments, to identify potential health or safety problems."
+      },
+      {
+        "wps_task_id": "WPS_2074HY_HYBRID_T28_R02_A",
+        "source_file": "wps_hybrid_2074.docx",
+        "rapids_code": "2074HY",
+        "variant": "hybrid",
+        "source_table_index": 28,
+        "source_row_index": 2,
+        "task_raw": "A. Assess the needs of individuals, families, or communities, including assessment of individuals' home or work environments, to identify potential health or safety problems."
+      },
+      {
+        "wps_task_id": "WPS_3056HY_HYBRID_T28_R02_A",
+        "source_file": "wps_hybrid_3056.docx",
+        "rapids_code": "3056HY",
+        "variant": "hybrid",
+        "source_table_index": 28,
+        "source_row_index": 2,
+        "task_raw": "A. Assess the needs of individuals, families, or communities, including assessment of individuals' home or work environments, to identify potential health or safety problems."
+      },
+      {
+        "wps_task_id": "WPS_2074_TIME_BASED_T28_R02_A",
+        "source_file": "wps_time_2074.docx",
+        "rapids_code": "2074",
+        "variant": "time_based",
+        "source_table_index": 28,
+        "source_row_index": 2,
+        "task_raw": "A. Assess the needs of individuals, families, or communities, including assessment of individuals' home or work environments, to identify potential health or safety problems."
+      },
+      {
+        "wps_task_id": "WPS_3056_TIME_BASED_T28_R02_A",
+        "source_file": "wps_time_3056.docx",
+        "rapids_code": "3056",
+        "variant": "time_based",
+        "source_table_index": 28,
+        "source_row_index": 2,
+        "task_raw": "A. Assess the needs of individuals, families, or communities, including assessment of individuals' home or work environments, to identify potential health or safety problems."
+      }
+    ]
+  },
+  {
+    "module_number": "RN-WPS-008",
+    "concept": "Assist healthcare practitioners during examinations or treatments.",
+    "needs_review": true,
+    "review_policy": "needs_review=true when review_count > confident_count",
+    "task_count": 6,
+    "bridge_count": 6,
+    "review_count": 6,
+    "confident_count": 0,
+    "review_rate": 1.0,
+    "source_anchor": "WPS process: Assist healthcare practitioners during examinations or treatments.; variants: 2074:time_based, 2074CB:competency_based, 2074HY:hybrid, 3056:time_based, 3056CB:competency_based, 3056HY:hybrid; source rows: wps_competency_2074.docx#T30:R3; wps_competency_3056.docx#T30:R3; wps_hybrid_2074.docx#T30:R2; wps_hybrid_3056.docx#T30:R2; wps_time_2074.docx#T30:R2; wps_time_3056.docx#T30:R2; crosswalk_data: C:\\Users\\RHarrity\\Documents\\Codex\\rn_wps_prelicensure_crosswalk_workset_2026-06-12\\build\\intermediate\\rn_wps_prelicensure_crosswalk_data.json",
+    "tasks": [
+      {
+        "wps_task_id": "WPS_2074CB_COMPETENCY_BASED_T30_R03_A",
+        "source_file": "wps_competency_2074.docx",
+        "rapids_code": "2074CB",
+        "variant": "competency_based",
+        "source_table_index": 30,
+        "source_row_index": 3,
+        "task_raw": "A. Prepare patients for and assist with examinations or treatments."
+      },
+      {
+        "wps_task_id": "WPS_3056CB_COMPETENCY_BASED_T30_R03_A",
+        "source_file": "wps_competency_3056.docx",
+        "rapids_code": "3056CB",
+        "variant": "competency_based",
+        "source_table_index": 30,
+        "source_row_index": 3,
+        "task_raw": "A. Prepare patients for and assist with examinations or treatments."
+      },
+      {
+        "wps_task_id": "WPS_2074HY_HYBRID_T30_R02_A",
+        "source_file": "wps_hybrid_2074.docx",
+        "rapids_code": "2074HY",
+        "variant": "hybrid",
+        "source_table_index": 30,
+        "source_row_index": 2,
+        "task_raw": "A. Prepare patients for and assist with examinations or treatments."
+      },
+      {
+        "wps_task_id": "WPS_3056HY_HYBRID_T30_R02_A",
+        "source_file": "wps_hybrid_3056.docx",
+        "rapids_code": "3056HY",
+        "variant": "hybrid",
+        "source_table_index": 30,
+        "source_row_index": 2,
+        "task_raw": "A. Prepare patients for and assist with examinations or treatments."
+      },
+      {
+        "wps_task_id": "WPS_2074_TIME_BASED_T30_R02_A",
+        "source_file": "wps_time_2074.docx",
+        "rapids_code": "2074",
+        "variant": "time_based",
+        "source_table_index": 30,
+        "source_row_index": 2,
+        "task_raw": "A. Prepare patients for and assist with examinations or treatments."
+      },
+      {
+        "wps_task_id": "WPS_3056_TIME_BASED_T30_R02_A",
+        "source_file": "wps_time_3056.docx",
+        "rapids_code": "3056",
+        "variant": "time_based",
+        "source_table_index": 30,
+        "source_row_index": 2,
+        "task_raw": "A. Prepare patients for and assist with examinations or treatments."
+      }
+    ]
+  },
+  {
+    "module_number": "RN-WPS-009",
+    "concept": "Collaborate with healthcare professionals to plan or provide treatment.",
+    "needs_review": true,
+    "review_policy": "needs_review=true when review_count > confident_count",
+    "task_count": 6,
+    "bridge_count": 6,
+    "review_count": 6,
+    "confident_count": 0,
+    "review_rate": 1.0,
+    "source_anchor": "WPS process: Collaborate with healthcare professionals to plan or provide treatment.; variants: 2074:time_based, 2074CB:competency_based, 2074HY:hybrid, 3056:time_based, 3056CB:competency_based, 3056HY:hybrid; source rows: wps_competency_2074.docx#T9:R3; wps_competency_3056.docx#T9:R3; wps_hybrid_2074.docx#T9:R2; wps_hybrid_3056.docx#T9:R2; wps_time_2074.docx#T9:R2; wps_time_3056.docx#T9:R2; crosswalk_data: C:\\Users\\RHarrity\\Documents\\Codex\\rn_wps_prelicensure_crosswalk_workset_2026-06-12\\build\\intermediate\\rn_wps_prelicensure_crosswalk_data.json",
+    "tasks": [
+      {
+        "wps_task_id": "WPS_2074CB_COMPETENCY_BASED_T09_R03_A",
+        "source_file": "wps_competency_2074.docx",
+        "rapids_code": "2074CB",
+        "variant": "competency_based",
+        "source_table_index": 9,
+        "source_row_index": 3,
+        "task_raw": "A. Consult and coordinate with healthcare team members to assess, plan, implement, or evaluate patient care plans."
+      },
+      {
+        "wps_task_id": "WPS_3056CB_COMPETENCY_BASED_T09_R03_A",
+        "source_file": "wps_competency_3056.docx",
+        "rapids_code": "3056CB",
+        "variant": "competency_based",
+        "source_table_index": 9,
+        "source_row_index": 3,
+        "task_raw": "A. Consult and coordinate with healthcare team members to assess, plan, implement, or evaluate patient care plans."
+      },
+      {
+        "wps_task_id": "WPS_2074HY_HYBRID_T09_R02_A",
+        "source_file": "wps_hybrid_2074.docx",
+        "rapids_code": "2074HY",
+        "variant": "hybrid",
+        "source_table_index": 9,
+        "source_row_index": 2,
+        "task_raw": "A. Consult and coordinate with healthcare team members to assess, plan, implement, or evaluate patient care plans."
+      },
+      {
+        "wps_task_id": "WPS_3056HY_HYBRID_T09_R02_A",
+        "source_file": "wps_hybrid_3056.docx",
+        "rapids_code": "3056HY",
+        "variant": "hybrid",
+        "source_table_index": 9,
+        "source_row_index": 2,
+        "task_raw": "A. Consult and coordinate with healthcare team members to assess, plan, implement, or evaluate patient care plans."
+      },
+      {
+        "wps_task_id": "WPS_2074_TIME_BASED_T09_R02_A",
+        "source_file": "wps_time_2074.docx",
+        "rapids_code": "2074",
+        "variant": "time_based",
+        "source_table_index": 9,
+        "source_row_index": 2,
+        "task_raw": "A. Consult and coordinate with healthcare team members to assess, plan, implement, or evaluate patient care plans."
+      },
+      {
+        "wps_task_id": "WPS_3056_TIME_BASED_T09_R02_A",
+        "source_file": "wps_time_3056.docx",
+        "rapids_code": "3056",
+        "variant": "time_based",
+        "source_table_index": 9,
+        "source_row_index": 2,
+        "task_raw": "A. Consult and coordinate with healthcare team members to assess, plan, implement, or evaluate patient care plans."
+      }
+    ]
+  },
+  {
+    "module_number": "RN-WPS-010",
+    "concept": "Communicate health and wellness information to the public.",
+    "needs_review": true,
+    "review_policy": "needs_review=true when review_count > confident_count",
+    "task_count": 6,
+    "bridge_count": 6,
+    "review_count": 6,
+    "confident_count": 0,
+    "review_rate": 1.0,
+    "source_anchor": "WPS process: Communicate health and wellness information to the public.; variants: 2074:time_based, 2074CB:competency_based, 2074HY:hybrid, 3056:time_based, 3056CB:competency_based, 3056HY:hybrid; source rows: wps_competency_2074.docx#T21:R3; wps_competency_3056.docx#T21:R3; wps_hybrid_2074.docx#T21:R2; wps_hybrid_3056.docx#T21:R2; wps_time_2074.docx#T21:R2; wps_time_3056.docx#T21:R2; crosswalk_data: C:\\Users\\RHarrity\\Documents\\Codex\\rn_wps_prelicensure_crosswalk_workset_2026-06-12\\build\\intermediate\\rn_wps_prelicensure_crosswalk_data.json",
+    "tasks": [
+      {
+        "wps_task_id": "WPS_2074CB_COMPETENCY_BASED_T21_R03_A",
+        "source_file": "wps_competency_2074.docx",
+        "rapids_code": "2074CB",
+        "variant": "competency_based",
+        "source_table_index": 21,
+        "source_row_index": 3,
+        "task_raw": "A. Instruct individuals, families, or other groups on topics such as health education, disease prevention, or childbirth and develop health improvement programs."
+      },
+      {
+        "wps_task_id": "WPS_3056CB_COMPETENCY_BASED_T21_R03_A",
+        "source_file": "wps_competency_3056.docx",
+        "rapids_code": "3056CB",
+        "variant": "competency_based",
+        "source_table_index": 21,
+        "source_row_index": 3,
+        "task_raw": "A. Instruct individuals, families, or other groups on topics such as health education, disease prevention, or childbirth and develop health improvement programs."
+      },
+      {
+        "wps_task_id": "WPS_2074HY_HYBRID_T21_R02_A",
+        "source_file": "wps_hybrid_2074.docx",
+        "rapids_code": "2074HY",
+        "variant": "hybrid",
+        "source_table_index": 21,
+        "source_row_index": 2,
+        "task_raw": "A. Instruct individuals, families, or other groups on topics such as health education, disease prevention, or childbirth and develop health improvement programs."
+      },
+      {
+        "wps_task_id": "WPS_3056HY_HYBRID_T21_R02_A",
+        "source_file": "wps_hybrid_3056.docx",
+        "rapids_code": "3056HY",
+        "variant": "hybrid",
+        "source_table_index": 21,
+        "source_row_index": 2,
+        "task_raw": "A. Instruct individuals, families, or other groups on topics such as health education, disease prevention, or childbirth and develop health improvement programs."
+      },
+      {
+        "wps_task_id": "WPS_2074_TIME_BASED_T21_R02_A",
+        "source_file": "wps_time_2074.docx",
+        "rapids_code": "2074",
+        "variant": "time_based",
+        "source_table_index": 21,
+        "source_row_index": 2,
+        "task_raw": "A. Instruct individuals, families, or other groups on topics such as health education, disease prevention, or childbirth and develop health improvement programs."
+      },
+      {
+        "wps_task_id": "WPS_3056_TIME_BASED_T21_R02_A",
+        "source_file": "wps_time_3056.docx",
+        "rapids_code": "3056",
+        "variant": "time_based",
+        "source_table_index": 21,
+        "source_row_index": 2,
+        "task_raw": "A. Instruct individuals, families, or other groups on topics such as health education, disease prevention, or childbirth and develop health improvement programs."
+      }
+    ]
+  },
+  {
+    "module_number": "RN-WPS-011",
+    "concept": "Conduct research to increase knowledge about medical issues.",
+    "needs_review": true,
+    "review_policy": "needs_review=true when review_count > confident_count",
+    "task_count": 6,
+    "bridge_count": 6,
+    "review_count": 6,
+    "confident_count": 0,
+    "review_rate": 1.0,
+    "source_anchor": "WPS process: Conduct research to increase knowledge about medical issues.; variants: 2074:time_based, 2074CB:competency_based, 2074HY:hybrid, 3056:time_based, 3056CB:competency_based, 3056HY:hybrid; source rows: wps_competency_2074.docx#T38:R3; wps_competency_3056.docx#T38:R3; wps_hybrid_2074.docx#T38:R2; wps_hybrid_3056.docx#T38:R2; wps_time_2074.docx#T38:R2; wps_time_3056.docx#T38:R2; crosswalk_data: C:\\Users\\RHarrity\\Documents\\Codex\\rn_wps_prelicensure_crosswalk_workset_2026-06-12\\build\\intermediate\\rn_wps_prelicensure_crosswalk_data.json",
+    "tasks": [
+      {
+        "wps_task_id": "WPS_2074CB_COMPETENCY_BASED_T38_R03_A",
+        "source_file": "wps_competency_2074.docx",
+        "rapids_code": "2074CB",
+        "variant": "competency_based",
+        "source_table_index": 38,
+        "source_row_index": 3,
+        "task_raw": "A. Engage in research activities related to nursing."
+      },
+      {
+        "wps_task_id": "WPS_3056CB_COMPETENCY_BASED_T38_R03_A",
+        "source_file": "wps_competency_3056.docx",
+        "rapids_code": "3056CB",
+        "variant": "competency_based",
+        "source_table_index": 38,
+        "source_row_index": 3,
+        "task_raw": "A. Engage in research activities related to nursing."
+      },
+      {
+        "wps_task_id": "WPS_2074HY_HYBRID_T38_R02_A",
+        "source_file": "wps_hybrid_2074.docx",
+        "rapids_code": "2074HY",
+        "variant": "hybrid",
+        "source_table_index": 38,
+        "source_row_index": 2,
+        "task_raw": "A. Engage in research activities related to nursing."
+      },
+      {
+        "wps_task_id": "WPS_3056HY_HYBRID_T38_R02_A",
+        "source_file": "wps_hybrid_3056.docx",
+        "rapids_code": "3056HY",
+        "variant": "hybrid",
+        "source_table_index": 38,
+        "source_row_index": 2,
+        "task_raw": "A. Engage in research activities related to nursing."
+      },
+      {
+        "wps_task_id": "WPS_2074_TIME_BASED_T38_R02_A",
+        "source_file": "wps_time_2074.docx",
+        "rapids_code": "2074",
+        "variant": "time_based",
+        "source_table_index": 38,
+        "source_row_index": 2,
+        "task_raw": "A. Engage in research activities related to nursing."
+      },
+      {
+        "wps_task_id": "WPS_3056_TIME_BASED_T38_R02_A",
+        "source_file": "wps_time_3056.docx",
+        "rapids_code": "3056",
+        "variant": "time_based",
+        "source_table_index": 38,
+        "source_row_index": 2,
+        "task_raw": "A. Engage in research activities related to nursing."
+      }
+    ]
+  },
+  {
+    "module_number": "RN-WPS-012",
+    "concept": "Design public or employee health programs.",
+    "needs_review": false,
+    "review_policy": "needs_review=true when review_count > confident_count",
+    "task_count": 12,
+    "bridge_count": 12,
+    "review_count": 6,
+    "confident_count": 6,
+    "review_rate": 0.5,
+    "source_anchor": "WPS process: Design public or employee health programs.; variants: 2074:time_based, 2074CB:competency_based, 2074HY:hybrid, 3056:time_based, 3056CB:competency_based, 3056HY:hybrid; source rows: wps_competency_2074.docx#T20:R3; wps_competency_2074.docx#T20:R4; wps_competency_3056.docx#T20:R3; wps_competency_3056.docx#T20:R4; wps_hybrid_2074.docx#T20:R2; wps_hybrid_2074.docx#T20:R3; wps_hybrid_3056.docx#T20:R2; wps_hybrid_3056.docx#T20:R3; wps_time_2074.docx#T20:R2; wps_time_2074.docx#T20:R3; wps_time_3056.docx#T20:R2; wps_time_3056.docx#T20:R3; crosswalk_data: C:\\Users\\RHarrity\\Documents\\Codex\\rn_wps_prelicensure_crosswalk_workset_2026-06-12\\build\\intermediate\\rn_wps_prelicensure_crosswalk_data.json",
+    "tasks": [
+      {
+        "wps_task_id": "WPS_2074CB_COMPETENCY_BASED_T20_R03_A",
+        "source_file": "wps_competency_2074.docx",
+        "rapids_code": "2074CB",
+        "variant": "competency_based",
+        "source_table_index": 20,
+        "source_row_index": 3,
+        "task_raw": "A. Instruct individuals, families, or other groups on topics such as health education, disease prevention, or childbirth and develop health improvement programs."
+      },
+      {
+        "wps_task_id": "WPS_2074CB_COMPETENCY_BASED_T20_R04_B",
+        "source_file": "wps_competency_2074.docx",
+        "rapids_code": "2074CB",
+        "variant": "competency_based",
+        "source_table_index": 20,
+        "source_row_index": 4,
+        "task_raw": "B. Work with individuals, groups, or families to plan or implement programs designed to improve the overall health of communities."
+      },
+      {
+        "wps_task_id": "WPS_3056CB_COMPETENCY_BASED_T20_R03_A",
+        "source_file": "wps_competency_3056.docx",
+        "rapids_code": "3056CB",
+        "variant": "competency_based",
+        "source_table_index": 20,
+        "source_row_index": 3,
+        "task_raw": "A. Instruct individuals, families, or other groups on topics such as health education, disease prevention, or childbirth and develop health improvement programs."
+      },
+      {
+        "wps_task_id": "WPS_3056CB_COMPETENCY_BASED_T20_R04_B",
+        "source_file": "wps_competency_3056.docx",
+        "rapids_code": "3056CB",
+        "variant": "competency_based",
+        "source_table_index": 20,
+        "source_row_index": 4,
+        "task_raw": "B. Work with individuals, groups, or families to plan or implement programs designed to improve the overall health of communities."
+      },
+      {
+        "wps_task_id": "WPS_2074HY_HYBRID_T20_R02_A",
+        "source_file": "wps_hybrid_2074.docx",
+        "rapids_code": "2074HY",
+        "variant": "hybrid",
+        "source_table_index": 20,
+        "source_row_index": 2,
+        "task_raw": "A. Instruct individuals, families, or other groups on topics such as health education, disease prevention, or childbirth and develop health improvement programs."
+      },
+      {
+        "wps_task_id": "WPS_2074HY_HYBRID_T20_R03_B",
+        "source_file": "wps_hybrid_2074.docx",
+        "rapids_code": "2074HY",
+        "variant": "hybrid",
+        "source_table_index": 20,
+        "source_row_index": 3,
+        "task_raw": "B. Work with individuals, groups, or families to plan or implement programs designed to improve the overall health of communities."
+      },
+      {
+        "wps_task_id": "WPS_3056HY_HYBRID_T20_R02_A",
+        "source_file": "wps_hybrid_3056.docx",
+        "rapids_code": "3056HY",
+        "variant": "hybrid",
+        "source_table_index": 20,
+        "source_row_index": 2,
+        "task_raw": "A. Instruct individuals, families, or other groups on topics such as health education, disease prevention, or childbirth and develop health improvement programs."
+      },
+      {
+        "wps_task_id": "WPS_3056HY_HYBRID_T20_R03_B",
+        "source_file": "wps_hybrid_3056.docx",
+        "rapids_code": "3056HY",
+        "variant": "hybrid",
+        "source_table_index": 20,
+        "source_row_index": 3,
+        "task_raw": "B. Work with individuals, groups, or families to plan or implement programs designed to improve the overall health of communities."
+      },
+      {
+        "wps_task_id": "WPS_2074_TIME_BASED_T20_R02_A",
+        "source_file": "wps_time_2074.docx",
+        "rapids_code": "2074",
+        "variant": "time_based",
+        "source_table_index": 20,
+        "source_row_index": 2,
+        "task_raw": "A. Instruct individuals, families, or other groups on topics such as health education, disease prevention, or childbirth and develop health improvement programs."
+      },
+      {
+        "wps_task_id": "WPS_2074_TIME_BASED_T20_R03_B",
+        "source_file": "wps_time_2074.docx",
+        "rapids_code": "2074",
+        "variant": "time_based",
+        "source_table_index": 20,
+        "source_row_index": 3,
+        "task_raw": "B. Work with individuals, groups, or families to plan or implement programs designed to improve the overall health of communities."
+      },
+      {
+        "wps_task_id": "WPS_3056_TIME_BASED_T20_R02_A",
+        "source_file": "wps_time_3056.docx",
+        "rapids_code": "3056",
+        "variant": "time_based",
+        "source_table_index": 20,
+        "source_row_index": 2,
+        "task_raw": "A. Instruct individuals, families, or other groups on topics such as health education, disease prevention, or childbirth and develop health improvement programs."
+      },
+      {
+        "wps_task_id": "WPS_3056_TIME_BASED_T20_R03_B",
+        "source_file": "wps_time_3056.docx",
+        "rapids_code": "3056",
+        "variant": "time_based",
+        "source_table_index": 20,
+        "source_row_index": 3,
+        "task_raw": "B. Work with individuals, groups, or families to plan or implement programs designed to improve the overall health of communities."
+      }
+    ]
+  },
+  {
+    "module_number": "RN-WPS-013",
+    "concept": "Diagnose medical conditions.",
+    "needs_review": true,
+    "review_policy": "needs_review=true when review_count > confident_count",
+    "task_count": 6,
+    "bridge_count": 6,
+    "review_count": 6,
+    "confident_count": 0,
+    "review_rate": 1.0,
+    "source_anchor": "WPS process: Diagnose medical conditions.; variants: 2074:time_based, 2074CB:competency_based, 2074HY:hybrid, 3056:time_based, 3056CB:competency_based, 3056HY:hybrid; source rows: wps_competency_2074.docx#T33:R3; wps_competency_3056.docx#T33:R3; wps_hybrid_2074.docx#T33:R2; wps_hybrid_3056.docx#T33:R2; wps_time_2074.docx#T33:R2; wps_time_3056.docx#T33:R2; crosswalk_data: C:\\Users\\RHarrity\\Documents\\Codex\\rn_wps_prelicensure_crosswalk_workset_2026-06-12\\build\\intermediate\\rn_wps_prelicensure_crosswalk_data.json",
+    "tasks": [
+      {
+        "wps_task_id": "WPS_2074CB_COMPETENCY_BASED_T33_R03_A",
+        "source_file": "wps_competency_2074.docx",
+        "rapids_code": "2074CB",
+        "variant": "competency_based",
+        "source_table_index": 33,
+        "source_row_index": 3,
+        "task_raw": "A. Perform physical examinations, make tentative diagnoses, and treat patients en route to hospitals or at disaster site triage centers."
+      },
+      {
+        "wps_task_id": "WPS_3056CB_COMPETENCY_BASED_T33_R03_A",
+        "source_file": "wps_competency_3056.docx",
+        "rapids_code": "3056CB",
+        "variant": "competency_based",
+        "source_table_index": 33,
+        "source_row_index": 3,
+        "task_raw": "A. Perform physical examinations, make tentative diagnoses, and treat patients en route to hospitals or at disaster site triage centers."
+      },
+      {
+        "wps_task_id": "WPS_2074HY_HYBRID_T33_R02_A",
+        "source_file": "wps_hybrid_2074.docx",
+        "rapids_code": "2074HY",
+        "variant": "hybrid",
+        "source_table_index": 33,
+        "source_row_index": 2,
+        "task_raw": "A. Perform physical examinations, make tentative diagnoses, and treat patients en route to hospitals or at disaster site triage centers."
+      },
+      {
+        "wps_task_id": "WPS_3056HY_HYBRID_T33_R02_A",
+        "source_file": "wps_hybrid_3056.docx",
+        "rapids_code": "3056HY",
+        "variant": "hybrid",
+        "source_table_index": 33,
+        "source_row_index": 2,
+        "task_raw": "A. Perform physical examinations, make tentative diagnoses, and treat patients en route to hospitals or at disaster site triage centers."
+      },
+      {
+        "wps_task_id": "WPS_2074_TIME_BASED_T33_R02_A",
+        "source_file": "wps_time_2074.docx",
+        "rapids_code": "2074",
+        "variant": "time_based",
+        "source_table_index": 33,
+        "source_row_index": 2,
+        "task_raw": "A. Perform physical examinations, make tentative diagnoses, and treat patients en route to hospitals or at disaster site triage centers."
+      },
+      {
+        "wps_task_id": "WPS_3056_TIME_BASED_T33_R02_A",
+        "source_file": "wps_time_3056.docx",
+        "rapids_code": "3056",
+        "variant": "time_based",
+        "source_table_index": 33,
+        "source_row_index": 2,
+        "task_raw": "A. Perform physical examinations, make tentative diagnoses, and treat patients en route to hospitals or at disaster site triage centers."
+      }
+    ]
+  },
+  {
+    "module_number": "RN-WPS-014",
+    "concept": "Direct healthcare delivery programs.",
+    "needs_review": true,
+    "review_policy": "needs_review=true when review_count > confident_count",
+    "task_count": 6,
+    "bridge_count": 6,
+    "review_count": 6,
+    "confident_count": 0,
+    "review_rate": 1.0,
+    "source_anchor": "WPS process: Direct healthcare delivery programs.; variants: 2074:time_based, 2074CB:competency_based, 2074HY:hybrid, 3056:time_based, 3056CB:competency_based, 3056HY:hybrid; source rows: wps_competency_2074.docx#T16:R3; wps_competency_3056.docx#T16:R3; wps_hybrid_2074.docx#T16:R2; wps_hybrid_3056.docx#T16:R2; wps_time_2074.docx#T16:R2; wps_time_3056.docx#T16:R2; crosswalk_data: C:\\Users\\RHarrity\\Documents\\Codex\\rn_wps_prelicensure_crosswalk_workset_2026-06-12\\build\\intermediate\\rn_wps_prelicensure_crosswalk_data.json",
+    "tasks": [
+      {
+        "wps_task_id": "WPS_2074CB_COMPETENCY_BASED_T16_R03_A",
+        "source_file": "wps_competency_2074.docx",
+        "rapids_code": "2074CB",
+        "variant": "competency_based",
+        "source_table_index": 16,
+        "source_row_index": 3,
+        "task_raw": "A. Direct or coordinate infection control programs, advising or consulting with specified personnel about necessary precautions."
+      },
+      {
+        "wps_task_id": "WPS_3056CB_COMPETENCY_BASED_T16_R03_A",
+        "source_file": "wps_competency_3056.docx",
+        "rapids_code": "3056CB",
+        "variant": "competency_based",
+        "source_table_index": 16,
+        "source_row_index": 3,
+        "task_raw": "A. Direct or coordinate infection control programs, advising or consulting with specified personnel about necessary precautions."
+      },
+      {
+        "wps_task_id": "WPS_2074HY_HYBRID_T16_R02_A",
+        "source_file": "wps_hybrid_2074.docx",
+        "rapids_code": "2074HY",
+        "variant": "hybrid",
+        "source_table_index": 16,
+        "source_row_index": 2,
+        "task_raw": "A. Direct or coordinate infection control programs, advising or consulting with specified personnel about necessary precautions."
+      },
+      {
+        "wps_task_id": "WPS_3056HY_HYBRID_T16_R02_A",
+        "source_file": "wps_hybrid_3056.docx",
+        "rapids_code": "3056HY",
+        "variant": "hybrid",
+        "source_table_index": 16,
+        "source_row_index": 2,
+        "task_raw": "A. Direct or coordinate infection control programs, advising or consulting with specified personnel about necessary precautions."
+      },
+      {
+        "wps_task_id": "WPS_2074_TIME_BASED_T16_R02_A",
+        "source_file": "wps_time_2074.docx",
+        "rapids_code": "2074",
+        "variant": "time_based",
+        "source_table_index": 16,
+        "source_row_index": 2,
+        "task_raw": "A. Direct or coordinate infection control programs, advising or consulting with specified personnel about necessary precautions."
+      },
+      {
+        "wps_task_id": "WPS_3056_TIME_BASED_T16_R02_A",
+        "source_file": "wps_time_3056.docx",
+        "rapids_code": "3056",
+        "variant": "time_based",
+        "source_table_index": 16,
+        "source_row_index": 2,
+        "task_raw": "A. Direct or coordinate infection control programs, advising or consulting with specified personnel about necessary precautions."
+      }
+    ]
+  },
+  {
+    "module_number": "RN-WPS-015",
+    "concept": "Evaluate patient outcomes to determine effectiveness of treatments.",
+    "needs_review": true,
+    "review_policy": "needs_review=true when review_count > confident_count",
+    "task_count": 6,
+    "bridge_count": 6,
+    "review_count": 6,
+    "confident_count": 0,
+    "review_rate": 1.0,
+    "source_anchor": "WPS process: Evaluate patient outcomes to determine effectiveness of treatments.; variants: 2074:time_based, 2074CB:competency_based, 2074HY:hybrid, 3056:time_based, 3056CB:competency_based, 3056HY:hybrid; source rows: wps_competency_2074.docx#T22:R3; wps_competency_3056.docx#T22:R3; wps_hybrid_2074.docx#T22:R2; wps_hybrid_3056.docx#T22:R2; wps_time_2074.docx#T22:R2; wps_time_3056.docx#T22:R2; crosswalk_data: C:\\Users\\RHarrity\\Documents\\Codex\\rn_wps_prelicensure_crosswalk_workset_2026-06-12\\build\\intermediate\\rn_wps_prelicensure_crosswalk_data.json",
+    "tasks": [
+      {
+        "wps_task_id": "WPS_2074CB_COMPETENCY_BASED_T22_R03_A",
+        "source_file": "wps_competency_2074.docx",
+        "rapids_code": "2074CB",
+        "variant": "competency_based",
+        "source_table_index": 22,
+        "source_row_index": 3,
+        "task_raw": "A. Modify patient treatment plans as indicated by patients' responses and conditions."
+      },
+      {
+        "wps_task_id": "WPS_3056CB_COMPETENCY_BASED_T22_R03_A",
+        "source_file": "wps_competency_3056.docx",
+        "rapids_code": "3056CB",
+        "variant": "competency_based",
+        "source_table_index": 22,
+        "source_row_index": 3,
+        "task_raw": "A. Modify patient treatment plans as indicated by patients' responses and conditions."
+      },
+      {
+        "wps_task_id": "WPS_2074HY_HYBRID_T22_R02_A",
+        "source_file": "wps_hybrid_2074.docx",
+        "rapids_code": "2074HY",
+        "variant": "hybrid",
+        "source_table_index": 22,
+        "source_row_index": 2,
+        "task_raw": "A. Modify patient treatment plans as indicated by patients' responses and conditions."
+      },
+      {
+        "wps_task_id": "WPS_3056HY_HYBRID_T22_R02_A",
+        "source_file": "wps_hybrid_3056.docx",
+        "rapids_code": "3056HY",
+        "variant": "hybrid",
+        "source_table_index": 22,
+        "source_row_index": 2,
+        "task_raw": "A. Modify patient treatment plans as indicated by patients' responses and conditions."
+      },
+      {
+        "wps_task_id": "WPS_2074_TIME_BASED_T22_R02_A",
+        "source_file": "wps_time_2074.docx",
+        "rapids_code": "2074",
+        "variant": "time_based",
+        "source_table_index": 22,
+        "source_row_index": 2,
+        "task_raw": "A. Modify patient treatment plans as indicated by patients' responses and conditions."
+      },
+      {
+        "wps_task_id": "WPS_3056_TIME_BASED_T22_R02_A",
+        "source_file": "wps_time_3056.docx",
+        "rapids_code": "3056",
+        "variant": "time_based",
+        "source_table_index": 22,
+        "source_row_index": 2,
+        "task_raw": "A. Modify patient treatment plans as indicated by patients' responses and conditions."
+      }
+    ]
+  },
+  {
+    "module_number": "RN-WPS-016",
+    "concept": "Examine patients to assess general physical condition.",
+    "needs_review": true,
+    "review_policy": "needs_review=true when review_count > confident_count",
+    "task_count": 6,
+    "bridge_count": 6,
+    "review_count": 6,
+    "confident_count": 0,
+    "review_rate": 1.0,
+    "source_anchor": "WPS process: Examine patients to assess general physical condition.; variants: 2074:time_based, 2074CB:competency_based, 2074HY:hybrid, 3056:time_based, 3056CB:competency_based, 3056HY:hybrid; source rows: wps_competency_2074.docx#T34:R3; wps_competency_3056.docx#T34:R3; wps_hybrid_2074.docx#T34:R2; wps_hybrid_3056.docx#T34:R2; wps_time_2074.docx#T34:R2; wps_time_3056.docx#T34:R2; crosswalk_data: C:\\Users\\RHarrity\\Documents\\Codex\\rn_wps_prelicensure_crosswalk_workset_2026-06-12\\build\\intermediate\\rn_wps_prelicensure_crosswalk_data.json",
+    "tasks": [
+      {
+        "wps_task_id": "WPS_2074CB_COMPETENCY_BASED_T34_R03_A",
+        "source_file": "wps_competency_2074.docx",
+        "rapids_code": "2074CB",
+        "variant": "competency_based",
+        "source_table_index": 34,
+        "source_row_index": 3,
+        "task_raw": "A. Perform physical examinations, make tentative diagnoses, and treat patients en route to hospitals or at disaster site triage centers."
+      },
+      {
+        "wps_task_id": "WPS_3056CB_COMPETENCY_BASED_T34_R03_A",
+        "source_file": "wps_competency_3056.docx",
+        "rapids_code": "3056CB",
+        "variant": "competency_based",
+        "source_table_index": 34,
+        "source_row_index": 3,
+        "task_raw": "A. Perform physical examinations, make tentative diagnoses, and treat patients en route to hospitals or at disaster site triage centers."
+      },
+      {
+        "wps_task_id": "WPS_2074HY_HYBRID_T34_R02_A",
+        "source_file": "wps_hybrid_2074.docx",
+        "rapids_code": "2074HY",
+        "variant": "hybrid",
+        "source_table_index": 34,
+        "source_row_index": 2,
+        "task_raw": "A. Perform physical examinations, make tentative diagnoses, and treat patients en route to hospitals or at disaster site triage centers."
+      },
+      {
+        "wps_task_id": "WPS_3056HY_HYBRID_T34_R02_A",
+        "source_file": "wps_hybrid_3056.docx",
+        "rapids_code": "3056HY",
+        "variant": "hybrid",
+        "source_table_index": 34,
+        "source_row_index": 2,
+        "task_raw": "A. Perform physical examinations, make tentative diagnoses, and treat patients en route to hospitals or at disaster site triage centers."
+      },
+      {
+        "wps_task_id": "WPS_2074_TIME_BASED_T34_R02_A",
+        "source_file": "wps_time_2074.docx",
+        "rapids_code": "2074",
+        "variant": "time_based",
+        "source_table_index": 34,
+        "source_row_index": 2,
+        "task_raw": "A. Perform physical examinations, make tentative diagnoses, and treat patients en route to hospitals or at disaster site triage centers."
+      },
+      {
+        "wps_task_id": "WPS_3056_TIME_BASED_T34_R02_A",
+        "source_file": "wps_time_3056.docx",
+        "rapids_code": "3056",
+        "variant": "time_based",
+        "source_table_index": 34,
+        "source_row_index": 2,
+        "task_raw": "A. Perform physical examinations, make tentative diagnoses, and treat patients en route to hospitals or at disaster site triage centers."
+      }
+    ]
+  },
+  {
+    "module_number": "RN-WPS-017",
+    "concept": "Immunize patients.",
+    "needs_review": true,
+    "review_policy": "needs_review=true when review_count > confident_count",
+    "task_count": 6,
+    "bridge_count": 6,
+    "review_count": 6,
+    "confident_count": 0,
+    "review_rate": 1.0,
+    "source_anchor": "WPS process: Immunize patients.; variants: 2074:time_based, 2074CB:competency_based, 2074HY:hybrid, 3056:time_based, 3056CB:competency_based, 3056HY:hybrid; source rows: wps_competency_2074.docx#T7:R3; wps_competency_3056.docx#T7:R3; wps_hybrid_2074.docx#T7:R2; wps_hybrid_3056.docx#T7:R2; wps_time_2074.docx#T7:R2; wps_time_3056.docx#T7:R2; crosswalk_data: C:\\Users\\RHarrity\\Documents\\Codex\\rn_wps_prelicensure_crosswalk_workset_2026-06-12\\build\\intermediate\\rn_wps_prelicensure_crosswalk_data.json",
+    "tasks": [
+      {
+        "wps_task_id": "WPS_2074CB_COMPETENCY_BASED_T07_R03_A",
+        "source_file": "wps_competency_2074.docx",
+        "rapids_code": "2074CB",
+        "variant": "competency_based",
+        "source_table_index": 7,
+        "source_row_index": 3,
+        "task_raw": "A. Provide health care, first aid, immunizations, or assistance in convalescence or rehabilitation in locations such as schools, hospitals, or industry."
+      },
+      {
+        "wps_task_id": "WPS_3056CB_COMPETENCY_BASED_T07_R03_A",
+        "source_file": "wps_competency_3056.docx",
+        "rapids_code": "3056CB",
+        "variant": "competency_based",
+        "source_table_index": 7,
+        "source_row_index": 3,
+        "task_raw": "A. Provide health care, first aid, immunizations, or assistance in convalescence or rehabilitation in locations such as schools, hospitals, or industry."
+      },
+      {
+        "wps_task_id": "WPS_2074HY_HYBRID_T07_R02_A",
+        "source_file": "wps_hybrid_2074.docx",
+        "rapids_code": "2074HY",
+        "variant": "hybrid",
+        "source_table_index": 7,
+        "source_row_index": 2,
+        "task_raw": "A. Provide health care, first aid, immunizations, or assistance in convalescence or rehabilitation in locations such as schools, hospitals, or industry."
+      },
+      {
+        "wps_task_id": "WPS_3056HY_HYBRID_T07_R02_A",
+        "source_file": "wps_hybrid_3056.docx",
+        "rapids_code": "3056HY",
+        "variant": "hybrid",
+        "source_table_index": 7,
+        "source_row_index": 2,
+        "task_raw": "A. Provide health care, first aid, immunizations, or assistance in convalescence or rehabilitation in locations such as schools, hospitals, or industry."
+      },
+      {
+        "wps_task_id": "WPS_2074_TIME_BASED_T07_R02_A",
+        "source_file": "wps_time_2074.docx",
+        "rapids_code": "2074",
+        "variant": "time_based",
+        "source_table_index": 7,
+        "source_row_index": 2,
+        "task_raw": "A. Provide health care, first aid, immunizations, or assistance in convalescence or rehabilitation in locations such as schools, hospitals, or industry."
+      },
+      {
+        "wps_task_id": "WPS_3056_TIME_BASED_T07_R02_A",
+        "source_file": "wps_time_3056.docx",
+        "rapids_code": "3056",
+        "variant": "time_based",
+        "source_table_index": 7,
+        "source_row_index": 2,
+        "task_raw": "A. Provide health care, first aid, immunizations, or assistance in convalescence or rehabilitation in locations such as schools, hospitals, or industry."
+      }
+    ]
+  },
+  {
+    "module_number": "RN-WPS-018",
+    "concept": "Inform medical professionals regarding patient conditions and care.",
+    "needs_review": true,
+    "review_policy": "needs_review=true when review_count > confident_count",
+    "task_count": 12,
+    "bridge_count": 12,
+    "review_count": 12,
+    "confident_count": 0,
+    "review_rate": 1.0,
+    "source_anchor": "WPS process: Inform medical professionals regarding patient conditions and care.; variants: 2074:time_based, 2074CB:competency_based, 2074HY:hybrid, 3056:time_based, 3056CB:competency_based, 3056HY:hybrid; source rows: wps_competency_2074.docx#T6:R3; wps_competency_2074.docx#T6:R4; wps_competency_3056.docx#T6:R3; wps_competency_3056.docx#T6:R4; wps_hybrid_2074.docx#T6:R2; wps_hybrid_2074.docx#T6:R3; wps_hybrid_3056.docx#T6:R2; wps_hybrid_3056.docx#T6:R3; wps_time_2074.docx#T6:R2; wps_time_2074.docx#T6:R3; wps_time_3056.docx#T6:R2; wps_time_3056.docx#T6:R3; crosswalk_data: C:\\Users\\RHarrity\\Documents\\Codex\\rn_wps_prelicensure_crosswalk_workset_2026-06-12\\build\\intermediate\\rn_wps_prelicensure_crosswalk_data.json",
+    "tasks": [
+      {
+        "wps_task_id": "WPS_2074CB_COMPETENCY_BASED_T06_R03_A",
+        "source_file": "wps_competency_2074.docx",
+        "rapids_code": "2074CB",
+        "variant": "competency_based",
+        "source_table_index": 6,
+        "source_row_index": 3,
+        "task_raw": "A. Monitor, record, and report symptoms or changes in patients' conditions."
+      },
+      {
+        "wps_task_id": "WPS_2074CB_COMPETENCY_BASED_T06_R04_B",
+        "source_file": "wps_competency_2074.docx",
+        "rapids_code": "2074CB",
+        "variant": "competency_based",
+        "source_table_index": 6,
+        "source_row_index": 4,
+        "task_raw": "B. Inform physician of patient's condition during anesthesia."
+      },
+      {
+        "wps_task_id": "WPS_3056CB_COMPETENCY_BASED_T06_R03_A",
+        "source_file": "wps_competency_3056.docx",
+        "rapids_code": "3056CB",
+        "variant": "competency_based",
+        "source_table_index": 6,
+        "source_row_index": 3,
+        "task_raw": "A. Monitor, record, and report symptoms or changes in patients' conditions."
+      },
+      {
+        "wps_task_id": "WPS_3056CB_COMPETENCY_BASED_T06_R04_B",
+        "source_file": "wps_competency_3056.docx",
+        "rapids_code": "3056CB",
+        "variant": "competency_based",
+        "source_table_index": 6,
+        "source_row_index": 4,
+        "task_raw": "B. Inform physician of patient's condition during anesthesia."
+      },
+      {
+        "wps_task_id": "WPS_2074HY_HYBRID_T06_R02_A",
+        "source_file": "wps_hybrid_2074.docx",
+        "rapids_code": "2074HY",
+        "variant": "hybrid",
+        "source_table_index": 6,
+        "source_row_index": 2,
+        "task_raw": "A. Monitor, record, and report symptoms or changes in patients' conditions."
+      },
+      {
+        "wps_task_id": "WPS_2074HY_HYBRID_T06_R03_B",
+        "source_file": "wps_hybrid_2074.docx",
+        "rapids_code": "2074HY",
+        "variant": "hybrid",
+        "source_table_index": 6,
+        "source_row_index": 3,
+        "task_raw": "B. Inform physician of patient's condition during anesthesia."
+      },
+      {
+        "wps_task_id": "WPS_3056HY_HYBRID_T06_R02_A",
+        "source_file": "wps_hybrid_3056.docx",
+        "rapids_code": "3056HY",
+        "variant": "hybrid",
+        "source_table_index": 6,
+        "source_row_index": 2,
+        "task_raw": "A. Monitor, record, and report symptoms or changes in patients' conditions."
+      },
+      {
+        "wps_task_id": "WPS_3056HY_HYBRID_T06_R03_B",
+        "source_file": "wps_hybrid_3056.docx",
+        "rapids_code": "3056HY",
+        "variant": "hybrid",
+        "source_table_index": 6,
+        "source_row_index": 3,
+        "task_raw": "B. Inform physician of patient's condition during anesthesia."
+      },
+      {
+        "wps_task_id": "WPS_2074_TIME_BASED_T06_R02_A",
+        "source_file": "wps_time_2074.docx",
+        "rapids_code": "2074",
+        "variant": "time_based",
+        "source_table_index": 6,
+        "source_row_index": 2,
+        "task_raw": "A. Monitor, record, and report symptoms or changes in patients' conditions."
+      },
+      {
+        "wps_task_id": "WPS_2074_TIME_BASED_T06_R03_B",
+        "source_file": "wps_time_2074.docx",
+        "rapids_code": "2074",
+        "variant": "time_based",
+        "source_table_index": 6,
+        "source_row_index": 3,
+        "task_raw": "B. Inform physician of patient's condition during anesthesia."
+      },
+      {
+        "wps_task_id": "WPS_3056_TIME_BASED_T06_R02_A",
+        "source_file": "wps_time_3056.docx",
+        "rapids_code": "3056",
+        "variant": "time_based",
+        "source_table_index": 6,
+        "source_row_index": 2,
+        "task_raw": "A. Monitor, record, and report symptoms or changes in patients' conditions."
+      },
+      {
+        "wps_task_id": "WPS_3056_TIME_BASED_T06_R03_B",
+        "source_file": "wps_time_3056.docx",
+        "rapids_code": "3056",
+        "variant": "time_based",
+        "source_table_index": 6,
+        "source_row_index": 3,
+        "task_raw": "B. Inform physician of patient's condition during anesthesia."
+      }
+    ]
+  },
+  {
+    "module_number": "RN-WPS-019",
+    "concept": "Maintain inventory of medical supplies or equipment.",
+    "needs_review": true,
+    "review_policy": "needs_review=true when review_count > confident_count",
+    "task_count": 6,
+    "bridge_count": 6,
+    "review_count": 6,
+    "confident_count": 0,
+    "review_rate": 1.0,
+    "source_anchor": "WPS process: Maintain inventory of medical supplies or equipment.; variants: 2074:time_based, 2074CB:competency_based, 2074HY:hybrid, 3056:time_based, 3056CB:competency_based, 3056HY:hybrid; source rows: wps_competency_2074.docx#T23:R3; wps_competency_3056.docx#T23:R3; wps_hybrid_2074.docx#T23:R2; wps_hybrid_3056.docx#T23:R2; wps_time_2074.docx#T23:R2; wps_time_3056.docx#T23:R2; crosswalk_data: C:\\Users\\RHarrity\\Documents\\Codex\\rn_wps_prelicensure_crosswalk_workset_2026-06-12\\build\\intermediate\\rn_wps_prelicensure_crosswalk_data.json",
+    "tasks": [
+      {
+        "wps_task_id": "WPS_2074CB_COMPETENCY_BASED_T23_R03_A",
+        "source_file": "wps_competency_2074.docx",
+        "rapids_code": "2074CB",
+        "variant": "competency_based",
+        "source_table_index": 23,
+        "source_row_index": 3,
+        "task_raw": "A. Prepare rooms, sterile instruments, equipment, or supplies and ensure that stock of supplies is maintained."
+      },
+      {
+        "wps_task_id": "WPS_3056CB_COMPETENCY_BASED_T23_R03_A",
+        "source_file": "wps_competency_3056.docx",
+        "rapids_code": "3056CB",
+        "variant": "competency_based",
+        "source_table_index": 23,
+        "source_row_index": 3,
+        "task_raw": "A. Prepare rooms, sterile instruments, equipment, or supplies and ensure that stock of supplies is maintained."
+      },
+      {
+        "wps_task_id": "WPS_2074HY_HYBRID_T23_R02_A",
+        "source_file": "wps_hybrid_2074.docx",
+        "rapids_code": "2074HY",
+        "variant": "hybrid",
+        "source_table_index": 23,
+        "source_row_index": 2,
+        "task_raw": "A. Prepare rooms, sterile instruments, equipment, or supplies and ensure that stock of supplies is maintained."
+      },
+      {
+        "wps_task_id": "WPS_3056HY_HYBRID_T23_R02_A",
+        "source_file": "wps_hybrid_3056.docx",
+        "rapids_code": "3056HY",
+        "variant": "hybrid",
+        "source_table_index": 23,
+        "source_row_index": 2,
+        "task_raw": "A. Prepare rooms, sterile instruments, equipment, or supplies and ensure that stock of supplies is maintained."
+      },
+      {
+        "wps_task_id": "WPS_2074_TIME_BASED_T23_R02_A",
+        "source_file": "wps_time_2074.docx",
+        "rapids_code": "2074",
+        "variant": "time_based",
+        "source_table_index": 23,
+        "source_row_index": 2,
+        "task_raw": "A. Prepare rooms, sterile instruments, equipment, or supplies and ensure that stock of supplies is maintained."
+      },
+      {
+        "wps_task_id": "WPS_3056_TIME_BASED_T23_R02_A",
+        "source_file": "wps_time_3056.docx",
+        "rapids_code": "3056",
+        "variant": "time_based",
+        "source_table_index": 23,
+        "source_row_index": 2,
+        "task_raw": "A. Prepare rooms, sterile instruments, equipment, or supplies and ensure that stock of supplies is maintained."
+      }
+    ]
+  },
+  {
+    "module_number": "RN-WPS-020",
+    "concept": "Maintain medical facility records.",
+    "needs_review": true,
+    "review_policy": "needs_review=true when review_count > confident_count",
+    "task_count": 6,
+    "bridge_count": 6,
+    "review_count": 6,
+    "confident_count": 0,
+    "review_rate": 1.0,
+    "source_anchor": "WPS process: Maintain medical facility records.; variants: 2074:time_based, 2074CB:competency_based, 2074HY:hybrid, 3056:time_based, 3056CB:competency_based, 3056HY:hybrid; source rows: wps_competency_2074.docx#T5:R3; wps_competency_3056.docx#T5:R3; wps_hybrid_2074.docx#T5:R2; wps_hybrid_3056.docx#T5:R2; wps_time_2074.docx#T5:R2; wps_time_3056.docx#T5:R2; crosswalk_data: C:\\Users\\RHarrity\\Documents\\Codex\\rn_wps_prelicensure_crosswalk_workset_2026-06-12\\build\\intermediate\\rn_wps_prelicensure_crosswalk_data.json",
+    "tasks": [
+      {
+        "wps_task_id": "WPS_2074CB_COMPETENCY_BASED_T05_R03_A",
+        "source_file": "wps_competency_2074.docx",
+        "rapids_code": "2074CB",
+        "variant": "competency_based",
+        "source_table_index": 5,
+        "source_row_index": 3,
+        "task_raw": "A. Maintain accurate, detailed reports and records."
+      },
+      {
+        "wps_task_id": "WPS_3056CB_COMPETENCY_BASED_T05_R03_A",
+        "source_file": "wps_competency_3056.docx",
+        "rapids_code": "3056CB",
+        "variant": "competency_based",
+        "source_table_index": 5,
+        "source_row_index": 3,
+        "task_raw": "A. Maintain accurate, detailed reports and records."
+      },
+      {
+        "wps_task_id": "WPS_2074HY_HYBRID_T05_R02_A",
+        "source_file": "wps_hybrid_2074.docx",
+        "rapids_code": "2074HY",
+        "variant": "hybrid",
+        "source_table_index": 5,
+        "source_row_index": 2,
+        "task_raw": "A. Maintain accurate, detailed reports and records."
+      },
+      {
+        "wps_task_id": "WPS_3056HY_HYBRID_T05_R02_A",
+        "source_file": "wps_hybrid_3056.docx",
+        "rapids_code": "3056HY",
+        "variant": "hybrid",
+        "source_table_index": 5,
+        "source_row_index": 2,
+        "task_raw": "A. Maintain accurate, detailed reports and records."
+      },
+      {
+        "wps_task_id": "WPS_2074_TIME_BASED_T05_R02_A",
+        "source_file": "wps_time_2074.docx",
+        "rapids_code": "2074",
+        "variant": "time_based",
+        "source_table_index": 5,
+        "source_row_index": 2,
+        "task_raw": "A. Maintain accurate, detailed reports and records."
+      },
+      {
+        "wps_task_id": "WPS_3056_TIME_BASED_T05_R02_A",
+        "source_file": "wps_time_3056.docx",
+        "rapids_code": "3056",
+        "variant": "time_based",
+        "source_table_index": 5,
+        "source_row_index": 2,
+        "task_raw": "A. Maintain accurate, detailed reports and records."
+      }
+    ]
+  },
+  {
+    "module_number": "RN-WPS-021",
+    "concept": "Manage healthcare operations.",
+    "needs_review": true,
+    "review_policy": "needs_review=true when review_count > confident_count",
+    "task_count": 6,
+    "bridge_count": 6,
+    "review_count": 6,
+    "confident_count": 0,
+    "review_rate": 1.0,
+    "source_anchor": "WPS process: Manage healthcare operations.; variants: 2074:time_based, 2074CB:competency_based, 2074HY:hybrid, 3056:time_based, 3056CB:competency_based, 3056HY:hybrid; source rows: wps_competency_2074.docx#T13:R3; wps_competency_3056.docx#T13:R3; wps_hybrid_2074.docx#T13:R2; wps_hybrid_3056.docx#T13:R2; wps_time_2074.docx#T13:R2; wps_time_3056.docx#T13:R2; crosswalk_data: C:\\Users\\RHarrity\\Documents\\Codex\\rn_wps_prelicensure_crosswalk_workset_2026-06-12\\build\\intermediate\\rn_wps_prelicensure_crosswalk_data.json",
+    "tasks": [
+      {
+        "wps_task_id": "WPS_2074CB_COMPETENCY_BASED_T13_R03_A",
+        "source_file": "wps_competency_2074.docx",
+        "rapids_code": "2074CB",
+        "variant": "competency_based",
+        "source_table_index": 13,
+        "source_row_index": 3,
+        "task_raw": "A. Perform administrative or managerial functions, such as taking responsibility for a unit's staff, budget, planning, or long-range goals."
+      },
+      {
+        "wps_task_id": "WPS_3056CB_COMPETENCY_BASED_T13_R03_A",
+        "source_file": "wps_competency_3056.docx",
+        "rapids_code": "3056CB",
+        "variant": "competency_based",
+        "source_table_index": 13,
+        "source_row_index": 3,
+        "task_raw": "A. Perform administrative or managerial functions, such as taking responsibility for a unit's staff, budget, planning, or long-range goals."
+      },
+      {
+        "wps_task_id": "WPS_2074HY_HYBRID_T13_R02_A",
+        "source_file": "wps_hybrid_2074.docx",
+        "rapids_code": "2074HY",
+        "variant": "hybrid",
+        "source_table_index": 13,
+        "source_row_index": 2,
+        "task_raw": "A. Perform administrative or managerial functions, such as taking responsibility for a unit's staff, budget, planning, or long-range goals."
+      },
+      {
+        "wps_task_id": "WPS_3056HY_HYBRID_T13_R02_A",
+        "source_file": "wps_hybrid_3056.docx",
+        "rapids_code": "3056HY",
+        "variant": "hybrid",
+        "source_table_index": 13,
+        "source_row_index": 2,
+        "task_raw": "A. Perform administrative or managerial functions, such as taking responsibility for a unit's staff, budget, planning, or long-range goals."
+      },
+      {
+        "wps_task_id": "WPS_2074_TIME_BASED_T13_R02_A",
+        "source_file": "wps_time_2074.docx",
+        "rapids_code": "2074",
+        "variant": "time_based",
+        "source_table_index": 13,
+        "source_row_index": 2,
+        "task_raw": "A. Perform administrative or managerial functions, such as taking responsibility for a unit's staff, budget, planning, or long-range goals."
+      },
+      {
+        "wps_task_id": "WPS_3056_TIME_BASED_T13_R02_A",
+        "source_file": "wps_time_3056.docx",
+        "rapids_code": "3056",
+        "variant": "time_based",
+        "source_table_index": 13,
+        "source_row_index": 2,
+        "task_raw": "A. Perform administrative or managerial functions, such as taking responsibility for a unit's staff, budget, planning, or long-range goals."
+      }
+    ]
+  },
+  {
+    "module_number": "RN-WPS-022",
+    "concept": "Monitor health or behavior of people or animals.",
+    "needs_review": true,
+    "review_policy": "needs_review=true when review_count > confident_count",
+    "task_count": 6,
+    "bridge_count": 6,
+    "review_count": 6,
+    "confident_count": 0,
+    "review_rate": 1.0,
+    "source_anchor": "WPS process: Monitor health or behavior of people or animals.; variants: 2074:time_based, 2074CB:competency_based, 2074HY:hybrid, 3056:time_based, 3056CB:competency_based, 3056HY:hybrid; source rows: wps_competency_2074.docx#T26:R3; wps_competency_3056.docx#T26:R3; wps_hybrid_2074.docx#T26:R2; wps_hybrid_3056.docx#T26:R2; wps_time_2074.docx#T26:R2; wps_time_3056.docx#T26:R2; crosswalk_data: C:\\Users\\RHarrity\\Documents\\Codex\\rn_wps_prelicensure_crosswalk_workset_2026-06-12\\build\\intermediate\\rn_wps_prelicensure_crosswalk_data.json",
+    "tasks": [
+      {
+        "wps_task_id": "WPS_2074CB_COMPETENCY_BASED_T26_R03_A",
+        "source_file": "wps_competency_2074.docx",
+        "rapids_code": "2074CB",
+        "variant": "competency_based",
+        "source_table_index": 26,
+        "source_row_index": 3,
+        "task_raw": "A. Observe nurses and visit patients to ensure proper nursing care."
+      },
+      {
+        "wps_task_id": "WPS_3056CB_COMPETENCY_BASED_T26_R03_A",
+        "source_file": "wps_competency_3056.docx",
+        "rapids_code": "3056CB",
+        "variant": "competency_based",
+        "source_table_index": 26,
+        "source_row_index": 3,
+        "task_raw": "A. Observe nurses and visit patients to ensure proper nursing care."
+      },
+      {
+        "wps_task_id": "WPS_2074HY_HYBRID_T26_R02_A",
+        "source_file": "wps_hybrid_2074.docx",
+        "rapids_code": "2074HY",
+        "variant": "hybrid",
+        "source_table_index": 26,
+        "source_row_index": 2,
+        "task_raw": "A. Observe nurses and visit patients to ensure proper nursing care."
+      },
+      {
+        "wps_task_id": "WPS_3056HY_HYBRID_T26_R02_A",
+        "source_file": "wps_hybrid_3056.docx",
+        "rapids_code": "3056HY",
+        "variant": "hybrid",
+        "source_table_index": 26,
+        "source_row_index": 2,
+        "task_raw": "A. Observe nurses and visit patients to ensure proper nursing care."
+      },
+      {
+        "wps_task_id": "WPS_2074_TIME_BASED_T26_R02_A",
+        "source_file": "wps_time_2074.docx",
+        "rapids_code": "2074",
+        "variant": "time_based",
+        "source_table_index": 26,
+        "source_row_index": 2,
+        "task_raw": "A. Observe nurses and visit patients to ensure proper nursing care."
+      },
+      {
+        "wps_task_id": "WPS_3056_TIME_BASED_T26_R02_A",
+        "source_file": "wps_time_3056.docx",
+        "rapids_code": "3056",
+        "variant": "time_based",
+        "source_table_index": 26,
+        "source_row_index": 2,
+        "task_raw": "A. Observe nurses and visit patients to ensure proper nursing care."
+      }
+    ]
+  },
+  {
+    "module_number": "RN-WPS-023",
+    "concept": "Monitor patient conditions during treatments, procedures, or activities.",
+    "needs_review": true,
+    "review_policy": "needs_review=true when review_count > confident_count",
+    "task_count": 12,
+    "bridge_count": 12,
+    "review_count": 12,
+    "confident_count": 0,
+    "review_rate": 1.0,
+    "source_anchor": "WPS process: Monitor patient conditions during treatments, procedures, or activities.; variants: 2074:time_based, 2074CB:competency_based, 2074HY:hybrid, 3056:time_based, 3056CB:competency_based, 3056HY:hybrid; source rows: wps_competency_2074.docx#T3:R3; wps_competency_2074.docx#T3:R4; wps_competency_3056.docx#T3:R3; wps_competency_3056.docx#T3:R4; wps_hybrid_2074.docx#T3:R2; wps_hybrid_2074.docx#T3:R3; wps_hybrid_3056.docx#T3:R2; wps_hybrid_3056.docx#T3:R3; wps_time_2074.docx#T3:R2; wps_time_2074.docx#T3:R3; wps_time_3056.docx#T3:R2; wps_time_3056.docx#T3:R3; crosswalk_data: C:\\Users\\RHarrity\\Documents\\Codex\\rn_wps_prelicensure_crosswalk_workset_2026-06-12\\build\\intermediate\\rn_wps_prelicensure_crosswalk_data.json",
+    "tasks": [
+      {
+        "wps_task_id": "WPS_2074CB_COMPETENCY_BASED_T03_R03_A",
+        "source_file": "wps_competency_2074.docx",
+        "rapids_code": "2074CB",
+        "variant": "competency_based",
+        "source_table_index": 3,
+        "source_row_index": 3,
+        "task_raw": "A. Administer medications to patients and monitor patients for reactions or side effects."
+      },
+      {
+        "wps_task_id": "WPS_2074CB_COMPETENCY_BASED_T03_R04_B",
+        "source_file": "wps_competency_2074.docx",
+        "rapids_code": "2074CB",
+        "variant": "competency_based",
+        "source_table_index": 3,
+        "source_row_index": 4,
+        "task_raw": "B. Monitor, record, and report symptoms or changes in patients' conditions."
+      },
+      {
+        "wps_task_id": "WPS_3056CB_COMPETENCY_BASED_T03_R03_A",
+        "source_file": "wps_competency_3056.docx",
+        "rapids_code": "3056CB",
+        "variant": "competency_based",
+        "source_table_index": 3,
+        "source_row_index": 3,
+        "task_raw": "A. Administer medications to patients and monitor patients for reactions or side effects."
+      },
+      {
+        "wps_task_id": "WPS_3056CB_COMPETENCY_BASED_T03_R04_B",
+        "source_file": "wps_competency_3056.docx",
+        "rapids_code": "3056CB",
+        "variant": "competency_based",
+        "source_table_index": 3,
+        "source_row_index": 4,
+        "task_raw": "B. Monitor, record, and report symptoms or changes in patients' conditions."
+      },
+      {
+        "wps_task_id": "WPS_2074HY_HYBRID_T03_R02_A",
+        "source_file": "wps_hybrid_2074.docx",
+        "rapids_code": "2074HY",
+        "variant": "hybrid",
+        "source_table_index": 3,
+        "source_row_index": 2,
+        "task_raw": "A. Administer medications to patients and monitor patients for reactions or side effects."
+      },
+      {
+        "wps_task_id": "WPS_2074HY_HYBRID_T03_R03_B",
+        "source_file": "wps_hybrid_2074.docx",
+        "rapids_code": "2074HY",
+        "variant": "hybrid",
+        "source_table_index": 3,
+        "source_row_index": 3,
+        "task_raw": "B. Monitor, record, and report symptoms or changes in patients' conditions."
+      },
+      {
+        "wps_task_id": "WPS_3056HY_HYBRID_T03_R02_A",
+        "source_file": "wps_hybrid_3056.docx",
+        "rapids_code": "3056HY",
+        "variant": "hybrid",
+        "source_table_index": 3,
+        "source_row_index": 2,
+        "task_raw": "A. Administer medications to patients and monitor patients for reactions or side effects."
+      },
+      {
+        "wps_task_id": "WPS_3056HY_HYBRID_T03_R03_B",
+        "source_file": "wps_hybrid_3056.docx",
+        "rapids_code": "3056HY",
+        "variant": "hybrid",
+        "source_table_index": 3,
+        "source_row_index": 3,
+        "task_raw": "B. Monitor, record, and report symptoms or changes in patients' conditions."
+      },
+      {
+        "wps_task_id": "WPS_2074_TIME_BASED_T03_R02_A",
+        "source_file": "wps_time_2074.docx",
+        "rapids_code": "2074",
+        "variant": "time_based",
+        "source_table_index": 3,
+        "source_row_index": 2,
+        "task_raw": "A. Administer medications to patients and monitor patients for reactions or side effects."
+      },
+      {
+        "wps_task_id": "WPS_2074_TIME_BASED_T03_R03_B",
+        "source_file": "wps_time_2074.docx",
+        "rapids_code": "2074",
+        "variant": "time_based",
+        "source_table_index": 3,
+        "source_row_index": 3,
+        "task_raw": "B. Monitor, record, and report symptoms or changes in patients' conditions."
+      },
+      {
+        "wps_task_id": "WPS_3056_TIME_BASED_T03_R02_A",
+        "source_file": "wps_time_3056.docx",
+        "rapids_code": "3056",
+        "variant": "time_based",
+        "source_table_index": 3,
+        "source_row_index": 2,
+        "task_raw": "A. Administer medications to patients and monitor patients for reactions or side effects."
+      },
+      {
+        "wps_task_id": "WPS_3056_TIME_BASED_T03_R03_B",
+        "source_file": "wps_time_3056.docx",
+        "rapids_code": "3056",
+        "variant": "time_based",
+        "source_table_index": 3,
+        "source_row_index": 3,
+        "task_raw": "B. Monitor, record, and report symptoms or changes in patients' conditions."
+      }
+    ]
+  },
+  {
+    "module_number": "RN-WPS-024",
+    "concept": "Monitor patient progress or responses to treatments.",
+    "needs_review": true,
+    "review_policy": "needs_review=true when review_count > confident_count",
+    "task_count": 6,
+    "bridge_count": 6,
+    "review_count": 6,
+    "confident_count": 0,
+    "review_rate": 1.0,
+    "source_anchor": "WPS process: Monitor patient progress or responses to treatments.; variants: 2074:time_based, 2074CB:competency_based, 2074HY:hybrid, 3056:time_based, 3056CB:competency_based, 3056HY:hybrid; source rows: wps_competency_2074.docx#T11:R3; wps_competency_3056.docx#T11:R3; wps_hybrid_2074.docx#T11:R2; wps_hybrid_3056.docx#T11:R2; wps_time_2074.docx#T11:R2; wps_time_3056.docx#T11:R2; crosswalk_data: C:\\Users\\RHarrity\\Documents\\Codex\\rn_wps_prelicensure_crosswalk_workset_2026-06-12\\build\\intermediate\\rn_wps_prelicensure_crosswalk_data.json",
+    "tasks": [
+      {
+        "wps_task_id": "WPS_2074CB_COMPETENCY_BASED_T11_R03_A",
+        "source_file": "wps_competency_2074.docx",
+        "rapids_code": "2074CB",
+        "variant": "competency_based",
+        "source_table_index": 11,
+        "source_row_index": 3,
+        "task_raw": "A. Monitor all aspects of patient care, including diet and physical activity."
+      },
+      {
+        "wps_task_id": "WPS_3056CB_COMPETENCY_BASED_T11_R03_A",
+        "source_file": "wps_competency_3056.docx",
+        "rapids_code": "3056CB",
+        "variant": "competency_based",
+        "source_table_index": 11,
+        "source_row_index": 3,
+        "task_raw": "A. Monitor all aspects of patient care, including diet and physical activity."
+      },
+      {
+        "wps_task_id": "WPS_2074HY_HYBRID_T11_R02_A",
+        "source_file": "wps_hybrid_2074.docx",
+        "rapids_code": "2074HY",
+        "variant": "hybrid",
+        "source_table_index": 11,
+        "source_row_index": 2,
+        "task_raw": "A. Monitor all aspects of patient care, including diet and physical activity."
+      },
+      {
+        "wps_task_id": "WPS_3056HY_HYBRID_T11_R02_A",
+        "source_file": "wps_hybrid_3056.docx",
+        "rapids_code": "3056HY",
+        "variant": "hybrid",
+        "source_table_index": 11,
+        "source_row_index": 2,
+        "task_raw": "A. Monitor all aspects of patient care, including diet and physical activity."
+      },
+      {
+        "wps_task_id": "WPS_2074_TIME_BASED_T11_R02_A",
+        "source_file": "wps_time_2074.docx",
+        "rapids_code": "2074",
+        "variant": "time_based",
+        "source_table_index": 11,
+        "source_row_index": 2,
+        "task_raw": "A. Monitor all aspects of patient care, including diet and physical activity."
+      },
+      {
+        "wps_task_id": "WPS_3056_TIME_BASED_T11_R02_A",
+        "source_file": "wps_time_3056.docx",
+        "rapids_code": "3056",
+        "variant": "time_based",
+        "source_table_index": 11,
+        "source_row_index": 2,
+        "task_raw": "A. Monitor all aspects of patient care, including diet and physical activity."
+      }
+    ]
+  },
+  {
+    "module_number": "RN-WPS-025",
+    "concept": "Monitor patients following surgeries or other treatments.",
+    "needs_review": true,
+    "review_policy": "needs_review=true when review_count > confident_count",
+    "task_count": 6,
+    "bridge_count": 6,
+    "review_count": 6,
+    "confident_count": 0,
+    "review_rate": 1.0,
+    "source_anchor": "WPS process: Monitor patients following surgeries or other treatments.; variants: 2074:time_based, 2074CB:competency_based, 2074HY:hybrid, 3056:time_based, 3056CB:competency_based, 3056HY:hybrid; source rows: wps_competency_2074.docx#T12:R3; wps_competency_3056.docx#T12:R3; wps_hybrid_2074.docx#T12:R2; wps_hybrid_3056.docx#T12:R2; wps_time_2074.docx#T12:R2; wps_time_3056.docx#T12:R2; crosswalk_data: C:\\Users\\RHarrity\\Documents\\Codex\\rn_wps_prelicensure_crosswalk_workset_2026-06-12\\build\\intermediate\\rn_wps_prelicensure_crosswalk_data.json",
+    "tasks": [
+      {
+        "wps_task_id": "WPS_2074CB_COMPETENCY_BASED_T12_R03_A",
+        "source_file": "wps_competency_2074.docx",
+        "rapids_code": "2074CB",
+        "variant": "competency_based",
+        "source_table_index": 12,
+        "source_row_index": 3,
+        "task_raw": "A. Monitor all aspects of patient care, including diet and physical activity."
+      },
+      {
+        "wps_task_id": "WPS_3056CB_COMPETENCY_BASED_T12_R03_A",
+        "source_file": "wps_competency_3056.docx",
+        "rapids_code": "3056CB",
+        "variant": "competency_based",
+        "source_table_index": 12,
+        "source_row_index": 3,
+        "task_raw": "A. Monitor all aspects of patient care, including diet and physical activity."
+      },
+      {
+        "wps_task_id": "WPS_2074HY_HYBRID_T12_R02_A",
+        "source_file": "wps_hybrid_2074.docx",
+        "rapids_code": "2074HY",
+        "variant": "hybrid",
+        "source_table_index": 12,
+        "source_row_index": 2,
+        "task_raw": "A. Monitor all aspects of patient care, including diet and physical activity."
+      },
+      {
+        "wps_task_id": "WPS_3056HY_HYBRID_T12_R02_A",
+        "source_file": "wps_hybrid_3056.docx",
+        "rapids_code": "3056HY",
+        "variant": "hybrid",
+        "source_table_index": 12,
+        "source_row_index": 2,
+        "task_raw": "A. Monitor all aspects of patient care, including diet and physical activity."
+      },
+      {
+        "wps_task_id": "WPS_2074_TIME_BASED_T12_R02_A",
+        "source_file": "wps_time_2074.docx",
+        "rapids_code": "2074",
+        "variant": "time_based",
+        "source_table_index": 12,
+        "source_row_index": 2,
+        "task_raw": "A. Monitor all aspects of patient care, including diet and physical activity."
+      },
+      {
+        "wps_task_id": "WPS_3056_TIME_BASED_T12_R02_A",
+        "source_file": "wps_time_3056.docx",
+        "rapids_code": "3056",
+        "variant": "time_based",
+        "source_table_index": 12,
+        "source_row_index": 2,
+        "task_raw": "A. Monitor all aspects of patient care, including diet and physical activity."
+      }
+    ]
+  },
+  {
+    "module_number": "RN-WPS-026",
+    "concept": "Order medical diagnostic or clinical tests.",
+    "needs_review": true,
+    "review_policy": "needs_review=true when review_count > confident_count",
+    "task_count": 6,
+    "bridge_count": 6,
+    "review_count": 6,
+    "confident_count": 0,
+    "review_rate": 1.0,
+    "source_anchor": "WPS process: Order medical diagnostic or clinical tests.; variants: 2074:time_based, 2074CB:competency_based, 2074HY:hybrid, 3056:time_based, 3056CB:competency_based, 3056HY:hybrid; source rows: wps_competency_2074.docx#T17:R3; wps_competency_3056.docx#T17:R3; wps_hybrid_2074.docx#T17:R2; wps_hybrid_3056.docx#T17:R2; wps_time_2074.docx#T17:R2; wps_time_3056.docx#T17:R2; crosswalk_data: C:\\Users\\RHarrity\\Documents\\Codex\\rn_wps_prelicensure_crosswalk_workset_2026-06-12\\build\\intermediate\\rn_wps_prelicensure_crosswalk_data.json",
+    "tasks": [
+      {
+        "wps_task_id": "WPS_2074CB_COMPETENCY_BASED_T17_R03_A",
+        "source_file": "wps_competency_2074.docx",
+        "rapids_code": "2074CB",
+        "variant": "competency_based",
+        "source_table_index": 17,
+        "source_row_index": 3,
+        "task_raw": "A. Order, interpret, and evaluate diagnostic tests to identify and assess patient's condition."
+      },
+      {
+        "wps_task_id": "WPS_3056CB_COMPETENCY_BASED_T17_R03_A",
+        "source_file": "wps_competency_3056.docx",
+        "rapids_code": "3056CB",
+        "variant": "competency_based",
+        "source_table_index": 17,
+        "source_row_index": 3,
+        "task_raw": "A. Order, interpret, and evaluate diagnostic tests to identify and assess patient's condition."
+      },
+      {
+        "wps_task_id": "WPS_2074HY_HYBRID_T17_R02_A",
+        "source_file": "wps_hybrid_2074.docx",
+        "rapids_code": "2074HY",
+        "variant": "hybrid",
+        "source_table_index": 17,
+        "source_row_index": 2,
+        "task_raw": "A. Order, interpret, and evaluate diagnostic tests to identify and assess patient's condition."
+      },
+      {
+        "wps_task_id": "WPS_3056HY_HYBRID_T17_R02_A",
+        "source_file": "wps_hybrid_3056.docx",
+        "rapids_code": "3056HY",
+        "variant": "hybrid",
+        "source_table_index": 17,
+        "source_row_index": 2,
+        "task_raw": "A. Order, interpret, and evaluate diagnostic tests to identify and assess patient's condition."
+      },
+      {
+        "wps_task_id": "WPS_2074_TIME_BASED_T17_R02_A",
+        "source_file": "wps_time_2074.docx",
+        "rapids_code": "2074",
+        "variant": "time_based",
+        "source_table_index": 17,
+        "source_row_index": 2,
+        "task_raw": "A. Order, interpret, and evaluate diagnostic tests to identify and assess patient's condition."
+      },
+      {
+        "wps_task_id": "WPS_3056_TIME_BASED_T17_R02_A",
+        "source_file": "wps_time_3056.docx",
+        "rapids_code": "3056",
+        "variant": "time_based",
+        "source_table_index": 17,
+        "source_row_index": 2,
+        "task_raw": "A. Order, interpret, and evaluate diagnostic tests to identify and assess patient's condition."
+      }
+    ]
+  },
+  {
+    "module_number": "RN-WPS-027",
+    "concept": "Prepare medical supplies or equipment for use.",
+    "needs_review": true,
+    "review_policy": "needs_review=true when review_count > confident_count",
+    "task_count": 6,
+    "bridge_count": 6,
+    "review_count": 6,
+    "confident_count": 0,
+    "review_rate": 1.0,
+    "source_anchor": "WPS process: Prepare medical supplies or equipment for use.; variants: 2074:time_based, 2074CB:competency_based, 2074HY:hybrid, 3056:time_based, 3056CB:competency_based, 3056HY:hybrid; source rows: wps_competency_2074.docx#T24:R3; wps_competency_3056.docx#T24:R3; wps_hybrid_2074.docx#T24:R2; wps_hybrid_3056.docx#T24:R2; wps_time_2074.docx#T24:R2; wps_time_3056.docx#T24:R2; crosswalk_data: C:\\Users\\RHarrity\\Documents\\Codex\\rn_wps_prelicensure_crosswalk_workset_2026-06-12\\build\\intermediate\\rn_wps_prelicensure_crosswalk_data.json",
+    "tasks": [
+      {
+        "wps_task_id": "WPS_2074CB_COMPETENCY_BASED_T24_R03_A",
+        "source_file": "wps_competency_2074.docx",
+        "rapids_code": "2074CB",
+        "variant": "competency_based",
+        "source_table_index": 24,
+        "source_row_index": 3,
+        "task_raw": "A. Prepare rooms, sterile instruments, equipment, or supplies and ensure that stock of supplies is maintained."
+      },
+      {
+        "wps_task_id": "WPS_3056CB_COMPETENCY_BASED_T24_R03_A",
+        "source_file": "wps_competency_3056.docx",
+        "rapids_code": "3056CB",
+        "variant": "competency_based",
+        "source_table_index": 24,
+        "source_row_index": 3,
+        "task_raw": "A. Prepare rooms, sterile instruments, equipment, or supplies and ensure that stock of supplies is maintained."
+      },
+      {
+        "wps_task_id": "WPS_2074HY_HYBRID_T24_R02_A",
+        "source_file": "wps_hybrid_2074.docx",
+        "rapids_code": "2074HY",
+        "variant": "hybrid",
+        "source_table_index": 24,
+        "source_row_index": 2,
+        "task_raw": "A. Prepare rooms, sterile instruments, equipment, or supplies and ensure that stock of supplies is maintained."
+      },
+      {
+        "wps_task_id": "WPS_3056HY_HYBRID_T24_R02_A",
+        "source_file": "wps_hybrid_3056.docx",
+        "rapids_code": "3056HY",
+        "variant": "hybrid",
+        "source_table_index": 24,
+        "source_row_index": 2,
+        "task_raw": "A. Prepare rooms, sterile instruments, equipment, or supplies and ensure that stock of supplies is maintained."
+      },
+      {
+        "wps_task_id": "WPS_2074_TIME_BASED_T24_R02_A",
+        "source_file": "wps_time_2074.docx",
+        "rapids_code": "2074",
+        "variant": "time_based",
+        "source_table_index": 24,
+        "source_row_index": 2,
+        "task_raw": "A. Prepare rooms, sterile instruments, equipment, or supplies and ensure that stock of supplies is maintained."
+      },
+      {
+        "wps_task_id": "WPS_3056_TIME_BASED_T24_R02_A",
+        "source_file": "wps_time_3056.docx",
+        "rapids_code": "3056",
+        "variant": "time_based",
+        "source_table_index": 24,
+        "source_row_index": 2,
+        "task_raw": "A. Prepare rooms, sterile instruments, equipment, or supplies and ensure that stock of supplies is maintained."
+      }
+    ]
+  },
+  {
+    "module_number": "RN-WPS-028",
+    "concept": "Prepare patients physically for medical procedures.",
+    "needs_review": true,
+    "review_policy": "needs_review=true when review_count > confident_count",
+    "task_count": 6,
+    "bridge_count": 6,
+    "review_count": 6,
+    "confident_count": 0,
+    "review_rate": 1.0,
+    "source_anchor": "WPS process: Prepare patients physically for medical procedures.; variants: 2074:time_based, 2074CB:competency_based, 2074HY:hybrid, 3056:time_based, 3056CB:competency_based, 3056HY:hybrid; source rows: wps_competency_2074.docx#T31:R3; wps_competency_3056.docx#T31:R3; wps_hybrid_2074.docx#T31:R2; wps_hybrid_3056.docx#T31:R2; wps_time_2074.docx#T31:R2; wps_time_3056.docx#T31:R2; crosswalk_data: C:\\Users\\RHarrity\\Documents\\Codex\\rn_wps_prelicensure_crosswalk_workset_2026-06-12\\build\\intermediate\\rn_wps_prelicensure_crosswalk_data.json",
+    "tasks": [
+      {
+        "wps_task_id": "WPS_2074CB_COMPETENCY_BASED_T31_R03_A",
+        "source_file": "wps_competency_2074.docx",
+        "rapids_code": "2074CB",
+        "variant": "competency_based",
+        "source_table_index": 31,
+        "source_row_index": 3,
+        "task_raw": "A. Prepare patients for and assist with examinations or treatments."
+      },
+      {
+        "wps_task_id": "WPS_3056CB_COMPETENCY_BASED_T31_R03_A",
+        "source_file": "wps_competency_3056.docx",
+        "rapids_code": "3056CB",
+        "variant": "competency_based",
+        "source_table_index": 31,
+        "source_row_index": 3,
+        "task_raw": "A. Prepare patients for and assist with examinations or treatments."
+      },
+      {
+        "wps_task_id": "WPS_2074HY_HYBRID_T31_R02_A",
+        "source_file": "wps_hybrid_2074.docx",
+        "rapids_code": "2074HY",
+        "variant": "hybrid",
+        "source_table_index": 31,
+        "source_row_index": 2,
+        "task_raw": "A. Prepare patients for and assist with examinations or treatments."
+      },
+      {
+        "wps_task_id": "WPS_3056HY_HYBRID_T31_R02_A",
+        "source_file": "wps_hybrid_3056.docx",
+        "rapids_code": "3056HY",
+        "variant": "hybrid",
+        "source_table_index": 31,
+        "source_row_index": 2,
+        "task_raw": "A. Prepare patients for and assist with examinations or treatments."
+      },
+      {
+        "wps_task_id": "WPS_2074_TIME_BASED_T31_R02_A",
+        "source_file": "wps_time_2074.docx",
+        "rapids_code": "2074",
+        "variant": "time_based",
+        "source_table_index": 31,
+        "source_row_index": 2,
+        "task_raw": "A. Prepare patients for and assist with examinations or treatments."
+      },
+      {
+        "wps_task_id": "WPS_3056_TIME_BASED_T31_R02_A",
+        "source_file": "wps_time_3056.docx",
+        "rapids_code": "3056",
+        "variant": "time_based",
+        "source_table_index": 31,
+        "source_row_index": 2,
+        "task_raw": "A. Prepare patients for and assist with examinations or treatments."
+      }
+    ]
+  },
+  {
+    "module_number": "RN-WPS-029",
+    "concept": "Prescribe assistive medical devices or related treatments.",
+    "needs_review": true,
+    "review_policy": "needs_review=true when review_count > confident_count",
+    "task_count": 6,
+    "bridge_count": 6,
+    "review_count": 6,
+    "confident_count": 0,
+    "review_rate": 1.0,
+    "source_anchor": "WPS process: Prescribe assistive medical devices or related treatments.; variants: 2074:time_based, 2074CB:competency_based, 2074HY:hybrid, 3056:time_based, 3056CB:competency_based, 3056HY:hybrid; source rows: wps_competency_2074.docx#T18:R3; wps_competency_3056.docx#T18:R3; wps_hybrid_2074.docx#T18:R2; wps_hybrid_3056.docx#T18:R2; wps_time_2074.docx#T18:R2; wps_time_3056.docx#T18:R2; crosswalk_data: C:\\Users\\RHarrity\\Documents\\Codex\\rn_wps_prelicensure_crosswalk_workset_2026-06-12\\build\\intermediate\\rn_wps_prelicensure_crosswalk_data.json",
+    "tasks": [
+      {
+        "wps_task_id": "WPS_2074CB_COMPETENCY_BASED_T18_R03_A",
+        "source_file": "wps_competency_2074.docx",
+        "rapids_code": "2074CB",
+        "variant": "competency_based",
+        "source_table_index": 18,
+        "source_row_index": 3,
+        "task_raw": "A. Prescribe or recommend drugs, medical devices, or other forms of treatment, such as physical therapy, inhalation therapy, or related therapeutic procedures."
+      },
+      {
+        "wps_task_id": "WPS_3056CB_COMPETENCY_BASED_T18_R03_A",
+        "source_file": "wps_competency_3056.docx",
+        "rapids_code": "3056CB",
+        "variant": "competency_based",
+        "source_table_index": 18,
+        "source_row_index": 3,
+        "task_raw": "A. Prescribe or recommend drugs, medical devices, or other forms of treatment, such as physical therapy, inhalation therapy, or related therapeutic procedures."
+      },
+      {
+        "wps_task_id": "WPS_2074HY_HYBRID_T18_R02_A",
+        "source_file": "wps_hybrid_2074.docx",
+        "rapids_code": "2074HY",
+        "variant": "hybrid",
+        "source_table_index": 18,
+        "source_row_index": 2,
+        "task_raw": "A. Prescribe or recommend drugs, medical devices, or other forms of treatment, such as physical therapy, inhalation therapy, or related therapeutic procedures."
+      },
+      {
+        "wps_task_id": "WPS_3056HY_HYBRID_T18_R02_A",
+        "source_file": "wps_hybrid_3056.docx",
+        "rapids_code": "3056HY",
+        "variant": "hybrid",
+        "source_table_index": 18,
+        "source_row_index": 2,
+        "task_raw": "A. Prescribe or recommend drugs, medical devices, or other forms of treatment, such as physical therapy, inhalation therapy, or related therapeutic procedures."
+      },
+      {
+        "wps_task_id": "WPS_2074_TIME_BASED_T18_R02_A",
+        "source_file": "wps_time_2074.docx",
+        "rapids_code": "2074",
+        "variant": "time_based",
+        "source_table_index": 18,
+        "source_row_index": 2,
+        "task_raw": "A. Prescribe or recommend drugs, medical devices, or other forms of treatment, such as physical therapy, inhalation therapy, or related therapeutic procedures."
+      },
+      {
+        "wps_task_id": "WPS_3056_TIME_BASED_T18_R02_A",
+        "source_file": "wps_time_3056.docx",
+        "rapids_code": "3056",
+        "variant": "time_based",
+        "source_table_index": 18,
+        "source_row_index": 2,
+        "task_raw": "A. Prescribe or recommend drugs, medical devices, or other forms of treatment, such as physical therapy, inhalation therapy, or related therapeutic procedures."
+      }
+    ]
+  },
+  {
+    "module_number": "RN-WPS-030",
+    "concept": "Prescribe medications.",
+    "needs_review": true,
+    "review_policy": "needs_review=true when review_count > confident_count",
+    "task_count": 6,
+    "bridge_count": 6,
+    "review_count": 6,
+    "confident_count": 0,
+    "review_rate": 1.0,
+    "source_anchor": "WPS process: Prescribe medications.; variants: 2074:time_based, 2074CB:competency_based, 2074HY:hybrid, 3056:time_based, 3056CB:competency_based, 3056HY:hybrid; source rows: wps_competency_2074.docx#T19:R3; wps_competency_3056.docx#T19:R3; wps_hybrid_2074.docx#T19:R2; wps_hybrid_3056.docx#T19:R2; wps_time_2074.docx#T19:R2; wps_time_3056.docx#T19:R2; crosswalk_data: C:\\Users\\RHarrity\\Documents\\Codex\\rn_wps_prelicensure_crosswalk_workset_2026-06-12\\build\\intermediate\\rn_wps_prelicensure_crosswalk_data.json",
+    "tasks": [
+      {
+        "wps_task_id": "WPS_2074CB_COMPETENCY_BASED_T19_R03_A",
+        "source_file": "wps_competency_2074.docx",
+        "rapids_code": "2074CB",
+        "variant": "competency_based",
+        "source_table_index": 19,
+        "source_row_index": 3,
+        "task_raw": "A. Prescribe or recommend drugs, medical devices, or other forms of treatment, such as physical therapy, inhalation therapy, or related therapeutic procedures."
+      },
+      {
+        "wps_task_id": "WPS_3056CB_COMPETENCY_BASED_T19_R03_A",
+        "source_file": "wps_competency_3056.docx",
+        "rapids_code": "3056CB",
+        "variant": "competency_based",
+        "source_table_index": 19,
+        "source_row_index": 3,
+        "task_raw": "A. Prescribe or recommend drugs, medical devices, or other forms of treatment, such as physical therapy, inhalation therapy, or related therapeutic procedures."
+      },
+      {
+        "wps_task_id": "WPS_2074HY_HYBRID_T19_R02_A",
+        "source_file": "wps_hybrid_2074.docx",
+        "rapids_code": "2074HY",
+        "variant": "hybrid",
+        "source_table_index": 19,
+        "source_row_index": 2,
+        "task_raw": "A. Prescribe or recommend drugs, medical devices, or other forms of treatment, such as physical therapy, inhalation therapy, or related therapeutic procedures."
+      },
+      {
+        "wps_task_id": "WPS_3056HY_HYBRID_T19_R02_A",
+        "source_file": "wps_hybrid_3056.docx",
+        "rapids_code": "3056HY",
+        "variant": "hybrid",
+        "source_table_index": 19,
+        "source_row_index": 2,
+        "task_raw": "A. Prescribe or recommend drugs, medical devices, or other forms of treatment, such as physical therapy, inhalation therapy, or related therapeutic procedures."
+      },
+      {
+        "wps_task_id": "WPS_2074_TIME_BASED_T19_R02_A",
+        "source_file": "wps_time_2074.docx",
+        "rapids_code": "2074",
+        "variant": "time_based",
+        "source_table_index": 19,
+        "source_row_index": 2,
+        "task_raw": "A. Prescribe or recommend drugs, medical devices, or other forms of treatment, such as physical therapy, inhalation therapy, or related therapeutic procedures."
+      },
+      {
+        "wps_task_id": "WPS_3056_TIME_BASED_T19_R02_A",
+        "source_file": "wps_time_3056.docx",
+        "rapids_code": "3056",
+        "variant": "time_based",
+        "source_table_index": 19,
+        "source_row_index": 2,
+        "task_raw": "A. Prescribe or recommend drugs, medical devices, or other forms of treatment, such as physical therapy, inhalation therapy, or related therapeutic procedures."
+      }
+    ]
+  },
+  {
+    "module_number": "RN-WPS-031",
+    "concept": "Provider",
+    "needs_review": true,
+    "review_policy": "needs_review=true when review_count > confident_count",
+    "task_count": 24,
+    "bridge_count": 24,
+    "review_count": 24,
+    "confident_count": 0,
+    "review_rate": 1.0,
+    "source_anchor": "WPS process: Provider; variants: 2074:time_based, 2074CB:competency_based, 2074HY:hybrid, 3056:time_based, 3056CB:competency_based, 3056HY:hybrid; source rows: wps_competency_2074.docx#T39:R2; wps_competency_2074.docx#T39:R3; wps_competency_2074.docx#T39:R4; wps_competency_2074.docx#T39:R5; wps_competency_3056.docx#T39:R2; wps_competency_3056.docx#T39:R3; wps_competency_3056.docx#T39:R4; wps_competency_3056.docx#T39:R5; wps_hybrid_2074.docx#T39:R2; wps_hybrid_2074.docx#T39:R3; wps_hybrid_2074.docx#T39:R4; wps_hybrid_2074.docx#T39:R5; +12 more; crosswalk_data: C:\\Users\\RHarrity\\Documents\\Codex\\rn_wps_prelicensure_crosswalk_workset_2026-06-12\\build\\intermediate\\rn_wps_prelicensure_crosswalk_data.json",
+    "tasks": [
+      {
+        "wps_task_id": "WPS_2074CB_COMPETENCY_BASED_T39_R02_X",
+        "source_file": "wps_competency_2074.docx",
+        "rapids_code": "2074CB",
+        "variant": "competency_based",
+        "source_table_index": 39,
+        "source_row_index": 2,
+        "task_raw": "Name:"
+      },
+      {
+        "wps_task_id": "WPS_2074CB_COMPETENCY_BASED_T39_R03_X",
+        "source_file": "wps_competency_2074.docx",
+        "rapids_code": "2074CB",
+        "variant": "competency_based",
+        "source_table_index": 39,
+        "source_row_index": 3,
+        "task_raw": "Address:"
+      },
+      {
+        "wps_task_id": "WPS_2074CB_COMPETENCY_BASED_T39_R04_X",
+        "source_file": "wps_competency_2074.docx",
+        "rapids_code": "2074CB",
+        "variant": "competency_based",
+        "source_table_index": 39,
+        "source_row_index": 4,
+        "task_raw": "Email:"
+      },
+      {
+        "wps_task_id": "WPS_2074CB_COMPETENCY_BASED_T39_R05_X",
+        "source_file": "wps_competency_2074.docx",
+        "rapids_code": "2074CB",
+        "variant": "competency_based",
+        "source_table_index": 39,
+        "source_row_index": 5,
+        "task_raw": "Suggested Related Instruction Hours: X"
+      },
+      {
+        "wps_task_id": "WPS_3056CB_COMPETENCY_BASED_T39_R02_X",
+        "source_file": "wps_competency_3056.docx",
+        "rapids_code": "3056CB",
+        "variant": "competency_based",
+        "source_table_index": 39,
+        "source_row_index": 2,
+        "task_raw": "Name:"
+      },
+      {
+        "wps_task_id": "WPS_3056CB_COMPETENCY_BASED_T39_R03_X",
+        "source_file": "wps_competency_3056.docx",
+        "rapids_code": "3056CB",
+        "variant": "competency_based",
+        "source_table_index": 39,
+        "source_row_index": 3,
+        "task_raw": "Address:"
+      },
+      {
+        "wps_task_id": "WPS_3056CB_COMPETENCY_BASED_T39_R04_X",
+        "source_file": "wps_competency_3056.docx",
+        "rapids_code": "3056CB",
+        "variant": "competency_based",
+        "source_table_index": 39,
+        "source_row_index": 4,
+        "task_raw": "Email:"
+      },
+      {
+        "wps_task_id": "WPS_3056CB_COMPETENCY_BASED_T39_R05_X",
+        "source_file": "wps_competency_3056.docx",
+        "rapids_code": "3056CB",
+        "variant": "competency_based",
+        "source_table_index": 39,
+        "source_row_index": 5,
+        "task_raw": "Suggested Related Instruction Hours: X"
+      },
+      {
+        "wps_task_id": "WPS_2074HY_HYBRID_T39_R02_X",
+        "source_file": "wps_hybrid_2074.docx",
+        "rapids_code": "2074HY",
+        "variant": "hybrid",
+        "source_table_index": 39,
+        "source_row_index": 2,
+        "task_raw": "Name:"
+      },
+      {
+        "wps_task_id": "WPS_2074HY_HYBRID_T39_R03_X",
+        "source_file": "wps_hybrid_2074.docx",
+        "rapids_code": "2074HY",
+        "variant": "hybrid",
+        "source_table_index": 39,
+        "source_row_index": 3,
+        "task_raw": "Address:"
+      },
+      {
+        "wps_task_id": "WPS_2074HY_HYBRID_T39_R04_X",
+        "source_file": "wps_hybrid_2074.docx",
+        "rapids_code": "2074HY",
+        "variant": "hybrid",
+        "source_table_index": 39,
+        "source_row_index": 4,
+        "task_raw": "Email:"
+      },
+      {
+        "wps_task_id": "WPS_2074HY_HYBRID_T39_R05_X",
+        "source_file": "wps_hybrid_2074.docx",
+        "rapids_code": "2074HY",
+        "variant": "hybrid",
+        "source_table_index": 39,
+        "source_row_index": 5,
+        "task_raw": "Suggested Related Instruction Hours: XXX"
+      },
+      {
+        "wps_task_id": "WPS_3056HY_HYBRID_T39_R02_X",
+        "source_file": "wps_hybrid_3056.docx",
+        "rapids_code": "3056HY",
+        "variant": "hybrid",
+        "source_table_index": 39,
+        "source_row_index": 2,
+        "task_raw": "Name:"
+      },
+      {
+        "wps_task_id": "WPS_3056HY_HYBRID_T39_R03_X",
+        "source_file": "wps_hybrid_3056.docx",
+        "rapids_code": "3056HY",
+        "variant": "hybrid",
+        "source_table_index": 39,
+        "source_row_index": 3,
+        "task_raw": "Address:"
+      },
+      {
+        "wps_task_id": "WPS_3056HY_HYBRID_T39_R04_X",
+        "source_file": "wps_hybrid_3056.docx",
+        "rapids_code": "3056HY",
+        "variant": "hybrid",
+        "source_table_index": 39,
+        "source_row_index": 4,
+        "task_raw": "Email:"
+      },
+      {
+        "wps_task_id": "WPS_3056HY_HYBRID_T39_R05_X",
+        "source_file": "wps_hybrid_3056.docx",
+        "rapids_code": "3056HY",
+        "variant": "hybrid",
+        "source_table_index": 39,
+        "source_row_index": 5,
+        "task_raw": "Suggested Related Instruction Hours: XXX"
+      },
+      {
+        "wps_task_id": "WPS_2074_TIME_BASED_T39_R02_X",
+        "source_file": "wps_time_2074.docx",
+        "rapids_code": "2074",
+        "variant": "time_based",
+        "source_table_index": 39,
+        "source_row_index": 2,
+        "task_raw": "Name:"
+      },
+      {
+        "wps_task_id": "WPS_2074_TIME_BASED_T39_R03_X",
+        "source_file": "wps_time_2074.docx",
+        "rapids_code": "2074",
+        "variant": "time_based",
+        "source_table_index": 39,
+        "source_row_index": 3,
+        "task_raw": "Address:"
+      },
+      {
+        "wps_task_id": "WPS_2074_TIME_BASED_T39_R04_X",
+        "source_file": "wps_time_2074.docx",
+        "rapids_code": "2074",
+        "variant": "time_based",
+        "source_table_index": 39,
+        "source_row_index": 4,
+        "task_raw": "Email:"
+      },
+      {
+        "wps_task_id": "WPS_2074_TIME_BASED_T39_R05_X",
+        "source_file": "wps_time_2074.docx",
+        "rapids_code": "2074",
+        "variant": "time_based",
+        "source_table_index": 39,
+        "source_row_index": 5,
+        "task_raw": "Suggested Related Instruction Hours: XXX"
+      },
+      {
+        "wps_task_id": "WPS_3056_TIME_BASED_T39_R02_X",
+        "source_file": "wps_time_3056.docx",
+        "rapids_code": "3056",
+        "variant": "time_based",
+        "source_table_index": 39,
+        "source_row_index": 2,
+        "task_raw": "Name:"
+      },
+      {
+        "wps_task_id": "WPS_3056_TIME_BASED_T39_R03_X",
+        "source_file": "wps_time_3056.docx",
+        "rapids_code": "3056",
+        "variant": "time_based",
+        "source_table_index": 39,
+        "source_row_index": 3,
+        "task_raw": "Address:"
+      },
+      {
+        "wps_task_id": "WPS_3056_TIME_BASED_T39_R04_X",
+        "source_file": "wps_time_3056.docx",
+        "rapids_code": "3056",
+        "variant": "time_based",
+        "source_table_index": 39,
+        "source_row_index": 4,
+        "task_raw": "Email:"
+      },
+      {
+        "wps_task_id": "WPS_3056_TIME_BASED_T39_R05_X",
+        "source_file": "wps_time_3056.docx",
+        "rapids_code": "3056",
+        "variant": "time_based",
+        "source_table_index": 39,
+        "source_row_index": 5,
+        "task_raw": "Suggested Related Instruction Hours: XXX"
+      }
+    ]
+  },
+  {
+    "module_number": "RN-WPS-032",
+    "concept": "Record patient medical histories.",
+    "needs_review": true,
+    "review_policy": "needs_review=true when review_count > confident_count",
+    "task_count": 12,
+    "bridge_count": 12,
+    "review_count": 12,
+    "confident_count": 0,
+    "review_rate": 1.0,
+    "source_anchor": "WPS process: Record patient medical histories.; variants: 2074:time_based, 2074CB:competency_based, 2074HY:hybrid, 3056:time_based, 3056CB:competency_based, 3056HY:hybrid; source rows: wps_competency_2074.docx#T2:R3; wps_competency_2074.docx#T2:R4; wps_competency_3056.docx#T2:R3; wps_competency_3056.docx#T2:R4; wps_hybrid_2074.docx#T2:R2; wps_hybrid_2074.docx#T2:R3; wps_hybrid_3056.docx#T2:R2; wps_hybrid_3056.docx#T2:R3; wps_time_2074.docx#T2:R2; wps_time_2074.docx#T2:R3; wps_time_3056.docx#T2:R2; wps_time_3056.docx#T2:R3; crosswalk_data: C:\\Users\\RHarrity\\Documents\\Codex\\rn_wps_prelicensure_crosswalk_workset_2026-06-12\\build\\intermediate\\rn_wps_prelicensure_crosswalk_data.json",
+    "tasks": [
+      {
+        "wps_task_id": "WPS_2074CB_COMPETENCY_BASED_T02_R03_A",
+        "source_file": "wps_competency_2074.docx",
+        "rapids_code": "2074CB",
+        "variant": "competency_based",
+        "source_table_index": 2,
+        "source_row_index": 3,
+        "task_raw": "A. Record patients' medical information and vital signs."
+      },
+      {
+        "wps_task_id": "WPS_2074CB_COMPETENCY_BASED_T02_R04_B",
+        "source_file": "wps_competency_2074.docx",
+        "rapids_code": "2074CB",
+        "variant": "competency_based",
+        "source_table_index": 2,
+        "source_row_index": 4,
+        "task_raw": "B. Monitor, record, and report symptoms or changes in patients' conditions."
+      },
+      {
+        "wps_task_id": "WPS_3056CB_COMPETENCY_BASED_T02_R03_A",
+        "source_file": "wps_competency_3056.docx",
+        "rapids_code": "3056CB",
+        "variant": "competency_based",
+        "source_table_index": 2,
+        "source_row_index": 3,
+        "task_raw": "A. Record patients' medical information and vital signs."
+      },
+      {
+        "wps_task_id": "WPS_3056CB_COMPETENCY_BASED_T02_R04_B",
+        "source_file": "wps_competency_3056.docx",
+        "rapids_code": "3056CB",
+        "variant": "competency_based",
+        "source_table_index": 2,
+        "source_row_index": 4,
+        "task_raw": "B. Monitor, record, and report symptoms or changes in patients' conditions."
+      },
+      {
+        "wps_task_id": "WPS_2074HY_HYBRID_T02_R02_A",
+        "source_file": "wps_hybrid_2074.docx",
+        "rapids_code": "2074HY",
+        "variant": "hybrid",
+        "source_table_index": 2,
+        "source_row_index": 2,
+        "task_raw": "A. Record patients' medical information and vital signs."
+      },
+      {
+        "wps_task_id": "WPS_2074HY_HYBRID_T02_R03_B",
+        "source_file": "wps_hybrid_2074.docx",
+        "rapids_code": "2074HY",
+        "variant": "hybrid",
+        "source_table_index": 2,
+        "source_row_index": 3,
+        "task_raw": "B. Monitor, record, and report symptoms or changes in patients' conditions."
+      },
+      {
+        "wps_task_id": "WPS_3056HY_HYBRID_T02_R02_A",
+        "source_file": "wps_hybrid_3056.docx",
+        "rapids_code": "3056HY",
+        "variant": "hybrid",
+        "source_table_index": 2,
+        "source_row_index": 2,
+        "task_raw": "A. Record patients' medical information and vital signs."
+      },
+      {
+        "wps_task_id": "WPS_3056HY_HYBRID_T02_R03_B",
+        "source_file": "wps_hybrid_3056.docx",
+        "rapids_code": "3056HY",
+        "variant": "hybrid",
+        "source_table_index": 2,
+        "source_row_index": 3,
+        "task_raw": "B. Monitor, record, and report symptoms or changes in patients' conditions."
+      },
+      {
+        "wps_task_id": "WPS_2074_TIME_BASED_T02_R02_A",
+        "source_file": "wps_time_2074.docx",
+        "rapids_code": "2074",
+        "variant": "time_based",
+        "source_table_index": 2,
+        "source_row_index": 2,
+        "task_raw": "A. Record patients' medical information and vital signs."
+      },
+      {
+        "wps_task_id": "WPS_2074_TIME_BASED_T02_R03_B",
+        "source_file": "wps_time_2074.docx",
+        "rapids_code": "2074",
+        "variant": "time_based",
+        "source_table_index": 2,
+        "source_row_index": 3,
+        "task_raw": "B. Monitor, record, and report symptoms or changes in patients' conditions."
+      },
+      {
+        "wps_task_id": "WPS_3056_TIME_BASED_T02_R02_A",
+        "source_file": "wps_time_3056.docx",
+        "rapids_code": "3056",
+        "variant": "time_based",
+        "source_table_index": 2,
+        "source_row_index": 2,
+        "task_raw": "A. Record patients' medical information and vital signs."
+      },
+      {
+        "wps_task_id": "WPS_3056_TIME_BASED_T02_R03_B",
+        "source_file": "wps_time_3056.docx",
+        "rapids_code": "3056",
+        "variant": "time_based",
+        "source_table_index": 2,
+        "source_row_index": 3,
+        "task_raw": "B. Monitor, record, and report symptoms or changes in patients' conditions."
+      }
+    ]
+  },
+  {
+    "module_number": "RN-WPS-033",
+    "concept": "Refer patients to other healthcare practitioners or health resources.",
+    "needs_review": true,
+    "review_policy": "needs_review=true when review_count > confident_count",
+    "task_count": 6,
+    "bridge_count": 6,
+    "review_count": 6,
+    "confident_count": 0,
+    "review_rate": 1.0,
+    "source_anchor": "WPS process: Refer patients to other healthcare practitioners or health resources.; variants: 2074:time_based, 2074CB:competency_based, 2074HY:hybrid, 3056:time_based, 3056CB:competency_based, 3056HY:hybrid; source rows: wps_competency_2074.docx#T35:R3; wps_competency_3056.docx#T35:R3; wps_hybrid_2074.docx#T35:R2; wps_hybrid_3056.docx#T35:R2; wps_time_2074.docx#T35:R2; wps_time_3056.docx#T35:R2; crosswalk_data: C:\\Users\\RHarrity\\Documents\\Codex\\rn_wps_prelicensure_crosswalk_workset_2026-06-12\\build\\intermediate\\rn_wps_prelicensure_crosswalk_data.json",
+    "tasks": [
+      {
+        "wps_task_id": "WPS_2074CB_COMPETENCY_BASED_T35_R03_A",
+        "source_file": "wps_competency_2074.docx",
+        "rapids_code": "2074CB",
+        "variant": "competency_based",
+        "source_table_index": 35,
+        "source_row_index": 3,
+        "task_raw": "A. Refer students or patients to specialized health resources or community agencies furnishing assistance."
+      },
+      {
+        "wps_task_id": "WPS_3056CB_COMPETENCY_BASED_T35_R03_A",
+        "source_file": "wps_competency_3056.docx",
+        "rapids_code": "3056CB",
+        "variant": "competency_based",
+        "source_table_index": 35,
+        "source_row_index": 3,
+        "task_raw": "A. Refer students or patients to specialized health resources or community agencies furnishing assistance."
+      },
+      {
+        "wps_task_id": "WPS_2074HY_HYBRID_T35_R02_A",
+        "source_file": "wps_hybrid_2074.docx",
+        "rapids_code": "2074HY",
+        "variant": "hybrid",
+        "source_table_index": 35,
+        "source_row_index": 2,
+        "task_raw": "A. Refer students or patients to specialized health resources or community agencies furnishing assistance."
+      },
+      {
+        "wps_task_id": "WPS_3056HY_HYBRID_T35_R02_A",
+        "source_file": "wps_hybrid_3056.docx",
+        "rapids_code": "3056HY",
+        "variant": "hybrid",
+        "source_table_index": 35,
+        "source_row_index": 2,
+        "task_raw": "A. Refer students or patients to specialized health resources or community agencies furnishing assistance."
+      },
+      {
+        "wps_task_id": "WPS_2074_TIME_BASED_T35_R02_A",
+        "source_file": "wps_time_2074.docx",
+        "rapids_code": "2074",
+        "variant": "time_based",
+        "source_table_index": 35,
+        "source_row_index": 2,
+        "task_raw": "A. Refer students or patients to specialized health resources or community agencies furnishing assistance."
+      },
+      {
+        "wps_task_id": "WPS_3056_TIME_BASED_T35_R02_A",
+        "source_file": "wps_time_3056.docx",
+        "rapids_code": "3056",
+        "variant": "time_based",
+        "source_table_index": 35,
+        "source_row_index": 2,
+        "task_raw": "A. Refer students or patients to specialized health resources or community agencies furnishing assistance."
+      }
+    ]
+  },
+  {
+    "module_number": "RN-WPS-034",
+    "concept": "Supervise patient care personnel.",
+    "needs_review": true,
+    "review_policy": "needs_review=true when review_count > confident_count",
+    "task_count": 6,
+    "bridge_count": 6,
+    "review_count": 6,
+    "confident_count": 0,
+    "review_rate": 1.0,
+    "source_anchor": "WPS process: Supervise patient care personnel.; variants: 2074:time_based, 2074CB:competency_based, 2074HY:hybrid, 3056:time_based, 3056CB:competency_based, 3056HY:hybrid; source rows: wps_competency_2074.docx#T10:R3; wps_competency_3056.docx#T10:R3; wps_hybrid_2074.docx#T10:R2; wps_hybrid_3056.docx#T10:R2; wps_time_2074.docx#T10:R2; wps_time_3056.docx#T10:R2; crosswalk_data: C:\\Users\\RHarrity\\Documents\\Codex\\rn_wps_prelicensure_crosswalk_workset_2026-06-12\\build\\intermediate\\rn_wps_prelicensure_crosswalk_data.json",
+    "tasks": [
+      {
+        "wps_task_id": "WPS_2074CB_COMPETENCY_BASED_T10_R03_A",
+        "source_file": "wps_competency_2074.docx",
+        "rapids_code": "2074CB",
+        "variant": "competency_based",
+        "source_table_index": 10,
+        "source_row_index": 3,
+        "task_raw": "A. Direct or supervise less-skilled nursing or healthcare personnel or supervise a particular unit."
+      },
+      {
+        "wps_task_id": "WPS_3056CB_COMPETENCY_BASED_T10_R03_A",
+        "source_file": "wps_competency_3056.docx",
+        "rapids_code": "3056CB",
+        "variant": "competency_based",
+        "source_table_index": 10,
+        "source_row_index": 3,
+        "task_raw": "A. Direct or supervise less-skilled nursing or healthcare personnel or supervise a particular unit."
+      },
+      {
+        "wps_task_id": "WPS_2074HY_HYBRID_T10_R02_A",
+        "source_file": "wps_hybrid_2074.docx",
+        "rapids_code": "2074HY",
+        "variant": "hybrid",
+        "source_table_index": 10,
+        "source_row_index": 2,
+        "task_raw": "A. Direct or supervise less-skilled nursing or healthcare personnel or supervise a particular unit."
+      },
+      {
+        "wps_task_id": "WPS_3056HY_HYBRID_T10_R02_A",
+        "source_file": "wps_hybrid_3056.docx",
+        "rapids_code": "3056HY",
+        "variant": "hybrid",
+        "source_table_index": 10,
+        "source_row_index": 2,
+        "task_raw": "A. Direct or supervise less-skilled nursing or healthcare personnel or supervise a particular unit."
+      },
+      {
+        "wps_task_id": "WPS_2074_TIME_BASED_T10_R02_A",
+        "source_file": "wps_time_2074.docx",
+        "rapids_code": "2074",
+        "variant": "time_based",
+        "source_table_index": 10,
+        "source_row_index": 2,
+        "task_raw": "A. Direct or supervise less-skilled nursing or healthcare personnel or supervise a particular unit."
+      },
+      {
+        "wps_task_id": "WPS_3056_TIME_BASED_T10_R02_A",
+        "source_file": "wps_time_3056.docx",
+        "rapids_code": "3056",
+        "variant": "time_based",
+        "source_table_index": 10,
+        "source_row_index": 2,
+        "task_raw": "A. Direct or supervise less-skilled nursing or healthcare personnel or supervise a particular unit."
+      }
+    ]
+  },
+  {
+    "module_number": "RN-WPS-035",
+    "concept": "Supervise workers providing client or patient services.",
+    "needs_review": true,
+    "review_policy": "needs_review=true when review_count > confident_count",
+    "task_count": 6,
+    "bridge_count": 6,
+    "review_count": 6,
+    "confident_count": 0,
+    "review_rate": 1.0,
+    "source_anchor": "WPS process: Supervise workers providing client or patient services.; variants: 2074:time_based, 2074CB:competency_based, 2074HY:hybrid, 3056:time_based, 3056CB:competency_based, 3056HY:hybrid; source rows: wps_competency_2074.docx#T27:R3; wps_competency_3056.docx#T27:R3; wps_hybrid_2074.docx#T27:R2; wps_hybrid_3056.docx#T27:R2; wps_time_2074.docx#T27:R2; wps_time_3056.docx#T27:R2; crosswalk_data: C:\\Users\\RHarrity\\Documents\\Codex\\rn_wps_prelicensure_crosswalk_workset_2026-06-12\\build\\intermediate\\rn_wps_prelicensure_crosswalk_data.json",
+    "tasks": [
+      {
+        "wps_task_id": "WPS_2074CB_COMPETENCY_BASED_T27_R03_A",
+        "source_file": "wps_competency_2074.docx",
+        "rapids_code": "2074CB",
+        "variant": "competency_based",
+        "source_table_index": 27,
+        "source_row_index": 3,
+        "task_raw": "A. Observe nurses and visit patients to ensure proper nursing care."
+      },
+      {
+        "wps_task_id": "WPS_3056CB_COMPETENCY_BASED_T27_R03_A",
+        "source_file": "wps_competency_3056.docx",
+        "rapids_code": "3056CB",
+        "variant": "competency_based",
+        "source_table_index": 27,
+        "source_row_index": 3,
+        "task_raw": "A. Observe nurses and visit patients to ensure proper nursing care."
+      },
+      {
+        "wps_task_id": "WPS_2074HY_HYBRID_T27_R02_A",
+        "source_file": "wps_hybrid_2074.docx",
+        "rapids_code": "2074HY",
+        "variant": "hybrid",
+        "source_table_index": 27,
+        "source_row_index": 2,
+        "task_raw": "A. Observe nurses and visit patients to ensure proper nursing care."
+      },
+      {
+        "wps_task_id": "WPS_3056HY_HYBRID_T27_R02_A",
+        "source_file": "wps_hybrid_3056.docx",
+        "rapids_code": "3056HY",
+        "variant": "hybrid",
+        "source_table_index": 27,
+        "source_row_index": 2,
+        "task_raw": "A. Observe nurses and visit patients to ensure proper nursing care."
+      },
+      {
+        "wps_task_id": "WPS_2074_TIME_BASED_T27_R02_A",
+        "source_file": "wps_time_2074.docx",
+        "rapids_code": "2074",
+        "variant": "time_based",
+        "source_table_index": 27,
+        "source_row_index": 2,
+        "task_raw": "A. Observe nurses and visit patients to ensure proper nursing care."
+      },
+      {
+        "wps_task_id": "WPS_3056_TIME_BASED_T27_R02_A",
+        "source_file": "wps_time_3056.docx",
+        "rapids_code": "3056",
+        "variant": "time_based",
+        "source_table_index": 27,
+        "source_row_index": 2,
+        "task_raw": "A. Observe nurses and visit patients to ensure proper nursing care."
+      }
+    ]
+  },
+  {
+    "module_number": "RN-WPS-036",
+    "concept": "Test biological specimens to gather information about patient conditions.",
+    "needs_review": true,
+    "review_policy": "needs_review=true when review_count > confident_count",
+    "task_count": 6,
+    "bridge_count": 6,
+    "review_count": 6,
+    "confident_count": 0,
+    "review_rate": 1.0,
+    "source_anchor": "WPS process: Test biological specimens to gather information about patient conditions.; variants: 2074:time_based, 2074CB:competency_based, 2074HY:hybrid, 3056:time_based, 3056CB:competency_based, 3056HY:hybrid; source rows: wps_competency_2074.docx#T25:R3; wps_competency_3056.docx#T25:R3; wps_hybrid_2074.docx#T25:R2; wps_hybrid_3056.docx#T25:R2; wps_time_2074.docx#T25:R2; wps_time_3056.docx#T25:R2; crosswalk_data: C:\\Users\\RHarrity\\Documents\\Codex\\rn_wps_prelicensure_crosswalk_workset_2026-06-12\\build\\intermediate\\rn_wps_prelicensure_crosswalk_data.json",
+    "tasks": [
+      {
+        "wps_task_id": "WPS_2074CB_COMPETENCY_BASED_T25_R03_A",
+        "source_file": "wps_competency_2074.docx",
+        "rapids_code": "2074CB",
+        "variant": "competency_based",
+        "source_table_index": 25,
+        "source_row_index": 3,
+        "task_raw": "A. Conduct specified laboratory tests."
+      },
+      {
+        "wps_task_id": "WPS_3056CB_COMPETENCY_BASED_T25_R03_A",
+        "source_file": "wps_competency_3056.docx",
+        "rapids_code": "3056CB",
+        "variant": "competency_based",
+        "source_table_index": 25,
+        "source_row_index": 3,
+        "task_raw": "A. Conduct specified laboratory tests."
+      },
+      {
+        "wps_task_id": "WPS_2074HY_HYBRID_T25_R02_A",
+        "source_file": "wps_hybrid_2074.docx",
+        "rapids_code": "2074HY",
+        "variant": "hybrid",
+        "source_table_index": 25,
+        "source_row_index": 2,
+        "task_raw": "A. Conduct specified laboratory tests."
+      },
+      {
+        "wps_task_id": "WPS_3056HY_HYBRID_T25_R02_A",
+        "source_file": "wps_hybrid_3056.docx",
+        "rapids_code": "3056HY",
+        "variant": "hybrid",
+        "source_table_index": 25,
+        "source_row_index": 2,
+        "task_raw": "A. Conduct specified laboratory tests."
+      },
+      {
+        "wps_task_id": "WPS_2074_TIME_BASED_T25_R02_A",
+        "source_file": "wps_time_2074.docx",
+        "rapids_code": "2074",
+        "variant": "time_based",
+        "source_table_index": 25,
+        "source_row_index": 2,
+        "task_raw": "A. Conduct specified laboratory tests."
+      },
+      {
+        "wps_task_id": "WPS_3056_TIME_BASED_T25_R02_A",
+        "source_file": "wps_time_3056.docx",
+        "rapids_code": "3056",
+        "variant": "time_based",
+        "source_table_index": 25,
+        "source_row_index": 2,
+        "task_raw": "A. Conduct specified laboratory tests."
+      }
+    ]
+  },
+  {
+    "module_number": "RN-WPS-037",
+    "concept": "Train caregivers or other non-medical personnel.",
+    "needs_review": true,
+    "review_policy": "needs_review=true when review_count > confident_count",
+    "task_count": 6,
+    "bridge_count": 6,
+    "review_count": 6,
+    "confident_count": 0,
+    "review_rate": 1.0,
+    "source_anchor": "WPS process: Train caregivers or other non-medical personnel.; variants: 2074:time_based, 2074CB:competency_based, 2074HY:hybrid, 3056:time_based, 3056CB:competency_based, 3056HY:hybrid; source rows: wps_competency_2074.docx#T32:R3; wps_competency_3056.docx#T32:R3; wps_hybrid_2074.docx#T32:R2; wps_hybrid_3056.docx#T32:R2; wps_time_2074.docx#T32:R2; wps_time_3056.docx#T32:R2; crosswalk_data: C:\\Users\\RHarrity\\Documents\\Codex\\rn_wps_prelicensure_crosswalk_workset_2026-06-12\\build\\intermediate\\rn_wps_prelicensure_crosswalk_data.json",
+    "tasks": [
+      {
+        "wps_task_id": "WPS_2074CB_COMPETENCY_BASED_T32_R03_A",
+        "source_file": "wps_competency_2074.docx",
+        "rapids_code": "2074CB",
+        "variant": "competency_based",
+        "source_table_index": 32,
+        "source_row_index": 3,
+        "task_raw": "A. Provide or arrange for training or instruction of auxiliary personnel or students."
+      },
+      {
+        "wps_task_id": "WPS_3056CB_COMPETENCY_BASED_T32_R03_A",
+        "source_file": "wps_competency_3056.docx",
+        "rapids_code": "3056CB",
+        "variant": "competency_based",
+        "source_table_index": 32,
+        "source_row_index": 3,
+        "task_raw": "A. Provide or arrange for training or instruction of auxiliary personnel or students."
+      },
+      {
+        "wps_task_id": "WPS_2074HY_HYBRID_T32_R02_A",
+        "source_file": "wps_hybrid_2074.docx",
+        "rapids_code": "2074HY",
+        "variant": "hybrid",
+        "source_table_index": 32,
+        "source_row_index": 2,
+        "task_raw": "A. Provide or arrange for training or instruction of auxiliary personnel or students."
+      },
+      {
+        "wps_task_id": "WPS_3056HY_HYBRID_T32_R02_A",
+        "source_file": "wps_hybrid_3056.docx",
+        "rapids_code": "3056HY",
+        "variant": "hybrid",
+        "source_table_index": 32,
+        "source_row_index": 2,
+        "task_raw": "A. Provide or arrange for training or instruction of auxiliary personnel or students."
+      },
+      {
+        "wps_task_id": "WPS_2074_TIME_BASED_T32_R02_A",
+        "source_file": "wps_time_2074.docx",
+        "rapids_code": "2074",
+        "variant": "time_based",
+        "source_table_index": 32,
+        "source_row_index": 2,
+        "task_raw": "A. Provide or arrange for training or instruction of auxiliary personnel or students."
+      },
+      {
+        "wps_task_id": "WPS_3056_TIME_BASED_T32_R02_A",
+        "source_file": "wps_time_3056.docx",
+        "rapids_code": "3056",
+        "variant": "time_based",
+        "source_table_index": 32,
+        "source_row_index": 2,
+        "task_raw": "A. Provide or arrange for training or instruction of auxiliary personnel or students."
+      }
+    ]
+  },
+  {
+    "module_number": "RN-WPS-038",
+    "concept": "Treat acute illnesses, infections, or injuries.",
+    "needs_review": true,
+    "review_policy": "needs_review=true when review_count > confident_count",
+    "task_count": 6,
+    "bridge_count": 6,
+    "review_count": 6,
+    "confident_count": 0,
+    "review_rate": 1.0,
+    "source_anchor": "WPS process: Treat acute illnesses, infections, or injuries.; variants: 2074:time_based, 2074CB:competency_based, 2074HY:hybrid, 3056:time_based, 3056CB:competency_based, 3056HY:hybrid; source rows: wps_competency_2074.docx#T8:R3; wps_competency_3056.docx#T8:R3; wps_hybrid_2074.docx#T8:R2; wps_hybrid_3056.docx#T8:R2; wps_time_2074.docx#T8:R2; wps_time_3056.docx#T8:R2; crosswalk_data: C:\\Users\\RHarrity\\Documents\\Codex\\rn_wps_prelicensure_crosswalk_workset_2026-06-12\\build\\intermediate\\rn_wps_prelicensure_crosswalk_data.json",
+    "tasks": [
+      {
+        "wps_task_id": "WPS_2074CB_COMPETENCY_BASED_T08_R03_A",
+        "source_file": "wps_competency_2074.docx",
+        "rapids_code": "2074CB",
+        "variant": "competency_based",
+        "source_table_index": 8,
+        "source_row_index": 3,
+        "task_raw": "A. Provide health care, first aid, immunizations, or assistance in convalescence or rehabilitation in locations such as schools, hospitals, or industry."
+      },
+      {
+        "wps_task_id": "WPS_3056CB_COMPETENCY_BASED_T08_R03_A",
+        "source_file": "wps_competency_3056.docx",
+        "rapids_code": "3056CB",
+        "variant": "competency_based",
+        "source_table_index": 8,
+        "source_row_index": 3,
+        "task_raw": "A. Provide health care, first aid, immunizations, or assistance in convalescence or rehabilitation in locations such as schools, hospitals, or industry."
+      },
+      {
+        "wps_task_id": "WPS_2074HY_HYBRID_T08_R02_A",
+        "source_file": "wps_hybrid_2074.docx",
+        "rapids_code": "2074HY",
+        "variant": "hybrid",
+        "source_table_index": 8,
+        "source_row_index": 2,
+        "task_raw": "A. Provide health care, first aid, immunizations, or assistance in convalescence or rehabilitation in locations such as schools, hospitals, or industry."
+      },
+      {
+        "wps_task_id": "WPS_3056HY_HYBRID_T08_R02_A",
+        "source_file": "wps_hybrid_3056.docx",
+        "rapids_code": "3056HY",
+        "variant": "hybrid",
+        "source_table_index": 8,
+        "source_row_index": 2,
+        "task_raw": "A. Provide health care, first aid, immunizations, or assistance in convalescence or rehabilitation in locations such as schools, hospitals, or industry."
+      },
+      {
+        "wps_task_id": "WPS_2074_TIME_BASED_T08_R02_A",
+        "source_file": "wps_time_2074.docx",
+        "rapids_code": "2074",
+        "variant": "time_based",
+        "source_table_index": 8,
+        "source_row_index": 2,
+        "task_raw": "A. Provide health care, first aid, immunizations, or assistance in convalescence or rehabilitation in locations such as schools, hospitals, or industry."
+      },
+      {
+        "wps_task_id": "WPS_3056_TIME_BASED_T08_R02_A",
+        "source_file": "wps_time_3056.docx",
+        "rapids_code": "3056",
+        "variant": "time_based",
+        "source_table_index": 8,
+        "source_row_index": 2,
+        "task_raw": "A. Provide health care, first aid, immunizations, or assistance in convalescence or rehabilitation in locations such as schools, hospitals, or industry."
+      }
+    ]
+  },
+  {
+    "module_number": "RN-WPS-039",
+    "concept": "Treat medical emergencies.",
+    "needs_review": true,
+    "review_policy": "needs_review=true when review_count > confident_count",
+    "task_count": 6,
+    "bridge_count": 6,
+    "review_count": 6,
+    "confident_count": 0,
+    "review_rate": 1.0,
+    "source_anchor": "WPS process: Treat medical emergencies.; variants: 2074:time_based, 2074CB:competency_based, 2074HY:hybrid, 3056:time_based, 3056CB:competency_based, 3056HY:hybrid; source rows: wps_competency_2074.docx#T36:R3; wps_competency_3056.docx#T36:R3; wps_hybrid_2074.docx#T36:R2; wps_hybrid_3056.docx#T36:R2; wps_time_2074.docx#T36:R2; wps_time_3056.docx#T36:R2; crosswalk_data: C:\\Users\\RHarrity\\Documents\\Codex\\rn_wps_prelicensure_crosswalk_workset_2026-06-12\\build\\intermediate\\rn_wps_prelicensure_crosswalk_data.json",
+    "tasks": [
+      {
+        "wps_task_id": "WPS_2074CB_COMPETENCY_BASED_T36_R03_A",
+        "source_file": "wps_competency_2074.docx",
+        "rapids_code": "2074CB",
+        "variant": "competency_based",
+        "source_table_index": 36,
+        "source_row_index": 3,
+        "task_raw": "A. Perform physical examinations, make tentative diagnoses, and treat patients en route to hospitals or at disaster site triage centers."
+      },
+      {
+        "wps_task_id": "WPS_3056CB_COMPETENCY_BASED_T36_R03_A",
+        "source_file": "wps_competency_3056.docx",
+        "rapids_code": "3056CB",
+        "variant": "competency_based",
+        "source_table_index": 36,
+        "source_row_index": 3,
+        "task_raw": "A. Perform physical examinations, make tentative diagnoses, and treat patients en route to hospitals or at disaster site triage centers."
+      },
+      {
+        "wps_task_id": "WPS_2074HY_HYBRID_T36_R02_A",
+        "source_file": "wps_hybrid_2074.docx",
+        "rapids_code": "2074HY",
+        "variant": "hybrid",
+        "source_table_index": 36,
+        "source_row_index": 2,
+        "task_raw": "A. Perform physical examinations, make tentative diagnoses, and treat patients en route to hospitals or at disaster site triage centers."
+      },
+      {
+        "wps_task_id": "WPS_3056HY_HYBRID_T36_R02_A",
+        "source_file": "wps_hybrid_3056.docx",
+        "rapids_code": "3056HY",
+        "variant": "hybrid",
+        "source_table_index": 36,
+        "source_row_index": 2,
+        "task_raw": "A. Perform physical examinations, make tentative diagnoses, and treat patients en route to hospitals or at disaster site triage centers."
+      },
+      {
+        "wps_task_id": "WPS_2074_TIME_BASED_T36_R02_A",
+        "source_file": "wps_time_2074.docx",
+        "rapids_code": "2074",
+        "variant": "time_based",
+        "source_table_index": 36,
+        "source_row_index": 2,
+        "task_raw": "A. Perform physical examinations, make tentative diagnoses, and treat patients en route to hospitals or at disaster site triage centers."
+      },
+      {
+        "wps_task_id": "WPS_3056_TIME_BASED_T36_R02_A",
+        "source_file": "wps_time_3056.docx",
+        "rapids_code": "3056",
+        "variant": "time_based",
+        "source_table_index": 36,
+        "source_row_index": 2,
+        "task_raw": "A. Perform physical examinations, make tentative diagnoses, and treat patients en route to hospitals or at disaster site triage centers."
+      }
+    ]
+  }
+]

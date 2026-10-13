@@ -1,0 +1,52 @@
+{
+  "generated_at": "2026-06-11T02:32:18.442Z",
+  "source_file": "C:\\Users\\RHarrity\\Downloads\\Prelicensure Workbook.xlsx",
+  "source_hash": "sha256:7e711dd431e5f33993ae800f6749396b8ef7832b1b0ecb30bb9de0f8162ce78f",
+  "sheet_count": 11,
+  "entry_level_data_rows": 214,
+  "entry_level_mapped_cells_pre_split": 651,
+  "domain_sheet_mapped_cells_sum": 651,
+  "fact_qsen_statement_count": 207,
+  "bridge_row_count": 835,
+  "master_canonical_row_count": 835,
+  "review_queue_count": 10,
+  "source_exclusion_count": 7,
+  "review_reason_counts": {
+    "missing_competency_header": 10
+  },
+  "mapping_status_counts": {
+    "mapped": 194,
+    "mapped_needs_review": 10,
+    "intentionally_unmapped_source_declared": 3
+  },
+  "reconciliation": {
+    "sheet_count_ok": true,
+    "entry_level_data_rows_ok": true,
+    "entry_level_mapped_cells_pre_split_ok": true,
+    "domain_sheet_mapped_cells_sum": 651,
+    "domain_reconciliation_ok": true
+  },
+  "reconciliation_status": "pass",
+  "required_sheets": [
+    "README",
+    "Summary",
+    "Provenance",
+    "Data_Dictionary",
+    "Dim_QSEN_Domain",
+    "Dim_KSA",
+    "Dim_AACN_Domain",
+    "Dim_AACN_Competency",
+    "Fact_QSEN_Statements",
+    "Bridge_QSEN_AACN",
+    "Master_Canonical",
+    "Coverage_Summary",
+    "Review_Queue",
+    "Source_Exclusions"
+  ],
+  "output_workbook": "C:\\Users\\RHarrity\\Documents\\Codex\\prelicensure_crosswalk_workset_2026-06-11\\outputs\\prelicensure_qsen_aacn_crosswalk_release_reviewed.xlsx",
+  "output_workbook_exists": true,
+  "output_workbook_size_bytes": 185449,
+  "summary_preview": "C:\\Users\\RHarrity\\Documents\\Codex\\prelicensure_crosswalk_workset_2026-06-11\\build\\previews\\summary.png",
+  "summary_preview_status": "success",
+  "source_files_modified": false
+}

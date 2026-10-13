@@ -70,7 +70,7 @@ export interface TableSearchResult {
   title: string;
   documentId: string;
   documentTitle?: string;
-  pageNumber: number;
+  pageNumber: number | null;
   rowCount: number;
   columnCount: number;
   extractionConfidence: number;
@@ -183,7 +183,7 @@ export class RAGService {
         extractionConfidence: parseFloat(row.table.extractionConfidence?.toString() || '0'),
         tableContent: row.tableContent || '',
         headers: row.table.headers || [],
-        createdAt: row.table.createdAt?.toISOString() || '',
+        createdAt: row.table.extractedAt?.toISOString() || '',
         score: row.score,
         keywordScore: row.score,
         resultType: 'table' as const
@@ -728,7 +728,7 @@ export class RAGService {
     chunks: ChunkWithScore[],
     citations: CitationReference[]
   ): Promise<void> {
-    const citationRecords: InsertRagCitation[] = [];
+    const citationRecords: (typeof ragCitations.$inferInsert)[] = [];
 
     for (const chunk of chunks) {
       const wasUsed = citations.some(c => c.source.chunkId === chunk.id);
@@ -824,7 +824,9 @@ export class RAGService {
     // Limit cache size
     if (queryCache.size > 100) {
       const firstKey = queryCache.keys().next().value;
-      queryCache.delete(firstKey);
+      if (firstKey) {
+        queryCache.delete(firstKey);
+      }
     }
     queryCache.set(key, { result, timestamp: Date.now() });
   }

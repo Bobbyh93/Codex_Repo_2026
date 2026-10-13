@@ -1,0 +1,138 @@
+[
+  {
+    "id": "ITEM-0001",
+    "status": "approved",
+    "stem": "A nurse is caring for an adult client with oxygen saturation of 88% on room air and new confusion. Which action should the nurse take first?",
+    "format": "single_choice",
+    "options": [
+      { "id": "A", "text": "Document the finding and reassess in one hour." },
+      { "id": "B", "text": "Apply oxygen per protocol and assess respiratory status." },
+      { "id": "C", "text": "Encourage oral fluids." },
+      { "id": "D", "text": "Ask the family about baseline cognition." }
+    ],
+    "correctResponse": ["B"],
+    "scoring": { "method": "zero_one", "points": 1 },
+    "rationale": {
+      "correct": "Hypoxemia with acute confusion requires immediate support of oxygenation and respiratory assessment.",
+      "incorrect": {
+        "A": "Delaying intervention is unsafe with low oxygen saturation and mental status change.",
+        "C": "Fluids do not address the immediate oxygenation problem.",
+        "D": "Baseline information may help later, but airway and breathing needs come first."
+      }
+    },
+    "blueprint": {
+      "exam": "NCLEX-RN",
+      "testPlanYear": 2026,
+      "clientNeedsCategory": "Physiological Integrity",
+      "clientNeedsSubcategory": "Physiological Adaptation",
+      "clinicalJudgmentStep": "take_action"
+    },
+    "concepts": ["oxygenation", "priority-setting", "acute-change"],
+    "lessons": ["LESSON-OXYGENATION-001"],
+    "difficulty": 0.1,
+    "discrimination": 1,
+    "sourceRefs": ["SRC-OXYGENATION-001"]
+  },
+  {
+    "id": "ITEM-0002",
+    "status": "approved",
+    "stem": "A nurse receives prescriptions for four clients. Which prescription should the nurse question?",
+    "format": "single_choice",
+    "options": [
+      { "id": "A", "text": "Administer regular insulin using a sliding scale." },
+      { "id": "B", "text": "Give potassium chloride IV push for hypokalemia." },
+      { "id": "C", "text": "Start oxygen at 2 L/min by nasal cannula for dyspnea." },
+      { "id": "D", "text": "Obtain a serum trough level before the next antibiotic dose." }
+    ],
+    "correctResponse": ["B"],
+    "scoring": { "method": "zero_one", "points": 1 },
+    "rationale": {
+      "correct": "Potassium chloride should not be administered by IV push because it can cause fatal dysrhythmias.",
+      "incorrect": {
+        "A": "Sliding-scale regular insulin can be appropriate when prescribed and monitored.",
+        "C": "Low-flow oxygen may be appropriate for dyspnea depending on assessment and protocol.",
+        "D": "A trough level before a dose is an expected medication-safety action."
+      }
+    },
+    "blueprint": {
+      "exam": "NCLEX-RN",
+      "testPlanYear": 2026,
+      "clientNeedsCategory": "Physiological Integrity",
+      "clientNeedsSubcategory": "Pharmacological and Parenteral Therapies",
+      "clinicalJudgmentStep": "analyze_cues"
+    },
+    "concepts": ["medication-safety", "electrolytes", "iv-therapy"],
+    "lessons": ["LESSON-MED-SAFETY-001"],
+    "difficulty": 0.4,
+    "discrimination": 1,
+    "sourceRefs": ["SRC-MED-SAFETY-001"]
+  },
+  {
+    "id": "ITEM-0003",
+    "status": "approved",
+    "stem": "A charge nurse assigns care for a client who requires sterile wound irrigation. Which staff member is appropriate to assign?",
+    "format": "single_choice",
+    "options": [
+      { "id": "A", "text": "Experienced RN" },
+      { "id": "B", "text": "Unit clerk" },
+      { "id": "C", "text": "Unlicensed assistive personnel" },
+      { "id": "D", "text": "Transport aide" }
+    ],
+    "correctResponse": ["A"],
+    "scoring": { "method": "zero_one", "points": 1 },
+    "rationale": {
+      "correct": "Sterile wound irrigation requires nursing assessment, sterile technique, and accountability within RN scope.",
+      "incorrect": {
+        "B": "A unit clerk does not provide clinical wound care.",
+        "C": "This task exceeds typical UAP delegation because sterile technique and assessment are required.",
+        "D": "A transport aide is not appropriate for sterile wound care."
+      }
+    },
+    "blueprint": {
+      "exam": "NCLEX-RN",
+      "testPlanYear": 2026,
+      "clientNeedsCategory": "Safe and Effective Care Environment",
+      "clientNeedsSubcategory": "Management of Care",
+      "clinicalJudgmentStep": "prioritize_hypotheses"
+    },
+    "concepts": ["delegation", "wound-care", "scope-of-practice"],
+    "lessons": ["LESSON-DELEGATION-001"],
+    "difficulty": -0.2,
+    "discrimination": 1,
+    "sourceRefs": ["SRC-DELEGATION-001"]
+  },
+  {
+    "id": "ITEM-0004",
+    "status": "approved",
+    "stem": "A nurse is preparing to enter the room of a client with suspected airborne infection. Which personal protective equipment is required?",
+    "format": "single_choice",
+    "options": [
+      { "id": "A", "text": "Surgical mask only" },
+      { "id": "B", "text": "N95 respirator or equivalent" },
+      { "id": "C", "text": "Sterile gloves only" },
+      { "id": "D", "text": "Face shield only" }
+    ],
+    "correctResponse": ["B"],
+    "scoring": { "method": "zero_one", "points": 1 },
+    "rationale": {
+      "correct": "Airborne precautions require respiratory protection such as an N95 respirator or equivalent.",
+      "incorrect": {
+        "A": "A surgical mask does not provide adequate airborne protection.",
+        "C": "Gloves alone do not address airborne transmission.",
+        "D": "A face shield protects mucous membranes from splashes but is not sufficient airborne protection."
+      }
+    },
+    "blueprint": {
+      "exam": "NCLEX-RN",
+      "testPlanYear": 2026,
+      "clientNeedsCategory": "Safe and Effective Care Environment",
+      "clientNeedsSubcategory": "Safety and Infection Prevention and Control",
+      "clinicalJudgmentStep": "recognize_cues"
+    },
+    "concepts": ["infection-control", "airborne-precautions", "ppe"],
+    "lessons": ["LESSON-INFECTION-CONTROL-001"],
+    "difficulty": -0.5,
+    "discrimination": 1,
+    "sourceRefs": ["SRC-INFECTION-CONTROL-001"]
+  }
+]

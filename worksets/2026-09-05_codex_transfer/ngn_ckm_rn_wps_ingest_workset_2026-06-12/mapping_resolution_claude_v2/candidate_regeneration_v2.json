@@ -1,0 +1,131 @@
+{
+  "_provenance": {
+    "generated_by": "Claude (claude-opus-5)",
+    "purpose": "Replace the top-12 lexical prefilter with semantic candidate selection over all 207 QSEN statements, for the 10 rows flagged in the 2026-08-27 draft packet as filler-dominated, candidate-gap, false-positive, or KSA-mismatched.",
+    "why": "build_mapping_resolution.py pads each candidate set to a fixed 12 with sequential score-0.00 filler when the lexical matcher finds fewer real matches. Drafting inside a filler set cannot succeed no matter which model runs.",
+    "contract": "Each draft is validated against its OWN v2 candidate set using the same validate_suggestion() rules. AACN codes are read from the source crosswalk data, never typed by hand.",
+    "status": "PROPOSAL. These candidate sets are not the ones build_mapping_resolution.py produced. Adopting them means accepting a changed candidate-generation step, which is a methodology decision, not a data fix."
+  },
+  "rows": {
+    "RN-WPS-003": {
+      "concept": "Administer non-intravenous medications.",
+      "v1_status": "insufficient_evidence",
+      "v1_filler_count": 10,
+      "candidates": ["QSEN_0158","QSEN_0160","QSEN_0150","QSEN_0191","QSEN_0149","QSEN_0175","QSEN_0187","QSEN_0152","QSEN_0162","QSEN_0172","QSEN_0169","QSEN_0099"],
+      "mapping_status": "draft_mapping",
+      "top": "QSEN_0158",
+      "confidence": "medium",
+      "alts": ["QSEN_0160","QSEN_0150","QSEN_0191"],
+      "rationale": "Safe medication administration is the use of standardized practices and supporting technology to protect safety and quality. The candidate set now contains the Safety skill family the lexical matcher never reached.",
+      "notes": "v1 could not be drafted: 10 of 12 candidates were score-0.00 filler. Reviewer should confirm whether the administration act or the monitoring-for-reactions half of the task is the intended anchor; QSEN_0175 covers the second half."
+    },
+    "RN-WPS-008": {
+      "concept": "Assist healthcare practitioners during examinations or treatments.",
+      "v1_status": "insufficient_evidence",
+      "v1_filler_count": 9,
+      "candidates": ["QSEN_0062","QSEN_0049","QSEN_0063","QSEN_0064","QSEN_0023","QSEN_0026","QSEN_0067","QSEN_0068","QSEN_0077","QSEN_0080","QSEN_0081","QSEN_0029"],
+      "mapping_status": "draft_mapping",
+      "top": "QSEN_0062",
+      "confidence": "medium",
+      "alts": ["QSEN_0049","QSEN_0023","QSEN_0063"],
+      "rationale": "Assisting a practitioner during an examination or treatment is functioning competently within one's own scope of practice as a member of the health care team.",
+      "notes": "v1 could not be drafted: 9 of 12 candidates were filler. Shares source task text with RN-WPS-028, but the two concepts pull apart: 008 is about the nurse's role on the team, 028 is about preparing the patient. Different tops are defensible here."
+    },
+    "RN-WPS-018": {
+      "concept": "Inform medical professionals regarding patient conditions and care.",
+      "v1_status": "draft_mapping",
+      "v1_top": "QSEN_0189",
+      "candidates": ["QSEN_0161","QSEN_0071","QSEN_0073","QSEN_0026","QSEN_0014","QSEN_0067","QSEN_0072","QSEN_0084","QSEN_0056","QSEN_0189","QSEN_0175","QSEN_0192"],
+      "mapping_status": "draft_mapping",
+      "top": "QSEN_0161",
+      "confidence": "medium",
+      "alts": ["QSEN_0071","QSEN_0073","QSEN_0026"],
+      "rationale": "Reporting symptoms and changes in condition to the care team is communicating clinical observations to that team. v1 was forced onto the EHR documentation statement because this one was absent from the candidate set.",
+      "notes": "PARTIAL FIT, stated plainly: QSEN_0161 qualifies its observations as 'related to hazards and errors', which is narrower than routine condition reporting. QSEN_0071 (handoff communication practices) and QSEN_0073 (communication styles that diminish authority-gradient risk, relevant to informing a physician mid-anesthesia) are strong alternates. QSEN has no clean 'report clinical findings to the provider' statement."
+    },
+    "RN-WPS-020": {
+      "concept": "Maintain medical facility records.",
+      "v1_status": "draft_mapping",
+      "v1_top": "QSEN_0207",
+      "candidates": ["QSEN_0189","QSEN_0196","QSEN_0188","QSEN_0181","QSEN_0187","QSEN_0185","QSEN_0198","QSEN_0192","QSEN_0207","QSEN_0202","QSEN_0184","QSEN_0041"],
+      "mapping_status": "draft_mapping",
+      "top": "QSEN_0189",
+      "confidence": "medium",
+      "alts": ["QSEN_0196","QSEN_0188","QSEN_0181"],
+      "rationale": "Maintaining accurate, detailed records is documenting patient care in the health record.",
+      "notes": "Fixes a KSA mismatch. v1 had to use QSEN_0207, an Attitude statement about valuing confidentiality, on a Skill task, because the Informatics documentation skills were absent from the candidate set."
+    },
+    "RN-WPS-023": {
+      "concept": "Monitor patient conditions during treatments, procedures, or activities.",
+      "v1_status": "draft_mapping",
+      "v1_top": "QSEN_0175",
+      "candidates": ["QSEN_0159","QSEN_0175","QSEN_0191","QSEN_0161","QSEN_0016","QSEN_0150","QSEN_0158","QSEN_0189","QSEN_0206","QSEN_0192","QSEN_0015","QSEN_0187"],
+      "mapping_status": "draft_mapping",
+      "top": "QSEN_0159",
+      "confidence": "low",
+      "alts": ["QSEN_0175","QSEN_0191","QSEN_0016"],
+      "rationale": "Monitoring a patient during treatment for reactions and deterioration is the use of strategies to reduce the risk of harm.",
+      "notes": "REVIEWER CHOICE. QSEN_0159 is a Skill and matches the task's KSA level; QSEN_0175 is an Attitude whose content ('vigilance and monitoring') is closer to the words of the task. v1 used QSEN_0175 and was flagged for the mismatch. Pick the axis you want the crosswalk to honour and apply it consistently across the monitoring rows."
+    },
+    "RN-WPS-024": {
+      "concept": "Monitor patient progress or responses to treatments.",
+      "v1_status": "draft_mapping",
+      "v1_top": "QSEN_0016",
+      "candidates": ["QSEN_0013","QSEN_0016","QSEN_0021","QSEN_0192","QSEN_0099","QSEN_0105","QSEN_0103","QSEN_0026","QSEN_0175","QSEN_0134","QSEN_0015","QSEN_0027"],
+      "mapping_status": "draft_mapping",
+      "top": "QSEN_0013",
+      "confidence": "low",
+      "alts": ["QSEN_0016","QSEN_0021","QSEN_0192"],
+      "rationale": "This statement's scope explicitly includes evaluation of care, which is what monitoring progress and response to treatment is.",
+      "notes": "The v1 false positive is now excluded from the candidate set entirely: QSEN_0006 scored 0.23 on the phrase 'all aspects' alone. QSEN_0021 is the alternate if the reviewer wants the diet-and-activity self-management reading. Same source task as RN-WPS-025; both rows are given the same set and the same top so one decision covers both."
+    },
+    "RN-WPS-025": {
+      "concept": "Monitor patients following surgeries or other treatments.",
+      "v1_status": "draft_mapping",
+      "v1_top": "QSEN_0016",
+      "candidates": ["QSEN_0013","QSEN_0016","QSEN_0021","QSEN_0192","QSEN_0099","QSEN_0105","QSEN_0103","QSEN_0026","QSEN_0175","QSEN_0134","QSEN_0015","QSEN_0027"],
+      "mapping_status": "draft_mapping",
+      "top": "QSEN_0013",
+      "confidence": "low",
+      "alts": ["QSEN_0016","QSEN_0021","QSEN_0192"],
+      "rationale": "Post-procedure monitoring is ongoing evaluation of care, the clause this statement carries.",
+      "notes": "Identical source task and candidate set to RN-WPS-024, deliberately. If the reviewer prefers a complication-surveillance reading for the post-surgical case specifically, QSEN_0159 is the statement to add — but then RN-WPS-024 and RN-WPS-025 diverge on a shared task and that divergence should be recorded as intentional."
+    },
+    "RN-WPS-028": {
+      "concept": "Prepare patients physically for medical procedures.",
+      "v1_status": "insufficient_evidence",
+      "v1_filler_count": 11,
+      "candidates": ["QSEN_0158","QSEN_0023","QSEN_0160","QSEN_0016","QSEN_0029","QSEN_0026","QSEN_0062","QSEN_0021","QSEN_0013","QSEN_0031","QSEN_0040","QSEN_0159"],
+      "mapping_status": "draft_mapping",
+      "top": "QSEN_0158",
+      "confidence": "low",
+      "alts": ["QSEN_0023","QSEN_0160","QSEN_0016"],
+      "rationale": "Physical preparation of a patient for a procedure is carried out through standardized practices that support safety and quality.",
+      "notes": "v1 could not be drafted: 11 of 12 candidates were filler, the worst set in the batch. QSEN_0023 (informed consent) and QSEN_0160 (pre-procedure checklists) are the alternates. Shares source task with RN-WPS-008; see the note there on why different tops are defensible."
+    },
+    "RN-WPS-034": {
+      "concept": "Supervise patient care personnel.",
+      "v1_status": "draft_mapping",
+      "v1_top": "QSEN_0010",
+      "candidates": ["QSEN_0065","QSEN_0049","QSEN_0050","QSEN_0063","QSEN_0062","QSEN_0069","QSEN_0066","QSEN_0080","QSEN_0056","QSEN_0055","QSEN_0196","QSEN_0010"],
+      "mapping_status": "draft_mapping",
+      "top": "QSEN_0065",
+      "confidence": "medium",
+      "alts": ["QSEN_0049","QSEN_0063","QSEN_0050"],
+      "rationale": "Directing and supervising less-skilled personnel is clarifying roles and accountabilities and guiding the team where member functioning overlaps.",
+      "notes": "This is the clearest win from regeneration. Delegation and supervision are genuinely well covered by the Teamwork and Collaboration scopes-of-practice family (QSEN_0049, QSEN_0050, QSEN_0062, QSEN_0065), and the lexical matcher offered none of them."
+    },
+    "RN-WPS-037": {
+      "concept": "Train caregivers or other non-medical personnel.",
+      "v1_status": "insufficient_evidence",
+      "v1_filler_count": 8,
+      "candidates": ["QSEN_0106","QSEN_0069","QSEN_0117","QSEN_0102","QSEN_0060","QSEN_0196","QSEN_0049","QSEN_0186","QSEN_0200","QSEN_0065","QSEN_0111","QSEN_0168"],
+      "mapping_status": "draft_mapping",
+      "top": "QSEN_0106",
+      "confidence": "low",
+      "alts": ["QSEN_0069","QSEN_0117","QSEN_0102"],
+      "rationale": "Instructing auxiliary personnel is most closely represented by role modeling clinical decision making for others.",
+      "notes": "WEAKEST DRAFT IN THE BATCH. QSEN contains no statement about teaching, precepting, or training others; the whole competency set is written about the nurse's own practice. Even with all 207 statements available, this row has no good home. Teaching sits in AACN Domains 6 and 10. The reviewer may reasonably return this row to not_mappable."
+    }
+  }
+}

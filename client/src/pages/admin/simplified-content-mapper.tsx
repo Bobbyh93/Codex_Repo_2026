@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 import { 
   Save, ChevronLeft, ChevronRight, Brain, 
   Loader2, Sparkles, ArrowLeft, RotateCcw
@@ -25,6 +26,19 @@ interface ContentBlock {
   concepts?: string[];
   keywords?: string[];
   isProcessed: boolean;
+  reviewTopicId?: string;
+}
+
+interface ReviewTopic {
+  id: string;
+  name: string;
+  description?: string;
+  nclexCategory?: string;
+  nclexSubcategory?: string;
+  nursingSpecialty?: string;
+  bodySystem?: string;
+  difficulty?: string;
+  keywords?: string[];
 }
 
 const nursingSpecialties = [
@@ -55,7 +69,7 @@ export default function SimplifiedContentMapper() {
     }
   });
 
-  const { data: reviewTopics = [] } = useQuery({
+  const { data: reviewTopics = [] } = useQuery<ReviewTopic[]>({
     queryKey: ['/api/review-topics'],
     queryFn: async () => {
       const response = await fetch('/api/review-topics');
@@ -66,11 +80,7 @@ export default function SimplifiedContentMapper() {
 
   const updateBlockMutation = useMutation({
     mutationFn: async (data: { id: string; updates: Partial<ContentBlock> }) => {
-      const response = await fetch(`/api/admin/content/blocks/${data.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data.updates)
-      });
+      const response = await apiRequest('PUT', `/api/admin/content/blocks/${data.id}`, data.updates);
       if (!response.ok) throw new Error('Failed to update content block');
       return response.json();
     },
@@ -216,14 +226,10 @@ export default function SimplifiedContentMapper() {
     try {
       // If a review topic is selected, also save to the simplified topic content
       if (editedBlock.reviewTopicId) {
-        const mapResponse = await fetch('/api/admin/map-content-to-topics', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            content: editedBlock.content,
-            title: editedBlock.title,
-            source: currentBlock.source || 'Content Mapper'
-          })
+        const mapResponse = await apiRequest('POST', '/api/admin/map-content-to-topics', {
+          content: editedBlock.content,
+          title: editedBlock.title,
+          source: currentBlock.source || 'Content Mapper'
         });
         
         if (!mapResponse.ok) {

@@ -1,4 +1,5 @@
 import { db } from './db';
+import { getHeapStatistics } from 'v8';
 import { sql } from 'drizzle-orm';
 import { AppLogger } from './logger';
 import type { Express } from 'express';
@@ -24,15 +25,36 @@ interface HealthCheck {
   details?: any;
 }
 
+// Bound a health probe so /health cannot hang. The pool has no statement
+// timeout, so a database that accepts the connection but never answers would
+// otherwise leave the request open until the platform health check gives up,
+// which reports nothing and looks identical to a slow deploy.
+async function withTimeout<T>(work: Promise<T>, ms: number, label: string): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const expiry = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => reject(new Error(`${label} timed out after ${ms}ms`)), ms);
+  });
+  try {
+    // Promise.race subscribes to `work`, so a later rejection stays handled.
+    return await Promise.race([work, expiry]);
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 export class HealthCheckService {
   private static startTime = Date.now();
+
+  // A SELECT 1 that has not answered in this long means the database is not
+  // serving, which is exactly what this endpoint should report.
+  private static readonly DB_TIMEOUT_MS = 5000;
 
   // Check database connectivity
   static async checkDatabase(): Promise<HealthCheck> {
     const start = Date.now();
     try {
       // Run a simple query to test connectivity
-      await db.execute(sql`SELECT 1`);
+      await withTimeout(db.execute(sql`SELECT 1`), this.DB_TIMEOUT_MS, 'Database health check');
       const responseTime = Date.now() - start;
       
       return {
@@ -53,8 +75,14 @@ export class HealthCheckService {
   // Check memory usage
   static checkMemory(): HealthCheck {
     const usage = process.memoryUsage();
-    const heapUsedPercent = (usage.heapUsed / usage.heapTotal) * 100;
-    
+    // Measure against V8's hard heap ceiling, not heapTotal. heapTotal is only
+    // the currently committed heap, which V8 grows on demand, so a healthy
+    // process routinely sits above 90% of it right before a GC or a heap
+    // expansion. Using it here would report 'error' -> 'unhealthy' -> 503 on a
+    // process that is fine, and /health is the Render healthCheckPath.
+    const heapLimit = getHeapStatistics().heap_size_limit;
+    const heapUsedPercent = (usage.heapUsed / heapLimit) * 100;
+
     let status: 'ok' | 'warning' | 'error' = 'ok';
     let message = 'Memory usage normal';
     
@@ -72,6 +100,7 @@ export class HealthCheckService {
       details: {
         heapUsed: Math.round(usage.heapUsed / 1024 / 1024),
         heapTotal: Math.round(usage.heapTotal / 1024 / 1024),
+        heapLimit: Math.round(heapLimit / 1024 / 1024),
         rss: Math.round(usage.rss / 1024 / 1024),
         heapUsedPercent: heapUsedPercent.toFixed(2),
       },
@@ -82,11 +111,13 @@ export class HealthCheckService {
   static async checkEmailService(): Promise<HealthCheck> {
     try {
       const { EmailService } = await import('./email-service');
-      const isConnected = await EmailService.testConnection();
+      // testConnection returns { success, error? }. The object is always
+      // truthy, so testing it directly reported 'ok' even when unconfigured.
+      const { success } = await EmailService.testConnection();
       
       return {
-        status: isConnected ? 'ok' : 'warning',
-        message: isConnected ? 'Email service configured' : 'Email service not configured',
+        status: success ? 'ok' : 'warning',
+        message: success ? 'Email service configured' : 'Email service not configured',
       };
     } catch (error) {
       return {
@@ -98,10 +129,17 @@ export class HealthCheckService {
   }
 
   // Comprehensive health check
-  static async performHealthCheck(): Promise<HealthCheckResult> {
+  // includeEmail is opt-in to keep the probe path minimal: /health is the
+  // platform health probe and runs continuously, and email reachability is not
+  // part of whether this instance can serve requests. (checkEmailService is
+  // local-only -- it validates the SendGrid API key string and makes no network
+  // call -- so this is about scope, not latency.)
+  static async performHealthCheck(
+    options: { includeEmail?: boolean } = {},
+  ): Promise<HealthCheckResult> {
     const [database, email] = await Promise.all([
       this.checkDatabase(),
-      this.checkEmailService(),
+      options.includeEmail ? this.checkEmailService() : Promise.resolve(undefined),
     ]);
 
     const memory = this.checkMemory();
@@ -163,8 +201,15 @@ export function registerHealthEndpoints(app: Express) {
   // Comprehensive health check
   app.get('/health', async (req, res) => {
     try {
-      const health = await HealthCheckService.performHealthCheck();
-      const statusCode = health.status === 'healthy' ? 200 : health.status === 'degraded' ? 200 : 503;
+      const health = await HealthCheckService.performHealthCheck({
+        includeEmail: req.query.email === '1',
+      });
+      // The HTTP status answers one question only: can this instance serve
+      // requests? That is the database being reachable. Memory pressure is
+      // reported in the body but does not fail the probe -- an instance under
+      // memory pressure still serves, and failing here would have the platform
+      // restart it in a loop. health.status still carries the fuller verdict.
+      const statusCode = health.checks.database.status === 'error' ? 503 : 200;
       res.status(statusCode).json(health);
     } catch (error) {
       AppLogger.error('Health check endpoint error', error as Error);
