@@ -1,4 +1,6 @@
 node_modules
+.worktrees/
+.pnpm-store/
 dist
 .DS_Store
 server/public

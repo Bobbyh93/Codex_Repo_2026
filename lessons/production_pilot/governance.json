@@ -1,0 +1,34 @@
+{
+  "contractVersion": 1,
+  "revision": 0,
+  "lessonId": "LESSON-THERAPEUTIC-COMMUNICATION-PILOT",
+  "administrative": { "courseId": "", "courseName": "", "programLevel": "", "contentOwner": "", "facultyReviewer": "" },
+  "sourceGovernance": {
+    "organizingClinicalQuestion": "How should the nurse respond first when a patient expresses fear before a procedure?",
+    "coverageComplete": true
+  },
+  "taxonomy": {
+    "concept": "Therapeutic communication",
+    "nclexClientNeed": "Psychosocial Integrity",
+    "bodySystem": "Not applicable: psychosocial communication",
+    "priorityFramework": "Assessment before intervention",
+    "bloomLevels": ["Apply"],
+    "qsenDomains": ["Patient-Centered Care"],
+    "aacnCompetencies": [],
+    "ncjmmFunctions": ["Recognize Cues", "Analyze Cues", "Take Action", "Evaluate Outcomes"]
+  },
+  "learningOutcomes": [{
+    "objectiveId": "LO-01",
+    "statement": "Select a therapeutic first response to a patient who expresses fear before a procedure.",
+    "bloomLevel": "Apply",
+    "assessmentMethod": "NCLEX-style clinical judgment check"
+  }],
+  "slideTraceability": [
+    { "slideId": "P01", "objectiveIds": ["LO-01"], "accessibility": { "readingOrderChecked": false, "contrastChecked": false, "meaningNotColorOnly": false, "transcriptAvailable": true } },
+    { "slideId": "P02", "objectiveIds": ["LO-01"], "accessibility": { "readingOrderChecked": false, "contrastChecked": false, "meaningNotColorOnly": false, "transcriptAvailable": true } },
+    { "slideId": "P03", "objectiveIds": ["LO-01"], "accessibility": { "readingOrderChecked": false, "contrastChecked": false, "meaningNotColorOnly": false, "transcriptAvailable": true } }
+  ],
+  "taxonomyStatus": "draft",
+  "approvals": [],
+  "updatedAt": "2026-08-19T00:00:00.000Z"
+}

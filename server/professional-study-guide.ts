@@ -1,8 +1,7 @@
 // Professional Study Guide Template Generator based on NCSBN Clinical Judgment Model
 import { db } from "./db";
 import { eq, desc } from "drizzle-orm";
-import { topicPerformance } from "@shared/simplified-schema";
-import { assessmentReports } from "@shared/schema";
+import { assessmentReports, topicPerformance } from "@shared/schema";
 
 // Professional study guide structure following PDF format
 export interface ProfessionalStudyGuide {
@@ -254,15 +253,25 @@ export async function generateProfessionalStudyGuide(
     throw new Error('Assessment report not found');
   }
 
-  // Fetch performance data - using userId since simplified schema doesn't have reportId
-  // Get user from report first
-  const userId = report.userId;
-  if (!userId) {
-    throw new Error('Assessment report has no associated user');
-  }
-
+  // Fetch this report's performance rows.
+  //
+  // PR #16 flagged this query as broken and left it: `db.query.*` resolves
+  // against the schema registered in server/db.ts -- shared/schema.ts's
+  // topic_performance, keyed on report_id -- while the where clause filtered on
+  // `topicPerformance.userId` from simplified-schema's same-named table, a
+  // column the real one has never had. Every call threw.
+  //
+  // It is fixed rather than re-documented here because no product decision was
+  // needed. The table this feature reads was never in doubt; only one
+  // topic_performance exists in the database, and it is schema.ts's. That table
+  // already keys on the reportId this function receives, so the detour through
+  // report.userId is gone -- it would also have pulled in rows from the user's
+  // *other* assessment reports, which this per-report guide should not include.
+  //
+  // The `topic` relation resolves to nursingTopics, which is what the
+  // downstream builders below already read (subject, system, specialty).
   const performanceData = await db.query.topicPerformance.findMany({
-    where: eq(topicPerformance.userId, userId),
+    where: eq(topicPerformance.reportId, reportId),
     with: {
       topic: true
     },

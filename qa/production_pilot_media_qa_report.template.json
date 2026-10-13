@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "pilot_id": "therapeutic-communication-pilot",
+  "status": "pending",
+  "tool": "ffprobe",
+  "tool_version": null,
+  "checked_at": null,
+  "artifact_path": null,
+  "artifact_sha256": null,
+  "duration_seconds": null,
+  "streams": [
+    { "codec_type": "video", "codec_name": null, "width": null, "height": null },
+    { "codec_type": "audio", "codec_name": null, "channels": null, "sample_rate": null }
+  ],
+  "notes": [
+    "Required only for the video release path. Copy to qa/production_pilot_media_qa_report.json once ffprobe has been run against the final MP4.",
+    "status must be \"pass\" and artifact_sha256 must equal final_artifact.sha256 in qa/production_pilot_playback_evidence.json."
+  ]
+}

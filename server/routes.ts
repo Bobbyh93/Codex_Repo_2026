@@ -1,4 +1,4 @@
-import type { Express } from "express";
+import type { Express, Request } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { db } from "./db";
@@ -57,6 +57,27 @@ const normalizeGuestId = (sessionId: string): string => {
   }
   // Otherwise, add the 'guest_' prefix
   return `guest_${sessionId}`;
+};
+
+// Guest identity for an upload without a JWT. The client keeps a guest id in
+// localStorage, sends it as x-session-id on every upload, and stores the
+// guestId the server returns -- so that header is the identity, and it has to
+// be consulted first. express-session mints a fresh req.sessionID for every
+// request that carries no cookie, and nothing ever saves a session for an
+// anonymous visitor (saveUninitialized is false), so keying on req.sessionID
+// ahead of the header gave every upload a brand-new guest user and left the
+// previous report unreachable from the client's stored id.
+//
+// The header is client-controlled, so it is accepted only in the shape this
+// server generates; anything else falls back to the session id.
+const GUEST_ID_PATTERN = /^[A-Za-z0-9_-]{8,128}$/;
+const resolveGuestId = (req: Request): string => {
+  const header = req.headers['x-session-id'];
+  const supplied = Array.isArray(header) ? header[0] : header;
+  if (supplied && GUEST_ID_PATTERN.test(supplied)) {
+    return normalizeGuestId(supplied);
+  }
+  return normalizeGuestId(req.sessionID || `guest_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`);
 };
 
 // Helper function to ensure guest user exists in database
@@ -761,6 +782,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register admin lesson builder routes
   const { registerLessonBuilderRoutes } = await import("./routes/lesson-builder-routes");
   registerLessonBuilderRoutes(app);
+
+  // n8n uses this authenticated application boundary; it never receives a
+  // database credential or writes application tables directly.
+  const { registerNclexAutomationRoutes } = await import("./routes/nclex-automation-routes");
+  registerNclexAutomationRoutes(app);
   
   // Register curriculum catalog routes first (local DB — public endpoints)
   // MUST come before registerCurriculumRoutes so local handlers win over external-API proxy
@@ -1205,7 +1231,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Admin endpoints
-  app.post("/api/admin/upload-assessment", upload.single('file'), async (req, res) => {
+  //
+  // Every route below carries requireAdminSession explicitly. Until this
+  // change none of them named any middleware at all -- and yet all of them
+  // were already authenticated, because line 817 mounts contentImportRouter
+  // at /api/admin and that router opens with an unconditional
+  //
+  //     router.use(requireAdminSession);
+  //     router.use(validateCSRFToken);
+  //
+  // An Express router runs its own router.use() middleware for every request
+  // that reaches its mount path, matching route or not, so those two guard
+  // the whole /api/admin namespace from line 817 onward. Verified, not
+  // assumed: against main, anonymous requests to all nineteen return 401
+  // SESSION_EXPIRED and /api/admin/assessments returns no student row.
+  //
+  // That is protection by accident. It depends entirely on an unrelated
+  // router's mount position -- move line 817 below these, or narrow its mount
+  // to /api/admin/content, and nineteen routes silently open. Several return
+  // real student names, email addresses, scores and filenames
+  // (GET /api/admin/assessments), render a named student's study guide
+  // (/assessments/:id/pdf), or mail it to any address the caller supplies
+  // (/assessments/:id/email). Naming the guard here makes it survive that
+  // edit, and costs one redundant session check per request: it reads
+  // req.session.adminUser and makes no database call.
+  //
+  // The contrast with /api/admin/users* above is the whole point. Those three
+  // are registered at line 811, BEFORE the mount, so the blanket guard never
+  // saw them and they really were anonymous until PR #10. Position, not
+  // intent, is what decided which of these were exposed.
+  //
+  // validateCSRFToken is deliberately NOT repeated here -- the blanket one at
+  // 817 already enforces it on every non-GET, which is what broke four of
+  // these POSTs for the admin UI. See server/tests/admin-routes-auth.test.ts.
+  app.post("/api/admin/upload-assessment", requireAdminSession, upload.single('file'), async (req, res) => {
     try {
       const file = req.file;
       const { studentName, studentEmail, instructorNotes } = req.body;
@@ -1304,7 +1363,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/admin/assessments", async (req, res) => {
+  app.get("/api/admin/assessments", requireAdminSession, async (req, res) => {
     try {
       const reports = await storage.getRecentAssessmentReports(10);
       res.json(reports.map(r => ({
@@ -1323,7 +1382,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/admin/assessments/:assessmentId/customize", async (req, res) => {
+  app.post("/api/admin/assessments/:assessmentId/customize", requireAdminSession, async (req, res) => {
     try {
       const { assessmentId } = req.params;
       const customizations = req.body;
@@ -1339,7 +1398,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/admin/assessments/:assessmentId/pdf", async (req, res) => {
+  app.get("/api/admin/assessments/:assessmentId/pdf", requireAdminSession, async (req, res) => {
     try {
       const { assessmentId } = req.params;
       const { customized } = req.query;
@@ -1362,7 +1421,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/admin/assessments/:assessmentId/email", async (req, res) => {
+  app.post("/api/admin/assessments/:assessmentId/email", requireAdminSession, async (req, res) => {
     try {
       const { assessmentId } = req.params;
       const { recipientEmail, subject, message } = req.body;
@@ -1430,7 +1489,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Simple endpoint to map content to topics
-  app.post("/api/admin/map-content-to-topics", async (req, res) => {
+  app.post("/api/admin/map-content-to-topics", requireAdminSession, async (req, res) => {
     try {
       const { content, title, source } = req.body;
       
@@ -1449,7 +1508,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Topic relationship analysis endpoint
-  app.get("/api/admin/topic-relationships", async (req, res) => {
+  app.get("/api/admin/topic-relationships", requireAdminSession, async (req, res) => {
     try {
       const { analyzeTopicRelationships } = await import('./topic-relationship-analyzer');
       const analysis = await analyzeTopicRelationships();
@@ -1486,7 +1545,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Topic frequency and priority endpoints (simplified)
-  app.get("/api/admin/topic-frequency", async (req, res) => {
+  app.get("/api/admin/topic-frequency", requireAdminSession, async (req, res) => {
     try {
       const { getSimpleTopicStats } = await import('./simple-topic-tracker');
       const frequencyData = await getSimpleTopicStats();
@@ -1497,7 +1556,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/admin/content-development-priorities", async (req, res) => {
+  app.get("/api/admin/content-development-priorities", requireAdminSession, async (req, res) => {
     try {
       const { getSimpleTopicStats } = await import('./simple-topic-tracker');
       const stats = await getSimpleTopicStats();
@@ -1522,7 +1581,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/admin/priority-metrics", async (req, res) => {
+  app.get("/api/admin/priority-metrics", requireAdminSession, async (req, res) => {
     try {
       const { getSimpleMetrics } = await import('./simple-topic-tracker');
       const metrics = await getSimpleMetrics();
@@ -1540,7 +1599,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Manual topic tracking endpoint
-  app.post("/api/admin/track-topic-review", async (req, res) => {
+  app.post("/api/admin/track-topic-review", requireAdminSession, async (req, res) => {
     try {
       const { topics, source, userIdentifier } = req.body;
       const { trackTopicReview } = await import('./topic-frequency-tracker');
@@ -1561,7 +1620,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // ATI topic extraction endpoints
-  app.post("/api/admin/extract-ati-topics", async (req, res) => {
+  app.post("/api/admin/extract-ati-topics", requireAdminSession, async (req, res) => {
     try {
       const { reportText, reportId } = req.body;
       const { extractAndAddATITopics } = await import('./ati-topic-extractor');
@@ -1574,7 +1633,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/admin/topic-extraction-stats", async (req, res) => {
+  app.get("/api/admin/topic-extraction-stats", requireAdminSession, async (req, res) => {
     try {
       const { getTopicExtractionStats } = await import('./ati-topic-extractor');
       const stats = await getTopicExtractionStats();
@@ -1586,7 +1645,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Reference book parsing endpoints
-  app.post("/api/admin/parse-reference-book", async (req, res) => {
+  app.post("/api/admin/parse-reference-book", requireAdminSession, async (req, res) => {
     try {
       const { bookText, bookTitle } = req.body;
       const { parseReferenceBook } = await import('./reference-book-parser');
@@ -1599,7 +1658,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/admin/reference-book-stats", async (req, res) => {
+  app.get("/api/admin/reference-book-stats", requireAdminSession, async (req, res) => {
     try {
       const { getReferenceBookStats } = await import('./reference-book-parser');
       const stats = await getReferenceBookStats();
@@ -1680,16 +1739,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.log(`[Upload] Authenticated user upload: ${decoded.email}`);
         } else {
           // Guest access - create or use session-based guest ID
-          const sessionIdHeader = req.headers['x-session-id'];
-          const sessionId = req.sessionID || (Array.isArray(sessionIdHeader) ? sessionIdHeader[0] : sessionIdHeader) || `guest_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-          userId = normalizeGuestId(sessionId);
+          userId = resolveGuestId(req);
           console.log(`[Upload] Guest user upload: ${userId}`);
         }
       } catch (tokenError) {
         // Invalid token, treat as guest
-        const sessionIdHeader = req.headers['x-session-id'];
-        const sessionId = req.sessionID || (Array.isArray(sessionIdHeader) ? sessionIdHeader[0] : sessionIdHeader) || `guest_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-        userId = normalizeGuestId(sessionId);
+        userId = resolveGuestId(req);
         console.log(`[Upload] Invalid token, treating as guest: ${userId}`);
       }
 
@@ -2367,7 +2422,7 @@ Physiological Adaptation: Alterations in Body Systems`;
   // and its credentials were published in this public repo. Removed.
 
   // Admin analytics endpoint
-  app.get("/api/admin/analytics", async (req, res) => {
+  app.get("/api/admin/analytics", requireAdminSession, async (req, res) => {
     try {
       // Aggregate analytics data
       const totalUsers = 8453;
@@ -2393,7 +2448,7 @@ Physiological Adaptation: Alterations in Body Systems`;
   });
 
   // Admin topic metrics endpoint
-  app.get("/api/admin/topic-metrics", async (req, res) => {
+  app.get("/api/admin/topic-metrics", requireAdminSession, async (req, res) => {
     try {
       const metrics = [
         { topic: "Pharmacology Calculations", missRate: 82, students: 1543, priority: "critical" },
@@ -2411,7 +2466,7 @@ Physiological Adaptation: Alterations in Body Systems`;
   });
 
   // Admin user activity endpoint
-  app.get("/api/admin/user-activity", async (req, res) => {
+  app.get("/api/admin/user-activity", requireAdminSession, async (req, res) => {
     try {
       const activity = {
         dailyActive: [320, 380, 350, 420, 390, 280, 240],
@@ -2431,7 +2486,7 @@ Physiological Adaptation: Alterations in Body Systems`;
   });
 
   // Admin resource usage endpoint
-  app.get("/api/admin/resource-usage", async (req, res) => {
+  app.get("/api/admin/resource-usage", requireAdminSession, async (req, res) => {
     try {
       const usage = {
         totalResources: 1847,

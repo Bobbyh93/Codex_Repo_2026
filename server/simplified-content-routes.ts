@@ -3,11 +3,24 @@ import { db } from "./db";
 import { reviewTopics, topicContent, type InsertTopicContent } from "@shared/simplified-schema";
 import { migrateToSimplifiedTopics, mapContentToTopics, CORE_REVIEW_TOPICS } from "./topic-migration";
 import { eq, like, or } from "drizzle-orm";
+import { requireAdminSession } from "./admin-auth-session";
 
+// NOTE: registerSimplifiedContentRoutes is not called anywhere -- this module
+// is unregistered, so none of these routes are live. Its /api/admin routes are
+// guarded anyway, for the same reason as the ones in routes.ts: whether they
+// are protected currently depends on where they would be registered relative
+// to the contentImportRouter mount at routes.ts:817, not on anything visible
+// here. Two of its paths, /api/admin/map-content-to-topics and
+// /api/review-topics, are also declared in routes.ts, where they ARE live. If
+// this module were registered first, Express would match these handlers
+// instead -- the same duplicate-route shape as the hardcoded /api/admin/login
+// removed in #11. server/tests/admin-routes-auth.test.ts asserts that no
+// /api/admin registration in this tree lacks a guard, so the invariant holds
+// whether or not this file is ever wired up.
 export function registerSimplifiedContentRoutes(app: Express) {
   
   // Migration endpoint to create simplified topics
-  app.post('/api/admin/migrate-topics', async (req, res) => {
+  app.post('/api/admin/migrate-topics', requireAdminSession, async (req, res) => {
     try {
       const result = await migrateToSimplifiedTopics();
       res.json({ ...result, message: "Topics migrated successfully" });
@@ -50,7 +63,7 @@ export function registerSimplifiedContentRoutes(app: Express) {
   });
 
   // Smart content mapping endpoint - map content to topics automatically
-  app.post('/api/admin/map-content-to-topics', async (req, res) => {
+  app.post('/api/admin/map-content-to-topics', requireAdminSession, async (req, res) => {
     try {
       const { content, title, source } = req.body;
       
@@ -125,7 +138,7 @@ export function registerSimplifiedContentRoutes(app: Express) {
   });
 
   // Bulk content import with automatic topic mapping
-  app.post('/api/admin/import-content-to-topics', async (req, res) => {
+  app.post('/api/admin/import-content-to-topics', requireAdminSession, async (req, res) => {
     try {
       const { contentItems } = req.body; // Array of { title, content, source }
       
@@ -216,7 +229,7 @@ export function registerSimplifiedContentRoutes(app: Express) {
   });
 
   // Get topic statistics
-  app.get('/api/admin/topic-stats', async (req, res) => {
+  app.get('/api/admin/topic-stats', requireAdminSession, async (req, res) => {
     try {
       const topics = await db.select().from(reviewTopics);
       const stats = [];
