@@ -3,6 +3,10 @@
   "status": "blocked",
   "pilot_id": "therapeutic-communication-pilot",
   "release_path": "not_selected",
+  "final_artifact": {
+    "path": null,
+    "sha256": null
+  },
   "slide_count": 3,
   "required_targets": [],
   "passed_targets": [],

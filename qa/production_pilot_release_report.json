@@ -13,7 +13,6 @@
   "errors": [],
   "warnings": [],
   "external_blockers": [
-    "ffmpeg/ffprobe not available, so MP4 assembly and stream QA were not executed.",
     "Release playback path has not been selected.",
     "Final artifact path and checksum are not recorded.",
     "No target-player playback records are recorded."
