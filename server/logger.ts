@@ -24,8 +24,10 @@ const colors = {
 
 winston.addColors(colors);
 
-// Format for console output
-const consoleFormat = winston.format.combine(
+// Format for console output.
+// Exported so server/tests/log-format.test.ts can drive the real format
+// pipeline without instantiating this module's file transports.
+export const consoleFormat = winston.format.combine(
   winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
   winston.format.colorize({ all: true }),
   // Append the error and stack that AppLogger.error attaches as metadata.
@@ -36,6 +38,29 @@ const consoleFormat = winston.format.combine(
   winston.format.printf((info) => {
     let line = `${info.timestamp} ${info.level}: ${info.message}`;
     if (info.error) line += ` ${info.error}`;
+    // Append whatever else the caller attached. AppLogger.warn/info/performance
+    // pass a metadata object and nothing printed it, so 'Health check detected
+    // issues' -- which carries the full per-check verdict, including WHICH check
+    // is degraded and the database response time -- reached Render as that bare
+    // sentence, repeating every probe and naming nothing. Same failure as the
+    // error/stack case above, one log level over.
+    const omit = new Set(['timestamp', 'level', 'message', 'error', 'stack']);
+    const rest: Record<string, unknown> = {};
+    for (const key of Object.keys(info)) {
+      if (!omit.has(key)) rest[key] = (info as Record<string, unknown>)[key];
+    }
+    if (Object.keys(rest).length > 0) {
+      // A metadata object must never be able to take down the logger, so a
+      // value that cannot be serialized (a cycle, a throwing getter) degrades
+      // to a marker rather than throwing inside winston's format pipeline.
+      let encoded: string;
+      try {
+        encoded = JSON.stringify(rest);
+      } catch {
+        encoded = '[unserializable metadata]';
+      }
+      line += ` ${encoded}`;
+    }
     if (info.stack) line += `\n${String(info.stack).replace(/^/gm, '    ')}`;
     return line;
   })
