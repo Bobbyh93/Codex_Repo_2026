@@ -35,6 +35,7 @@ SKIP_DIRS = {
 ALLOWLISTED_SENSITIVE_PATHS = {
     "scripts/credential_guard.py",
     "manifests/credential_guard_report.json",
+    "tests/test_credential_guard.py",
 }
 
 SENSITIVE_NAME_RE = re.compile(

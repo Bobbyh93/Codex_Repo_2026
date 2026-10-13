@@ -11,6 +11,10 @@ sys.path.insert(0, str(ROOT / "scripts"))
 
 from credential_guard import scan_repository  # noqa: E402
 
+# Built at runtime so this source file itself never contains a key-shaped literal
+# (the guard scans .py files, including its own tests).
+FAKE_KEY = "sk-proj-" + "x" * 40
+
 
 class CredentialGuardTests(unittest.TestCase):
     def test_vendored_and_build_directories_are_not_scanned(self) -> None:
@@ -19,7 +23,7 @@ class CredentialGuardTests(unittest.TestCase):
             for directory in ("node_modules/some-sdk", "dist/assets", ".worktrees/other", "build"):
                 (root / directory).mkdir(parents=True)
                 (root / directory / "apikey.js").write_text("module.exports = 'not opened';", encoding="utf-8")
-                (root / directory / "notes.md").write_text("sk-proj-abcdefghijklmnopqrstuvwxyz0123456789", encoding="utf-8")
+                (root / directory / "notes.md").write_text(FAKE_KEY, encoding="utf-8")
             (root / "README.md").write_text("clean", encoding="utf-8")
             report = scan_repository(root)
             self.assertEqual(report["status"], "pass")
@@ -32,7 +36,7 @@ class CredentialGuardTests(unittest.TestCase):
             (root / "node_modules").mkdir()
             (root / "config").mkdir()
             (root / "config" / "service-apikey.txt").write_text("not opened", encoding="utf-8")
-            (root / "notes.md").write_text("sk-proj-abcdefghijklmnopqrstuvwxyz0123456789", encoding="utf-8")
+            (root / "notes.md").write_text(FAKE_KEY, encoding="utf-8")
             report = scan_repository(root)
             self.assertEqual(report["status"], "blocked")
             self.assertEqual(report["blocking_sensitive_filenames"], ["config/service-apikey.txt"])
