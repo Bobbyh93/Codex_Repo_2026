@@ -1194,6 +1194,42 @@ export const lessonPackageArtifacts = pgTable("lesson_package_artifacts", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Compact automation state for source-backed NCLEX quiz shorts. Binary media is
+// stored externally; this table retains only content, hashes, and external URLs.
+export const quizShorts = pgTable("quiz_shorts", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  nursingTopicId: varchar("nursing_topic_id").references(() => nursingTopics.id, { onDelete: "set null" }),
+  practiceQuestionId: varchar("practice_question_id").references(() => practiceQuestions.id, { onDelete: "set null" }),
+  sourceRegistryId: varchar("source_registry_id").references(() => sourceRegistry.id, { onDelete: "set null" }),
+  externalUnitId: integer("external_unit_id").notNull(),
+  standardId: integer("standard_id").notNull(),
+  nclexCategory: text("nclex_category").notNull(),
+  generatedPayload: jsonb("generated_payload").$type<Record<string, any>>().notNull(),
+  contentHash: text("content_hash").notNull().unique(),
+  idempotencyKey: text("idempotency_key").notNull().unique(),
+  status: text("status").notNull().default("qa_passed"),
+  scheduledFor: timestamp("scheduled_for"),
+  driveFileId: text("drive_file_id"),
+  driveUrl: text("drive_url"),
+  youtubeVideoId: text("youtube_video_id"),
+  youtubeUrl: text("youtube_url"),
+  retryCount: integer("retry_count").notNull().default(0),
+  errorMessage: text("error_message"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+  publishedAt: timestamp("published_at"),
+});
+
+export const shortAutomationEvents = pgTable("short_automation_events", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  shortId: varchar("short_id").references(() => quizShorts.id, { onDelete: "cascade" }),
+  requestId: text("request_id"),
+  eventType: text("event_type").notNull(),
+  status: text("status").notNull(),
+  details: jsonb("details").$type<Record<string, any>>().default({}),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const lessonContractValidations = pgTable("lesson_contract_validations", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   packageId: varchar("package_id").references(() => lessonPackages.id, { onDelete: "cascade" }).notNull(),

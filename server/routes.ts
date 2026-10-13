@@ -782,6 +782,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register admin lesson builder routes
   const { registerLessonBuilderRoutes } = await import("./routes/lesson-builder-routes");
   registerLessonBuilderRoutes(app);
+
+  // n8n uses this authenticated application boundary; it never receives a
+  // database credential or writes application tables directly.
+  const { registerNclexAutomationRoutes } = await import("./routes/nclex-automation-routes");
+  registerNclexAutomationRoutes(app);
   
   // Register curriculum catalog routes first (local DB — public endpoints)
   // MUST come before registerCurriculumRoutes so local handlers win over external-API proxy
