@@ -201,7 +201,11 @@ def validate_release_assets(lesson_dir: Path, slide_ids: list[Any], finding: Cal
             finding("missing_artifact", name, f"Missing {path.relative_to(root).as_posix()}.")
     if any(not path.exists() for path in expected.values()):
         return
-    audio, binding, playback = (load_json(expected[name]) for name in ("audio", "binding", "playback"))
+    audio, binding = (load_json(expected[name]) for name in ("audio", "binding"))
+    try:
+        playback = load_json(expected["playback"])
+    except ValueError:
+        playback = None
     if not isinstance(playback, dict):
         finding("playback", "playback_report", f"{expected['playback'].relative_to(root).as_posix()} is not a JSON object.")
         playback = {}
