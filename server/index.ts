@@ -24,6 +24,10 @@ if (!process.env.FROM_NAME) {
   process.env.FROM_NAME = 'NursePrep Analytics';
 }
 
+// Startup phase markers: a boot that hangs before binding a port otherwise logs
+// nothing, which is how a failed Render deploy was undiagnosable.
+console.log("[startup] modules loaded");
+
 const app = express();
 
 // Configure Express to trust proxy headers (required for Replit infrastructure)
@@ -162,7 +166,9 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  console.log("[startup] registering routes");
   const server = await registerRoutes(app);
+  console.log("[startup] routes registered");
 
   app.use("/api", (req: Request, res: Response) => {
     res.status(404).json({
