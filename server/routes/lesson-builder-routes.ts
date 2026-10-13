@@ -67,6 +67,7 @@ import {
   type GovernanceRecordV1,
 } from "@shared/lesson-governance";
 import { buildOpenRnSourceRows } from "@shared/open-rn-sources";
+import { evaluateGenerationProvenance } from "@shared/lesson-generation-qa";
 
 type EvidenceChunk = {
   sourceId?: string | null;
@@ -8866,8 +8867,12 @@ async function runQaForPackage(packageId: string) {
   const hasValidCitations = citations.every((citation) => citation.sourceId || citation.documentId || citation.chunkId);
   const alignment = topicSourceAlignment(bundle);
   const licensedApproval = hasLicensedClinicalApproval(bundle);
+  const generationRecord = (bundle.package.deckModel as any)?.generation ?? (bundle.package.manifest as any)?.generation;
+  const generationRisks = (bundle.package.deckModel as any)?.risks ?? (bundle.package.manifest as any)?.risks;
+  const provenance = evaluateGenerationProvenance(generationRecord, generationRisks);
 
   const results = [
+    gate("generated_content_provenance", "Generated Content Provenance", provenance.status === "pass", provenance.details, provenance.status === "warn"),
     gate("source_traceability", "Source Traceability", slidesWithCitations.size >= slides.length, `${slidesWithCitations.size}/${slides.length} slides have traceable citations.`),
     gate("topic_source_alignment", "Topic and Source Alignment", alignment.valid, alignment.message),
     gate("licensed_clinical_review", "Licensed RN Clinical Review", licensedApproval, licensedApproval ? "Licensed RN faculty release approval is recorded." : "Licensed RN faculty review is required before release.", true),
