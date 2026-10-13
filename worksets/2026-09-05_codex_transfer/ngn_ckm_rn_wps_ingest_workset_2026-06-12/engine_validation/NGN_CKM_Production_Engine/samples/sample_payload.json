@@ -1,0 +1,16 @@
+{
+  "live_import": true,
+  "taxonomy": {
+    "concept": "Concept A",
+    "exemplars": ["Subtopic 1", "Subtopic 2", "Subtopic 3"],
+    "subject_area": "Subject Area A",
+    "content_area": "Content Area A",
+    "specialty_area": "Specialty Area A",
+    "nclex_category": "Category A",
+    "ncjmm_primary": "Recognize Cues",
+    "priority_framework": "Priority Framework A",
+    "source_anchor": "Source Name, Chapter or Page Range",
+    "evidence_status": "sourced",
+    "needs_review": false
+  }
+}

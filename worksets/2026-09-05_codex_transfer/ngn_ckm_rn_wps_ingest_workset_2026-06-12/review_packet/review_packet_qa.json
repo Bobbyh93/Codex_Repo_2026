@@ -1,0 +1,22 @@
+{
+  "generated_at": "2026-06-12T20:48:11",
+  "packet_status": "complete",
+  "held_process_rows": 38,
+  "held_task_trace_rows": 390,
+  "held_mapping_context_rows": 390,
+  "recommended_action_counts": {
+    "exclude_from_engine_source_candidate": 1,
+    "mapping_review_required": 37
+  },
+  "clean_default_run_status": "pass",
+  "clean_default_rows_processed": 1,
+  "source_trace": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\support\\source_trace.json",
+  "crosswalk_data": "C:\\Users\\RHarrity\\Documents\\Codex\\rn_wps_prelicensure_crosswalk_workset_2026-06-12\\build\\intermediate\\rn_wps_prelicensure_crosswalk_data.json",
+  "outputs": {
+    "review_workbook": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\review_packet\\review_held_ngn_ckm_rows.xlsx",
+    "review_csv": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\review_packet\\review_held_ngn_ckm_rows.csv",
+    "task_trace_csv": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\review_packet\\review_held_task_trace.csv",
+    "mapping_context_csv": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\review_packet\\review_held_mapping_context.csv",
+    "markdown": "C:\\Users\\RHarrity\\Documents\\Codex\\ngn_ckm_rn_wps_ingest_workset_2026-06-12\\review_packet\\review_held_ngn_ckm_rows.md"
+  }
+}

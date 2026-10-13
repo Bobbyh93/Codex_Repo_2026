@@ -1,0 +1,966 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>[hidden]{display:none!important}</style></head><body><title>Pipeline Console</title>
+<style>
+:root{color-scheme:light;--accent-btn:#1f4fd1;--soft:#eef0f3;--soft2:#e9ebef;--edge:#d5d9e0;--edge2:#c9cfd8;--ink2:#3b4350;--mute2:#5f6774;--tabink:#69717e;--arrow:#8a93a1;--focus:#a9c0f7;--chosen-bd:#86c79a;--chosen-bg:#f3faf5;--cur-bd:#9fb5f2;--warn-ink:#5e3500;--top-bg:rgba(245,246,248,.97);--bg:#f5f6f8;--card:#fff;--ink:#14181f;--muted:#5d6675;--line:#e2e5ea;--accent:#1f4fd1;--accent-2:#eaf0fe;--ok:#146c2e;--ok-bg:#e7f4ea;--warn:#8a4600;--warn-bg:#fff1df;--bad:#a8231a;--bad-bg:#fde9e7;--info:#1f4fd1;--info-bg:#eaf0fe;--muted-bg:#eef0f3;--r:14px;--nav:62px}
+:root[data-theme="dark"]{--bg:#0f1319;--card:#1a1f27;--ink:#e8ebf0;--muted:#9aa3b0;--line:#2a313c;--accent:#7b9bf7;--accent-btn:#3d63de;--accent-2:#1b2a4e;--ok:#6fd08c;--ok-bg:#12291a;--warn:#f0b060;--warn-bg:#33240f;--bad:#ff8f85;--bad-bg:#3a1a17;--info:#8aa8ff;--info-bg:#1b2a4e;--muted-bg:#262c36;--soft:#262c36;--soft2:#2c333f;--edge:#3a4250;--edge2:#454e5e;--ink2:#c9ced8;--mute2:#99a1ae;--tabink:#98a0ad;--arrow:#7c8594;--focus:#5877d6;--chosen-bd:#3f8a58;--chosen-bg:#14261b;--cur-bd:#4a62a8;--warn-ink:#ffd9a3;--top-bg:rgba(15,19,25,.97);color-scheme:dark;}
+.chip.ok,.chip.warn,.chip.bad,.chip.info{font-weight:600}
+.tiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.tile{display:flex;flex-direction:column;justify-content:center;min-height:76px;text-align:left;padding:12px 14px;border:1px solid var(--line);border-radius:14px;background:var(--card);color:var(--ink);font-size:16px;font-weight:650;cursor:pointer;overflow-wrap:anywhere}
+.tile small{display:block;margin-top:3px;font-size:13px;font-weight:500;color:var(--muted)}
+.tile:active{background:var(--soft)}
+.tile.wide{grid-column:1/-1;min-height:64px}
+.tile.hero{grid-column:1/-1;min-height:84px;background:var(--accent-btn);border-color:var(--accent-btn);color:#fff;font-size:19px}
+.tile.hero small{color:#e6ecff}
+.grp{grid-column:1/-1;font-size:12.5px;font-weight:650;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:10px 0 -2px}
+.ptitle{font-size:20px;font-weight:680;margin:2px 0 12px}
+
+.btn.refresh{min-height:36px;padding:0 10px;font-size:13px}
+
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-text-size-adjust:100%}
+button,input,select,textarea{font:inherit;color:inherit}
+h1,h2,h3,p{margin:0}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--top-bg);border-bottom:1px solid var(--line)}
+.top-in{max-width:760px;margin:0 auto;display:flex;align-items:center;gap:8px;padding:6px 16px;min-height:56px}
+.top h1{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;font-size:18px;font-weight:680;letter-spacing:-.01em;white-space:nowrap}
+.hback{flex:0 0 auto;border:0;background:none;color:var(--accent);font-size:34px;line-height:1;min-width:44px;min-height:44px;margin:0 0 0 -12px;padding:0 0 4px;cursor:pointer}
+.hback[hidden],.btn[hidden]{display:none}
+.mode{font-size:12.5px;color:var(--muted);display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--ok)}.dot.snap{background:#c77700}.dot.off{background:#9aa1ad}
+.banner{max-width:760px;margin:10px auto 0;padding:0 16px}.banner div{background:var(--warn-bg);color:var(--warn-ink);border-radius:10px;padding:10px 12px;font-size:13.5px}
+main{max-width:760px;margin:0 auto;padding:12px 16px calc(var(--nav) + 28px + env(safe-area-inset-bottom));outline:none}
+.sec{margin:20px 0 0}.sec:first-child{margin-top:8px}
+.sec-h{font-size:13px;font-weight:650;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:0 0 8px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px}
+.card+.card{margin-top:10px}
+.card-h{font-size:18px;line-height:1.3;margin:2px 0 6px;font-weight:650}
+.eyebrow{font-size:13px;color:var(--muted)}
+.due{font-weight:650;margin:2px 0 8px}.due.warn{color:var(--warn)}.due.bad{color:var(--bad)}
+.chip{display:inline-flex;align-items:center;border-radius:999px;padding:1px 9px;font-size:12.5px;line-height:1.55;background:var(--muted-bg);color:var(--ink2);white-space:nowrap;vertical-align:middle;font-weight:550}
+.chip.ok{background:var(--ok-bg);color:var(--ok)}.chip.warn{background:var(--warn-bg);color:var(--warn)}.chip.bad{background:var(--bad-bg);color:var(--bad)}.chip.info{background:var(--info-bg);color:var(--info)}.chip.muted{background:var(--soft);color:var(--mute2)}.chip.outline{background:transparent;border:1px solid var(--edge);color:var(--muted)}
+.actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 16px;border-radius:10px;border:1px solid var(--edge);background:var(--card);color:var(--ink);text-decoration:none;font-weight:600;font-size:15px;cursor:pointer;text-align:center}
+.btn.primary{background:var(--accent-btn);border-color:var(--accent-btn);color:#fff}
+.btn.block{display:flex;width:100%;margin-top:12px}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+.link{background:none;border:0;color:var(--accent);font-weight:600;padding:10px 0;min-height:44px;cursor:pointer;font-size:15px}
+.link.small{font-size:14px;min-height:44px;padding:8px 0}
+.list{display:flex;flex-direction:column;gap:8px}
+.item{display:block;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;color:inherit;text-decoration:none;cursor:pointer;font-size:16px}
+.item:active{background:var(--soft)}
+.item-top{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.item-title{margin-top:4px;font-weight:550;overflow-wrap:anywhere}
+.item-meta{margin-top:4px;font-size:14px;color:var(--ink2);overflow-wrap:anywhere}.item-meta.warn{color:var(--warn);font-weight:600}.item-meta.bad{color:var(--bad);font-weight:600}
+.item-sub{margin-top:2px;font-size:13px;color:var(--muted);overflow-wrap:anywhere}
+.dim{opacity:.62}
+.clamp{display:-webkit-box;-webkit-box-orient:vertical;overflow:hidden}
+.clamp2{-webkit-line-clamp:2;display:-webkit-box;-webkit-box-orient:vertical;overflow:hidden}
+.clamp3{-webkit-line-clamp:3}.clamp4{-webkit-line-clamp:4}
+.clamp.open{-webkit-line-clamp:unset;display:block}
+.kv{display:flex;justify-content:space-between;gap:14px;padding:9px 0;border-bottom:1px solid var(--soft);font-size:15px}.kv:last-child{border-bottom:0}.kv:first-child{padding-top:0}
+.kv>span:first-child{color:var(--muted);flex:0 0 auto}.kv>span:last-child{text-align:right;overflow-wrap:anywhere}
+.stats{display:flex;flex-wrap:wrap;gap:8px}
+.stat{min-height:44px;border:1px solid var(--line);background:var(--card);border-radius:10px;padding:6px 12px;font-size:14.5px;cursor:pointer}
+.note{font-size:13.5px;color:var(--muted);margin-top:8px}
+.empty{color:var(--muted);margin:4px 0}
+details{background:var(--card);border:1px solid var(--line);border-radius:12px;margin-top:10px}
+summary{cursor:pointer;min-height:48px;display:flex;align-items:center;gap:8px;padding:0 14px;font-weight:600;list-style:none}
+summary::-webkit-details-marker{display:none}
+summary::after{content:'';margin-left:auto;width:8px;height:8px;border-right:2px solid var(--arrow);border-bottom:2px solid var(--arrow);transform:rotate(45deg);transition:transform .15s}
+details[open]>summary::after{transform:rotate(225deg)}
+.det-body{padding:0 14px 12px}
+.row{padding:10px 0;border-top:1px solid var(--soft)}.row:first-child{border-top:0}
+.row-t{font-weight:600;font-size:14.5px;overflow-wrap:anywhere}.row-s{font-size:13.5px;color:var(--muted);overflow-wrap:anywhere;margin-top:2px}
+.tabs{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--card);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+.tabs-in{max-width:760px;margin:0 auto;display:flex}
+.tab{flex:1 1 auto;height:var(--nav);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:0;background:none;color:var(--tabink);font-size:11px;font-weight:600;cursor:pointer;padding:0 2px;min-width:0}
+.tab svg{width:22px;height:22px}
+.tab span{white-space:nowrap;letter-spacing:-.01em}
+.tab[aria-current=page]{color:var(--accent)}
+.seg{display:flex;background:var(--soft2);border-radius:10px;padding:3px;gap:3px;margin:4px 0 12px}
+.seg button{flex:1 1 auto;min-height:44px;border:0;border-radius:8px;background:none;font-size:13.5px;font-weight:600;color:var(--ink2);cursor:pointer;padding:0 8px;white-space:nowrap}
+.actions.pair{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}
+.actions.pair .btn{padding:0 10px}
+.item.compact{padding:10px 12px}.item.compact .item-title{font-size:15.5px;margin-top:2px}
+.line{display:flex;justify-content:space-between;align-items:baseline;gap:10px}.line .chip{flex:0 0 auto}
+.choice.compact{min-height:48px;padding:10px 12px}.choice.compact small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.seg button[aria-selected=true]{background:var(--card);box-shadow:0 1px 2px rgba(0,0,0,.08);color:var(--ink)}
+.toolbar{display:flex;gap:8px;align-items:center}
+.select{flex:1;min-width:0;min-height:44px;border:1px solid var(--edge);border-radius:10px;background:var(--card);padding:0 10px;font-size:16px}
+.toggle{display:flex;align-items:center;gap:10px;min-height:44px;font-size:15px;color:var(--ink2);cursor:pointer}
+.toggle input{width:20px;height:20px}
+.count{font-size:13px;color:var(--muted);margin:2px 0 8px}
+.err{background:var(--bad-bg);color:var(--bad);border-radius:10px;padding:10px 12px;margin:10px 0;font-size:14px;overflow-wrap:anywhere}
+.skel div{height:14px;background:var(--soft2);border-radius:6px;margin:12px 0;animation:pulse 1.2s infinite}.skel div:nth-child(2){width:70%}.skel div:nth-child(3){width:45%}
+@keyframes pulse{50%{opacity:.5}}
+.head{margin:2px 0 4px}.title{font-size:20px;line-height:1.3;margin:4px 0 8px;font-weight:680;overflow-wrap:anywhere}.chips{display:flex;gap:6px;flex-wrap:wrap}
+.backbar{display:flex;align-items:center;justify-content:space-between;margin:-2px 0 0}
+.step{font-size:13px;color:var(--muted)}
+.q{font-size:20px;font-weight:680;line-height:1.3;margin:8px 0 12px}
+.ctx{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:14px}
+.ctx .lbl{font-size:12.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:650}
+.choice{display:block;width:100%;text-align:left;min-height:52px;padding:12px 14px;border:1px solid var(--edge);border-radius:12px;background:var(--card);margin-bottom:8px;font-weight:550;cursor:pointer;font-size:16px}
+.choice small{display:block;font-weight:500;color:var(--muted);font-size:13.5px;margin-top:2px}
+.choice.current{border-color:var(--cur-bd);background:var(--accent-2)}
+textarea{width:100%;min-height:128px;border:1px solid var(--edge2);border-radius:12px;padding:12px;font-size:16px;line-height:1.45;background:var(--card);resize:vertical}
+textarea:focus,.select:focus,button:focus-visible,a:focus-visible,summary:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.hint{font-size:13px;color:var(--muted);margin-top:6px}
+blockquote{margin:0;padding:12px 14px;border-left:4px solid var(--accent);background:var(--accent-2);border-radius:0 10px 10px 0;font-size:15.5px}
+.opts{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px}
+.opt{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px}.opt.chosen{border-color:var(--chosen-bd);background:var(--chosen-bg)}.opt.escape{opacity:.72}
+.opt-l{font-weight:600;overflow-wrap:anywhere}.opt-d{font-size:14px;color:var(--ink2);margin-top:4px;overflow-wrap:anywhere}.opt .chips{margin-top:6px}
+.bar{height:8px;background:var(--soft2);border-radius:99px;overflow:hidden;margin-top:8px}.bar i{display:block;height:100%;background:var(--accent)}
+.ok-msg{background:var(--ok-bg);color:var(--ok);border-radius:12px;padding:14px;font-weight:600}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px}
+.pmap{overflow:auto;max-height:70vh;border:1px solid var(--line);border-radius:10px;background:#fff;-webkit-overflow-scrolling:touch}
+.pmap svg{display:block;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+</style>
+<header class="top"><div class="top-in"><button class="hback" id="hback" type="button" aria-label="Back" hidden>‹</button><h1 id="htitle">Pipeline Console</h1><span class="mode" id="mode"><span class="dot off"></span>Connecting</span><button class="btn refresh" id="refresh" type="button" hidden>Refresh</button></div></header>
+<div class="banner" id="banner"></div>
+<main id="view" tabindex="-1" aria-live="polite"></main>
+<nav class="tabs" aria-label="Sections"><div class="tabs-in" id="tabs"></div></nav>
+<script id="snapshot" type="application/json">null</script>
+<script>
+(() => {
+'use strict';
+// ---------- configuration (read-only views + two insert-only functions; no contact features) ----------
+const TOOLS = {
+  neon: 'mcp__64f63ef9-427c-46c7-b1b5-59c2e955e245__run_sql',
+  drive: 'mcp__533b96f2-6462-4667-9fe0-0a3d9f05acf4__search_files',
+  jotform: 'mcp__0cd1c5e9-6850-4502-8ee2-e751aa79d94c__search'
+};
+const DB = { project_id: 'billowing-field-85279667', database_name: 'pubpipe' };
+const PIPE_FOLDER = '164DgtisV4EkG1agrmUHQXk5113QzxjbJ';
+const VIEWS = ['status','today','manuscripts','activity','decisions','criteria','files','runs','inbox','rules','backlog','process','vocabulary','sources'];
+const VIEW_RE = /^SELECT \* FROM pp\.v_console_(status|today|manuscripts|activity|decisions|criteria|files|runs|inbox|rules|backlog|process|vocabulary|sources)( \/\* r:[a-z0-9]+ \*\/)?$/;
+const WRITE_RE = /^SELECT pp\.console_(queue_run|record_decision)\(/;
+const TZ = 'America/Los_Angeles';
+const SERVERS = { '64f63ef9-427c-46c7-b1b5-59c2e955e245': 'Neon', '533b96f2-6462-4667-9fe0-0a3d9f05acf4': 'Google Drive', '0cd1c5e9-6850-4502-8ee2-e751aa79d94c': 'Jotform' };
+let bridge = null;
+let LIVE = false;
+function connMsg(e, srv) {
+  const c = e && e.code, n = srv || 'The connector', raw = (e && e.message) || String(e);
+  if (c === 'needs_reauth') return n + ' needs to be reconnected: Claude settings, Connectors, then reload this page.';
+  if (c === 'server_not_connected' || c === 'selection_required') return n + ' is not connected: add it in Claude settings, Connectors, then reload this page.';
+  if (c === 'not_in_manifest' || c === 'consent_required' || c === 'approval_required') return n + ' is not allowed for this page: open the page Permissions menu and allow it, then press Refresh.';
+  if (c === 'blocked_by_policy') return n + ' is blocked by your organization policy for this tool.';
+  if (c === 'server_unavailable' || c === 'upstream_error' || c === 'rate_limited') return n + ' did not answer. Press Refresh to try again. (' + raw + ')';
+  return (c ? c + ': ' : '') + raw;
+}
+async function connect() {
+  try {
+    const mcp = (window.claude && typeof window.claude.use === 'function') ? await window.claude.use('mcp') : null;
+    if (!mcp) return;
+    bridge = { callMcpTool: async (name, args) => {
+      const m = /^mcp__([0-9a-f-]+)__(.+)$/.exec(name);
+      try { return await mcp.callTool(SERVERS[m[1]], m[2], args); }
+      catch (e) { return { isError: true, content: [{ type: 'text', text: connMsg(e, SERVERS[m[1]]) }] }; }
+    } };
+    LIVE = true;
+  } catch (e) { console.error('[console] mcp unavailable', e); }
+}
+let WEB = false;
+async function api(path, body) {
+  const r = await fetch(path, { method: body ? 'POST' : 'GET', credentials: 'same-origin', headers: Object.assign({ 'X-Requested-With': 'console' }, body ? { 'Content-Type': 'application/json' } : {}), body: body ? JSON.stringify(body) : undefined });
+  if (r.status === 401) { location.href = 'login'; throw new Error('Signed out.'); }
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(d.error || ('Server error ' + r.status));
+  return d.rows || [];
+}
+async function webConnect() {
+  if (window.claude) return;
+  try {
+    await api('api/ping');
+    WEB = true; LIVE = true;
+    bridge = { callMcpTool: async (name, args) => {
+      if (name !== TOOLS.neon) return { isError: true, content: [{ type: 'text', text: 'Shown only inside Claude.' }] };
+      const m = VIEW_RE.exec(args.sql);
+      if (!m) return { isError: true, content: [{ type: 'text', text: 'blocked' }] };
+      try { return { content: [], structuredContent: { rows: await api('api/view/' + m[1]) } }; }
+      catch (e) { return { isError: true, content: [{ type: 'text', text: String(e.message || e) }] }; }
+    } };
+  } catch (e) { console.error('[console] web api unavailable', e); }
+}
+let SNAP = null;
+try { SNAP = JSON.parse(document.getElementById('snapshot').textContent); } catch (e) { SNAP = null; }
+
+const S = { data: {}, errors: {}, stack: ['home'], sub: { runs: 'overview', files: 'views' }, open: {}, flow: null,
+  decFilter: 'all', showSup: false, decLimit: 30, evFilter: 'all', evLimit: 40, inboxMs: null, fileMs: null, srcStatus: null,
+  drive: null, driveErr: null, jot: null, jotErr: null, lastVisit: null, since: null, pendingRender: false };
+
+// ---------- small helpers ----------
+function h(tag, props, ...kids) {
+  const el = document.createElement(tag);
+  if (props) for (const [k, v] of Object.entries(props)) {
+    if (v == null || v === false) continue;
+    if (k === 'class') el.className = v;
+    else if (k === 'text') el.textContent = v;
+    else if (k.slice(0, 2) === 'on' && typeof v === 'function') el.addEventListener(k.slice(2), v);
+    else el.setAttribute(k, v === true ? '' : String(v));
+  }
+  for (const kid of kids.flat(Infinity)) {
+    if (kid == null || kid === false || kid === '') continue;
+    el.appendChild(kid instanceof Node ? kid : document.createTextNode(String(kid)));
+  }
+  return el;
+}
+const chip = (text, tone) => h('span', { class: 'chip ' + (tone || '') }, text);
+const safeUrl = u => (typeof u === 'string' && /^https:\/\//.test(u)) ? u : null;
+const ext = (href, text, cls) => safeUrl(href) ? h('a', { href: safeUrl(href), target: '_blank', rel: 'noopener noreferrer', class: cls || 'btn' }, text) : null;
+const fmtN = n => Number(n || 0).toLocaleString('en-US');
+const dtf = o => new Intl.DateTimeFormat('en-US', Object.assign({ timeZone: TZ }, o));
+const fDay = d => dtf({ weekday: 'short', month: 'short', day: 'numeric' }).format(d);
+const fDT = d => dtf({ weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }).format(d);
+const fTime = d => dtf({ hour: 'numeric', minute: '2-digit' }).format(d);
+const ymd = d => new Intl.DateTimeFormat('en-CA', { timeZone: TZ, year: 'numeric', month: '2-digit', day: '2-digit' }).format(d);
+const D = n => S.data[n];
+const ready = (...n) => n.every(x => Array.isArray(S.data[x]));
+function ago(ts) {
+  const s = (Date.now() - new Date(ts).getTime()) / 1000;
+  if (s < 90) return 'just now';
+  if (s < 3600) return Math.round(s / 60) + ' min ago';
+  if (s < 86400) return Math.round(s / 3600) + ' h ago';
+  const d = Math.round(s / 86400); return d === 1 ? 'yesterday' : d + ' days ago';
+}
+function daysUntil(ds) {
+  const t = ymd(new Date());
+  const a = Date.UTC(+t.slice(0, 4), +t.slice(5, 7) - 1, +t.slice(8, 10));
+  const b = Date.UTC(+ds.slice(0, 4), +ds.slice(5, 7) - 1, +ds.slice(8, 10));
+  return Math.round((b - a) / 86400000);
+}
+function due(ds) {
+  if (!ds || !/^\d{4}-\d{2}-\d{2}/.test(ds)) return null;
+  const n = daysUntil(ds), day = fDay(new Date(ds.slice(0, 10) + 'T12:00:00Z'));
+  const rel = n === 0 ? 'today' : n === 1 ? 'tomorrow' : n > 1 ? 'in ' + n + ' days' : Math.abs(n) + (Math.abs(n) === 1 ? ' day' : ' days') + ' overdue';
+  return { text: day + ' · ' + rel, tone: n < 0 ? 'bad' : n <= 4 ? 'warn' : '' };
+}
+function newUuid() {
+  if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+  const b = crypto.getRandomValues(new Uint8Array(16)); b[6] = (b[6] & 15) | 64; b[8] = (b[8] & 63) | 128;
+  const x = [...b].map(v => v.toString(16).padStart(2, '0')).join('');
+  return x.slice(0, 8) + '-' + x.slice(8, 12) + '-' + x.slice(12, 16) + '-' + x.slice(16, 20) + '-' + x.slice(20);
+}
+const nonce = () => Math.random().toString(36).slice(2, 10);
+const RUN_TONE = { running: 'info', queued: 'info', completed: 'ok', failed: 'bad', needs_human: 'warn', cancelled: 'muted' };
+const FILE_TONE = { canonical: 'ok', live: 'info', source: 'muted', working_copy: 'muted', unclassified: 'warn', superseded: 'muted' };
+function kv(k, v) { return h('div', { class: 'kv' }, h('span', null, k), h('span', null, v)); }
+function section(title, ...body) { return h('section', { class: 'sec' }, title ? h('h2', { class: 'sec-h' }, title) : null, ...body); }
+function card(...kids) { return h('div', { class: 'card' }, ...kids); }
+function skel() { return h('div', { class: 'skel', 'aria-label': 'Loading' }, h('div'), h('div'), h('div')); }
+function errBox(name) { return S.errors[name] ? h('div', { class: 'err', role: 'alert' }, 'Could not load ' + name + ': ' + S.errors[name]) : null; }
+function waitFor(...names) { const e = names.map(errBox).filter(Boolean); return e.length ? e : [skel()]; }
+function details(key, summary, ...kids) {
+  const d = h('details', { open: S.open[key] ? true : null }, h('summary', null, summary), h('div', { class: 'det-body' }, ...kids));
+  d.addEventListener('toggle', () => { S.open[key] = d.open; });
+  return d;
+}
+function clampText(t, lines, key) {
+  const k = 'clamp:' + key; const open = !!S.open[k];
+  const p = h('p', { class: 'clamp clamp' + lines + (open ? ' open' : '') }, t);
+  const long = (t || '').length > lines * 55;
+  const b = long ? h('button', { class: 'link small', onclick: () => { S.open[k] = !S.open[k]; p.classList.toggle('open'); b.textContent = S.open[k] ? 'Show less' : 'Show more'; } }, open ? 'Show less' : 'Show more') : null;
+  return h('div', null, p, b);
+}
+function seg(key, items) {
+  const cur = S.sub[key];
+  return h('div', { class: 'seg', role: 'tablist' }, items.map(([v, label]) => h('button', { role: 'tab', 'aria-selected': cur === v ? 'true' : 'false', onclick: () => { S.sub[key] = v; render(true); } }, label)));
+}
+function backBar(label, extra) { return extra || null; }
+
+// ---------- data access ----------
+function textOf(r) { try { return (r.content || []).map(c => c.text || '').join('\n'); } catch (e) { return ''; } }
+function parseRows(r) {
+  if (!r) throw new Error('no response');
+  if (r.isError) throw new Error(textOf(r) || 'tool error');
+  let d = r.structuredContent;
+  if (d == null) { const t = textOf(r); try { d = JSON.parse(t); } catch (e) { throw new Error('unexpected response: ' + t.slice(0, 160)); } }
+  if (Array.isArray(d)) return d;
+  for (const k of ['rows', 'result', 'results', 'data']) if (d && Array.isArray(d[k])) return d[k];
+  throw new Error('unexpected response shape');
+}
+async function sql(q) {
+  if (!VIEW_RE.test(q) && !WRITE_RE.test(q)) throw new Error('blocked: the console reads pp.v_console_* views and calls only the two insert-only console functions');
+  const r = await bridge.callMcpTool(TOOLS.neon, Object.assign({}, DB, { sql: q }));
+  console.log('[console] neon', q.slice(0, 72), r && r.isError ? 'error' : 'ok');
+  return parseRows(r);
+}
+async function loadView(name, fresh) {
+  if (!LIVE) { S.data[name] = (SNAP && SNAP.views && SNAP.views[name]) || []; return; }
+  try {
+    S.data[name] = await sql('SELECT * FROM pp.v_console_' + name + (fresh ? ' /* r:' + nonce() + ' */' : ''));
+    delete S.errors[name];
+  } catch (e) { S.errors[name] = String(e.message || e); console.error('[console] view ' + name, e); }
+  render();
+}
+async function loadDrive() {
+  if (!LIVE) return;
+  try {
+    const r = await bridge.callMcpTool(TOOLS.drive, { query: "parentId = '" + PIPE_FOLDER + "'", pageSize: 30, excludeContentSnippets: true });
+    if (r.isError) throw new Error(textOf(r));
+    const d = r.structuredContent != null ? r.structuredContent : JSON.parse(textOf(r));
+    S.drive = (d.files || []).slice().sort((a, b) => String(b.modifiedTime).localeCompare(String(a.modifiedTime)));
+    console.log('[console] drive ok', S.drive.length);
+  } catch (e) { S.driveErr = String(e.message || e); console.error('[console] drive', e); }
+  render();
+}
+async function loadJotform() {
+  if (!LIVE) return;
+  try {
+    const r = await bridge.callMcpTool(TOOLS.jotform, { user_query: 'Publication Pipeline forms', filter: { title_filter: ['Publication Pipeline', 'Manuscript Intake'], date_filter: [], min_submission_count: 0 }, limit: 20 });
+    if (r.isError) throw new Error(textOf(r));
+    const d = r.structuredContent != null ? r.structuredContent : JSON.parse(textOf(r));
+    S.jot = (d.data && d.data.results) || d.results || [];
+    console.log('[console] jotform ok', S.jot.length);
+  } catch (e) { S.jotErr = String(e.message || e); console.error('[console] jotform', e); }
+  render();
+}
+// SQL literals for the two write calls (values are escaped; identifiers are validated)
+function lit(v) { if (v == null || String(v).trim() === '') return 'NULL'; return "'" + String(v).replace(/\u0000/g, '').replace(/'/g, "''") + "'"; }
+function uuidLit(u) { if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(u)) throw new Error('invalid id'); return "'" + u + "'::uuid"; }
+function msLit(ms) { if (ms == null) return 'NULL'; if (!/^MS-\d{3}$/.test(ms)) throw new Error('invalid manuscript id'); return "'" + ms + "'"; }
+async function queueRun(f) {
+  if (WEB) { const w = await api('api/queue_run', { req: f.req, ms: f.ms, note: f.note }); return w[0] && w[0].msg_id; }
+  const rows = await sql('SELECT pp.console_queue_run(' + uuidLit(f.req) + ', ' + msLit(f.ms) + ', ' + lit(f.note) + ') AS msg_id');
+  return rows[0] && rows[0].msg_id;
+}
+async function recordDecision(f) {
+  if (WEB) { const w = await api('api/record_decision', { req: f.req, ms: f.ms || null, question: f.question, answer: f.answer, note: f.note, id: f.id || null, ord: f.ord != null ? parseInt(f.ord, 10) : null }); return w[0] && w[0].decision_id; }
+  const ord = f.ord != null ? String(parseInt(f.ord, 10)) : 'NULL';
+  const rows = await sql('SELECT pp.console_record_decision(' + uuidLit(f.req) + ', ' + msLit(f.ms || null) + ', ' + lit(f.question) + ', ' + lit(f.answer) + ', ' + lit(f.note) + ', ' + (f.id ? uuidLit(f.id) : 'NULL') + ', ' + ord + ') AS decision_id');
+  return rows[0] && rows[0].decision_id;
+}
+function friendly(msg) {
+  const m = String(msg || '');
+  if (/NOT_RERUNNABLE/.test(m)) return 'This stage is not failed or waiting for input, so the planner advances it without a request.';
+  if (/RUN_ALREADY_QUEUED/.test(m)) return 'A stage run is already queued or running for this manuscript.';
+  if (/QUESTION_TOO_SHORT/.test(m)) return 'State the question in more than 10 characters.';
+  return m;
+}
+
+// ---------- navigation ----------
+const TAB_OF = { home: 'home', today: 'home', holds: 'home', inbox: 'runs', runlist: 'runs', events: 'runs', budget: 'runs', wbs: 'runs', fviews: 'files', forms: 'files', drive: 'files', sources: 'files', process: 'rules', hardstops: 'rules', rulespage: 'rules', terms: 'rules', ms: 'ms', msd: 'ms', crit: 'ms', decisions: 'decisions', decision: 'decisions', files: 'files', runs: 'runs', rules: 'rules', flow: null };
+function cur() { const r = S.stack[S.stack.length - 1]; const i = r.indexOf('/'); return i < 0 ? { name: r, arg: null } : { name: r.slice(0, i), arg: r.slice(i + 1) }; }
+function go(r) { S.stack.push(r); render(true); }
+function back() { if (S.stack.length > 1) S.stack.pop(); if (cur().name === 'flow' && !S.flow) S.stack.pop(); render(true); }
+function tab(t) { S.stack = [t]; S.flow = null; render(true); }
+const ICONS = {
+  home: '<path d="M4 11l8-7 8 7v9a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1z"/>',
+  ms: '<path d="M7 3h7l4 4v14H7z"/><path d="M14 3v4h4M9.5 12h5M9.5 15.5h5"/>',
+  decisions: '<circle cx="7" cy="5.5" r="2"/><circle cx="17" cy="5.5" r="2"/><circle cx="12" cy="18.5" r="2"/><path d="M7 7.5v1.5a3 3 0 0 0 3 3h4a3 3 0 0 0 3-3V7.5M12 12v4.5"/>',
+  files: '<path d="M3.5 7.5a2 2 0 0 1 2-2h4l2 2h7a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2z"/>',
+  runs: '<circle cx="12" cy="12" r="8.5"/><path d="M10.5 9l4.5 3-4.5 3z"/>',
+  rules: '<path d="M12 3l7 3v5.5c0 4.2-3 7.7-7 9.5-4-1.8-7-5.3-7-9.5V6z"/>'
+};
+const TABS = [['home', 'Home'], ['ms', 'Manuscripts'], ['decisions', 'Decisions'], ['files', 'Files'], ['runs', 'Runs'], ['rules', 'Rules']];
+function renderTabs(active) {
+  const el = document.getElementById('tabs');
+  el.replaceChildren(...TABS.map(([k, l]) => {
+    const b = h('button', { class: 'tab', 'aria-current': active === k ? 'page' : null, onclick: () => tab(k) });
+    b.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + ICONS[k] + '</svg>';
+    b.appendChild(h('span', null, l));
+    return b;
+  }));
+}
+
+// ---------- Today ----------
+function viewToday() {
+  if (!ready('today', 'manuscripts')) return waitFor('today', 'manuscripts');
+  const rows = D('today');
+  const stops = rows.filter(r => r.kind === 'hard_stop' || r.kind === 'locked_decision');
+  const batched = rows.filter(r => r.kind === 'batched');
+  return stops.length ? stops.map(r => stopCard(r, batched)) : [card(h('p', { class: 'empty' }, 'Nothing is waiting on you.'))];
+}
+function viewHolds() {
+  if (!ready('today')) return waitFor('today');
+  const rows = D('today');
+  const holds = rows.filter(r => r.kind === 'hold' || r.kind === 'park');
+  const contacts = rows.filter(r => r.kind === 'contact');
+  return [
+    section('Holds · ' + holds.length, holds.length ? h('div', { class: 'list' }, holds.map(r => card(h('div', { class: 'item-top' }, chip(r.kind, r.kind === 'hold' ? 'bad' : 'muted'), r.ms_id ? chip(r.ms_id) : null), h('div', { class: 'item-title' }, r.title)))) : card(h('p', { class: 'empty' }, 'None.'))),
+    section('Contacts to make · ' + contacts.length, contacts.length ? h('div', { class: 'list' }, contacts.map(c => card(h('div', { class: 'item-title', style: 'margin-top:0' }, c.title), h('div', { class: 'item-sub' }, c.detail), h('div', { class: 'item-sub' }, (c.ref ? c.ref + ' · ' : '') + 'by ' + (c.status || 'not set'))))) : card(h('p', { class: 'empty' }, 'None.')))
+  ];
+}
+function stopCard(r, batched) {
+  const m = (D('manuscripts') || []).find(x => x.ms_id === r.ms_id);
+  const mine = batched.filter(b => String(b.batched_into || '').indexOf((r.ms_id || '') + ' ' + r.ref) >= 0);
+  const dd = due(r.due_date);
+  return card(
+    h('div', { class: 'eyebrow' }, [r.ms_id, m && m.venue].filter(Boolean).join(' · ')),
+    h('h3', { class: 'card-h' }, r.title, ' ', chip(r.ref, 'outline')),
+    dd ? h('p', { class: 'due ' + dd.tone }, 'Due ' + dd.text) : null,
+    r.detail ? clampText(r.detail, 2, 'stop:' + r.ref + r.ms_id) : null,
+    h('div', { class: 'actions pair' }, ext(r.link2_url, r.link2_label || 'Open', 'btn primary'), ext(r.link1_url, r.link1_label || 'Open')),
+    mine.length ? details('batched:' + r.ms_id, 'Also decided at this stop (' + mine.length + ')',
+      mine.map(b => h('div', { class: 'row' }, h('div', { class: 'row-t' }, b.ref), h('div', { class: 'row-s' }, b.detail)))) : null,
+    m ? h('button', { class: 'link', onclick: () => go('msd/' + m.ms_id) }, 'Open ' + m.ms_id + ' ›') : null);
+}
+function sinceSection() {
+  const act = D('activity');
+  if (!Array.isArray(act)) return section('Since your last visit', ...waitFor('activity'));
+  const rows = act.filter(a => new Date(a.ts) > S.since && a.category !== 'system');
+  const counts = {}; rows.forEach(a => { counts[a.category] = (counts[a.category] || 0) + 1; });
+  const order = [['run', 'stage-run event', 'stage-run events'], ['decision', 'decision', 'decisions'], ['file', 'file', 'files'], ['input', 'input', 'inputs'], ['rule', 'rule change', 'rule changes'], ['record', 'record', 'records'], ['notice', 'notice', 'notices']];
+  const label = S.lastVisit ? 'Since your last visit · ' + fDT(S.since) : 'In the last 24 hours';
+  const stats = order.filter(([k]) => counts[k]).map(([k, one, many]) => h('button', { class: 'stat', onclick: () => { S.sub.runs = 'events'; S.evFilter = k; go('runs'); } }, h('b', null, String(counts[k])), ' ' + (counts[k] === 1 ? one : many)));
+  return section(label,
+    stats.length ? h('div', { class: 'stats' }, stats) : card(h('p', { class: 'empty' }, 'Nothing new.')),
+    null);
+}
+function pipelineSection() {
+  const st = (D('status') || [])[0];
+  if (!st) return section('Pipeline', ...waitFor('status'));
+  const plan = Array.isArray(st.plan_this_week) ? st.plan_this_week : [];
+  const rerun = (D('manuscripts') || []).filter(m => m.can_queue_run);
+  return section('Pipeline', card(
+    kv('Last pipeline run', st.last_run_at ? fDT(new Date(st.last_run_at)) : 'none recorded'),
+    kv('Queued', plural(st.runs_queued, 'stage run', 'stage runs')), kv('Inbox', fmtN(st.inbox_waiting) + ' waiting'), kv('Budget', fmtN(st.spent_units) + ' of ' + fmtN(st.available_units) + ' units'),
+    h('button', { class: 'link', onclick: () => { S.sub.runs = 'overview'; go('runs'); } }, rerun.length ? 'Rerun available for ' + plural(rerun.length, 'manuscript', 'manuscripts') + ' ›' : 'Runs ›')));
+}
+function plural(n, one, many) { n = Number(n || 0); return fmtN(n) + ' ' + (n === 1 ? one : many); }
+
+// ---------- Manuscripts ----------
+function viewMs() {
+  if (!ready('manuscripts')) return waitFor('manuscripts');
+  const ms = D('manuscripts'), used = new Set(), out = [];
+  const groups = [['Waiting on you', m => m.next_hard_stop_status === 'ready'], ['Rerun available', m => m.can_queue_run],
+    ['Queued or running', m => m.run_state === 'queued' || m.run_state === 'running'], ['Other', () => true]];
+  for (const [title, f] of groups) {
+    const rows = ms.filter(m => !used.has(m.ms_id) && f(m)); rows.forEach(m => used.add(m.ms_id));
+    if (rows.length) out.push(section(title + ' · ' + rows.length, h('div', { class: 'list' }, rows.map(msRow))));
+  }
+  return out;
+}
+function msRow(m) {
+  const dd = due(m.due_date);
+  const waiting = m.next_hard_stop_status === 'ready';
+  return h('button', { class: 'item', onclick: () => go('msd/' + m.ms_id) },
+    h('div', { class: 'item-top' }, h('b', null, m.ms_id), waiting ? chip('your decision', 'warn') : chip(m.run_state, RUN_TONE[m.run_state]), dd ? chip(dd.text.split(' · ')[1] || dd.text, dd.tone || 'outline') : null),
+    h('div', { class: 'item-title clamp2' }, m.title),
+    h('div', { class: 'item-sub' }, 'Stage ' + m.stage + ' · ' + m.stage_code));
+}
+function navRow(title, sub, fn) { return h('button', { class: 'item', onclick: fn }, h('div', { class: 'item-title', style: 'margin-top:0' }, title), h('div', { class: 'item-sub' }, sub)); }
+function viewMsDetail(id) {
+  const m = (D('manuscripts') || []).find(x => x.ms_id === id);
+  if (!m) return [backBar('Manuscripts'), ...(ready('manuscripts') ? [h('p', null, 'Not found: ' + id)] : waitFor('manuscripts'))];
+  const runs = (D('runs') || []).filter(r => r.ms_id === id);
+  const dd = due(m.due_date);
+  return [
+    backBar('Manuscripts'),
+    h('div', { class: 'head' }, h('div', { class: 'eyebrow' }, m.ms_id + (m.venue ? ' · ' + m.venue : '')), h('h2', { class: 'title' }, m.title),
+      h('div', { class: 'chips' }, chip('Stage ' + m.stage + ' · ' + m.stage_code), chip(m.run_state, RUN_TONE[m.run_state]), m.on_hold ? chip('hold', 'bad') : null, m.parked ? chip('parked', 'muted') : null, dd ? chip('due ' + dd.text, dd.tone || 'outline') : null)),
+    section('Next action', card(m.next_action ? clampText(m.next_action, 2, 'na:' + id) : h('p', { class: 'empty' }, 'No next action recorded.'),
+      null,
+      h('div', { class: 'actions' }, ext(m.portal_url, 'Portal draft', 'btn primary'), ext(m.review_form_url, 'Review form'), ext(m.drive_folder_url, 'Drive folder')))),
+    m.next_hard_stop_key ? section('Next hard stop', card(h('div', { class: 'item-top' }, h('b', null, m.next_hard_stop_key), chip(m.next_hard_stop_status, m.next_hard_stop_status === 'ready' ? 'warn' : 'muted')), h('div', { class: 'item-title' }, m.next_hard_stop))) : null,
+    (m.can_queue_run || m.run_state === 'queued' || m.run_state === 'running') ? runSection(m) : null,
+    section('Records', h('div', { class: 'list' },
+      navRow('Decisions', m.decisions + ' recorded', () => { S.decFilter = id; S.decLimit = 30; go('decisions'); }),
+      navRow('Criteria', m.criteria_pass + ' pass · ' + m.criteria_fail + ' fail · ' + m.criteria_other + ' other', () => go('crit/' + id)),
+      navRow('Files', m.files_current + ' current · ' + m.files_superseded + ' superseded · ' + m.file_gaps + ' gaps', () => { S.fileMs = id; S.sub.files = 'ms'; go('files'); }),
+      navRow('Inbox', m.inbox_waiting + ' waiting for a stage run', () => { S.inboxMs = id; S.sub.runs = 'inbox'; go('runs'); }),
+      runs[0] ? navRow('Last stage run', runs[0].status + ' · ' + fDT(new Date(runs[0].updated_at)), () => { S.sub.runs = 'runs'; go('runs'); }) : null))
+  ];
+}
+function runSection(m) {
+  const t = m.can_queue_run ? 'Stage ' + m.stage + ' ' + m.run_state + '.' : (m.run_state === 'queued' || m.run_state === 'running') ? 'Stage run ' + m.run_state + '.' : m.next_hard_stop_status === 'ready' ? 'Your decision is next.' : 'No rerun needed.';
+  const btn = m.can_queue_run ? h('button', { class: 'btn primary block', disabled: LIVE ? null : true, onclick: () => startRun(m.ms_id) }, 'Queue a stage run') : null;
+  return section('Stage run', card(h('p', null, t), btn));
+}
+function viewCriteria(id) {
+  const rows = (D('criteria') || []).filter(r => r.ms_id === id);
+  if (!ready('criteria')) return [backBar(id), ...waitFor('criteria')];
+  const notPass = rows.filter(r => r.status !== 'pass'), pass = rows.filter(r => r.status === 'pass');
+  const crit = (r) => h('div', { class: 'row' }, h('div', { class: 'item-top' }, h('b', null, r.criterion_id), chip(r.status, r.status === 'pass' ? 'ok' : r.status === 'fail' ? 'bad' : 'muted'), r.category ? chip(r.category, 'outline') : null),
+    h('div', { class: 'row-t', style: 'font-weight:500;margin-top:4px' }, r.requirement), r.observed ? h('div', { class: 'row-s' }, 'Observed: ' + r.observed) : null);
+  return [backBar(id),
+    h('div', { class: 'head' }, h('div', { class: 'eyebrow' }, id + ' · latest result per criterion'), h('h2', { class: 'title' }, 'Venue and reporting criteria')),
+    rows.length ? null : card(h('p', { class: 'empty' }, 'No criteria evaluated for ' + id + ' yet.')),
+    notPass.length ? section('Not passed · ' + notPass.length, card(notPass.map(crit))) : null,
+    pass.length ? details('critpass:' + id, 'Passed · ' + pass.length, pass.map(crit)) : null];
+}
+
+// ---------- Decisions ----------
+function viewDecisions() {
+  if (!ready('decisions')) return waitFor('decisions');
+  const all = D('decisions'), f = S.decFilter;
+  const ids = [...new Set(all.map(d => d.ms_id).filter(Boolean))].sort();
+  const match = d => f === 'all' || (f === 'pipeline' ? !d.ms_id : (d.ms_id === f || (d.applies_to || []).indexOf(f) >= 0));
+  const rows = all.filter(d => match(d) && (S.showSup || d.effective_status !== 'superseded'));
+  const sel = h('select', { class: 'select', 'aria-label': 'Filter decisions', onchange: e => { S.decFilter = e.target.value; S.decLimit = 30; e.target.blur(); render(); } },
+    h('option', { value: 'all' }, 'All decisions'), h('option', { value: 'pipeline' }, 'Pipeline-wide'), ids.map(i => h('option', { value: i }, i)));
+  sel.value = f;
+  return [
+    h('div', { class: 'toolbar' }, sel, h('button', { class: 'btn primary', disabled: LIVE ? null : true, onclick: startNew }, 'Record')),
+    h('label', { class: 'toggle' }, h('input', { type: 'checkbox', checked: S.showSup ? true : null, onchange: e => { S.showSup = e.target.checked; render(); } }), 'Show superseded records'),
+    h('p', { class: 'count' }, rows.length + (rows.length === 1 ? ' decision' : ' decisions')),
+    h('div', { class: 'list' }, rows.slice(0, S.decLimit).map(decRow)),
+    rows.length > S.decLimit ? h('button', { class: 'btn block', onclick: () => { S.decLimit += 30; render(); } }, 'Show more') : null];
+}
+function decRow(d) {
+  return h('button', { class: 'item' + (d.effective_status === 'superseded' ? ' dim' : ''), onclick: () => go('decision/' + d.decision_id) },
+    h('div', { class: 'item-top' }, h('b', null, d.ref), chip(d.ms_id || 'pipeline'), d.door === 'locked' ? chip('locked door', 'bad') : null,
+      d.effective_status !== 'answered' ? chip(d.effective_status, d.effective_status === 'superseded' ? 'muted' : 'warn') : null, d.from_console ? chip('console', 'info') : null),
+    h('div', { class: 'item-title clamp2' }, d.question),
+    d.chosen_label ? h('div', { class: 'item-meta clamp2' }, 'Chosen: ' + d.chosen_label) : null,
+    h('div', { class: 'item-sub' }, fDay(new Date(d.decided_at))));
+}
+function opts(d) { return Array.isArray(d.options) ? d.options : (typeof d.options === 'string' ? JSON.parse(d.options) : []); }
+function viewDecision(id) {
+  const d = (D('decisions') || []).find(x => x.decision_id === id);
+  if (!d) return [backBar('Decisions'), ...(ready('decisions') ? [h('p', null, 'Record not found.')] : waitFor('decisions'))];
+  const o = opts(d);
+  return [
+    backBar('Decisions'),
+    h('div', { class: 'head' }, h('div', { class: 'eyebrow' }, [d.ref, d.ms_id || 'pipeline'].join(' · ')), h('h2', { class: 'title' }, d.question),
+      h('div', { class: 'chips' }, chip(d.effective_status, d.effective_status === 'answered' ? 'ok' : d.effective_status === 'superseded' ? 'muted' : 'warn'),
+        chip(d.door === 'locked' ? 'locked door' : 'two-way door', d.door === 'locked' ? 'bad' : 'outline'), d.hard_stop_key ? chip(d.hard_stop_key, 'outline') : null, d.from_console ? chip('console', 'info') : null)),
+    d.context ? details('ctx:' + id, 'Context', h('p', { style: 'overflow-wrap:anywhere' }, d.context)) : null,
+    section('Options', h('ol', { class: 'opts' }, o.map(x => h('li', { class: 'opt' + (x.chosen ? ' chosen' : '') + (x.kind === 'none_of_these' || x.kind === 'need_more_info' ? ' escape' : '') },
+      h('div', { class: 'opt-l clamp clamp3' }, x.ord + '. ' + x.label), x.detail && x.detail !== x.label ? h('div', { class: 'opt-d clamp2' }, x.detail) : null,
+      (x.chosen || x.recommended) ? h('div', { class: 'chips' }, x.chosen ? chip('chosen', 'ok') : null, x.recommended ? chip('recommended', 'info') : null) : null)))),
+    section('Basis', card(kv('Decided by', d.decided_by || '—'), kv('When', fDT(new Date(d.decided_at))), kv('Basis', d.basis || '—'), d.note ? kv('Note', d.note) : null,
+      kv('Recorded by', d.generated_by || '—'),
+      d.supersedes ? h('button', { class: 'link', onclick: () => go('decision/' + d.supersedes) }, 'Supersedes an earlier record ›') : null,
+      d.superseded_by ? h('button', { class: 'link', onclick: () => go('decision/' + d.superseded_by) }, 'Superseded by a newer record ›') : null)),
+    d.effective_status === 'superseded' ? h('p', { class: 'note' }, 'This record was superseded. Open the newer record to change it.')
+      : h('button', { class: 'btn primary block', disabled: LIVE ? null : true, onclick: () => startChange(d.decision_id) }, LIVE ? 'Change decision' : 'Change decision · live console only')];
+}
+
+// ---------- Flows (one field per page; context shown before each question) ----------
+function startRun(ms) { S.flow = { type: 'run', ms, step: 1, req: newUuid(), note: '' }; go('flow'); }
+function startChange(id) { S.flow = { type: 'change', id, step: 1, req: newUuid(), ord: null, note: '' }; go('flow'); }
+function startNew() { S.flow = { type: 'new', step: 1, req: newUuid(), ms: undefined, question: '', answer: '', note: '' }; go('flow'); }
+function flowTop(f, total) {
+  return h('div', { class: 'backbar' },
+    (f.step > 1 && !f.result) ? h('button', { class: 'link', onclick: () => { f.step--; render(true); } }, '‹ Previous step') : h('span'),
+    (f.result || total < 2) ? null : h('span', { class: 'step' }, 'Step ' + f.step + ' of ' + total),
+    (f.result && f.result.ok) ? h('button', { class: 'link', onclick: () => { S.flow = null; back(); } }, 'Done') : null);
+}
+function area(f, key, label, placeholder) {
+  const t = h('textarea', { id: 'fld', 'aria-label': label, placeholder: placeholder || '', 'data-autofocus': (key === 'question' || key === 'answer') ? '1' : null });
+  t.value = f[key] || '';
+  t.addEventListener('input', () => { f[key] = t.value; const n = document.getElementById('next'); if (n && n.dataset.req === key) n.disabled = !valid(f, key); });
+  return t;
+}
+function valid(f, key) { const v = String(f[key] || '').trim(); return key === 'question' ? v.length > 10 : key === 'answer' ? v.length > 0 : true; }
+function resultBox(f, okText, extra) {
+  if (!f.result) return null;
+  return f.result.ok ? [h('div', { class: 'ok-msg', role: 'status' }, okText), extra || null]
+    : [h('div', { class: 'err', role: 'alert' }, 'Not saved: ' + friendly(f.result.msg)), h('button', { class: 'btn primary block', onclick: () => { f.result = null; submit(f); } }, 'Try again')];
+}
+async function submit(f) {
+  if (f.busy) return; f.busy = true; render();
+  try {
+    if (f.type === 'run') { f.newId = await queueRun(f); f.result = { ok: true }; await Promise.all(['inbox', 'status', 'activity', 'manuscripts'].map(n => loadView(n, true))); }
+    else { f.newId = await recordDecision(f); f.result = { ok: true }; await Promise.all(['decisions', 'inbox', 'activity', 'status', 'manuscripts'].map(n => loadView(n, true))); }
+  } catch (e) { f.result = { ok: false, msg: String(e.message || e) }; console.error('[console] write', e); }
+  f.busy = false; render(true);
+}
+function flowRun(f) {
+  const m = (D('manuscripts') || []).find(x => x.ms_id === f.ms) || { ms_id: f.ms, title: '', stage: '?', stage_code: '', run_state: '' };
+  const last = (D('runs') || []).find(r => r.ms_id === f.ms);
+  if (f.result) return [flowTop(f, 1), h('p', { class: 'q' }, f.result.ok ? 'Rerun queued' : 'Rerun not queued'),
+    resultBox(f, 'Queued.',
+      h('button', { class: 'btn block', onclick: () => { S.flow = null; S.inboxMs = f.ms; S.sub.runs = 'inbox'; S.stack = ['runs']; render(true); } }, 'See it in the inbox'))];
+  return [flowTop(f, 1),
+    h('div', { class: 'ctx' }, h('div', { class: 'lbl' }, m.ms_id), h('div', { class: 'item-title', style: 'margin-top:2px' }, m.title),
+      h('div', { class: 'item-sub' }, 'Stage ' + m.stage + ' · ' + m.stage_code + ' · ' + m.run_state + (last ? ' · last stage run ' + fDay(new Date(last.updated_at)) : '')),
+      last && last.outcome ? h('div', { class: 'item-sub', style: 'margin-top:6px' }, 'Last outcome: ' + last.outcome) : null),
+    h('p', { class: 'q' }, 'Note (optional)'),
+    area(f, 'note', 'Note for the job processor', ''),
+    h('button', { class: 'btn primary block', disabled: f.busy ? true : null, onclick: () => submit(f) }, f.busy ? 'Saving…' : 'Queue rerun of Stage ' + m.stage)];
+}
+function flowChange(f) {
+  const d = (D('decisions') || []).find(x => x.decision_id === f.id);
+  if (!d) return [flowTop(f, 2), ...waitFor('decisions')];
+  const o = opts(d);
+  if (f.result) return [flowTop(f, 2), h('p', { class: 'q' }, f.result.ok ? 'Decision changed' : 'Decision not changed'),
+    resultBox(f, 'Saved.',
+      f.newId ? h('button', { class: 'btn block', onclick: () => { S.flow = null; S.stack = ['decisions', 'decision/' + f.newId]; render(true); } }, 'Open the new record') : null)];
+  const cur = o.find(x => x.chosen);
+  if (f.step === 1) return [flowTop(f, 2),
+    h('div', { class: 'ctx' }, h('div', { class: 'lbl' }, d.ref + ' · ' + (d.ms_id || 'pipeline')), h('div', { class: 'item-title', style: 'margin-top:2px' }, d.question),
+      cur ? h('div', { class: 'item-sub', style: 'margin-top:6px' }, 'Current choice: ' + cur.label) : null),
+    h('p', { class: 'q' }, 'Which option do you choose?'),
+    o.map(x => h('button', { class: 'choice' + (x.chosen ? ' current' : ''), onclick: () => { f.ord = x.ord; f.label = x.label; f.step = 2; render(true); } },
+      x.label, (x.chosen || x.recommended) ? h('small', null, [x.chosen && 'current choice', x.recommended && 'recommended'].filter(Boolean).join(' · ')) : null))];
+  return [flowTop(f, 2),
+    h('div', { class: 'ctx' }, h('div', { class: 'lbl' }, 'Your choice'), h('div', { class: 'item-title', style: 'margin-top:2px' }, f.label),
+      h('div', { class: 'item-sub', style: 'margin-top:6px' }, d.question)),
+    h('p', { class: 'q' }, 'Reason or note (optional)'),
+    area(f, 'note', 'Reason or note', 'Optional'),
+    h('button', { class: 'btn primary block', disabled: f.busy ? true : null, onclick: () => submit(f) }, f.busy ? 'Saving…' : 'Save decision')];
+}
+function flowNew(f) {
+  const total = 5, ms = D('manuscripts') || [];
+  if (f.result) return [flowTop(f, total), h('p', { class: 'q' }, f.result.ok ? 'Decision recorded' : 'Decision not recorded'),
+    resultBox(f, 'Saved.',
+      f.newId ? h('button', { class: 'btn block', onclick: () => { S.flow = null; S.stack = ['decisions', 'decision/' + f.newId]; render(true); } }, 'Open the record') : null)];
+  const scopeLbl = f.ms === null ? 'Pipeline-wide' : f.ms ? f.ms + ' · ' + ((ms.find(x => x.ms_id === f.ms) || {}).title || '') : '';
+  const next = (key, label) => h('button', { id: 'next', 'data-req': key, class: 'btn primary block', disabled: valid(f, key) ? null : true, onclick: () => { f.step++; render(true); } }, label || 'Next');
+  if (f.step === 1) return [flowTop(f, total), h('p', { class: 'q' }, 'Which manuscript is this decision about?'),
+    h('button', { class: 'choice compact', onclick: () => { f.ms = null; f.step = 2; render(true); } }, 'Pipeline-wide', h('small', null, 'Not tied to one manuscript')),
+    ms.map(m => h('button', { class: 'choice compact' + (f.ms === m.ms_id ? ' current' : ''), onclick: () => { f.ms = m.ms_id; f.step = 2; render(true); } }, m.ms_id, h('small', null, m.title)))];
+  if (f.step === 2) return [flowTop(f, total), h('div', { class: 'ctx' }, h('div', { class: 'lbl' }, 'About'), h('div', { class: 'item-title', style: 'margin-top:2px' }, scopeLbl)),
+    h('p', { class: 'q' }, 'What is the question?'), area(f, 'question', 'Question', 'For example: Which journal is the primary target?'), next('question')];
+  if (f.step === 3) return [flowTop(f, total), h('div', { class: 'ctx' }, h('div', { class: 'lbl' }, 'Question'), h('div', { class: 'item-title', style: 'margin-top:2px' }, f.question)),
+    h('p', { class: 'q' }, 'What did you decide?'), area(f, 'answer', 'Decision', ''), next('answer')];
+  if (f.step === 4) return [flowTop(f, total), h('div', { class: 'ctx' }, h('div', { class: 'lbl' }, 'Decision'), h('div', { class: 'item-title', style: 'margin-top:2px' }, f.answer)),
+    h('p', { class: 'q' }, 'Reason or note (optional)'), area(f, 'note', 'Reason or note', 'Optional'), next('note', 'Review')];
+  return [flowTop(f, total), h('p', { class: 'q' }, 'Review and save'),
+    card(kv('About', scopeLbl), kv('Question', f.question), kv('Decision', f.answer), f.note ? kv('Note', f.note) : null),
+    h('button', { class: 'btn primary block', disabled: f.busy ? true : null, onclick: () => submit(f) }, f.busy ? 'Saving…' : 'Save decision')];
+}
+function viewFlow() {
+  const f = S.flow; if (!f) return [h('p', { class: 'empty' }, 'Nothing open.')];
+  return f.type === 'run' ? flowRun(f) : f.type === 'change' ? flowChange(f) : flowNew(f);
+}
+
+// ---------- Files ----------
+function fileRow(x) {
+  const top = h('div', { class: 'item-top' }, x.is_superseded ? chip('superseded', 'muted') : chip(x.status || x.kind || 'file', FILE_TONE[x.status] || (x.section === 'gap' ? 'bad' : 'outline')),
+    x.portal_designation ? chip(x.portal_designation, 'info') : null, x.upload_order ? chip('upload ' + x.upload_order, 'outline') : null);
+  const body = [top, h('div', { class: 'item-title' }, x.name), h('div', { class: 'item-sub' }, [x.version, x.recorded_at && fDay(new Date(x.recorded_at))].filter(Boolean).join(' · '))];
+  const u = safeUrl(x.link);
+  return u ? h('a', { class: 'item compact' + (x.is_superseded ? ' dim' : ''), href: u, target: '_blank', rel: 'noopener noreferrer' }, body) : h('div', { class: 'item compact' + (x.is_superseded ? ' dim' : '') }, body);
+}
+// ---------- Sources (reference source registry, read-only) ----------
+const SRC_ORDER = [['wired', 'Wired'], ['registered', 'Registered'], ['candidate', 'Candidate'], ['evaluated_elsewhere', 'Evaluated elsewhere'], ['restricted', 'Restricted'], ['not_suitable', 'Not suitable'], ['unreachable', 'Unreachable']];
+const SRC_TONE = { wired: 'ok', registered: 'info', candidate: 'outline', evaluated_elsewhere: 'muted', restricted: 'warn', not_suitable: 'muted', unreachable: 'bad' };
+const srcKey = s => String(s || '').split(':')[0].trim();
+function srcRow(x) {
+  const k = srcKey(x.status), st = String(x.status || ''), i = st.indexOf(':'), owner = i > 0 ? st.slice(i + 1).trim() : null;
+  const u = safeUrl(x.link);
+  const body = [h('div', { class: 'item-top' }, chip(k, SRC_TONE[k] || 'outline'), x.access && x.access !== 'open' ? chip(x.access === 'unknown' ? 'access unknown' : x.access, 'outline') : null),
+    h('div', { class: 'item-title clamp2' }, x.source),
+    h('div', { class: 'item-sub' }, [x.ref, x.type, x.used_by].filter(Boolean).join(' · ')),
+    null];
+  return u ? h('a', { class: 'item compact', href: u, target: '_blank', rel: 'noopener noreferrer' }, body) : h('div', { class: 'item compact', style: 'cursor:default' }, body);
+}
+function viewSources() {
+  if (!ready('sources')) return waitFor('sources');
+  const all = D('sources'), n = {};
+  all.forEach(x => { const k = srcKey(x.status); n[k] = (n[k] || 0) + 1; });
+  const keys = SRC_ORDER.filter(([k]) => n[k]).concat(Object.keys(n).filter(k => !SRC_TONE[k]).sort().map(k => [k, k]));
+  if (!S.srcStatus || (S.srcStatus !== 'all' && !n[S.srcStatus])) S.srcStatus = n.wired ? 'wired' : 'all';
+  const sel = h('select', { class: 'select', 'aria-label': 'Source status', onchange: e => { S.srcStatus = e.target.value; e.target.blur(); render(); } },
+    keys.map(([k, l]) => h('option', { value: k }, l + ' · ' + n[k])), h('option', { value: 'all' }, 'All statuses · ' + all.length));
+  sel.value = S.srcStatus;
+  const rows = all.filter(x => S.srcStatus === 'all' || srcKey(x.status) === S.srcStatus);
+  return [h('div', { class: 'toolbar' }, sel),
+    section('Reference sources · ' + rows.length + (S.srcStatus === 'all' ? '' : ' of ' + all.length), rows.length ? h('div', { class: 'list' }, rows.map(srcRow)) : card(h('p', { class: 'empty' }, 'No sources with this status.')))];
+}
+const SEG_FILES = [['views', 'Views & forms'], ['ms', 'Manuscripts'], ['sources', 'Sources']];
+function viewFiles() {
+  if (S.sub.files === 'sources') return [seg('files', SEG_FILES), ...viewSources()];
+  if (!ready('files')) return [seg('files', SEG_FILES), ...waitFor('files')];
+  const all = D('files');
+  const out = [seg('files', SEG_FILES)];
+  if (S.sub.files === 'views') {
+    const views = all.filter(x => x.section === 'live_view'), forms = all.filter(x => x.section === 'form'), folders = all.filter(x => x.section === 'folder');
+    const jotIds = new Set((S.jot || []).map(j => String(j.id)));
+    out.push(section('Live views in Google Sheets · ' + views.length, h('div', { class: 'list' }, views.map(x => {
+      const u = safeUrl(x.link);
+      return h('a', { class: 'item compact', href: u, target: '_blank', rel: 'noopener noreferrer' },
+        h('div', { class: 'line' }, h('div', { class: 'item-title', style: 'margin-top:0' }, x.name), chip(x.status === 'generated from Neon' ? 'generated' : 'linked', x.status === 'generated from Neon' ? 'info' : 'outline')),
+        h('div', { class: 'item-sub' }, (x.ms_id ? x.ms_id + ' · ' : '') + (x.recorded_at ? 'Refreshed ' + fDT(new Date(x.recorded_at)) : 'Not refreshed by the pipeline')));
+    }))));
+    out.push(section('Jotform', h('div', { class: 'list' }, forms.map(x => h('a', { class: 'item', href: safeUrl(x.link), target: '_blank', rel: 'noopener noreferrer' },
+      h('div', { class: 'item-top' }, chip(x.status, 'outline'), S.jot ? (jotIds.has((x.link || '').split('/').pop()) ? chip('found in Jotform', 'ok') : chip('not found in Jotform', 'bad')) : null),
+      h('div', { class: 'item-title' }, x.name), x.note ? h('div', { class: 'item-sub' }, x.note) : null)))));
+    const root = folders.find(x => !x.ms_id);
+    out.push(section('Google Drive', h('div', { class: 'list' }, root ? h('a', { class: 'item', href: safeUrl(root.link), target: '_blank', rel: 'noopener noreferrer' }, h('div', { class: 'item-title', style: 'margin-top:0' }, 'Publications Pipeline folder')) : null),
+      LIVE ? (S.drive ? details('drive', 'Folder contents now · ' + S.drive.length, h('div', { class: 'list' }, S.drive.map(f => safeUrl(f.viewUrl) ? h('a', { class: 'item compact', href: safeUrl(f.viewUrl), target: '_blank', rel: 'noopener noreferrer' },
+          h('div', { class: 'item-title', style: 'margin-top:0' }, f.title), h('div', { class: 'item-sub' }, 'Modified ' + fDT(new Date(f.modifiedTime)))) : null)))
+        : S.driveErr ? h('div', { class: 'err' }, 'Drive: ' + S.driveErr) : skel()) : null,
+      details('msfolders', 'Manuscript folders · ' + folders.filter(x => x.ms_id).length, h('div', { class: 'list' }, folders.filter(x => x.ms_id).map(x => h('a', { class: 'item compact', href: safeUrl(x.link), target: '_blank', rel: 'noopener noreferrer' },
+          h('div', { class: 'item-title', style: 'margin-top:0' }, x.name)))))));
+    return out;
+  }
+  const ids = [...new Set(all.filter(x => x.ms_id && (x.section === 'file' || x.section === 'gap')).map(x => x.ms_id))].sort();
+  if (!S.fileMs || ids.indexOf(S.fileMs) < 0) S.fileMs = ids.indexOf('MS-005') >= 0 ? 'MS-005' : ids[0];
+  const sel = h('select', { class: 'select', 'aria-label': 'Manuscript', onchange: e => { S.fileMs = e.target.value; e.target.blur(); render(); } }, ids.map(i => h('option', { value: i }, i)));
+  sel.value = S.fileMs;
+  const mine = all.filter(x => x.ms_id === S.fileMs && (x.section === 'file' || x.section === 'gap'));
+  const current = mine.filter(x => x.section === 'file' && !x.is_superseded), old = mine.filter(x => x.section === 'file' && x.is_superseded), gaps = mine.filter(x => x.section === 'gap');
+  current.sort((a, b) => (a.upload_order || 99) - (b.upload_order || 99));
+  out.push(h('div', { class: 'toolbar' }, sel));
+  out.push(section('Current · ' + current.length, current.length ? h('div', { class: 'list' }, current.map(fileRow)) : card(h('p', { class: 'empty' }, 'No current files registered.'))));
+  if (gaps.length) out.push(section('Gaps · ' + gaps.length, h('div', { class: 'list' }, gaps.map(fileRow))));
+  if (old.length) out.push(details('old:' + S.fileMs, 'Superseded · ' + old.length, h('div', { class: 'list' }, old.map(fileRow))));
+  return out;
+}
+
+// ---------- Runs ----------
+function evRow(a) {
+  return h('div', { class: 'item', style: 'cursor:default' }, h('div', { class: 'item-top' }, chip(a.category, a.category === 'run' ? 'info' : a.category === 'decision' ? 'ok' : a.category === 'input' ? 'warn' : 'muted'), a.ms_id ? chip(a.ms_id) : null),
+    h('div', { class: 'item-title clamp2', style: 'font-weight:500' }, a.summary), h('div', { class: 'item-sub' }, fDT(new Date(a.ts))));
+}
+function viewRuns() {
+  const out = [seg('runs', [['overview', 'Rerun'], ['inbox', 'Inbox'], ['runs', 'Stage runs'], ['events', 'Events']])];
+  const v = S.sub.runs;
+  if (v === 'overview') {
+    if (!ready('manuscripts')) return out.concat(waitFor('manuscripts'));
+    const rerun = (D('manuscripts') || []).filter(m => m.can_queue_run);
+    out.push(rerun.length ? h('div', { class: 'list' }, rerun.map(m => h('div', { class: 'item' },
+      h('div', { class: 'item-top' }, h('b', null, m.ms_id), chip('Stage ' + m.stage + ' \u00b7 ' + m.stage_code), chip(m.run_state, RUN_TONE[m.run_state])),
+      h('div', { class: 'item-title clamp2' }, m.title),
+      h('button', { class: 'btn block', disabled: LIVE ? null : true, onclick: () => startRun(m.ms_id) }, 'Queue run')))) : card(h('p', { class: 'empty' }, 'No stage needs a rerun.')));
+    return out;
+  }
+  if (v === 'inbox') {
+    if (!ready('inbox')) return out.concat(waitFor('inbox'));
+    const rows = D('inbox').filter(i => !S.inboxMs || i.ms_id === S.inboxMs);
+    const waiting = rows.filter(i => i.pickup === 'waiting'), picked = rows.filter(i => i.pickup !== 'waiting');
+    if (S.inboxMs) out.push(h('div', { class: 'toolbar' }, chip(S.inboxMs, 'info'), h('button', { class: 'link small', onclick: () => { S.inboxMs = null; render(); } }, 'Show all')));
+    const row = i => h('div', { class: 'item', style: 'cursor:default' }, h('div', { class: 'item-top' }, chip(i.pickup === 'waiting' ? 'waiting' : 'picked up', i.pickup === 'waiting' ? 'warn' : 'ok'), chip(i.kind, 'outline'), i.ms_id ? chip(i.ms_id) : null, i.from_console ? chip('console', 'info') : null),
+      h('div', { class: 'item-title clamp2', style: 'font-weight:500' }, i.body), h('div', { class: 'item-sub' }, fDT(new Date(i.created_at))));
+    out.push(section('Waiting · ' + waiting.length, waiting.length ? h('div', { class: 'list' }, waiting.slice(0, 40).map(row)) : card(h('p', { class: 'empty' }, 'Nothing waiting.'))));
+    if (picked.length) out.push(details('picked', 'Picked up in the last 21 days · ' + picked.length, h('div', { class: 'list' }, picked.slice(0, 40).map(row))));
+    return out;
+  }
+  if (v === 'runs') {
+    if (!ready('runs')) return out.concat(waitFor('runs'));
+    out.push(h('div', { class: 'list' }, D('runs').map(r => h('div', { class: 'item', style: 'cursor:default' },
+      h('div', { class: 'item-top' }, h('b', null, r.ms_id), chip('Stage ' + r.stage + ' · ' + r.stage_code), chip(r.status, RUN_TONE[r.status])),
+      r.outcome ? h('div', { class: 'item-title clamp2', style: 'font-weight:500' }, r.outcome) : null,
+      h('div', { class: 'item-sub' }, fDT(new Date(r.updated_at)))))));
+    return out;
+  }
+  if (!ready('activity')) return out.concat(waitFor('activity'));
+  const cats = [['all', 'All'], ['run', 'Runs'], ['decision', 'Decisions'], ['file', 'Files'], ['input', 'Inputs'], ['rule', 'Rules'], ['record', 'Records'], ['notice', 'Notices'], ['system', 'System']];
+  const sel = h('select', { class: 'select', 'aria-label': 'Event type', onchange: e => { S.evFilter = e.target.value; S.evLimit = 40; e.target.blur(); render(); } }, cats.map(([k, l]) => h('option', { value: k }, l)));
+  sel.value = S.evFilter;
+  const rows = D('activity').filter(a => S.evFilter === 'all' ? a.category !== 'system' : a.category === S.evFilter);
+  out.push(h('div', { class: 'toolbar' }, sel), h('p', { class: 'count' }, rows.length + ' events'));
+  out.push(h('div', { class: 'list' }, rows.slice(0, S.evLimit).map(evRow)));
+  if (rows.length > S.evLimit) out.push(h('button', { class: 'btn block', onclick: () => { S.evLimit += 40; render(); } }, 'Show more'));
+  return out;
+}
+
+// ---------- Process map (BPMN 2.0 shapes drawn from the diagram coordinates stored in Neon) ----------
+const SVGNS = 'http://www.w3.org/2000/svg';
+function sv(tag, attrs, text) {
+  const el = document.createElementNS(SVGNS, tag);
+  for (const [k, v] of Object.entries(attrs || {})) if (v != null) el.setAttribute(k, String(v));
+  if (text != null) el.textContent = text;
+  return el;
+}
+function wrapLines(t, max, maxLines) {
+  const s = String(t || '').replace(/\s+/g, ' ').trim(), lines = []; let i = 0;
+  while (i < s.length && lines.length < maxLines) {
+    if (s.length - i <= max) { lines.push(s.slice(i)); i = s.length; break; }
+    let cut = -1;
+    for (let j = i + max; j > i + 2; j--) { if (' _./-'.indexOf(s[j - 1]) >= 0) { cut = j; break; } }
+    if (cut < 0) cut = i + max;
+    lines.push(s.slice(i, cut).trim()); i = cut; while (s[i] === ' ') i++;
+  }
+  if (i < s.length && lines.length) lines[lines.length - 1] = lines[lines.length - 1].replace(/.?$/, '…');
+  return lines;
+}
+function processMap(rows) {
+  const n = v => Number(v);
+  const els = rows.filter(r => r.item === 'element'), flows = rows.filter(r => r.item === 'flow');
+  const byId = {}; els.forEach(e => { byId[e.id] = e; });
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  els.forEach(e => { minX = Math.min(minX, n(e.x)); minY = Math.min(minY, n(e.y)); maxX = Math.max(maxX, n(e.x) + n(e.w)); maxY = Math.max(maxY, n(e.y) + n(e.h) + 30); });
+  const pad = 16, W = Math.round(maxX - minX + 2 * pad), H = Math.round(maxY - minY + 2 * pad);
+  const z = S.zoom || 1;
+  const svg = sv('svg', { viewBox: (minX - pad) + ' ' + (minY - pad) + ' ' + W + ' ' + H, width: Math.round(W * z), height: Math.round(H * z), role: 'img', 'aria-label': 'Process map ' + (rows[0].model_name || '') });
+  const defs = sv('defs'), mk = sv('marker', { id: 'arr', viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 7, markerHeight: 7, orient: 'auto-start-reverse' });
+  mk.appendChild(sv('path', { d: 'M0,0 L10,5 L0,10 z', fill: '#4b5563' })); defs.appendChild(mk); svg.appendChild(defs);
+  els.filter(e => e.type === 'participant' || e.type === 'lane').forEach(e => {
+    svg.appendChild(sv('rect', { x: e.x, y: e.y, width: e.w, height: e.h, fill: e.type === 'participant' ? '#fbfcfd' : 'none', stroke: '#c9cfd8' }));
+    const lx = n(e.x) + (e.type === 'participant' ? 15 : 12), ly = n(e.y) + n(e.h) / 2;
+    svg.appendChild(sv('text', { x: lx, y: ly, 'font-size': 12, fill: '#5d6675', 'font-weight': 600, 'text-anchor': 'middle', 'dominant-baseline': 'middle', transform: 'rotate(-90 ' + lx + ' ' + ly + ')' }, e.name));
+  });
+  flows.forEach(f => {
+    const s = byId[f.source_id], t = byId[f.target_id]; if (!s || !t) return;
+    let pts = Array.isArray(f.waypoints) && f.waypoints.length >= 2 ? f.waypoints.map(p => Array.isArray(p) ? [n(p[0]), n(p[1])] : [n(p.x), n(p.y)]) : null;
+    if (!pts) {
+      const scx = n(s.x) + n(s.w) / 2, scy = n(s.y) + n(s.h) / 2, tcx = n(t.x) + n(t.w) / 2, tcy = n(t.y) + n(t.h) / 2;
+      if (f.type !== 'sequenceFlow') pts = tcy > scy ? [[scx, n(s.y) + n(s.h)], [tcx, n(t.y)]] : [[scx, n(s.y)], [tcx, n(t.y) + n(t.h)]];
+      else if (n(t.x) + n(t.w) <= n(s.x)) { const yb = Math.max(n(s.y) + n(s.h), n(t.y) + n(t.h)) + 16; pts = [[scx, n(s.y) + n(s.h)], [scx, yb], [tcx, yb], [tcx, n(t.y) + n(t.h)]]; }
+      else { const sx = n(s.x) + n(s.w), tx = n(t.x), mx = (sx + tx) / 2; pts = Math.abs(scy - tcy) < 1 ? [[sx, scy], [tx, tcy]] : [[sx, scy], [mx, scy], [mx, tcy], [tx, tcy]]; }
+    }
+    svg.appendChild(sv('polyline', { points: pts.map(p => p.join(',')).join(' '), fill: 'none', stroke: '#4b5563', 'stroke-width': 1.4, 'stroke-dasharray': f.type === 'sequenceFlow' ? null : '4 3', 'marker-end': 'url(#arr)' }));
+    if (f.name) {
+      const a = pts[0], b = pts[1], horiz = Math.abs(b[1] - a[1]) < 1, dir = horiz ? Math.sign(b[0] - a[0]) || 1 : Math.sign(b[1] - a[1]) || 1;
+      const lx = horiz ? a[0] + (dir > 0 ? 6 : -6) : a[0] + 5, ly = horiz ? a[1] - 5 : a[1] + (dir > 0 ? 15 : -7);
+      svg.appendChild(sv('text', { x: lx, y: ly, 'font-size': 10.5, fill: '#5d6675', 'text-anchor': horiz && dir < 0 ? 'end' : 'start', stroke: '#fbfcfd', 'stroke-width': 3, 'paint-order': 'stroke' }, f.name));
+    }
+  });
+  els.filter(e => e.type !== 'participant' && e.type !== 'lane').forEach(e => {
+    const x = n(e.x), y = n(e.y), w = n(e.w), hh = n(e.h), cx = x + w / 2, cy = y + hh / 2; let below = true;
+    if (/Event$/.test(e.type)) svg.appendChild(sv('circle', { cx, cy, r: Math.min(w, hh) / 2, fill: '#fff', stroke: e.type === 'endEvent' ? '#14181f' : '#4b5563', 'stroke-width': e.type === 'endEvent' ? 3 : 1.5 }));
+    else if (e.type === 'exclusiveGateway') svg.appendChild(sv('polygon', { points: cx + ',' + y + ' ' + (x + w) + ',' + cy + ' ' + cx + ',' + (y + hh) + ' ' + x + ',' + cy, fill: '#fff4e5', stroke: '#8a4600', 'stroke-width': 1.5 }));
+    else if (e.type === 'dataStoreReference') svg.appendChild(sv('path', { d: 'M' + x + ',' + (y + 6) + ' a' + (w / 2) + ',6 0 0 0 ' + w + ',0 v' + (hh - 12) + ' a' + (w / 2) + ',6 0 0 1 -' + w + ',0 z M' + x + ',' + (y + 6) + ' a' + (w / 2) + ',6 0 0 1 ' + w + ',0', fill: '#fff', stroke: '#4b5563' }));
+    else if (e.type === 'dataObjectReference') svg.appendChild(sv('path', { d: 'M' + x + ',' + y + ' h' + (w - 10) + ' l10,10 v' + (hh - 10) + ' h-' + w + ' z', fill: '#fff', stroke: '#4b5563' }));
+    else { below = false; svg.appendChild(sv('rect', { x, y, width: w, height: hh, rx: 8, fill: (e.type === 'userTask' || e.type === 'manualTask') ? '#eaf0fe' : '#fff', stroke: '#1f4fd1', 'stroke-width': 1.3 })); }
+    const data = /^data/.test(e.type), fs = below ? (data ? 10.5 : 11.5) : 11, lh = fs + 2;
+    const lines = wrapLines(e.name, below ? (data ? 16 : 20) : Math.max(8, Math.floor(w / 6.2)), below ? 3 : Math.max(2, Math.floor((hh - 6) / lh)));
+    const ty = below ? y + hh + fs + 2 : cy - (lines.length - 1) * lh / 2 + 4;
+    lines.forEach((ln, i) => svg.appendChild(sv('text', { x: cx, y: ty + i * lh, 'text-anchor': 'middle', 'font-size': fs, fill: '#14181f', stroke: below ? '#fbfcfd' : null, 'stroke-width': below ? 3 : null, 'paint-order': below ? 'stroke' : null }, ln)));
+  });
+  return svg;
+}
+function processSection() {
+  const rows = D('process');
+  if (!Array.isArray(rows)) return section('Process map', ...waitFor('process'));
+  if (!rows.length) return section('Process map', card(h('p', { class: 'empty' }, 'Not published yet.')));
+  const wrap = h('div', { class: 'pmap', role: 'region', 'aria-label': 'Process map; scroll to pan', tabindex: '0' });
+  wrap.appendChild(processMap(rows));
+  const nEl = rows.filter(r => r.item === 'element').length, nGw = rows.filter(r => r.type === 'exclusiveGateway').length;
+  const z = S.zoom || 1;
+  const zoom = h('div', { class: 'seg', role: 'tablist', 'aria-label': 'Zoom' }, [[0.25, 'Overview'], [0.5, '50%'], [1, '100%']].map(([v, l]) => h('button', { role: 'tab', 'aria-selected': z === v ? 'true' : 'false', onclick: () => { S.zoom = v; render(); } }, l)));
+  return section('Process map', card(h('div', { class: 'item-sub', style: 'margin:0 0 8px' }, (rows[0].model_name || rows[0].model_key) + ' · v' + rows[0].model_version + ' · ' + nEl + ' elements · ' + plural(nGw, 'gateway', 'gateways')), zoom, wrap));
+}
+
+// ---------- Rules (read-only) ----------
+function viewRules() {
+  if (!ready('rules')) return waitFor('rules');
+  const r = D('rules'), by = s => r.filter(x => x.section === s).sort((a, b) => a.ord - b.ord);
+  const comm = by('communication'), hs = by('hard_stops'), defs = by('hard_stop_def'), con = by('console'), gl = by('glossary'), gd = by('glossary_distinct');
+  const voc = D('vocabulary') || [];
+  return [
+    section('Communication rule', comm[0] ? h('blockquote', null, '“' + comm[0].body + '”', h('div', { class: 'note' }, 'Dr. Harrity · ' + comm[0].title.replace(/^His words \(|\)$/g, ''))) : null,
+      comm.slice(1).map(x => details('rule:' + x.title, x.title, h('p', { style: 'overflow-wrap:anywhere' }, x.body), h('p', { class: 'note' }, x.ref)))),
+    section('This console', con.map(x => card(h('p', null, x.body)))),
+    section('Hard stops', hs[0] ? card(h('div', { class: 'row-t' }, hs[0].title), h('p', { style: 'margin-top:4px' }, hs[0].body)) : null,
+      details('hsdefs', 'Hard-stop catalogue · ' + defs.length, defs.map(x => h('div', { class: 'row' }, h('div', { class: 'row-t' }, x.title), h('div', { class: 'row-s' }, x.body)))),
+      hs.slice(1).map(x => details('rule:' + x.title, x.title, h('p', { style: 'overflow-wrap:anywhere' }, x.body)))),
+    processSection(),
+    section('Standard terms',
+      voc.length ? details('vocab', 'Vocabulary · ' + voc.length, voc.map(v => h('div', { class: 'row' }, h('div', { class: 'item-top' }, h('b', null, v.term), v.category ? chip(v.category, 'outline') : null, v.alignment ? chip(v.alignment, v.alignment === 'aligned' ? 'ok' : 'warn') : null),
+        h('div', { class: 'row-s' }, v.definition), v.standard_ref ? h('div', { class: 'row-s' }, 'Standard: ' + v.standard_ref) : null))) : null,
+      details('gloss', 'Pipeline glossary · ' + gl.length, gl.map(x => h('div', { class: 'row' }, h('div', { class: 'row-t' }, x.title), h('div', { class: 'row-s' }, x.body)))),
+      details('glossd', 'Kept distinct · ' + gd.length, gd.map(x => h('div', { class: 'row' }, h('div', { class: 'row-t' }, x.title), h('div', { class: 'row-s' }, x.body)))))
+  ];
+}
+
+
+// ---------- Home and subpages ----------
+function tile(label, sub, fn, cls) { return h('button', { class: 'tile' + (cls ? ' ' + cls : ''), onclick: fn }, label, sub ? h('small', null, sub) : null); }
+function cnt(name, f) { const a = D(name); return Array.isArray(a) ? String(f ? f(a) : a.length) : ''; }
+function heroSub() {
+  const a = (D('today') || []).filter(r => r.kind === 'hard_stop' || r.kind === 'locked_decision');
+  if (!a.length) return '';
+  const dd = due(a[0].due_date);
+  return (a[0].ms_id ? a[0].ms_id + ': ' : '') + a[0].title + (dd ? ' · due ' + dd.text.split(' · ')[1] : '') + (a.length > 1 ? ' (+' + (a.length - 1) + ' more)' : '');
+}
+function viewHome() {
+  const st = (D('status') || [])[0];
+  const w = cnt('today', a => a.filter(r => r.kind === 'hard_stop' || r.kind === 'locked_decision').length);
+  const g = t => h('div', { class: 'grp' }, t);
+  return [h('div', { class: 'tiles' },
+    tile('Waiting on you', w === '' ? '…' : w === '0' ? 'Nothing waiting' : heroSub(), () => go('today'), 'hero'),
+    tile('Manuscripts', cnt('manuscripts'), () => go('ms')),
+    tile('Decisions', cnt('decisions', a => a.filter(d => d.effective_status !== 'superseded').length), () => go('decisions')),
+    tile('Holds', cnt('today', a => a.filter(r => r.kind === 'hold' || r.kind === 'park' || r.kind === 'contact').length), () => go('holds'), 'wide'),
+    g('Runs'),
+    tile('Inbox', cnt('inbox', a => a.filter(i => i.pickup === 'waiting').length) + ' waiting', () => go('inbox')),
+    tile('Stage runs', st ? st.runs_queued + ' queued' : '', () => go('runlist')),
+    tile('Events', '', () => go('events')),
+    tile('Budget', st ? fmtN(st.spent_units) + ' of ' + fmtN(st.available_units) : '', () => go('budget')),
+    tile('Work items', cnt('backlog'), () => go('wbs'), 'wide'),
+    g('Files'),
+    tile('Live views', '', () => go('fviews')),
+    tile('Forms', '', () => go('forms')),
+    tile('Drive', '', () => go('drive')),
+    tile('Sources', cnt('sources'), () => go('sources')),
+    g('Rules'),
+    tile('Hard stops', '', () => go('hardstops')),
+    tile('Communication', '', () => go('rulespage')),
+    tile('Process map', '', () => go('process')),
+    tile('Terms', cnt('vocabulary'), () => go('terms')))];
+}
+function sub(title, fn) { const f = () => fn(); f.title = title; return f; }
+function viaRuns(key) { return () => { S.sub.runs = key; return viewRuns().slice(1); }; }
+function viaFiles(key, idx) { return () => { S.sub.files = key; const o = viewFiles(); return idx == null ? o.slice(1) : (o.length > idx ? [o[idx]] : o.slice(1)); }; }
+function viaRules(idxs) { return () => { const o = viewRules(); return o.length > 1 ? idxs.map(i => o[i]).filter(Boolean) : o; }; }
+function viewBudget() {
+  const st = (D('status') || [])[0];
+  if (!st) return waitFor('status');
+  const pct = st.available_units ? Math.min(100, Math.round(100 * st.spent_units / st.available_units)) : 0;
+  return [card(h('div', null, fmtN(st.spent_units) + ' of ' + fmtN(st.available_units) + ' units'), h('div', { class: 'bar', role: 'img', 'aria-label': pct + ' percent used' }, h('i', { style: 'width:' + pct + '%' }))),
+    card(kv('Last run', st.last_run_at ? ago(st.last_run_at) : 'none'), kv('Queued', String(st.runs_queued)), kv('Running', String(st.runs_running)), kv('Inbox', String(st.inbox_waiting)))];
+}
+function viewWbs() {
+  if (!ready('backlog')) return waitFor('backlog');
+  const bl = D('backlog');
+  return bl.length ? [h('div', { class: 'list' }, bl.map(b => h('div', { class: 'item', style: 'cursor:default' },
+    h('div', { class: 'item-top' }, h('b', null, b.code), chip(b.status, b.status === 'done' ? 'ok' : b.status === 'doing' ? 'info' : 'outline'), b.phase ? chip(b.phase, 'outline') : null),
+    h('div', { class: 'item-title' }, b.name))))] : [card(h('p', { class: 'empty' }, 'None.'))];
+}
+function viewTerms() {
+  const voc = D('vocabulary');
+  if (!Array.isArray(voc)) return waitFor('vocabulary');
+  return [h('div', { class: 'list' }, voc.map(v => h('div', { class: 'item', style: 'cursor:default' },
+    h('div', { class: 'item-top' }, h('b', null, v.term), v.alignment ? chip(v.alignment, v.alignment === 'aligned' ? 'ok' : 'warn') : null),
+    h('div', { class: 'item-sub' }, v.definition))))];
+}
+
+// ---------- render ----------
+function viewRulesHub() {
+  return [h('div', { class: 'tiles' },
+    tile('Hard stops', cnt('rules', a => a.filter(x => x.section === 'hard_stop_def').length), () => go('hardstops')),
+    tile('Communication', '', () => go('rulespage')),
+    tile('Process map', '', () => go('process')),
+    tile('Terms', cnt('vocabulary'), () => go('terms')))];
+}
+const VIEWFN = { home: viewHome, holds: sub('Holds', viewHolds), today: sub('Waiting on you', viewToday),
+  inbox: sub('Inbox', viaRuns('inbox')), runlist: sub('Stage runs', viaRuns('runs')), events: sub('Events', viaRuns('events')), budget: sub('Budget', viewBudget), wbs: sub('Work items', viewWbs),
+  fviews: sub('Live views', viaFiles('views', 1)), forms: sub('Forms', viaFiles('views', 2)), drive: sub('Drive', viaFiles('views', 3)), sources: sub('Sources', viaFiles('sources', null)),
+  hardstops: sub('Hard stops', viaRules([2])), rulespage: sub('Communication', viaRules([0, 1])), process: sub('Process map', viaRules([3])), terms: sub('Terms', viewTerms), ms: viewMs, msd: viewMsDetail, crit: viewCriteria, decisions: viewDecisions, decision: viewDecision, files: viewFiles, runs: viewRuns, rules: viewRulesHub, flow: viewFlow };
+const TITLES = { home: 'Pipeline Console', today: 'Waiting on you', ms: 'Manuscripts', decisions: 'Decisions', decision: 'Decision', files: 'Files', runs: 'Runs', rules: 'Rules', holds: 'Holds' };
+function pageTitle(r) {
+  if (r.name === 'msd') return r.arg;
+  if (r.name === 'crit') return r.arg + ' criteria';
+  if (r.name === 'flow') return S.flow ? (S.flow.type === 'run' ? 'Queue a stage run' : S.flow.type === 'change' ? 'Change decision' : 'New decision') : 'Flow';
+  const f = VIEWFN[r.name];
+  return (f && f.title) || TITLES[r.name] || 'Pipeline Console';
+}
+function render(nav) {
+  const a = document.activeElement;
+  if (!nav && a && (a.tagName === 'TEXTAREA' || a.tagName === 'SELECT') && document.getElementById('view').contains(a)) { S.pendingRender = true; return; }
+  S.pendingRender = false;
+  const r = cur(), y = window.scrollY;
+  renderTabs(TAB_OF[r.name] || (S.stack[0] || 'home'));
+  const nodes = (VIEWFN[r.name] || viewHome)(r.arg) || [];
+  const ht = document.getElementById('htitle'), hb = document.getElementById('hback');
+  if (ht) ht.textContent = pageTitle(r);
+  if (hb) hb.hidden = S.stack.length < 2;
+  const view = document.getElementById('view');
+  view.replaceChildren(...nodes.flat(Infinity).filter(Boolean));
+  if (nav) { window.scrollTo(0, 0); const f = view.querySelector('[data-autofocus]'); if (f) f.focus({ preventScroll: true }); else view.focus({ preventScroll: true }); }
+  else window.scrollTo(0, y);
+  const st = (D('status') || [])[0], mode = document.getElementById('mode');
+  if (LIVE) mode.innerHTML = '<span class="dot"></span>Live';
+  else mode.innerHTML = '<span class="dot snap"></span>Offline';
+}
+document.addEventListener('focusout', () => { setTimeout(() => { if (S.pendingRender) render(); }, 0); });
+
+// ---------- start ----------
+(async function start() {
+  await connect();
+  if (!LIVE) await webConnect();
+  const KEY = 'ppc.lastVisit.v1';
+  try { S.lastVisit = localStorage.getItem(KEY); } catch (e) { S.lastVisit = null; }
+  const now = LIVE ? new Date() : (SNAP && SNAP.taken_at ? new Date(SNAP.taken_at) : new Date());
+  S.since = S.lastVisit ? new Date(S.lastVisit) : new Date(now.getTime() - 86400000);
+  if (isNaN(S.since.getTime())) S.since = new Date(now.getTime() - 86400000);
+  if (!LIVE) {
+    document.getElementById('banner').appendChild(h('div', null, SNAP ? 'Offline copy from ' + fDT(new Date(SNAP.taken_at)) + '. Open in Claude to go live.' : 'Not connected.'));
+  }
+  const rb = document.getElementById('refresh');
+  if (LIVE && rb) { rb.hidden = false; rb.addEventListener('click', () => { S.drive = null; S.driveErr = null; S.jot = null; S.jotErr = null; VIEWS.forEach(v => loadView(v, true)); loadDrive(); loadJotform(); }); }
+  render(true);
+  VIEWS.forEach(v => loadView(v, false));
+  if (!LIVE) render(true);
+  const hb0 = document.getElementById('hback'); if (hb0) hb0.addEventListener('click', () => { if (S.flow && cur().name === 'flow') S.flow = null; back(); });
+  loadDrive(); loadJotform();
+  setTimeout(() => { try { localStorage.setItem(KEY, new Date().toISOString()); } catch (e) {} }, 4000);
+})();
+})();
+</script>
+</body></html>

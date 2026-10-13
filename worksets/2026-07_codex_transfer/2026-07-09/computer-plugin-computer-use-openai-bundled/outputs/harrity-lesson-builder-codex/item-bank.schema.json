@@ -1,0 +1,136 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://harrity-nursing-education.local/schemas/item-bank.schema.json",
+  "title": "Harrity Nursing Education Item Bank",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "required": [
+      "id",
+      "status",
+      "stem",
+      "format",
+      "correctResponse",
+      "scoring",
+      "rationale",
+      "blueprint",
+      "concepts",
+      "lessons",
+      "difficulty",
+      "sourceRefs"
+    ],
+    "properties": {
+      "id": {
+        "type": "string",
+        "pattern": "^ITEM-[0-9]{4,}$"
+      },
+      "status": {
+        "type": "string",
+        "enum": ["draft", "review", "approved", "retired"]
+      },
+      "stem": {
+        "type": "string",
+        "minLength": 1
+      },
+      "format": {
+        "type": "string",
+        "enum": ["single_choice", "multiple_response", "matrix", "bowtie", "case_study"]
+      },
+      "options": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "required": ["id", "text"],
+          "properties": {
+            "id": { "type": "string" },
+            "text": { "type": "string" }
+          },
+          "additionalProperties": false
+        }
+      },
+      "correctResponse": {
+        "type": "array",
+        "items": { "type": "string" },
+        "minItems": 1
+      },
+      "scoring": {
+        "type": "object",
+        "required": ["method", "points"],
+        "properties": {
+          "method": {
+            "type": "string",
+            "enum": ["zero_one", "plus_minus", "rationale", "manual_review"]
+          },
+          "points": {
+            "type": "number",
+            "minimum": 0
+          }
+        },
+        "additionalProperties": false
+      },
+      "rationale": {
+        "type": "object",
+        "required": ["correct"],
+        "properties": {
+          "correct": { "type": "string", "minLength": 1 },
+          "incorrect": {
+            "type": "object",
+            "additionalProperties": { "type": "string" }
+          }
+        },
+        "additionalProperties": false
+      },
+      "blueprint": {
+        "type": "object",
+        "required": ["exam", "testPlanYear", "clientNeedsCategory"],
+        "properties": {
+          "exam": { "type": "string", "enum": ["NCLEX-RN", "NCLEX-PN"] },
+          "testPlanYear": { "type": "integer" },
+          "clientNeedsCategory": { "type": "string" },
+          "clientNeedsSubcategory": { "type": ["string", "null"] },
+          "clinicalJudgmentStep": {
+            "type": ["string", "null"],
+            "enum": [
+              "recognize_cues",
+              "analyze_cues",
+              "prioritize_hypotheses",
+              "generate_solutions",
+              "take_action",
+              "evaluate_outcomes",
+              null
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "concepts": {
+        "type": "array",
+        "items": { "type": "string" },
+        "minItems": 1,
+        "uniqueItems": true
+      },
+      "lessons": {
+        "type": "array",
+        "items": { "type": "string" },
+        "minItems": 1,
+        "uniqueItems": true
+      },
+      "difficulty": {
+        "type": "number",
+        "minimum": -3,
+        "maximum": 3
+      },
+      "discrimination": {
+        "type": "number",
+        "minimum": 0
+      },
+      "sourceRefs": {
+        "type": "array",
+        "items": { "type": "string" },
+        "minItems": 1,
+        "uniqueItems": true
+      }
+    },
+    "additionalProperties": false
+  }
+}
