@@ -25,6 +25,12 @@ jobs:
         with:
           python-version: "3.11"
 
+      # The Python validators and their tests used to run only in the scheduled
+      # daily-workset / hourly-ops workflows, so a PR could break them unnoticed.
+      # They need no npm packages, so they run before the install for fast feedback.
+      - name: Run Python unit tests
+        run: python -m unittest discover -s tests
+
       - name: Install dependencies
         run: npm ci
 
@@ -50,11 +56,6 @@ jobs:
 
       - name: Run unit tests
         run: npm test
-
-      # The Python validators and their tests used to run only in the scheduled
-      # daily-workset / hourly-ops workflows, so a PR could break them unnoticed.
-      - name: Run Python unit tests
-        run: python -m unittest discover -s tests
 
       - name: Start local launch preview
         shell: bash
