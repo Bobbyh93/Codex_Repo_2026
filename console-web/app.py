@@ -30,7 +30,7 @@ LOGIN = """<!doctype html><meta charset="utf-8"><meta name="viewport" content="w
 <input id="pw" name="password" type="password" placeholder="Password" autofocus autocomplete="current-password"
  style="width:100%;box-sizing:border-box;min-height:44px;font:inherit;padding:0 12px;border:1px solid #c9cfd8;border-radius:10px">
 <button style="width:100%;min-height:44px;margin-top:12px;font:inherit;font-weight:600;color:#fff;background:#1f4fd1;border:0;border-radius:10px">Sign in</button>
-%s</form>"""
+__MSG__</form>"""
 
 
 def authed():
@@ -63,14 +63,14 @@ def login():
     if request.method == 'POST':
         pw = os.environ.get('CONSOLE_PASSWORD')
         if not pw:
-            return LOGIN % '<p style="color:#a8231a;margin:12px 0 0">Not set up yet: CONSOLE_PASSWORD is missing.</p>', 503
+            return LOGIN.replace('__MSG__', '<p style="color:#a8231a;margin:12px 0 0">Not set up yet: CONSOLE_PASSWORD is missing.</p>'), 503
         if hmac.compare_digest(request.form.get('password', '').encode(), pw.encode()):
             session.permanent = True
             session['ok'] = True
             return redirect('/')
         time.sleep(1.5)
-        return LOGIN % '<p style="color:#a8231a;margin:12px 0 0">Wrong password.</p>', 401
-    return LOGIN % ''
+        return LOGIN.replace('__MSG__', '<p style="color:#a8231a;margin:12px 0 0">Wrong password.</p>'), 401
+    return LOGIN.replace('__MSG__', '')
 
 
 @app.get('/')
