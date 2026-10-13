@@ -2,6 +2,7 @@
 a fixed set of read views plus the two insert-only console functions."""
 import datetime
 import decimal
+import hashlib
 import hmac
 import os
 import secrets
@@ -15,8 +16,10 @@ VIEWS = {'status', 'today', 'manuscripts', 'activity', 'decisions', 'criteria', 
          'inbox', 'rules', 'backlog', 'process', 'vocabulary', 'sources'}
 
 app = Flask(__name__, static_folder=None)
-# One gunicorn worker: without SECRET_KEY set, sign-ins last until the next restart.
-app.secret_key = os.environ.get('SECRET_KEY') or secrets.token_hex(32)
+# Without SECRET_KEY, derive a stable signing key from the two configured secrets so
+# sign-ins survive restarts; changing the password signs everyone out.
+_seed = os.environ.get('CONSOLE_PASSWORD', '') + os.environ.get('DATABASE_URL', '')
+app.secret_key = os.environ.get('SECRET_KEY') or (hashlib.sha256(('pipeline-console-session:' + _seed).encode()).hexdigest() if _seed else secrets.token_hex(32))
 app.config.update(SESSION_COOKIE_HTTPONLY=True, SESSION_COOKIE_SAMESITE='Lax',
                   SESSION_COOKIE_SECURE=os.environ.get('INSECURE_COOKIES') != '1',
                   PERMANENT_SESSION_LIFETIME=datetime.timedelta(days=30))
