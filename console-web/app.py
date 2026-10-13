@@ -13,7 +13,7 @@ from flask import Flask, abort, jsonify, redirect, request, send_from_directory,
 from psycopg.rows import dict_row
 
 VIEWS = {'status', 'today', 'manuscripts', 'activity', 'decisions', 'criteria', 'files', 'runs',
-         'inbox', 'rules', 'backlog', 'process', 'vocabulary', 'sources'}
+         'inbox', 'rules', 'backlog', 'process', 'vocabulary', 'sources', 'products', 'routes'}
 
 app = Flask(__name__, static_folder=None)
 # Without SECRET_KEY, derive a stable signing key from the two configured secrets so
@@ -116,6 +116,30 @@ def record_decision():
         rows = query('SELECT pp.console_record_decision(%s::uuid, %s, %s, %s, %s, %s::uuid, %s::int) AS decision_id',
                      (b['req'], b.get('ms') or None, b.get('question') or None, b.get('answer') or None,
                       b.get('note') or None, b.get('id') or None, b.get('ord')))
+    except psycopg.Error as e:
+        return jsonify(error=str(e).splitlines()[0]), 400
+    return jsonify(rows=rows)
+
+
+@app.post('/api/register_product')
+def register_product():
+    need_api()
+    b = request.get_json(force=True)
+    try:
+        rows = query('SELECT pp.console_register_product(%s::uuid, %s, %s, %s) AS product_id',
+                     (b['req'], b.get('type'), b.get('title'), b.get('note') or None))
+    except psycopg.Error as e:
+        return jsonify(error=str(e).splitlines()[0]), 400
+    return jsonify(rows=rows)
+
+
+@app.post('/api/set_route')
+def set_route():
+    need_api()
+    b = request.get_json(force=True)
+    try:
+        rows = query('SELECT pp.console_set_route(%s::uuid, %s, %s, %s, %s) AS choice_id',
+                     (b['req'], b.get('product'), b.get('route'), b.get('value'), b.get('note') or None))
     except psycopg.Error as e:
         return jsonify(error=str(e).splitlines()[0]), 400
     return jsonify(rows=rows)

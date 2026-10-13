@@ -131,9 +131,9 @@ const TOOLS = {
 };
 const DB = { project_id: 'billowing-field-85279667', database_name: 'pubpipe' };
 const PIPE_FOLDER = '164DgtisV4EkG1agrmUHQXk5113QzxjbJ';
-const VIEWS = ['status','today','manuscripts','activity','decisions','criteria','files','runs','inbox','rules','backlog','process','vocabulary','sources'];
-const VIEW_RE = /^SELECT \* FROM pp\.v_console_(status|today|manuscripts|activity|decisions|criteria|files|runs|inbox|rules|backlog|process|vocabulary|sources)( \/\* r:[a-z0-9]+ \*\/)?$/;
-const WRITE_RE = /^SELECT pp\.console_(queue_run|record_decision)\(/;
+const VIEWS = ['status','today','manuscripts','activity','decisions','criteria','files','runs','inbox','rules','backlog','process','vocabulary','sources','products','routes'];
+const VIEW_RE = /^SELECT \* FROM pp\.v_console_(status|today|manuscripts|activity|decisions|criteria|files|runs|inbox|rules|backlog|process|vocabulary|sources|products|routes)( \/\* r:[a-z0-9]+ \*\/)?$/;
+const WRITE_RE = /^SELECT pp\.console_(queue_run|record_decision|register_product|set_route)\(/;
 const TZ = 'America/Los_Angeles';
 const SERVERS = { '64f63ef9-427c-46c7-b1b5-59c2e955e245': 'Neon', '533b96f2-6462-4667-9fe0-0a3d9f05acf4': 'Google Drive', '0cd1c5e9-6850-4502-8ee2-e751aa79d94c': 'Jotform' };
 let bridge = null;
@@ -334,11 +334,12 @@ function friendly(msg) {
   if (/NOT_RERUNNABLE/.test(m)) return 'This stage is not failed or waiting for input, so the planner advances it without a request.';
   if (/RUN_ALREADY_QUEUED/.test(m)) return 'A stage run is already queued or running for this manuscript.';
   if (/QUESTION_TOO_SHORT/.test(m)) return 'State the question in more than 10 characters.';
-  return m;
+  const c = /([A-Z][A-Z_]{3,}): (.+)$/.exec(m);
+  return c ? c[2] : m;
 }
 
 // ---------- navigation ----------
-const TAB_OF = { home: 'home', today: 'home', holds: 'home', inbox: 'runs', runlist: 'runs', events: 'runs', budget: 'runs', wbs: 'runs', fviews: 'files', forms: 'files', drive: 'files', sources: 'files', process: 'rules', hardstops: 'rules', rulespage: 'rules', terms: 'rules', ms: 'ms', msd: 'ms', crit: 'ms', decisions: 'decisions', decision: 'decisions', files: 'files', runs: 'runs', rules: 'rules', flow: null };
+const TAB_OF = { home: 'home', today: 'home', holds: 'home', products: 'home', product: 'home', inbox: 'runs', runlist: 'runs', events: 'runs', budget: 'runs', wbs: 'runs', fviews: 'files', forms: 'files', drive: 'files', sources: 'files', process: 'rules', hardstops: 'rules', rulespage: 'rules', terms: 'rules', ms: 'ms', msd: 'ms', crit: 'ms', decisions: 'decisions', decision: 'decisions', files: 'files', runs: 'runs', rules: 'rules', flow: null };
 function cur() { const r = S.stack[S.stack.length - 1]; const i = r.indexOf('/'); return i < 0 ? { name: r, arg: null } : { name: r.slice(0, i), arg: r.slice(i + 1) }; }
 function go(r) { S.stack.push(r); render(true); }
 function back() { if (S.stack.length > 1) S.stack.pop(); if (cur().name === 'flow' && !S.flow) S.stack.pop(); render(true); }
@@ -542,7 +543,7 @@ function area(f, key, label, placeholder) {
   t.addEventListener('input', () => { f[key] = t.value; const n = document.getElementById('next'); if (n && n.dataset.req === key) n.disabled = !valid(f, key); });
   return t;
 }
-function valid(f, key) { const v = String(f[key] || '').trim(); return key === 'question' ? v.length > 10 : key === 'answer' ? v.length > 0 : true; }
+function valid(f, key) { const v = String(f[key] || '').trim(); return key === 'question' ? v.length > 10 : key === 'answer' ? v.length > 0 : key === 'title' ? v.length > 5 : key === 'rnote' ? v.length > 0 : true; }
 function resultBox(f, okText, extra) {
   if (!f.result) return null;
   return f.result.ok ? [h('div', { class: 'ok-msg', role: 'status' }, okText), extra || null]
@@ -552,6 +553,8 @@ async function submit(f) {
   if (f.busy) return; f.busy = true; render();
   try {
     if (f.type === 'run') { f.newId = await queueRun(f); f.result = { ok: true }; await Promise.all(['inbox', 'status', 'activity', 'manuscripts'].map(n => loadView(n, true))); }
+    else if (f.type === 'route') { f.newId = await setRoute(f); f.result = { ok: true }; await Promise.all(['products', 'inbox', 'activity'].map(n => loadView(n, true))); }
+    else if (f.type === 'product') { f.newId = await registerProduct(f); f.result = { ok: true }; await Promise.all(['products', 'inbox', 'activity'].map(n => loadView(n, true))); }
     else { f.newId = await recordDecision(f); f.result = { ok: true }; await Promise.all(['decisions', 'inbox', 'activity', 'status', 'manuscripts'].map(n => loadView(n, true))); }
   } catch (e) { f.result = { ok: false, msg: String(e.message || e) }; console.error('[console] write', e); }
   f.busy = false; render(true);
@@ -613,7 +616,7 @@ function flowNew(f) {
 }
 function viewFlow() {
   const f = S.flow; if (!f) return [h('p', { class: 'empty' }, 'Nothing open.')];
-  return f.type === 'run' ? flowRun(f) : f.type === 'change' ? flowChange(f) : flowNew(f);
+  return f.type === 'run' ? flowRun(f) : f.type === 'change' ? flowChange(f) : f.type === 'route' ? flowRoute(f) : f.type === 'product' ? flowProduct(f) : flowNew(f);
 }
 
 // ---------- Files ----------
@@ -839,6 +842,77 @@ function viewRules() {
 }
 
 
+
+// ---------- Products and routes ----------
+const ROUTE_LABEL = { rigor_profile: 'Rigor', review_purpose: 'Purpose', search_route: 'Search tools', screening_route: 'Screening' };
+const ROUTE_ORDER = ['rigor_profile', 'review_purpose', 'search_route', 'screening_route'];
+const RIGOR_TONE = { full_standard: 'ok', high: 'warn', mvp: 'bad' };
+function optLabel(set, code) { const o = (D('routes') || []).find(x => x.set_key === set && x.code === code); return o ? o.label : (code || 'Not set'); }
+async function registerProduct(f) {
+  if (typeof WEB !== 'undefined' && WEB) { const w = await api('api/register_product', { req: f.req, type: f.ptype, title: f.title, note: f.note }); return w[0] && w[0].product_id; }
+  const rows = await sql('SELECT pp.console_register_product(' + uuidLit(f.req) + ', ' + lit(f.ptype) + ', ' + lit(f.title) + ', ' + lit(f.note) + ') AS product_id');
+  return rows[0] && rows[0].product_id;
+}
+async function setRoute(f) {
+  const note = f.rnote || f.note;
+  if (typeof WEB !== 'undefined' && WEB) { const w = await api('api/set_route', { req: f.req, product: f.product, route: f.route, value: f.value, note: note }); return w[0] && w[0].choice_id; }
+  const rows = await sql('SELECT pp.console_set_route(' + uuidLit(f.req) + ', ' + lit(f.product) + ', ' + lit(f.route) + ', ' + lit(f.value) + ', ' + lit(note) + ') AS choice_id');
+  return rows[0] && rows[0].choice_id;
+}
+function prodRow(p) {
+  return h('button', { class: 'item', onclick: () => go('product/' + p.product_id) },
+    h('div', { class: 'item-top' }, h('b', null, p.ms_id || p.product_id), chip(p.type_label, 'outline'), chip(optLabel('rigor_profile', p.rigor_profile), RIGOR_TONE[p.rigor_profile] || 'muted')),
+    h('div', { class: 'item-title clamp2' }, p.title));
+}
+function viewProducts() {
+  if (!ready('products', 'routes')) return waitFor('products', 'routes');
+  const all = D('products'), other = all.filter(p => !p.ms_id), ms = all.filter(p => p.ms_id);
+  return [h('button', { class: 'btn primary block', style: 'margin-top:0', disabled: LIVE ? null : true, onclick: startProduct }, 'New product'),
+    section('Products · ' + other.length, other.length ? h('div', { class: 'list' }, other.map(prodRow)) : card(h('p', { class: 'empty' }, 'None yet.'))),
+    section('Manuscripts · ' + ms.length, h('div', { class: 'list' }, ms.map(prodRow)))];
+}
+function viewProduct(id) {
+  const p = (D('products') || []).find(x => x.product_id === id);
+  if (!p) return ready('products') ? [h('p', null, 'Not found: ' + id)] : waitFor('products', 'routes');
+  const jbi = p.review_purpose === 'jbi_review';
+  const fixed = r => (r === 'rigor_profile' && (p.rigor_fixed || jbi)) || (r === 'screening_route' && jbi);
+  return [
+    h('div', { class: 'head' }, h('div', { class: 'eyebrow' }, p.product_id + ' · ' + p.type_label + (p.ms_id ? ' · ' + p.ms_id : '')), h('h2', { class: 'title' }, p.title)),
+    section('Routes', h('div', { class: 'list' }, ROUTE_ORDER.map(r => h('div', { class: 'item', style: 'cursor:default' },
+      h('div', { class: 'line', style: 'align-items:center' },
+        h('div', { style: 'min-width:0' }, h('div', { class: 'item-sub', style: 'margin-top:0' }, ROUTE_LABEL[r]), h('div', { class: 'item-title', style: 'margin-top:2px' }, optLabel(r, p[r]))),
+        fixed(r) ? chip('fixed', 'muted') : h('button', { class: 'btn', disabled: LIVE ? null : true, onclick: () => startRoute(p.product_id, r) }, 'Change')))))),
+    p.open_waivers ? section('Relaxed from the full standard', card(h('p', null, p.waiver_reason || ''))) : null,
+    p.ms_id ? h('button', { class: 'btn block', onclick: () => go('msd/' + p.ms_id) }, 'Open ' + p.ms_id) : null];
+}
+function startProduct() { S.flow = { type: 'product', step: 1, req: newUuid(), ptype: null, title: '', note: '' }; go('flow'); }
+function startRoute(product, route) { S.flow = { type: 'route', step: 1, req: newUuid(), product, route, value: null, note: '', rnote: '' }; go('flow'); }
+function flowProduct(f) {
+  const types = (D('routes') || []).filter(x => x.set_key === 'product_type' && x.code !== 'journal_manuscript');
+  if (f.result) return [flowTop(f, 3), h('p', { class: 'q' }, f.result.ok ? 'Product added' : 'Product not added'),
+    resultBox(f, 'Saved as ' + f.newId + '.', f.newId ? h('button', { class: 'btn block', onclick: () => { S.flow = null; S.stack = ['home', 'products', 'product/' + f.newId]; render(true); } }, 'Open it') : null)];
+  if (f.step === 1) return [flowTop(f, 3), h('p', { class: 'q' }, 'What kind of product?'),
+    types.map(t => h('button', { class: 'choice' + (f.ptype === t.code ? ' current' : ''), onclick: () => { f.ptype = t.code; f.step = 2; render(true); } }, t.label, h('small', null, t.definition))),
+    h('p', { class: 'hint' }, 'Manuscripts are added through intake.')];
+  if (f.step === 2) return [flowTop(f, 3), h('p', { class: 'q' }, 'Title'), area(f, 'title', 'Title', ''),
+    h('button', { id: 'next', 'data-req': 'title', class: 'btn primary block', disabled: valid(f, 'title') ? null : true, onclick: () => { f.step = 3; render(true); } }, 'Next')];
+  return [flowTop(f, 3), h('p', { class: 'q' }, 'Note (optional)'), area(f, 'note', 'Note', ''),
+    h('button', { class: 'btn primary block', disabled: f.busy ? true : null, onclick: () => submit(f) }, f.busy ? 'Saving…' : 'Add product')];
+}
+function flowRoute(f) {
+  const p = (D('products') || []).find(x => x.product_id === f.product) || {};
+  const opts = (D('routes') || []).filter(x => x.set_key === f.route);
+  if (f.result) return [flowTop(f, 2), h('p', { class: 'q' }, f.result.ok ? 'Route changed' : 'Route not changed'), resultBox(f, 'Saved.', null)];
+  if (f.step === 1) return [flowTop(f, 2),
+    h('div', { class: 'ctx' }, h('div', { class: 'lbl' }, ROUTE_LABEL[f.route]), h('div', { class: 'item-title', style: 'margin-top:2px' }, p.title || f.product)),
+    opts.map(o => h('button', { class: 'choice' + (p[f.route] === o.code ? ' current' : ''), onclick: () => { f.value = o.code; f.step = 2; render(true); } }, o.label, h('small', null, o.definition)))];
+  const need = f.route === 'rigor_profile' && f.value !== 'full_standard', key = need ? 'rnote' : 'note';
+  return [flowTop(f, 2),
+    h('div', { class: 'ctx' }, h('div', { class: 'lbl' }, ROUTE_LABEL[f.route]), h('div', { class: 'item-title', style: 'margin-top:2px' }, optLabel(f.route, f.value))),
+    h('p', { class: 'q' }, need ? 'What is being relaxed, and why?' : 'Note (optional)'), area(f, key, 'Note', ''),
+    h('button', { id: 'next', 'data-req': key, class: 'btn primary block', disabled: (f.busy || (need && !valid(f, 'rnote'))) ? true : null, onclick: () => submit(f) }, f.busy ? 'Saving…' : 'Save')];
+}
+
 // ---------- Home and subpages ----------
 function tile(label, sub, fn, cls) { return h('button', { class: 'tile' + (cls ? ' ' + cls : ''), onclick: fn }, label, sub ? h('small', null, sub) : null); }
 function cnt(name, f) { const a = D(name); return Array.isArray(a) ? String(f ? f(a) : a.length) : ''; }
@@ -856,7 +930,8 @@ function viewHome() {
     tile('Waiting on you', w === '' ? '…' : w === '0' ? 'Nothing waiting' : heroSub(), () => go('today'), 'hero'),
     tile('Manuscripts', cnt('manuscripts'), () => go('ms')),
     tile('Decisions', cnt('decisions', a => a.filter(d => d.effective_status !== 'superseded').length), () => go('decisions')),
-    tile('Holds', cnt('today', a => a.filter(r => r.kind === 'hold' || r.kind === 'park' || r.kind === 'contact').length), () => go('holds'), 'wide'),
+    tile('Products', cnt('products'), () => go('products')),
+    tile('Holds', cnt('today', a => a.filter(r => r.kind === 'hold' || r.kind === 'park' || r.kind === 'contact').length), () => go('holds')),
     g('Runs'),
     tile('Inbox', cnt('inbox', a => a.filter(i => i.pickup === 'waiting').length) + ' waiting', () => go('inbox')),
     tile('Stage runs', st ? st.runs_queued + ' queued' : '', () => go('runlist')),
@@ -908,15 +983,15 @@ function viewRulesHub() {
     tile('Process map', '', () => go('process')),
     tile('Terms', cnt('vocabulary'), () => go('terms')))];
 }
-const VIEWFN = { home: viewHome, holds: sub('Holds', viewHolds), today: sub('Waiting on you', viewToday),
+const VIEWFN = { home: viewHome, products: sub('Products', viewProducts), product: viewProduct, holds: sub('Holds', viewHolds), today: sub('Waiting on you', viewToday),
   inbox: sub('Inbox', viaRuns('inbox')), runlist: sub('Stage runs', viaRuns('runs')), events: sub('Events', viaRuns('events')), budget: sub('Budget', viewBudget), wbs: sub('Work items', viewWbs),
   fviews: sub('Live views', viaFiles('views', 1)), forms: sub('Forms', viaFiles('views', 2)), drive: sub('Drive', viaFiles('views', 3)), sources: sub('Sources', viaFiles('sources', null)),
   hardstops: sub('Hard stops', viaRules([2])), rulespage: sub('Communication', viaRules([0, 1])), process: sub('Process map', viaRules([3])), terms: sub('Terms', viewTerms), ms: viewMs, msd: viewMsDetail, crit: viewCriteria, decisions: viewDecisions, decision: viewDecision, files: viewFiles, runs: viewRuns, rules: viewRulesHub, flow: viewFlow };
 const TITLES = { home: 'Pipeline Console', today: 'Waiting on you', ms: 'Manuscripts', decisions: 'Decisions', decision: 'Decision', files: 'Files', runs: 'Runs', rules: 'Rules', holds: 'Holds' };
 function pageTitle(r) {
-  if (r.name === 'msd') return r.arg;
+  if (r.name === 'msd' || r.name === 'product') return r.arg;
   if (r.name === 'crit') return r.arg + ' criteria';
-  if (r.name === 'flow') return S.flow ? (S.flow.type === 'run' ? 'Queue a stage run' : S.flow.type === 'change' ? 'Change decision' : 'New decision') : 'Flow';
+  if (r.name === 'flow') return S.flow ? (S.flow.type === 'run' ? 'Queue a stage run' : S.flow.type === 'change' ? 'Change decision' : S.flow.type === 'route' ? 'Change route' : S.flow.type === 'product' ? 'New product' : 'New decision') : 'Flow';
   const f = VIEWFN[r.name];
   return (f && f.title) || TITLES[r.name] || 'Pipeline Console';
 }
