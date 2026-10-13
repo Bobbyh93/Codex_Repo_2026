@@ -76,7 +76,8 @@ def validate_playback_evidence() -> dict[str, Any]:
     if not isinstance(records, list) or not records:
         blockers.append("No target-player playback records are recorded.")
 
-    expected_targets = set(evidence.get("required_targets") or VALID_RELEASE_PATHS.get(release_path, set()))
+    # Evidence may add targets but can never drop the targets the release path mandates.
+    expected_targets = set(VALID_RELEASE_PATHS.get(release_path, set())) | set(evidence.get("required_targets") or [])
     present_targets = {record.get("target_type") for record in records}
     for target_type in sorted(expected_targets - present_targets):
         blockers.append(f"Missing required playback target: {target_type}")

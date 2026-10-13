@@ -99,7 +99,12 @@ def main() -> int:
     REPORT_PATH.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
     print(f"Production pilot status: {report['status']}")
     print(f"Wrote {REPORT_PATH}")
-    return 0 if report["status"] != "blocked" else 1
+    released = (
+        report["status"] != "blocked"
+        and not report.get("errors")
+        and not report.get("external_blockers")
+    )
+    return 0 if released else 1
 
 
 if __name__ == "__main__":

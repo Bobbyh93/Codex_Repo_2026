@@ -4369,6 +4369,20 @@ function governanceRecordForBundle(bundle: LessonBundle): GovernanceRecordV1 {
   return defaultGovernanceRecord(bundle.package.id, bundle.slides.map((slide) => slide.id));
 }
 
+// Writes the governance record only if the stored value still equals what this request read,
+// so concurrent sessions cannot silently overwrite each other. Returns false on a lost race.
+async function writeGovernanceIfUnchanged(packageId: string, bundle: LessonBundle, next: GovernanceRecordV1): Promise<boolean> {
+  const stored = (bundle.package.manifest || {}).governance;
+  const unchanged = stored == null
+    ? sql`(${lessonPackages.manifest}->'governance' IS NULL OR jsonb_typeof(${lessonPackages.manifest}->'governance') = 'null')`
+    : sql`${lessonPackages.manifest}->'governance' = ${JSON.stringify(stored)}::jsonb`;
+  const rows = await db.update(lessonPackages).set({
+    manifest: sql`jsonb_set(coalesce(${lessonPackages.manifest}, '{}'::jsonb), '{governance}', ${JSON.stringify(next)}::jsonb, true)`,
+    updatedAt: new Date(),
+  }).where(and(eq(lessonPackages.id, packageId), unchanged)).returning({ id: lessonPackages.id });
+  return rows.length > 0;
+}
+
 function governanceGateFingerprints(bundle: LessonBundle, record = governanceRecordForBundle(bundle)): Record<GovernanceGate, string> {
   const sourceSnapshot = bundle.sources.map((source) => ({ id: source.id, approvalStatus: source.approvalStatus }));
   const slideSnapshot = bundle.slides.map((slide) => ({
@@ -13534,10 +13548,9 @@ export function registerLessonBuilderRoutes(app: Express) {
         approvals: invalidateApprovals(current.approvals, changedAreas),
         updatedAt: now,
       });
-      await db.update(lessonPackages).set({
-        manifest: { ...(bundle.package.manifest || {}), governance: next },
-        updatedAt: new Date(),
-      }).where(eq(lessonPackages.id, req.params.id));
+      if (!(await writeGovernanceIfUnchanged(req.params.id, bundle, next))) {
+        return res.status(409).json({ error: "Lesson governance was updated by another session", expectedRevision: data.expectedRevision });
+      }
       await recordReleaseAuditEvent(
         req.params.id,
         "governance_updated",
@@ -13610,10 +13623,9 @@ export function registerLessonBuilderRoutes(app: Express) {
         }, ...current.approvals],
         updatedAt: now,
       });
-      await db.update(lessonPackages).set({
-        manifest: { ...(bundle.package.manifest || {}), governance: next },
-        updatedAt: new Date(),
-      }).where(eq(lessonPackages.id, req.params.id));
+      if (!(await writeGovernanceIfUnchanged(req.params.id, bundle, next))) {
+        return res.status(409).json({ error: "Lesson governance was updated by another session", expectedRevision: data.expectedRevision });
+      }
       await recordReleaseAuditEvent(
         req.params.id,
         `governance_${data.gate}_${data.decision}`,
@@ -14318,6 +14330,14 @@ export function registerLessonBuilderRoutes(app: Express) {
         return res.status(400).json({
           error: "No licensed RN faculty release approval is recorded",
           requiredReview: { decision: "approved_for_release", metadata: { licensedRn: true } },
+        });
+      }
+      // A stale `approved` release stage must not bypass governance: re-evaluate the current gates.
+      const governanceBlockers = governanceEvaluationForBundle(bundle).blockers;
+      if (governanceBlockers.length > 0) {
+        return res.status(400).json({
+          error: "Publishing is blocked until all current governance gates and approvals pass",
+          blockers: governanceBlockers,
         });
       }
       const controlPlane = buildLessonControlPlaneReport(bundle, "harrity");

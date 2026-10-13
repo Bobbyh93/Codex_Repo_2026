@@ -113,11 +113,14 @@ export function LessonGovernancePanel({ packageId, slides }: { packageId: string
     onError: (error: any) => toast({ title: "Decision not recorded", description: error?.message || "Resolve the prior gate blockers first.", variant: "destructive" }),
   });
 
-  if (governanceQuery.isLoading || !draft) {
+  if (governanceQuery.isLoading) {
     return <Card><CardContent className="py-8 text-sm text-slate-500">Loading governance workflow…</CardContent></Card>;
   }
   if (governanceQuery.isError || !governanceQuery.data) {
     return <Alert variant="destructive"><AlertTriangle className="h-4 w-4" /><AlertTitle>Governance unavailable</AlertTitle><AlertDescription>Repair the package detail or retry the request.</AlertDescription></Alert>;
+  }
+  if (!draft) {
+    return <Card><CardContent className="py-8 text-sm text-slate-500">Loading governance workflow…</CardContent></Card>;
   }
 
   const updateAdmin = (field: keyof GovernanceRecordV1["administrative"], value: string) => {
