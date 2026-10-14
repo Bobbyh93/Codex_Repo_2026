@@ -1,6 +1,6 @@
 import JSZip from "jszip";
 import { describe, expect, it } from "vitest";
-import { EXEMPLAR_TOPICS, NCLEX_CATEGORIES, buildExemplarPackage, validateExemplarPackage } from "../../shared/nclex-rn-2026";
+import { EXEMPLAR_TOPICS, NCLEX_CATEGORIES, RESTRICTED_LICENSE_PATTERN, buildExemplarPackage, validateExemplarPackage } from "../../shared/nclex-rn-2026";
 import { buildDirectedRemediationPlan, remediationBand } from "../directed-remediation-engine";
 import {
   canvasOutcomesCsv,
@@ -43,6 +43,36 @@ describe("NCLEX-RN 2026 curriculum contract", () => {
     expect(manifest.compatibility.legacyTopicCount).toBe(77);
     expect(manifest.compatibility.maternalNewbornMigrationRows).toBe(94);
     expect(manifest.compatibility.atiPolicy).toContain("Aliases");
+  });
+
+  it("uses only licence-clean approved evidence, with Open RN attribution", () => {
+    const sources = EXEMPLAR_TOPICS.flatMap((topic) => topic.sources);
+    expect(sources.length).toBeGreaterThan(0);
+    for (const source of sources) {
+      expect(source.approvalStatus, source.id).toBe("approved");
+      expect(RESTRICTED_LICENSE_PATTERN.test(source.license), `${source.id} ${source.license}`).toBe(false);
+      expect(source.license, source.id).toBe("CC BY 4.0");
+      expect(source.publisher, source.id).toContain("Open RN");
+      expect(source.sourceUri, source.id).toMatch(/^https:\/\/wtcs\.pressbooks\.pub\/[a-z0-9]+\/chapter\/[a-z0-9-]+\/$/);
+      expect(source.licenseUrl, source.id).toBe("https://creativecommons.org/licenses/by/4.0/");
+      expect(source.verifiedOn, source.id).toBe("2026-10-13");
+    }
+    expect(sources.some((source) => /openstax/i.test(`${source.publisher} ${source.sourceUri}`))).toBe(false);
+  });
+
+  it("rejects NonCommercial or ShareAlike evidence and reports blocked sources", () => {
+    for (const license of ["CC BY-NC-SA 4.0", "CC BY-NC 4.0", "CC BY-SA 4.0", "Creative Commons Attribution-NonCommercial-ShareAlike 4.0"]) {
+      const pkg = structuredClone(buildExemplarPackage(EXEMPLAR_TOPICS[0]));
+      pkg.sources[0].license = license;
+      expect(validateExemplarPackage(pkg).issues, license)
+        .toContain("Sources under NonCommercial or ShareAlike terms cannot be used as lesson evidence.");
+    }
+    for (const license of ["CC BY 4.0", "CC BY 4.0 International", "CC0 1.0"]) {
+      expect(RESTRICTED_LICENSE_PATTERN.test(license), license).toBe(false);
+    }
+    const status = executionStatus();
+    expect(status.sourceReadiness.blockedSources).toBe(0);
+    expect(status.sourceReadiness.approvedOerSources).toBe(status.content.evidenceSources);
   });
 
   it("blocks pending evidence and broken objective mappings", () => {

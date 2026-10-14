@@ -792,6 +792,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // MUST come before registerCurriculumRoutes so local handlers win over external-API proxy
   const { registerCurriculumCatalogRoutes } = await import("./routes/curriculum-catalog-routes");
   registerCurriculumCatalogRoutes(app);
+  const { registerCurriculumGraphRoutes } = await import("./routes/curriculum-graph-routes");
+  registerCurriculumGraphRoutes(app);
 
   // Register curriculum integration routes (external API proxy — kept for recommendations/progress)
   const { registerCurriculumRoutes } = await import("./curriculum-routes");

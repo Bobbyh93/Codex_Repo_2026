@@ -191,8 +191,8 @@
           "rationale": "An unstable or changing condition requires licensed nursing assessment and judgment.",
           "objectiveId": "moc-safe-delegation-objective-1",
           "categoryId": "management-of-care",
-          "sourceId": "src-fundamentals-delegation",
-          "locator": "Delegation and patient stability",
+          "sourceId": "src-openrn-delegation",
+          "locator": "3.4 Delegation",
           "difficulty": "application"
         },
         {
@@ -221,8 +221,8 @@
           "rationale": "A predictable task may be delegated when direction and supervision are provided.",
           "objectiveId": "moc-safe-delegation-objective-2",
           "categoryId": "management-of-care",
-          "sourceId": "src-fundamentals-delegation",
-          "locator": "Delegation communication",
+          "sourceId": "src-openrn-delegation",
+          "locator": "3.4 Delegation",
           "difficulty": "application"
         },
         {
@@ -251,8 +251,8 @@
           "rationale": "Initial teaching and evaluation require nursing judgment.",
           "objectiveId": "moc-safe-delegation-objective-3",
           "categoryId": "management-of-care",
-          "sourceId": "src-fundamentals-delegation",
-          "locator": "Responsibilities retained by the nurse",
+          "sourceId": "src-openrn-delegation",
+          "locator": "3.4 Delegation",
           "difficulty": "application"
         },
         {
@@ -281,8 +281,8 @@
           "rationale": "The nurse must interpret abnormal findings and act on the patient response.",
           "objectiveId": "moc-safe-delegation-objective-1",
           "categoryId": "management-of-care",
-          "sourceId": "src-fundamentals-delegation",
-          "locator": "Supervision and evaluation",
+          "sourceId": "src-openrn-delegation",
+          "locator": "3.4 Delegation",
           "difficulty": "application"
         },
         {
@@ -311,8 +311,8 @@
           "rationale": "Permitted scope does not replace validation of individual competence.",
           "objectiveId": "moc-safe-delegation-objective-2",
           "categoryId": "management-of-care",
-          "sourceId": "src-fundamentals-delegation",
-          "locator": "Delegatee competence",
+          "sourceId": "src-openrn-delegation",
+          "locator": "3.4 Delegation",
           "difficulty": "application"
         },
         {
@@ -341,8 +341,8 @@
           "rationale": "An unstable or changing condition requires licensed nursing assessment and judgment.",
           "objectiveId": "moc-safe-delegation-objective-1",
           "categoryId": "management-of-care",
-          "sourceId": "src-fundamentals-delegation",
-          "locator": "Delegation and patient stability",
+          "sourceId": "src-openrn-delegation",
+          "locator": "3.4 Delegation",
           "difficulty": "analysis"
         },
         {
@@ -371,8 +371,8 @@
           "rationale": "A predictable task may be delegated when direction and supervision are provided.",
           "objectiveId": "moc-safe-delegation-objective-2",
           "categoryId": "management-of-care",
-          "sourceId": "src-fundamentals-delegation",
-          "locator": "Delegation communication",
+          "sourceId": "src-openrn-delegation",
+          "locator": "3.4 Delegation",
           "difficulty": "analysis"
         },
         {
@@ -401,8 +401,8 @@
           "rationale": "Initial teaching and evaluation require nursing judgment.",
           "objectiveId": "moc-safe-delegation-objective-3",
           "categoryId": "management-of-care",
-          "sourceId": "src-fundamentals-delegation",
-          "locator": "Responsibilities retained by the nurse",
+          "sourceId": "src-openrn-delegation",
+          "locator": "3.4 Delegation",
           "difficulty": "analysis"
         },
         {
@@ -431,8 +431,8 @@
           "rationale": "The nurse must interpret abnormal findings and act on the patient response.",
           "objectiveId": "moc-safe-delegation-objective-1",
           "categoryId": "management-of-care",
-          "sourceId": "src-fundamentals-delegation",
-          "locator": "Supervision and evaluation",
+          "sourceId": "src-openrn-delegation",
+          "locator": "3.4 Delegation",
           "difficulty": "analysis"
         },
         {
@@ -461,8 +461,8 @@
           "rationale": "Permitted scope does not replace validation of individual competence.",
           "objectiveId": "moc-safe-delegation-objective-2",
           "categoryId": "management-of-care",
-          "sourceId": "src-fundamentals-delegation",
-          "locator": "Delegatee competence",
+          "sourceId": "src-openrn-delegation",
+          "locator": "3.4 Delegation",
           "difficulty": "analysis"
         },
         {
@@ -491,8 +491,8 @@
           "rationale": "An unstable or changing condition requires licensed nursing assessment and judgment.",
           "objectiveId": "moc-safe-delegation-objective-1",
           "categoryId": "management-of-care",
-          "sourceId": "src-fundamentals-delegation",
-          "locator": "Delegation and patient stability",
+          "sourceId": "src-openrn-delegation",
+          "locator": "3.4 Delegation",
           "difficulty": "analysis"
         },
         {
@@ -521,8 +521,8 @@
           "rationale": "A predictable task may be delegated when direction and supervision are provided.",
           "objectiveId": "moc-safe-delegation-objective-2",
           "categoryId": "management-of-care",
-          "sourceId": "src-fundamentals-delegation",
-          "locator": "Delegation communication",
+          "sourceId": "src-openrn-delegation",
+          "locator": "3.4 Delegation",
           "difficulty": "analysis"
         },
         {
@@ -551,8 +551,8 @@
           "rationale": "Initial teaching and evaluation require nursing judgment.",
           "objectiveId": "moc-safe-delegation-objective-3",
           "categoryId": "management-of-care",
-          "sourceId": "src-fundamentals-delegation",
-          "locator": "Responsibilities retained by the nurse",
+          "sourceId": "src-openrn-delegation",
+          "locator": "3.4 Delegation",
           "difficulty": "analysis"
         },
         {
@@ -581,8 +581,8 @@
           "rationale": "The nurse must interpret abnormal findings and act on the patient response.",
           "objectiveId": "moc-safe-delegation-objective-1",
           "categoryId": "management-of-care",
-          "sourceId": "src-fundamentals-delegation",
-          "locator": "Supervision and evaluation",
+          "sourceId": "src-openrn-delegation",
+          "locator": "3.4 Delegation",
           "difficulty": "analysis"
         },
         {
@@ -611,8 +611,8 @@
           "rationale": "Permitted scope does not replace validation of individual competence.",
           "objectiveId": "moc-safe-delegation-objective-2",
           "categoryId": "management-of-care",
-          "sourceId": "src-fundamentals-delegation",
-          "locator": "Delegatee competence",
+          "sourceId": "src-openrn-delegation",
+          "locator": "3.4 Delegation",
           "difficulty": "analysis"
         }
       ],
@@ -622,48 +622,48 @@
           "function": "Recognize Cues",
           "prompt": "Identify the findings in this scenario that require follow-up: A newly admitted patient has changing neurologic findings.",
           "rationale": "This item evaluates recognize cues within Safe Delegation and Supervision.",
-          "sourceId": "src-fundamentals-delegation",
-          "locator": "Delegation and patient stability"
+          "sourceId": "src-openrn-delegation",
+          "locator": "3.4 Delegation"
         },
         {
           "id": "moc-safe-delegation-case-2",
           "function": "Analyze Cues",
           "prompt": "Explain how the cue changes the patient's immediate risk.",
           "rationale": "This item evaluates analyze cues within Safe Delegation and Supervision.",
-          "sourceId": "src-fundamentals-delegation",
-          "locator": "Delegation and patient stability"
+          "sourceId": "src-openrn-delegation",
+          "locator": "3.4 Delegation"
         },
         {
           "id": "moc-safe-delegation-case-3",
           "function": "Prioritize Hypotheses",
           "prompt": "State the highest-priority problem supported by the available cues.",
           "rationale": "This item evaluates prioritize hypotheses within Safe Delegation and Supervision.",
-          "sourceId": "src-fundamentals-delegation",
-          "locator": "Delegation and patient stability"
+          "sourceId": "src-openrn-delegation",
+          "locator": "3.4 Delegation"
         },
         {
           "id": "moc-safe-delegation-case-4",
           "function": "Generate Solutions",
           "prompt": "Identify two safe nursing responses and one action to avoid.",
           "rationale": "This item evaluates generate solutions within Safe Delegation and Supervision.",
-          "sourceId": "src-fundamentals-delegation",
-          "locator": "Delegation and patient stability"
+          "sourceId": "src-openrn-delegation",
+          "locator": "3.4 Delegation"
         },
         {
           "id": "moc-safe-delegation-case-5",
           "function": "Take Action",
           "prompt": "Select and perform the priority response: The registered nurse performs the focused assessment and determines the next intervention.",
           "rationale": "An unstable or changing condition requires licensed nursing assessment and judgment.",
-          "sourceId": "src-fundamentals-delegation",
-          "locator": "Delegation and patient stability"
+          "sourceId": "src-openrn-delegation",
+          "locator": "3.4 Delegation"
         },
         {
           "id": "moc-safe-delegation-case-6",
           "function": "Evaluate Outcomes",
           "prompt": "Identify the findings that would demonstrate improvement or require escalation.",
           "rationale": "This item evaluates evaluate outcomes within Safe Delegation and Supervision.",
-          "sourceId": "src-fundamentals-delegation",
-          "locator": "Delegation and patient stability"
+          "sourceId": "src-openrn-delegation",
+          "locator": "3.4 Delegation"
         }
       ],
       "masteryCheck": {
@@ -692,13 +692,15 @@
       ],
       "sources": [
         {
-          "id": "src-fundamentals-delegation",
-          "title": "Fundamentals of Nursing",
-          "publisher": "OpenStax",
+          "id": "src-openrn-delegation",
+          "title": "Nursing Management & Professional Concepts, 2nd Edition",
+          "publisher": "WisTech Open (Open RN)",
           "license": "CC BY 4.0",
-          "sourceUri": "https://openstax.org/books/fundamentals-nursing/pages/1-introduction",
-          "locator": "Leadership, delegation, and care coordination",
-          "approvalStatus": "approved"
+          "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+          "sourceUri": "https://wtcs.pressbooks.pub/nursingmpc/chapter/3-4-delegation/",
+          "locator": "3.4 Delegation",
+          "approvalStatus": "approved",
+          "verifiedOn": "2026-10-13"
         }
       ],
       "accessibility": {
@@ -800,8 +802,8 @@
           "rationale": "PPE selection is based on the anticipated route and extent of exposure.",
           "objectiveId": "sic-standard-precautions-objective-1",
           "categoryId": "safety-infection-control",
-          "sourceId": "src-clinical-skills-precautions",
-          "locator": "PPE selection",
+          "sourceId": "src-openrn-preventing-infection",
+          "locator": "9.6 Preventing Infection",
           "difficulty": "application"
         },
         {
@@ -830,8 +832,8 @@
           "rationale": "Gloves can have defects and hands can be contaminated during removal.",
           "objectiveId": "sic-standard-precautions-objective-2",
           "categoryId": "safety-infection-control",
-          "sourceId": "src-clinical-skills-precautions",
-          "locator": "Hand hygiene",
+          "sourceId": "src-openrn-preventing-infection",
+          "locator": "9.6 Preventing Infection",
           "difficulty": "application"
         },
         {
@@ -860,8 +862,8 @@
           "rationale": "Immediate cleansing and timely evaluation reduce preventable harm and enable indicated prophylaxis.",
           "objectiveId": "sic-standard-precautions-objective-3",
           "categoryId": "safety-infection-control",
-          "sourceId": "src-clinical-skills-precautions",
-          "locator": "Occupational exposure",
+          "sourceId": "src-openrn-preventing-infection",
+          "locator": "9.6 Preventing Infection",
           "difficulty": "application"
         },
         {
@@ -890,8 +892,8 @@
           "rationale": "Maintaining separation limits indirect transmission.",
           "objectiveId": "sic-standard-precautions-objective-1",
           "categoryId": "safety-infection-control",
-          "sourceId": "src-clinical-skills-precautions",
-          "locator": "Aseptic work areas",
+          "sourceId": "src-openrn-preventing-infection",
+          "locator": "9.6 Preventing Infection",
           "difficulty": "application"
         },
         {
@@ -920,8 +922,8 @@
           "rationale": "Avoiding manipulation of used sharps reduces percutaneous injury risk.",
           "objectiveId": "sic-standard-precautions-objective-2",
           "categoryId": "safety-infection-control",
-          "sourceId": "src-clinical-skills-precautions",
-          "locator": "Sharps safety",
+          "sourceId": "src-openrn-preventing-infection",
+          "locator": "9.6 Preventing Infection",
           "difficulty": "application"
         },
         {
@@ -950,8 +952,8 @@
           "rationale": "PPE selection is based on the anticipated route and extent of exposure.",
           "objectiveId": "sic-standard-precautions-objective-1",
           "categoryId": "safety-infection-control",
-          "sourceId": "src-clinical-skills-precautions",
-          "locator": "PPE selection",
+          "sourceId": "src-openrn-preventing-infection",
+          "locator": "9.6 Preventing Infection",
           "difficulty": "analysis"
         },
         {
@@ -980,8 +982,8 @@
           "rationale": "Gloves can have defects and hands can be contaminated during removal.",
           "objectiveId": "sic-standard-precautions-objective-2",
           "categoryId": "safety-infection-control",
-          "sourceId": "src-clinical-skills-precautions",
-          "locator": "Hand hygiene",
+          "sourceId": "src-openrn-preventing-infection",
+          "locator": "9.6 Preventing Infection",
           "difficulty": "analysis"
         },
         {
@@ -1010,8 +1012,8 @@
           "rationale": "Immediate cleansing and timely evaluation reduce preventable harm and enable indicated prophylaxis.",
           "objectiveId": "sic-standard-precautions-objective-3",
           "categoryId": "safety-infection-control",
-          "sourceId": "src-clinical-skills-precautions",
-          "locator": "Occupational exposure",
+          "sourceId": "src-openrn-preventing-infection",
+          "locator": "9.6 Preventing Infection",
           "difficulty": "analysis"
         },
         {
@@ -1040,8 +1042,8 @@
           "rationale": "Maintaining separation limits indirect transmission.",
           "objectiveId": "sic-standard-precautions-objective-1",
           "categoryId": "safety-infection-control",
-          "sourceId": "src-clinical-skills-precautions",
-          "locator": "Aseptic work areas",
+          "sourceId": "src-openrn-preventing-infection",
+          "locator": "9.6 Preventing Infection",
           "difficulty": "analysis"
         },
         {
@@ -1070,8 +1072,8 @@
           "rationale": "Avoiding manipulation of used sharps reduces percutaneous injury risk.",
           "objectiveId": "sic-standard-precautions-objective-2",
           "categoryId": "safety-infection-control",
-          "sourceId": "src-clinical-skills-precautions",
-          "locator": "Sharps safety",
+          "sourceId": "src-openrn-preventing-infection",
+          "locator": "9.6 Preventing Infection",
           "difficulty": "analysis"
         },
         {
@@ -1100,8 +1102,8 @@
           "rationale": "PPE selection is based on the anticipated route and extent of exposure.",
           "objectiveId": "sic-standard-precautions-objective-1",
           "categoryId": "safety-infection-control",
-          "sourceId": "src-clinical-skills-precautions",
-          "locator": "PPE selection",
+          "sourceId": "src-openrn-preventing-infection",
+          "locator": "9.6 Preventing Infection",
           "difficulty": "analysis"
         },
         {
@@ -1130,8 +1132,8 @@
           "rationale": "Gloves can have defects and hands can be contaminated during removal.",
           "objectiveId": "sic-standard-precautions-objective-2",
           "categoryId": "safety-infection-control",
-          "sourceId": "src-clinical-skills-precautions",
-          "locator": "Hand hygiene",
+          "sourceId": "src-openrn-preventing-infection",
+          "locator": "9.6 Preventing Infection",
           "difficulty": "analysis"
         },
         {
@@ -1160,8 +1162,8 @@
           "rationale": "Immediate cleansing and timely evaluation reduce preventable harm and enable indicated prophylaxis.",
           "objectiveId": "sic-standard-precautions-objective-3",
           "categoryId": "safety-infection-control",
-          "sourceId": "src-clinical-skills-precautions",
-          "locator": "Occupational exposure",
+          "sourceId": "src-openrn-preventing-infection",
+          "locator": "9.6 Preventing Infection",
           "difficulty": "analysis"
         },
         {
@@ -1190,8 +1192,8 @@
           "rationale": "Maintaining separation limits indirect transmission.",
           "objectiveId": "sic-standard-precautions-objective-1",
           "categoryId": "safety-infection-control",
-          "sourceId": "src-clinical-skills-precautions",
-          "locator": "Aseptic work areas",
+          "sourceId": "src-openrn-preventing-infection",
+          "locator": "9.6 Preventing Infection",
           "difficulty": "analysis"
         },
         {
@@ -1220,8 +1222,8 @@
           "rationale": "Avoiding manipulation of used sharps reduces percutaneous injury risk.",
           "objectiveId": "sic-standard-precautions-objective-2",
           "categoryId": "safety-infection-control",
-          "sourceId": "src-clinical-skills-precautions",
-          "locator": "Sharps safety",
+          "sourceId": "src-openrn-preventing-infection",
+          "locator": "9.6 Preventing Infection",
           "difficulty": "analysis"
         }
       ],
@@ -1231,48 +1233,48 @@
           "function": "Recognize Cues",
           "prompt": "Identify the findings in this scenario that require follow-up: A procedure may splash body fluid toward the face.",
           "rationale": "This item evaluates recognize cues within Standard Precautions and Exposure Prevention.",
-          "sourceId": "src-clinical-skills-precautions",
-          "locator": "PPE selection"
+          "sourceId": "src-openrn-preventing-infection",
+          "locator": "9.6 Preventing Infection"
         },
         {
           "id": "sic-standard-precautions-case-2",
           "function": "Analyze Cues",
           "prompt": "Explain how the cue changes the patient's immediate risk.",
           "rationale": "This item evaluates analyze cues within Standard Precautions and Exposure Prevention.",
-          "sourceId": "src-clinical-skills-precautions",
-          "locator": "PPE selection"
+          "sourceId": "src-openrn-preventing-infection",
+          "locator": "9.6 Preventing Infection"
         },
         {
           "id": "sic-standard-precautions-case-3",
           "function": "Prioritize Hypotheses",
           "prompt": "State the highest-priority problem supported by the available cues.",
           "rationale": "This item evaluates prioritize hypotheses within Standard Precautions and Exposure Prevention.",
-          "sourceId": "src-clinical-skills-precautions",
-          "locator": "PPE selection"
+          "sourceId": "src-openrn-preventing-infection",
+          "locator": "9.6 Preventing Infection"
         },
         {
           "id": "sic-standard-precautions-case-4",
           "function": "Generate Solutions",
           "prompt": "Identify two safe nursing responses and one action to avoid.",
           "rationale": "This item evaluates generate solutions within Standard Precautions and Exposure Prevention.",
-          "sourceId": "src-clinical-skills-precautions",
-          "locator": "PPE selection"
+          "sourceId": "src-openrn-preventing-infection",
+          "locator": "9.6 Preventing Infection"
         },
         {
           "id": "sic-standard-precautions-case-5",
           "function": "Take Action",
           "prompt": "Select and perform the priority response: Use gloves plus facial and eye protection appropriate to the splash risk.",
           "rationale": "PPE selection is based on the anticipated route and extent of exposure.",
-          "sourceId": "src-clinical-skills-precautions",
-          "locator": "PPE selection"
+          "sourceId": "src-openrn-preventing-infection",
+          "locator": "9.6 Preventing Infection"
         },
         {
           "id": "sic-standard-precautions-case-6",
           "function": "Evaluate Outcomes",
           "prompt": "Identify the findings that would demonstrate improvement or require escalation.",
           "rationale": "This item evaluates evaluate outcomes within Standard Precautions and Exposure Prevention.",
-          "sourceId": "src-clinical-skills-precautions",
-          "locator": "PPE selection"
+          "sourceId": "src-openrn-preventing-infection",
+          "locator": "9.6 Preventing Infection"
         }
       ],
       "masteryCheck": {
@@ -1301,13 +1303,15 @@
       ],
       "sources": [
         {
-          "id": "src-clinical-skills-precautions",
-          "title": "Clinical Nursing Skills",
-          "publisher": "OpenStax",
+          "id": "src-openrn-preventing-infection",
+          "title": "Nursing Fundamentals, 2nd Edition",
+          "publisher": "WisTech Open (Open RN)",
           "license": "CC BY 4.0",
-          "sourceUri": "https://openstax.org/books/clinical-nursing-skills/pages/1-introduction",
-          "locator": "Infection control and personal protective equipment",
-          "approvalStatus": "approved"
+          "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+          "sourceUri": "https://wtcs.pressbooks.pub/nursingfundamentals/chapter/9-6-preventing-infection/",
+          "locator": "9.6 Preventing Infection",
+          "approvalStatus": "approved",
+          "verifiedOn": "2026-10-13"
         }
       ],
       "accessibility": {
@@ -1410,8 +1414,8 @@
           "rationale": "Heavy postpartum bleeding can represent a time-sensitive maternal emergency.",
           "objectiveId": "hpm-postpartum-warning-signs-objective-1",
           "categoryId": "health-promotion",
-          "sourceId": "src-maternal-postpartum",
-          "locator": "Postpartum warning signs",
+          "sourceId": "src-openrn-postpartum-complications",
+          "locator": "11.4 Postpartum Complications",
           "difficulty": "application"
         },
         {
@@ -1440,8 +1444,8 @@
           "rationale": "Acute cardiopulmonary symptoms may indicate a life-threatening complication.",
           "objectiveId": "hpm-postpartum-warning-signs-objective-2",
           "categoryId": "health-promotion",
-          "sourceId": "src-maternal-postpartum",
-          "locator": "Emergency symptoms",
+          "sourceId": "src-openrn-postpartum-complications",
+          "locator": "11.4 Postpartum Complications",
           "difficulty": "application"
         },
         {
@@ -1470,8 +1474,8 @@
           "rationale": "Thoughts of harm require immediate safety intervention, not routine follow-up.",
           "objectiveId": "hpm-postpartum-warning-signs-objective-3",
           "categoryId": "health-promotion",
-          "sourceId": "src-maternal-postpartum",
-          "locator": "Postpartum mental-health emergency",
+          "sourceId": "src-openrn-postpartum-complications",
+          "locator": "11.4 Postpartum Complications",
           "difficulty": "application"
         },
         {
@@ -1500,8 +1504,8 @@
           "rationale": "Teach-back identifies and corrects gaps in actionable discharge knowledge.",
           "objectiveId": "hpm-postpartum-warning-signs-objective-1",
           "categoryId": "health-promotion",
-          "sourceId": "src-maternal-postpartum",
-          "locator": "Discharge teaching",
+          "sourceId": "src-openrn-postpartum-complications",
+          "locator": "11.4 Postpartum Complications",
           "difficulty": "application"
         },
         {
@@ -1530,8 +1534,8 @@
           "rationale": "Unilateral pain and swelling can signal venous thrombosis and require timely assessment.",
           "objectiveId": "hpm-postpartum-warning-signs-objective-2",
           "categoryId": "health-promotion",
-          "sourceId": "src-maternal-postpartum",
-          "locator": "Thromboembolic warning signs",
+          "sourceId": "src-openrn-postpartum-complications",
+          "locator": "11.4 Postpartum Complications",
           "difficulty": "application"
         },
         {
@@ -1560,8 +1564,8 @@
           "rationale": "Heavy postpartum bleeding can represent a time-sensitive maternal emergency.",
           "objectiveId": "hpm-postpartum-warning-signs-objective-1",
           "categoryId": "health-promotion",
-          "sourceId": "src-maternal-postpartum",
-          "locator": "Postpartum warning signs",
+          "sourceId": "src-openrn-postpartum-complications",
+          "locator": "11.4 Postpartum Complications",
           "difficulty": "analysis"
         },
         {
@@ -1590,8 +1594,8 @@
           "rationale": "Acute cardiopulmonary symptoms may indicate a life-threatening complication.",
           "objectiveId": "hpm-postpartum-warning-signs-objective-2",
           "categoryId": "health-promotion",
-          "sourceId": "src-maternal-postpartum",
-          "locator": "Emergency symptoms",
+          "sourceId": "src-openrn-postpartum-complications",
+          "locator": "11.4 Postpartum Complications",
           "difficulty": "analysis"
         },
         {
@@ -1620,8 +1624,8 @@
           "rationale": "Thoughts of harm require immediate safety intervention, not routine follow-up.",
           "objectiveId": "hpm-postpartum-warning-signs-objective-3",
           "categoryId": "health-promotion",
-          "sourceId": "src-maternal-postpartum",
-          "locator": "Postpartum mental-health emergency",
+          "sourceId": "src-openrn-postpartum-complications",
+          "locator": "11.4 Postpartum Complications",
           "difficulty": "analysis"
         },
         {
@@ -1650,8 +1654,8 @@
           "rationale": "Teach-back identifies and corrects gaps in actionable discharge knowledge.",
           "objectiveId": "hpm-postpartum-warning-signs-objective-1",
           "categoryId": "health-promotion",
-          "sourceId": "src-maternal-postpartum",
-          "locator": "Discharge teaching",
+          "sourceId": "src-openrn-postpartum-complications",
+          "locator": "11.4 Postpartum Complications",
           "difficulty": "analysis"
         },
         {
@@ -1680,8 +1684,8 @@
           "rationale": "Unilateral pain and swelling can signal venous thrombosis and require timely assessment.",
           "objectiveId": "hpm-postpartum-warning-signs-objective-2",
           "categoryId": "health-promotion",
-          "sourceId": "src-maternal-postpartum",
-          "locator": "Thromboembolic warning signs",
+          "sourceId": "src-openrn-postpartum-complications",
+          "locator": "11.4 Postpartum Complications",
           "difficulty": "analysis"
         },
         {
@@ -1710,8 +1714,8 @@
           "rationale": "Heavy postpartum bleeding can represent a time-sensitive maternal emergency.",
           "objectiveId": "hpm-postpartum-warning-signs-objective-1",
           "categoryId": "health-promotion",
-          "sourceId": "src-maternal-postpartum",
-          "locator": "Postpartum warning signs",
+          "sourceId": "src-openrn-postpartum-complications",
+          "locator": "11.4 Postpartum Complications",
           "difficulty": "analysis"
         },
         {
@@ -1740,8 +1744,8 @@
           "rationale": "Acute cardiopulmonary symptoms may indicate a life-threatening complication.",
           "objectiveId": "hpm-postpartum-warning-signs-objective-2",
           "categoryId": "health-promotion",
-          "sourceId": "src-maternal-postpartum",
-          "locator": "Emergency symptoms",
+          "sourceId": "src-openrn-postpartum-complications",
+          "locator": "11.4 Postpartum Complications",
           "difficulty": "analysis"
         },
         {
@@ -1770,8 +1774,8 @@
           "rationale": "Thoughts of harm require immediate safety intervention, not routine follow-up.",
           "objectiveId": "hpm-postpartum-warning-signs-objective-3",
           "categoryId": "health-promotion",
-          "sourceId": "src-maternal-postpartum",
-          "locator": "Postpartum mental-health emergency",
+          "sourceId": "src-openrn-postpartum-complications",
+          "locator": "11.4 Postpartum Complications",
           "difficulty": "analysis"
         },
         {
@@ -1800,8 +1804,8 @@
           "rationale": "Teach-back identifies and corrects gaps in actionable discharge knowledge.",
           "objectiveId": "hpm-postpartum-warning-signs-objective-1",
           "categoryId": "health-promotion",
-          "sourceId": "src-maternal-postpartum",
-          "locator": "Discharge teaching",
+          "sourceId": "src-openrn-postpartum-complications",
+          "locator": "11.4 Postpartum Complications",
           "difficulty": "analysis"
         },
         {
@@ -1830,8 +1834,8 @@
           "rationale": "Unilateral pain and swelling can signal venous thrombosis and require timely assessment.",
           "objectiveId": "hpm-postpartum-warning-signs-objective-2",
           "categoryId": "health-promotion",
-          "sourceId": "src-maternal-postpartum",
-          "locator": "Thromboembolic warning signs",
+          "sourceId": "src-openrn-postpartum-complications",
+          "locator": "11.4 Postpartum Complications",
           "difficulty": "analysis"
         }
       ],
@@ -1841,48 +1845,48 @@
           "function": "Recognize Cues",
           "prompt": "Identify the findings in this scenario that require follow-up: The patient reports soaking a pad rapidly with ongoing heavy bleeding.",
           "rationale": "This item evaluates recognize cues within Postpartum Discharge Teaching and Warning Signs.",
-          "sourceId": "src-maternal-postpartum",
-          "locator": "Postpartum warning signs"
+          "sourceId": "src-openrn-postpartum-complications",
+          "locator": "11.4 Postpartum Complications"
         },
         {
           "id": "hpm-postpartum-warning-signs-case-2",
           "function": "Analyze Cues",
           "prompt": "Explain how the cue changes the patient's immediate risk.",
           "rationale": "This item evaluates analyze cues within Postpartum Discharge Teaching and Warning Signs.",
-          "sourceId": "src-maternal-postpartum",
-          "locator": "Postpartum warning signs"
+          "sourceId": "src-openrn-postpartum-complications",
+          "locator": "11.4 Postpartum Complications"
         },
         {
           "id": "hpm-postpartum-warning-signs-case-3",
           "function": "Prioritize Hypotheses",
           "prompt": "State the highest-priority problem supported by the available cues.",
           "rationale": "This item evaluates prioritize hypotheses within Postpartum Discharge Teaching and Warning Signs.",
-          "sourceId": "src-maternal-postpartum",
-          "locator": "Postpartum warning signs"
+          "sourceId": "src-openrn-postpartum-complications",
+          "locator": "11.4 Postpartum Complications"
         },
         {
           "id": "hpm-postpartum-warning-signs-case-4",
           "function": "Generate Solutions",
           "prompt": "Identify two safe nursing responses and one action to avoid.",
           "rationale": "This item evaluates generate solutions within Postpartum Discharge Teaching and Warning Signs.",
-          "sourceId": "src-maternal-postpartum",
-          "locator": "Postpartum warning signs"
+          "sourceId": "src-openrn-postpartum-complications",
+          "locator": "11.4 Postpartum Complications"
         },
         {
           "id": "hpm-postpartum-warning-signs-case-5",
           "function": "Take Action",
           "prompt": "Select and perform the priority response: Direct the patient to obtain urgent evaluation for possible postpartum hemorrhage.",
           "rationale": "Heavy postpartum bleeding can represent a time-sensitive maternal emergency.",
-          "sourceId": "src-maternal-postpartum",
-          "locator": "Postpartum warning signs"
+          "sourceId": "src-openrn-postpartum-complications",
+          "locator": "11.4 Postpartum Complications"
         },
         {
           "id": "hpm-postpartum-warning-signs-case-6",
           "function": "Evaluate Outcomes",
           "prompt": "Identify the findings that would demonstrate improvement or require escalation.",
           "rationale": "This item evaluates evaluate outcomes within Postpartum Discharge Teaching and Warning Signs.",
-          "sourceId": "src-maternal-postpartum",
-          "locator": "Postpartum warning signs"
+          "sourceId": "src-openrn-postpartum-complications",
+          "locator": "11.4 Postpartum Complications"
         }
       ],
       "masteryCheck": {
@@ -1911,13 +1915,15 @@
       ],
       "sources": [
         {
-          "id": "src-maternal-postpartum",
-          "title": "Maternal-Newborn Nursing",
-          "publisher": "OpenStax",
+          "id": "src-openrn-postpartum-complications",
+          "title": "Nursing Health Promotion",
+          "publisher": "WisTech Open (Open RN)",
           "license": "CC BY 4.0",
-          "sourceUri": "https://openstax.org/books/maternal-newborn-nursing/pages/1-introduction",
-          "locator": "Postpartum care and discharge education",
-          "approvalStatus": "approved"
+          "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+          "sourceUri": "https://wtcs.pressbooks.pub/healthpromo/chapter/11-4-postpartum-complications/",
+          "locator": "11.4 Postpartum Complications",
+          "approvalStatus": "approved",
+          "verifiedOn": "2026-10-13"
         }
       ],
       "accessibility": {
@@ -2019,8 +2025,8 @@
           "rationale": "Hopeless statements warrant therapeutic exploration and direct safety assessment.",
           "objectiveId": "psi-therapeutic-communication-objective-1",
           "categoryId": "psychosocial-integrity",
-          "sourceId": "src-psych-communication",
-          "locator": "Suicide safety assessment",
+          "sourceId": "src-openrn-communicating-with-patients",
+          "locator": "2.3 Communicating With Patients",
           "difficulty": "application"
         },
         {
@@ -2049,8 +2055,8 @@
           "rationale": "Therapeutic silence communicates presence without forcing conversation.",
           "objectiveId": "psi-therapeutic-communication-objective-2",
           "categoryId": "psychosocial-integrity",
-          "sourceId": "src-psych-communication",
-          "locator": "Use of silence",
+          "sourceId": "src-openrn-communicating-with-patients",
+          "locator": "2.3 Communicating With Patients",
           "difficulty": "application"
         },
         {
@@ -2079,8 +2085,8 @@
           "rationale": "Reflection validates the expressed feeling and invites clarification.",
           "objectiveId": "psi-therapeutic-communication-objective-3",
           "categoryId": "psychosocial-integrity",
-          "sourceId": "src-psych-communication",
-          "locator": "Reflection",
+          "sourceId": "src-openrn-communicating-with-patients",
+          "locator": "2.3 Communicating With Patients",
           "difficulty": "application"
         },
         {
@@ -2109,8 +2115,8 @@
           "rationale": "Open exploration identifies the patient's need before teaching.",
           "objectiveId": "psi-therapeutic-communication-objective-1",
           "categoryId": "psychosocial-integrity",
-          "sourceId": "src-psych-communication",
-          "locator": "Open-ended communication",
+          "sourceId": "src-openrn-communicating-with-patients",
+          "locator": "2.3 Communicating With Patients",
           "difficulty": "application"
         },
         {
@@ -2139,8 +2145,8 @@
           "rationale": "False reassurance can close communication and minimize distress.",
           "objectiveId": "psi-therapeutic-communication-objective-2",
           "categoryId": "psychosocial-integrity",
-          "sourceId": "src-psych-communication",
-          "locator": "Communication barriers",
+          "sourceId": "src-openrn-communicating-with-patients",
+          "locator": "2.3 Communicating With Patients",
           "difficulty": "application"
         },
         {
@@ -2169,8 +2175,8 @@
           "rationale": "Hopeless statements warrant therapeutic exploration and direct safety assessment.",
           "objectiveId": "psi-therapeutic-communication-objective-1",
           "categoryId": "psychosocial-integrity",
-          "sourceId": "src-psych-communication",
-          "locator": "Suicide safety assessment",
+          "sourceId": "src-openrn-communicating-with-patients",
+          "locator": "2.3 Communicating With Patients",
           "difficulty": "analysis"
         },
         {
@@ -2199,8 +2205,8 @@
           "rationale": "Therapeutic silence communicates presence without forcing conversation.",
           "objectiveId": "psi-therapeutic-communication-objective-2",
           "categoryId": "psychosocial-integrity",
-          "sourceId": "src-psych-communication",
-          "locator": "Use of silence",
+          "sourceId": "src-openrn-communicating-with-patients",
+          "locator": "2.3 Communicating With Patients",
           "difficulty": "analysis"
         },
         {
@@ -2229,8 +2235,8 @@
           "rationale": "Reflection validates the expressed feeling and invites clarification.",
           "objectiveId": "psi-therapeutic-communication-objective-3",
           "categoryId": "psychosocial-integrity",
-          "sourceId": "src-psych-communication",
-          "locator": "Reflection",
+          "sourceId": "src-openrn-communicating-with-patients",
+          "locator": "2.3 Communicating With Patients",
           "difficulty": "analysis"
         },
         {
@@ -2259,8 +2265,8 @@
           "rationale": "Open exploration identifies the patient's need before teaching.",
           "objectiveId": "psi-therapeutic-communication-objective-1",
           "categoryId": "psychosocial-integrity",
-          "sourceId": "src-psych-communication",
-          "locator": "Open-ended communication",
+          "sourceId": "src-openrn-communicating-with-patients",
+          "locator": "2.3 Communicating With Patients",
           "difficulty": "analysis"
         },
         {
@@ -2289,8 +2295,8 @@
           "rationale": "False reassurance can close communication and minimize distress.",
           "objectiveId": "psi-therapeutic-communication-objective-2",
           "categoryId": "psychosocial-integrity",
-          "sourceId": "src-psych-communication",
-          "locator": "Communication barriers",
+          "sourceId": "src-openrn-communicating-with-patients",
+          "locator": "2.3 Communicating With Patients",
           "difficulty": "analysis"
         },
         {
@@ -2319,8 +2325,8 @@
           "rationale": "Hopeless statements warrant therapeutic exploration and direct safety assessment.",
           "objectiveId": "psi-therapeutic-communication-objective-1",
           "categoryId": "psychosocial-integrity",
-          "sourceId": "src-psych-communication",
-          "locator": "Suicide safety assessment",
+          "sourceId": "src-openrn-communicating-with-patients",
+          "locator": "2.3 Communicating With Patients",
           "difficulty": "analysis"
         },
         {
@@ -2349,8 +2355,8 @@
           "rationale": "Therapeutic silence communicates presence without forcing conversation.",
           "objectiveId": "psi-therapeutic-communication-objective-2",
           "categoryId": "psychosocial-integrity",
-          "sourceId": "src-psych-communication",
-          "locator": "Use of silence",
+          "sourceId": "src-openrn-communicating-with-patients",
+          "locator": "2.3 Communicating With Patients",
           "difficulty": "analysis"
         },
         {
@@ -2379,8 +2385,8 @@
           "rationale": "Reflection validates the expressed feeling and invites clarification.",
           "objectiveId": "psi-therapeutic-communication-objective-3",
           "categoryId": "psychosocial-integrity",
-          "sourceId": "src-psych-communication",
-          "locator": "Reflection",
+          "sourceId": "src-openrn-communicating-with-patients",
+          "locator": "2.3 Communicating With Patients",
           "difficulty": "analysis"
         },
         {
@@ -2409,8 +2415,8 @@
           "rationale": "Open exploration identifies the patient's need before teaching.",
           "objectiveId": "psi-therapeutic-communication-objective-1",
           "categoryId": "psychosocial-integrity",
-          "sourceId": "src-psych-communication",
-          "locator": "Open-ended communication",
+          "sourceId": "src-openrn-communicating-with-patients",
+          "locator": "2.3 Communicating With Patients",
           "difficulty": "analysis"
         },
         {
@@ -2439,8 +2445,8 @@
           "rationale": "False reassurance can close communication and minimize distress.",
           "objectiveId": "psi-therapeutic-communication-objective-2",
           "categoryId": "psychosocial-integrity",
-          "sourceId": "src-psych-communication",
-          "locator": "Communication barriers",
+          "sourceId": "src-openrn-communicating-with-patients",
+          "locator": "2.3 Communicating With Patients",
           "difficulty": "analysis"
         }
       ],
@@ -2450,48 +2456,48 @@
           "function": "Recognize Cues",
           "prompt": "Identify the findings in this scenario that require follow-up: A patient says, “Nothing will ever get better.”",
           "rationale": "This item evaluates recognize cues within Therapeutic Communication During Emotional Distress.",
-          "sourceId": "src-psych-communication",
-          "locator": "Suicide safety assessment"
+          "sourceId": "src-openrn-communicating-with-patients",
+          "locator": "2.3 Communicating With Patients"
         },
         {
           "id": "psi-therapeutic-communication-case-2",
           "function": "Analyze Cues",
           "prompt": "Explain how the cue changes the patient's immediate risk.",
           "rationale": "This item evaluates analyze cues within Therapeutic Communication During Emotional Distress.",
-          "sourceId": "src-psych-communication",
-          "locator": "Suicide safety assessment"
+          "sourceId": "src-openrn-communicating-with-patients",
+          "locator": "2.3 Communicating With Patients"
         },
         {
           "id": "psi-therapeutic-communication-case-3",
           "function": "Prioritize Hypotheses",
           "prompt": "State the highest-priority problem supported by the available cues.",
           "rationale": "This item evaluates prioritize hypotheses within Therapeutic Communication During Emotional Distress.",
-          "sourceId": "src-psych-communication",
-          "locator": "Suicide safety assessment"
+          "sourceId": "src-openrn-communicating-with-patients",
+          "locator": "2.3 Communicating With Patients"
         },
         {
           "id": "psi-therapeutic-communication-case-4",
           "function": "Generate Solutions",
           "prompt": "Identify two safe nursing responses and one action to avoid.",
           "rationale": "This item evaluates generate solutions within Therapeutic Communication During Emotional Distress.",
-          "sourceId": "src-psych-communication",
-          "locator": "Suicide safety assessment"
+          "sourceId": "src-openrn-communicating-with-patients",
+          "locator": "2.3 Communicating With Patients"
         },
         {
           "id": "psi-therapeutic-communication-case-5",
           "function": "Take Action",
           "prompt": "Select and perform the priority response: Acknowledge the distress and ask directly about thoughts of self-harm.",
           "rationale": "Hopeless statements warrant therapeutic exploration and direct safety assessment.",
-          "sourceId": "src-psych-communication",
-          "locator": "Suicide safety assessment"
+          "sourceId": "src-openrn-communicating-with-patients",
+          "locator": "2.3 Communicating With Patients"
         },
         {
           "id": "psi-therapeutic-communication-case-6",
           "function": "Evaluate Outcomes",
           "prompt": "Identify the findings that would demonstrate improvement or require escalation.",
           "rationale": "This item evaluates evaluate outcomes within Therapeutic Communication During Emotional Distress.",
-          "sourceId": "src-psych-communication",
-          "locator": "Suicide safety assessment"
+          "sourceId": "src-openrn-communicating-with-patients",
+          "locator": "2.3 Communicating With Patients"
         }
       ],
       "masteryCheck": {
@@ -2520,13 +2526,15 @@
       ],
       "sources": [
         {
-          "id": "src-psych-communication",
-          "title": "Psychiatric-Mental Health Nursing",
-          "publisher": "OpenStax",
+          "id": "src-openrn-communicating-with-patients",
+          "title": "Nursing Fundamentals, 2nd Edition",
+          "publisher": "WisTech Open (Open RN)",
           "license": "CC BY 4.0",
-          "sourceUri": "https://openstax.org/books/psychiatric-mental-health/pages/1-introduction",
-          "locator": "Therapeutic communication and suicide safety assessment",
-          "approvalStatus": "approved"
+          "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+          "sourceUri": "https://wtcs.pressbooks.pub/nursingfundamentals/chapter/2-3-communicating-with-patients/",
+          "locator": "2.3 Communicating With Patients",
+          "approvalStatus": "approved",
+          "verifiedOn": "2026-10-13"
         }
       ],
       "accessibility": {
@@ -2628,8 +2636,8 @@
           "rationale": "Dragging and sliding increase shear forces that damage tissue.",
           "objectiveId": "bcc-pressure-injury-prevention-objective-1",
           "categoryId": "basic-care-comfort",
-          "sourceId": "src-fundamentals-skin",
-          "locator": "Friction and shear",
+          "sourceId": "src-openrn-pressure-injuries",
+          "locator": "10.4 Pressure Injuries",
           "difficulty": "application"
         },
         {
@@ -2658,8 +2666,8 @@
           "rationale": "Persistent moisture weakens the skin barrier and increases injury risk.",
           "objectiveId": "bcc-pressure-injury-prevention-objective-2",
           "categoryId": "basic-care-comfort",
-          "sourceId": "src-fundamentals-skin",
-          "locator": "Moisture management",
+          "sourceId": "src-openrn-pressure-injuries",
+          "locator": "10.4 Pressure Injuries",
           "difficulty": "application"
         },
         {
@@ -2688,8 +2696,8 @@
           "rationale": "Medical devices can concentrate pressure and conceal evolving injury.",
           "objectiveId": "bcc-pressure-injury-prevention-objective-3",
           "categoryId": "basic-care-comfort",
-          "sourceId": "src-fundamentals-skin",
-          "locator": "Device-related pressure",
+          "sourceId": "src-openrn-pressure-injuries",
+          "locator": "10.4 Pressure Injuries",
           "difficulty": "application"
         },
         {
@@ -2718,8 +2726,8 @@
           "rationale": "Multiple risks require a bundled, interdisciplinary approach.",
           "objectiveId": "bcc-pressure-injury-prevention-objective-1",
           "categoryId": "basic-care-comfort",
-          "sourceId": "src-fundamentals-skin",
-          "locator": "Risk-based prevention",
+          "sourceId": "src-openrn-pressure-injuries",
+          "locator": "10.4 Pressure Injuries",
           "difficulty": "application"
         },
         {
@@ -2748,8 +2756,8 @@
           "rationale": "Early recognition and pressure relief help prevent progression.",
           "objectiveId": "bcc-pressure-injury-prevention-objective-2",
           "categoryId": "basic-care-comfort",
-          "sourceId": "src-fundamentals-skin",
-          "locator": "Skin reassessment",
+          "sourceId": "src-openrn-pressure-injuries",
+          "locator": "10.4 Pressure Injuries",
           "difficulty": "application"
         },
         {
@@ -2778,8 +2786,8 @@
           "rationale": "Dragging and sliding increase shear forces that damage tissue.",
           "objectiveId": "bcc-pressure-injury-prevention-objective-1",
           "categoryId": "basic-care-comfort",
-          "sourceId": "src-fundamentals-skin",
-          "locator": "Friction and shear",
+          "sourceId": "src-openrn-pressure-injuries",
+          "locator": "10.4 Pressure Injuries",
           "difficulty": "analysis"
         },
         {
@@ -2808,8 +2816,8 @@
           "rationale": "Persistent moisture weakens the skin barrier and increases injury risk.",
           "objectiveId": "bcc-pressure-injury-prevention-objective-2",
           "categoryId": "basic-care-comfort",
-          "sourceId": "src-fundamentals-skin",
-          "locator": "Moisture management",
+          "sourceId": "src-openrn-pressure-injuries",
+          "locator": "10.4 Pressure Injuries",
           "difficulty": "analysis"
         },
         {
@@ -2838,8 +2846,8 @@
           "rationale": "Medical devices can concentrate pressure and conceal evolving injury.",
           "objectiveId": "bcc-pressure-injury-prevention-objective-3",
           "categoryId": "basic-care-comfort",
-          "sourceId": "src-fundamentals-skin",
-          "locator": "Device-related pressure",
+          "sourceId": "src-openrn-pressure-injuries",
+          "locator": "10.4 Pressure Injuries",
           "difficulty": "analysis"
         },
         {
@@ -2868,8 +2876,8 @@
           "rationale": "Multiple risks require a bundled, interdisciplinary approach.",
           "objectiveId": "bcc-pressure-injury-prevention-objective-1",
           "categoryId": "basic-care-comfort",
-          "sourceId": "src-fundamentals-skin",
-          "locator": "Risk-based prevention",
+          "sourceId": "src-openrn-pressure-injuries",
+          "locator": "10.4 Pressure Injuries",
           "difficulty": "analysis"
         },
         {
@@ -2898,8 +2906,8 @@
           "rationale": "Early recognition and pressure relief help prevent progression.",
           "objectiveId": "bcc-pressure-injury-prevention-objective-2",
           "categoryId": "basic-care-comfort",
-          "sourceId": "src-fundamentals-skin",
-          "locator": "Skin reassessment",
+          "sourceId": "src-openrn-pressure-injuries",
+          "locator": "10.4 Pressure Injuries",
           "difficulty": "analysis"
         },
         {
@@ -2928,8 +2936,8 @@
           "rationale": "Dragging and sliding increase shear forces that damage tissue.",
           "objectiveId": "bcc-pressure-injury-prevention-objective-1",
           "categoryId": "basic-care-comfort",
-          "sourceId": "src-fundamentals-skin",
-          "locator": "Friction and shear",
+          "sourceId": "src-openrn-pressure-injuries",
+          "locator": "10.4 Pressure Injuries",
           "difficulty": "analysis"
         },
         {
@@ -2958,8 +2966,8 @@
           "rationale": "Persistent moisture weakens the skin barrier and increases injury risk.",
           "objectiveId": "bcc-pressure-injury-prevention-objective-2",
           "categoryId": "basic-care-comfort",
-          "sourceId": "src-fundamentals-skin",
-          "locator": "Moisture management",
+          "sourceId": "src-openrn-pressure-injuries",
+          "locator": "10.4 Pressure Injuries",
           "difficulty": "analysis"
         },
         {
@@ -2988,8 +2996,8 @@
           "rationale": "Medical devices can concentrate pressure and conceal evolving injury.",
           "objectiveId": "bcc-pressure-injury-prevention-objective-3",
           "categoryId": "basic-care-comfort",
-          "sourceId": "src-fundamentals-skin",
-          "locator": "Device-related pressure",
+          "sourceId": "src-openrn-pressure-injuries",
+          "locator": "10.4 Pressure Injuries",
           "difficulty": "analysis"
         },
         {
@@ -3018,8 +3026,8 @@
           "rationale": "Multiple risks require a bundled, interdisciplinary approach.",
           "objectiveId": "bcc-pressure-injury-prevention-objective-1",
           "categoryId": "basic-care-comfort",
-          "sourceId": "src-fundamentals-skin",
-          "locator": "Risk-based prevention",
+          "sourceId": "src-openrn-pressure-injuries",
+          "locator": "10.4 Pressure Injuries",
           "difficulty": "analysis"
         },
         {
@@ -3048,8 +3056,8 @@
           "rationale": "Early recognition and pressure relief help prevent progression.",
           "objectiveId": "bcc-pressure-injury-prevention-objective-2",
           "categoryId": "basic-care-comfort",
-          "sourceId": "src-fundamentals-skin",
-          "locator": "Skin reassessment",
+          "sourceId": "src-openrn-pressure-injuries",
+          "locator": "10.4 Pressure Injuries",
           "difficulty": "analysis"
         }
       ],
@@ -3059,48 +3067,48 @@
           "function": "Recognize Cues",
           "prompt": "Identify the findings in this scenario that require follow-up: An immobile patient slides down repeatedly in bed.",
           "rationale": "This item evaluates recognize cues within Pressure Injury Prevention and Comfort.",
-          "sourceId": "src-fundamentals-skin",
-          "locator": "Friction and shear"
+          "sourceId": "src-openrn-pressure-injuries",
+          "locator": "10.4 Pressure Injuries"
         },
         {
           "id": "bcc-pressure-injury-prevention-case-2",
           "function": "Analyze Cues",
           "prompt": "Explain how the cue changes the patient's immediate risk.",
           "rationale": "This item evaluates analyze cues within Pressure Injury Prevention and Comfort.",
-          "sourceId": "src-fundamentals-skin",
-          "locator": "Friction and shear"
+          "sourceId": "src-openrn-pressure-injuries",
+          "locator": "10.4 Pressure Injuries"
         },
         {
           "id": "bcc-pressure-injury-prevention-case-3",
           "function": "Prioritize Hypotheses",
           "prompt": "State the highest-priority problem supported by the available cues.",
           "rationale": "This item evaluates prioritize hypotheses within Pressure Injury Prevention and Comfort.",
-          "sourceId": "src-fundamentals-skin",
-          "locator": "Friction and shear"
+          "sourceId": "src-openrn-pressure-injuries",
+          "locator": "10.4 Pressure Injuries"
         },
         {
           "id": "bcc-pressure-injury-prevention-case-4",
           "function": "Generate Solutions",
           "prompt": "Identify two safe nursing responses and one action to avoid.",
           "rationale": "This item evaluates generate solutions within Pressure Injury Prevention and Comfort.",
-          "sourceId": "src-fundamentals-skin",
-          "locator": "Friction and shear"
+          "sourceId": "src-openrn-pressure-injuries",
+          "locator": "10.4 Pressure Injuries"
         },
         {
           "id": "bcc-pressure-injury-prevention-case-5",
           "function": "Take Action",
           "prompt": "Select and perform the priority response: Reposition with lift assistance and reduce shear while supporting alignment.",
           "rationale": "Dragging and sliding increase shear forces that damage tissue.",
-          "sourceId": "src-fundamentals-skin",
-          "locator": "Friction and shear"
+          "sourceId": "src-openrn-pressure-injuries",
+          "locator": "10.4 Pressure Injuries"
         },
         {
           "id": "bcc-pressure-injury-prevention-case-6",
           "function": "Evaluate Outcomes",
           "prompt": "Identify the findings that would demonstrate improvement or require escalation.",
           "rationale": "This item evaluates evaluate outcomes within Pressure Injury Prevention and Comfort.",
-          "sourceId": "src-fundamentals-skin",
-          "locator": "Friction and shear"
+          "sourceId": "src-openrn-pressure-injuries",
+          "locator": "10.4 Pressure Injuries"
         }
       ],
       "masteryCheck": {
@@ -3129,13 +3137,15 @@
       ],
       "sources": [
         {
-          "id": "src-fundamentals-skin",
-          "title": "Fundamentals of Nursing",
-          "publisher": "OpenStax",
+          "id": "src-openrn-pressure-injuries",
+          "title": "Nursing Fundamentals, 2nd Edition",
+          "publisher": "WisTech Open (Open RN)",
           "license": "CC BY 4.0",
-          "sourceUri": "https://openstax.org/books/fundamentals-nursing/pages/1-introduction",
-          "locator": "Skin integrity and pressure injury prevention",
-          "approvalStatus": "approved"
+          "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+          "sourceUri": "https://wtcs.pressbooks.pub/nursingfundamentals/chapter/10-4-pressure-injuries/",
+          "locator": "10.4 Pressure Injuries",
+          "approvalStatus": "approved",
+          "verifiedOn": "2026-10-13"
         }
       ],
       "accessibility": {
@@ -3238,8 +3248,8 @@
           "rationale": "A dose discrepancy must be resolved before medication reaches the patient.",
           "objectiveId": "ppt-high-alert-medication-objective-1",
           "categoryId": "pharmacological-therapies",
-          "sourceId": "src-pharmacology-safety",
-          "locator": "Order verification",
+          "sourceId": "src-openrn-medication-errors",
+          "locator": "2.5 Preventing Medication Errors",
           "difficulty": "application"
         },
         {
@@ -3268,8 +3278,8 @@
           "rationale": "Relevant laboratory data can determine whether administration is safe.",
           "objectiveId": "ppt-high-alert-medication-objective-2",
           "categoryId": "pharmacological-therapies",
-          "sourceId": "src-pharmacology-safety",
-          "locator": "Pre-administration assessment",
+          "sourceId": "src-openrn-medication-errors",
+          "locator": "2.5 Preventing Medication Errors",
           "difficulty": "application"
         },
         {
@@ -3298,8 +3308,8 @@
           "rationale": "A mismatch alert is a safety signal and should not be bypassed for convenience.",
           "objectiveId": "ppt-high-alert-medication-objective-3",
           "categoryId": "pharmacological-therapies",
-          "sourceId": "src-pharmacology-safety",
-          "locator": "Barcode safeguards",
+          "sourceId": "src-openrn-medication-errors",
+          "locator": "2.5 Preventing Medication Errors",
           "difficulty": "application"
         },
         {
@@ -3328,8 +3338,8 @@
           "rationale": "An independent check is performed separately to reduce shared-error bias.",
           "objectiveId": "ppt-high-alert-medication-objective-1",
           "categoryId": "pharmacological-therapies",
-          "sourceId": "src-pharmacology-safety",
-          "locator": "Independent verification",
+          "sourceId": "src-openrn-medication-errors",
+          "locator": "2.5 Preventing Medication Errors",
           "difficulty": "application"
         },
         {
@@ -3358,8 +3368,8 @@
           "rationale": "Immediate assessment and response limit ongoing exposure and address instability.",
           "objectiveId": "ppt-high-alert-medication-objective-2",
           "categoryId": "pharmacological-therapies",
-          "sourceId": "src-pharmacology-safety",
-          "locator": "Adverse drug response",
+          "sourceId": "src-openrn-medication-errors",
+          "locator": "2.5 Preventing Medication Errors",
           "difficulty": "application"
         },
         {
@@ -3388,8 +3398,8 @@
           "rationale": "A dose discrepancy must be resolved before medication reaches the patient.",
           "objectiveId": "ppt-high-alert-medication-objective-1",
           "categoryId": "pharmacological-therapies",
-          "sourceId": "src-pharmacology-safety",
-          "locator": "Order verification",
+          "sourceId": "src-openrn-medication-errors",
+          "locator": "2.5 Preventing Medication Errors",
           "difficulty": "analysis"
         },
         {
@@ -3418,8 +3428,8 @@
           "rationale": "Relevant laboratory data can determine whether administration is safe.",
           "objectiveId": "ppt-high-alert-medication-objective-2",
           "categoryId": "pharmacological-therapies",
-          "sourceId": "src-pharmacology-safety",
-          "locator": "Pre-administration assessment",
+          "sourceId": "src-openrn-medication-errors",
+          "locator": "2.5 Preventing Medication Errors",
           "difficulty": "analysis"
         },
         {
@@ -3448,8 +3458,8 @@
           "rationale": "A mismatch alert is a safety signal and should not be bypassed for convenience.",
           "objectiveId": "ppt-high-alert-medication-objective-3",
           "categoryId": "pharmacological-therapies",
-          "sourceId": "src-pharmacology-safety",
-          "locator": "Barcode safeguards",
+          "sourceId": "src-openrn-medication-errors",
+          "locator": "2.5 Preventing Medication Errors",
           "difficulty": "analysis"
         },
         {
@@ -3478,8 +3488,8 @@
           "rationale": "An independent check is performed separately to reduce shared-error bias.",
           "objectiveId": "ppt-high-alert-medication-objective-1",
           "categoryId": "pharmacological-therapies",
-          "sourceId": "src-pharmacology-safety",
-          "locator": "Independent verification",
+          "sourceId": "src-openrn-medication-errors",
+          "locator": "2.5 Preventing Medication Errors",
           "difficulty": "analysis"
         },
         {
@@ -3508,8 +3518,8 @@
           "rationale": "Immediate assessment and response limit ongoing exposure and address instability.",
           "objectiveId": "ppt-high-alert-medication-objective-2",
           "categoryId": "pharmacological-therapies",
-          "sourceId": "src-pharmacology-safety",
-          "locator": "Adverse drug response",
+          "sourceId": "src-openrn-medication-errors",
+          "locator": "2.5 Preventing Medication Errors",
           "difficulty": "analysis"
         },
         {
@@ -3538,8 +3548,8 @@
           "rationale": "A dose discrepancy must be resolved before medication reaches the patient.",
           "objectiveId": "ppt-high-alert-medication-objective-1",
           "categoryId": "pharmacological-therapies",
-          "sourceId": "src-pharmacology-safety",
-          "locator": "Order verification",
+          "sourceId": "src-openrn-medication-errors",
+          "locator": "2.5 Preventing Medication Errors",
           "difficulty": "analysis"
         },
         {
@@ -3568,8 +3578,8 @@
           "rationale": "Relevant laboratory data can determine whether administration is safe.",
           "objectiveId": "ppt-high-alert-medication-objective-2",
           "categoryId": "pharmacological-therapies",
-          "sourceId": "src-pharmacology-safety",
-          "locator": "Pre-administration assessment",
+          "sourceId": "src-openrn-medication-errors",
+          "locator": "2.5 Preventing Medication Errors",
           "difficulty": "analysis"
         },
         {
@@ -3598,8 +3608,8 @@
           "rationale": "A mismatch alert is a safety signal and should not be bypassed for convenience.",
           "objectiveId": "ppt-high-alert-medication-objective-3",
           "categoryId": "pharmacological-therapies",
-          "sourceId": "src-pharmacology-safety",
-          "locator": "Barcode safeguards",
+          "sourceId": "src-openrn-medication-errors",
+          "locator": "2.5 Preventing Medication Errors",
           "difficulty": "analysis"
         },
         {
@@ -3628,8 +3638,8 @@
           "rationale": "An independent check is performed separately to reduce shared-error bias.",
           "objectiveId": "ppt-high-alert-medication-objective-1",
           "categoryId": "pharmacological-therapies",
-          "sourceId": "src-pharmacology-safety",
-          "locator": "Independent verification",
+          "sourceId": "src-openrn-medication-errors",
+          "locator": "2.5 Preventing Medication Errors",
           "difficulty": "analysis"
         },
         {
@@ -3658,8 +3668,8 @@
           "rationale": "Immediate assessment and response limit ongoing exposure and address instability.",
           "objectiveId": "ppt-high-alert-medication-objective-2",
           "categoryId": "pharmacological-therapies",
-          "sourceId": "src-pharmacology-safety",
-          "locator": "Adverse drug response",
+          "sourceId": "src-openrn-medication-errors",
+          "locator": "2.5 Preventing Medication Errors",
           "difficulty": "analysis"
         }
       ],
@@ -3669,48 +3679,48 @@
           "function": "Recognize Cues",
           "prompt": "Identify the findings in this scenario that require follow-up: The prescribed dose is inconsistent with the available concentration and usual range.",
           "rationale": "This item evaluates recognize cues within High-Alert Medication Administration.",
-          "sourceId": "src-pharmacology-safety",
-          "locator": "Order verification"
+          "sourceId": "src-openrn-medication-errors",
+          "locator": "2.5 Preventing Medication Errors"
         },
         {
           "id": "ppt-high-alert-medication-case-2",
           "function": "Analyze Cues",
           "prompt": "Explain how the cue changes the patient's immediate risk.",
           "rationale": "This item evaluates analyze cues within High-Alert Medication Administration.",
-          "sourceId": "src-pharmacology-safety",
-          "locator": "Order verification"
+          "sourceId": "src-openrn-medication-errors",
+          "locator": "2.5 Preventing Medication Errors"
         },
         {
           "id": "ppt-high-alert-medication-case-3",
           "function": "Prioritize Hypotheses",
           "prompt": "State the highest-priority problem supported by the available cues.",
           "rationale": "This item evaluates prioritize hypotheses within High-Alert Medication Administration.",
-          "sourceId": "src-pharmacology-safety",
-          "locator": "Order verification"
+          "sourceId": "src-openrn-medication-errors",
+          "locator": "2.5 Preventing Medication Errors"
         },
         {
           "id": "ppt-high-alert-medication-case-4",
           "function": "Generate Solutions",
           "prompt": "Identify two safe nursing responses and one action to avoid.",
           "rationale": "This item evaluates generate solutions within High-Alert Medication Administration.",
-          "sourceId": "src-pharmacology-safety",
-          "locator": "Order verification"
+          "sourceId": "src-openrn-medication-errors",
+          "locator": "2.5 Preventing Medication Errors"
         },
         {
           "id": "ppt-high-alert-medication-case-5",
           "function": "Take Action",
           "prompt": "Select and perform the priority response: Hold administration and clarify the order before preparing the dose.",
           "rationale": "A dose discrepancy must be resolved before medication reaches the patient.",
-          "sourceId": "src-pharmacology-safety",
-          "locator": "Order verification"
+          "sourceId": "src-openrn-medication-errors",
+          "locator": "2.5 Preventing Medication Errors"
         },
         {
           "id": "ppt-high-alert-medication-case-6",
           "function": "Evaluate Outcomes",
           "prompt": "Identify the findings that would demonstrate improvement or require escalation.",
           "rationale": "This item evaluates evaluate outcomes within High-Alert Medication Administration.",
-          "sourceId": "src-pharmacology-safety",
-          "locator": "Order verification"
+          "sourceId": "src-openrn-medication-errors",
+          "locator": "2.5 Preventing Medication Errors"
         }
       ],
       "masteryCheck": {
@@ -3739,13 +3749,15 @@
       ],
       "sources": [
         {
-          "id": "src-pharmacology-safety",
-          "title": "Pharmacology for Nurses",
-          "publisher": "OpenStax",
+          "id": "src-openrn-medication-errors",
+          "title": "Nursing Pharmacology, 2nd Edition",
+          "publisher": "WisTech Open (Open RN)",
           "license": "CC BY 4.0",
-          "sourceUri": "https://openstax.org/books/pharmacology/pages/1-introduction",
-          "locator": "Medication safety and administration",
-          "approvalStatus": "approved"
+          "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+          "sourceUri": "https://wtcs.pressbooks.pub/pharmacology2e/chapter/2-5-preventing-medication-errors/",
+          "locator": "2.5 Preventing Medication Errors",
+          "approvalStatus": "approved",
+          "verifiedOn": "2026-10-13"
         }
       ],
       "accessibility": {
@@ -3847,8 +3859,8 @@
           "rationale": "Stopping exposure and assessing stability are the immediate priorities for a suspected reaction.",
           "objectiveId": "rrp-transfusion-reaction-objective-1",
           "categoryId": "reduction-of-risk",
-          "sourceId": "src-med-surg-transfusion",
-          "locator": "Suspected transfusion reaction",
+          "sourceId": "src-openrn-hypersensitivity-reactions",
+          "locator": "4.5 Autoimmune and Hypersensitivity Reactions",
           "difficulty": "application"
         },
         {
@@ -3877,8 +3889,8 @@
           "rationale": "Separate tubing avoids infusing residual blood while preserving access for treatment.",
           "objectiveId": "rrp-transfusion-reaction-objective-2",
           "categoryId": "reduction-of-risk",
-          "sourceId": "src-med-surg-transfusion",
-          "locator": "Immediate response sequence",
+          "sourceId": "src-openrn-hypersensitivity-reactions",
+          "locator": "4.5 Autoimmune and Hypersensitivity Reactions",
           "difficulty": "application"
         },
         {
@@ -3907,8 +3919,8 @@
           "rationale": "Hemodynamic instability requires immediate escalation and resuscitative priorities.",
           "objectiveId": "rrp-transfusion-reaction-objective-3",
           "categoryId": "reduction-of-risk",
-          "sourceId": "src-med-surg-transfusion",
-          "locator": "Unstable transfusion reaction",
+          "sourceId": "src-openrn-hypersensitivity-reactions",
+          "locator": "4.5 Autoimmune and Hypersensitivity Reactions",
           "difficulty": "application"
         },
         {
@@ -3937,8 +3949,8 @@
           "rationale": "Improvement does not establish that the product is safe to resume.",
           "objectiveId": "rrp-transfusion-reaction-objective-1",
           "categoryId": "reduction-of-risk",
-          "sourceId": "src-med-surg-transfusion",
-          "locator": "Product handling",
+          "sourceId": "src-openrn-hypersensitivity-reactions",
+          "locator": "4.5 Autoimmune and Hypersensitivity Reactions",
           "difficulty": "application"
         },
         {
@@ -3967,8 +3979,8 @@
           "rationale": "Investigation and reporting support diagnosis, treatment, and prevention of further harm.",
           "objectiveId": "rrp-transfusion-reaction-objective-2",
           "categoryId": "reduction-of-risk",
-          "sourceId": "src-med-surg-transfusion",
-          "locator": "Notification and investigation",
+          "sourceId": "src-openrn-hypersensitivity-reactions",
+          "locator": "4.5 Autoimmune and Hypersensitivity Reactions",
           "difficulty": "application"
         },
         {
@@ -3997,8 +4009,8 @@
           "rationale": "Stopping exposure and assessing stability are the immediate priorities for a suspected reaction.",
           "objectiveId": "rrp-transfusion-reaction-objective-1",
           "categoryId": "reduction-of-risk",
-          "sourceId": "src-med-surg-transfusion",
-          "locator": "Suspected transfusion reaction",
+          "sourceId": "src-openrn-hypersensitivity-reactions",
+          "locator": "4.5 Autoimmune and Hypersensitivity Reactions",
           "difficulty": "analysis"
         },
         {
@@ -4027,8 +4039,8 @@
           "rationale": "Separate tubing avoids infusing residual blood while preserving access for treatment.",
           "objectiveId": "rrp-transfusion-reaction-objective-2",
           "categoryId": "reduction-of-risk",
-          "sourceId": "src-med-surg-transfusion",
-          "locator": "Immediate response sequence",
+          "sourceId": "src-openrn-hypersensitivity-reactions",
+          "locator": "4.5 Autoimmune and Hypersensitivity Reactions",
           "difficulty": "analysis"
         },
         {
@@ -4057,8 +4069,8 @@
           "rationale": "Hemodynamic instability requires immediate escalation and resuscitative priorities.",
           "objectiveId": "rrp-transfusion-reaction-objective-3",
           "categoryId": "reduction-of-risk",
-          "sourceId": "src-med-surg-transfusion",
-          "locator": "Unstable transfusion reaction",
+          "sourceId": "src-openrn-hypersensitivity-reactions",
+          "locator": "4.5 Autoimmune and Hypersensitivity Reactions",
           "difficulty": "analysis"
         },
         {
@@ -4087,8 +4099,8 @@
           "rationale": "Improvement does not establish that the product is safe to resume.",
           "objectiveId": "rrp-transfusion-reaction-objective-1",
           "categoryId": "reduction-of-risk",
-          "sourceId": "src-med-surg-transfusion",
-          "locator": "Product handling",
+          "sourceId": "src-openrn-hypersensitivity-reactions",
+          "locator": "4.5 Autoimmune and Hypersensitivity Reactions",
           "difficulty": "analysis"
         },
         {
@@ -4117,8 +4129,8 @@
           "rationale": "Investigation and reporting support diagnosis, treatment, and prevention of further harm.",
           "objectiveId": "rrp-transfusion-reaction-objective-2",
           "categoryId": "reduction-of-risk",
-          "sourceId": "src-med-surg-transfusion",
-          "locator": "Notification and investigation",
+          "sourceId": "src-openrn-hypersensitivity-reactions",
+          "locator": "4.5 Autoimmune and Hypersensitivity Reactions",
           "difficulty": "analysis"
         },
         {
@@ -4147,8 +4159,8 @@
           "rationale": "Stopping exposure and assessing stability are the immediate priorities for a suspected reaction.",
           "objectiveId": "rrp-transfusion-reaction-objective-1",
           "categoryId": "reduction-of-risk",
-          "sourceId": "src-med-surg-transfusion",
-          "locator": "Suspected transfusion reaction",
+          "sourceId": "src-openrn-hypersensitivity-reactions",
+          "locator": "4.5 Autoimmune and Hypersensitivity Reactions",
           "difficulty": "analysis"
         },
         {
@@ -4177,8 +4189,8 @@
           "rationale": "Separate tubing avoids infusing residual blood while preserving access for treatment.",
           "objectiveId": "rrp-transfusion-reaction-objective-2",
           "categoryId": "reduction-of-risk",
-          "sourceId": "src-med-surg-transfusion",
-          "locator": "Immediate response sequence",
+          "sourceId": "src-openrn-hypersensitivity-reactions",
+          "locator": "4.5 Autoimmune and Hypersensitivity Reactions",
           "difficulty": "analysis"
         },
         {
@@ -4207,8 +4219,8 @@
           "rationale": "Hemodynamic instability requires immediate escalation and resuscitative priorities.",
           "objectiveId": "rrp-transfusion-reaction-objective-3",
           "categoryId": "reduction-of-risk",
-          "sourceId": "src-med-surg-transfusion",
-          "locator": "Unstable transfusion reaction",
+          "sourceId": "src-openrn-hypersensitivity-reactions",
+          "locator": "4.5 Autoimmune and Hypersensitivity Reactions",
           "difficulty": "analysis"
         },
         {
@@ -4237,8 +4249,8 @@
           "rationale": "Improvement does not establish that the product is safe to resume.",
           "objectiveId": "rrp-transfusion-reaction-objective-1",
           "categoryId": "reduction-of-risk",
-          "sourceId": "src-med-surg-transfusion",
-          "locator": "Product handling",
+          "sourceId": "src-openrn-hypersensitivity-reactions",
+          "locator": "4.5 Autoimmune and Hypersensitivity Reactions",
           "difficulty": "analysis"
         },
         {
@@ -4267,8 +4279,8 @@
           "rationale": "Investigation and reporting support diagnosis, treatment, and prevention of further harm.",
           "objectiveId": "rrp-transfusion-reaction-objective-2",
           "categoryId": "reduction-of-risk",
-          "sourceId": "src-med-surg-transfusion",
-          "locator": "Notification and investigation",
+          "sourceId": "src-openrn-hypersensitivity-reactions",
+          "locator": "4.5 Autoimmune and Hypersensitivity Reactions",
           "difficulty": "analysis"
         }
       ],
@@ -4278,48 +4290,48 @@
           "function": "Recognize Cues",
           "prompt": "Identify the findings in this scenario that require follow-up: The patient develops chills and dyspnea shortly after a transfusion begins.",
           "rationale": "This item evaluates recognize cues within Recognition of an Acute Transfusion Reaction.",
-          "sourceId": "src-med-surg-transfusion",
-          "locator": "Suspected transfusion reaction"
+          "sourceId": "src-openrn-hypersensitivity-reactions",
+          "locator": "4.5 Autoimmune and Hypersensitivity Reactions"
         },
         {
           "id": "rrp-transfusion-reaction-case-2",
           "function": "Analyze Cues",
           "prompt": "Explain how the cue changes the patient's immediate risk.",
           "rationale": "This item evaluates analyze cues within Recognition of an Acute Transfusion Reaction.",
-          "sourceId": "src-med-surg-transfusion",
-          "locator": "Suspected transfusion reaction"
+          "sourceId": "src-openrn-hypersensitivity-reactions",
+          "locator": "4.5 Autoimmune and Hypersensitivity Reactions"
         },
         {
           "id": "rrp-transfusion-reaction-case-3",
           "function": "Prioritize Hypotheses",
           "prompt": "State the highest-priority problem supported by the available cues.",
           "rationale": "This item evaluates prioritize hypotheses within Recognition of an Acute Transfusion Reaction.",
-          "sourceId": "src-med-surg-transfusion",
-          "locator": "Suspected transfusion reaction"
+          "sourceId": "src-openrn-hypersensitivity-reactions",
+          "locator": "4.5 Autoimmune and Hypersensitivity Reactions"
         },
         {
           "id": "rrp-transfusion-reaction-case-4",
           "function": "Generate Solutions",
           "prompt": "Identify two safe nursing responses and one action to avoid.",
           "rationale": "This item evaluates generate solutions within Recognition of an Acute Transfusion Reaction.",
-          "sourceId": "src-med-surg-transfusion",
-          "locator": "Suspected transfusion reaction"
+          "sourceId": "src-openrn-hypersensitivity-reactions",
+          "locator": "4.5 Autoimmune and Hypersensitivity Reactions"
         },
         {
           "id": "rrp-transfusion-reaction-case-5",
           "function": "Take Action",
           "prompt": "Select and perform the priority response: Stop the transfusion immediately and assess the patient.",
           "rationale": "Stopping exposure and assessing stability are the immediate priorities for a suspected reaction.",
-          "sourceId": "src-med-surg-transfusion",
-          "locator": "Suspected transfusion reaction"
+          "sourceId": "src-openrn-hypersensitivity-reactions",
+          "locator": "4.5 Autoimmune and Hypersensitivity Reactions"
         },
         {
           "id": "rrp-transfusion-reaction-case-6",
           "function": "Evaluate Outcomes",
           "prompt": "Identify the findings that would demonstrate improvement or require escalation.",
           "rationale": "This item evaluates evaluate outcomes within Recognition of an Acute Transfusion Reaction.",
-          "sourceId": "src-med-surg-transfusion",
-          "locator": "Suspected transfusion reaction"
+          "sourceId": "src-openrn-hypersensitivity-reactions",
+          "locator": "4.5 Autoimmune and Hypersensitivity Reactions"
         }
       ],
       "masteryCheck": {
@@ -4348,13 +4360,15 @@
       ],
       "sources": [
         {
-          "id": "src-med-surg-transfusion",
-          "title": "Medical-Surgical Nursing",
-          "publisher": "OpenStax",
+          "id": "src-openrn-hypersensitivity-reactions",
+          "title": "Nursing Health Alterations",
+          "publisher": "WisTech Open (Open RN)",
           "license": "CC BY 4.0",
-          "sourceUri": "https://openstax.org/books/medical-surgical-nursing/pages/1-introduction",
-          "locator": "Blood product administration and transfusion reactions",
-          "approvalStatus": "approved"
+          "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+          "sourceUri": "https://wtcs.pressbooks.pub/healthalts/chapter/4-5-autoimmune-and-hypersensitivity-reactions/",
+          "locator": "4.5 Autoimmune and Hypersensitivity Reactions",
+          "approvalStatus": "approved",
+          "verifiedOn": "2026-10-13"
         }
       ],
       "accessibility": {
@@ -4457,8 +4471,8 @@
           "rationale": "Possible infection with new organ dysfunction and hypotension requires immediate escalation.",
           "objectiveId": "pa-sepsis-recognition-objective-1",
           "categoryId": "physiological-adaptation",
-          "sourceId": "src-med-surg-sepsis",
-          "locator": "Recognition of sepsis",
+          "sourceId": "src-openrn-infection",
+          "locator": "9.4 Infection",
           "difficulty": "application"
         },
         {
@@ -4487,8 +4501,8 @@
           "rationale": "The combined trend can signal worsening organ perfusion.",
           "objectiveId": "pa-sepsis-recognition-objective-2",
           "categoryId": "physiological-adaptation",
-          "sourceId": "src-med-surg-sepsis",
-          "locator": "Perfusion assessment",
+          "sourceId": "src-openrn-infection",
+          "locator": "9.4 Infection",
           "difficulty": "application"
         },
         {
@@ -4517,8 +4531,8 @@
           "rationale": "A normal temperature does not exclude serious infection or sepsis.",
           "objectiveId": "pa-sepsis-recognition-objective-3",
           "categoryId": "physiological-adaptation",
-          "sourceId": "src-med-surg-sepsis",
-          "locator": "Variable presentation",
+          "sourceId": "src-openrn-infection",
+          "locator": "9.4 Infection",
           "difficulty": "application"
         },
         {
@@ -4547,8 +4561,8 @@
           "rationale": "Deterioration requires parallel action rather than waiting passively for one step to finish.",
           "objectiveId": "pa-sepsis-recognition-objective-1",
           "categoryId": "physiological-adaptation",
-          "sourceId": "src-med-surg-sepsis",
-          "locator": "Time-sensitive response",
+          "sourceId": "src-openrn-infection",
+          "locator": "9.4 Infection",
           "difficulty": "application"
         },
         {
@@ -4577,8 +4591,8 @@
           "rationale": "Persistent hypotension indicates ongoing instability and need for higher-level support.",
           "objectiveId": "pa-sepsis-recognition-objective-2",
           "categoryId": "physiological-adaptation",
-          "sourceId": "src-med-surg-sepsis",
-          "locator": "Reassessment and escalation",
+          "sourceId": "src-openrn-infection",
+          "locator": "9.4 Infection",
           "difficulty": "application"
         },
         {
@@ -4607,8 +4621,8 @@
           "rationale": "Possible infection with new organ dysfunction and hypotension requires immediate escalation.",
           "objectiveId": "pa-sepsis-recognition-objective-1",
           "categoryId": "physiological-adaptation",
-          "sourceId": "src-med-surg-sepsis",
-          "locator": "Recognition of sepsis",
+          "sourceId": "src-openrn-infection",
+          "locator": "9.4 Infection",
           "difficulty": "analysis"
         },
         {
@@ -4637,8 +4651,8 @@
           "rationale": "The combined trend can signal worsening organ perfusion.",
           "objectiveId": "pa-sepsis-recognition-objective-2",
           "categoryId": "physiological-adaptation",
-          "sourceId": "src-med-surg-sepsis",
-          "locator": "Perfusion assessment",
+          "sourceId": "src-openrn-infection",
+          "locator": "9.4 Infection",
           "difficulty": "analysis"
         },
         {
@@ -4667,8 +4681,8 @@
           "rationale": "A normal temperature does not exclude serious infection or sepsis.",
           "objectiveId": "pa-sepsis-recognition-objective-3",
           "categoryId": "physiological-adaptation",
-          "sourceId": "src-med-surg-sepsis",
-          "locator": "Variable presentation",
+          "sourceId": "src-openrn-infection",
+          "locator": "9.4 Infection",
           "difficulty": "analysis"
         },
         {
@@ -4697,8 +4711,8 @@
           "rationale": "Deterioration requires parallel action rather than waiting passively for one step to finish.",
           "objectiveId": "pa-sepsis-recognition-objective-1",
           "categoryId": "physiological-adaptation",
-          "sourceId": "src-med-surg-sepsis",
-          "locator": "Time-sensitive response",
+          "sourceId": "src-openrn-infection",
+          "locator": "9.4 Infection",
           "difficulty": "analysis"
         },
         {
@@ -4727,8 +4741,8 @@
           "rationale": "Persistent hypotension indicates ongoing instability and need for higher-level support.",
           "objectiveId": "pa-sepsis-recognition-objective-2",
           "categoryId": "physiological-adaptation",
-          "sourceId": "src-med-surg-sepsis",
-          "locator": "Reassessment and escalation",
+          "sourceId": "src-openrn-infection",
+          "locator": "9.4 Infection",
           "difficulty": "analysis"
         },
         {
@@ -4757,8 +4771,8 @@
           "rationale": "Possible infection with new organ dysfunction and hypotension requires immediate escalation.",
           "objectiveId": "pa-sepsis-recognition-objective-1",
           "categoryId": "physiological-adaptation",
-          "sourceId": "src-med-surg-sepsis",
-          "locator": "Recognition of sepsis",
+          "sourceId": "src-openrn-infection",
+          "locator": "9.4 Infection",
           "difficulty": "analysis"
         },
         {
@@ -4787,8 +4801,8 @@
           "rationale": "The combined trend can signal worsening organ perfusion.",
           "objectiveId": "pa-sepsis-recognition-objective-2",
           "categoryId": "physiological-adaptation",
-          "sourceId": "src-med-surg-sepsis",
-          "locator": "Perfusion assessment",
+          "sourceId": "src-openrn-infection",
+          "locator": "9.4 Infection",
           "difficulty": "analysis"
         },
         {
@@ -4817,8 +4831,8 @@
           "rationale": "A normal temperature does not exclude serious infection or sepsis.",
           "objectiveId": "pa-sepsis-recognition-objective-3",
           "categoryId": "physiological-adaptation",
-          "sourceId": "src-med-surg-sepsis",
-          "locator": "Variable presentation",
+          "sourceId": "src-openrn-infection",
+          "locator": "9.4 Infection",
           "difficulty": "analysis"
         },
         {
@@ -4847,8 +4861,8 @@
           "rationale": "Deterioration requires parallel action rather than waiting passively for one step to finish.",
           "objectiveId": "pa-sepsis-recognition-objective-1",
           "categoryId": "physiological-adaptation",
-          "sourceId": "src-med-surg-sepsis",
-          "locator": "Time-sensitive response",
+          "sourceId": "src-openrn-infection",
+          "locator": "9.4 Infection",
           "difficulty": "analysis"
         },
         {
@@ -4877,8 +4891,8 @@
           "rationale": "Persistent hypotension indicates ongoing instability and need for higher-level support.",
           "objectiveId": "pa-sepsis-recognition-objective-2",
           "categoryId": "physiological-adaptation",
-          "sourceId": "src-med-surg-sepsis",
-          "locator": "Reassessment and escalation",
+          "sourceId": "src-openrn-infection",
+          "locator": "9.4 Infection",
           "difficulty": "analysis"
         }
       ],
@@ -4888,48 +4902,48 @@
           "function": "Recognize Cues",
           "prompt": "Identify the findings in this scenario that require follow-up: A patient with suspected infection develops new confusion and hypotension.",
           "rationale": "This item evaluates recognize cues within Early Recognition and Escalation of Sepsis.",
-          "sourceId": "src-med-surg-sepsis",
-          "locator": "Recognition of sepsis"
+          "sourceId": "src-openrn-infection",
+          "locator": "9.4 Infection"
         },
         {
           "id": "pa-sepsis-recognition-case-2",
           "function": "Analyze Cues",
           "prompt": "Explain how the cue changes the patient's immediate risk.",
           "rationale": "This item evaluates analyze cues within Early Recognition and Escalation of Sepsis.",
-          "sourceId": "src-med-surg-sepsis",
-          "locator": "Recognition of sepsis"
+          "sourceId": "src-openrn-infection",
+          "locator": "9.4 Infection"
         },
         {
           "id": "pa-sepsis-recognition-case-3",
           "function": "Prioritize Hypotheses",
           "prompt": "State the highest-priority problem supported by the available cues.",
           "rationale": "This item evaluates prioritize hypotheses within Early Recognition and Escalation of Sepsis.",
-          "sourceId": "src-med-surg-sepsis",
-          "locator": "Recognition of sepsis"
+          "sourceId": "src-openrn-infection",
+          "locator": "9.4 Infection"
         },
         {
           "id": "pa-sepsis-recognition-case-4",
           "function": "Generate Solutions",
           "prompt": "Identify two safe nursing responses and one action to avoid.",
           "rationale": "This item evaluates generate solutions within Early Recognition and Escalation of Sepsis.",
-          "sourceId": "src-med-surg-sepsis",
-          "locator": "Recognition of sepsis"
+          "sourceId": "src-openrn-infection",
+          "locator": "9.4 Infection"
         },
         {
           "id": "pa-sepsis-recognition-case-5",
           "function": "Take Action",
           "prompt": "Select and perform the priority response: Activate urgent sepsis evaluation and assess airway, breathing, circulation, and perfusion.",
           "rationale": "Possible infection with new organ dysfunction and hypotension requires immediate escalation.",
-          "sourceId": "src-med-surg-sepsis",
-          "locator": "Recognition of sepsis"
+          "sourceId": "src-openrn-infection",
+          "locator": "9.4 Infection"
         },
         {
           "id": "pa-sepsis-recognition-case-6",
           "function": "Evaluate Outcomes",
           "prompt": "Identify the findings that would demonstrate improvement or require escalation.",
           "rationale": "This item evaluates evaluate outcomes within Early Recognition and Escalation of Sepsis.",
-          "sourceId": "src-med-surg-sepsis",
-          "locator": "Recognition of sepsis"
+          "sourceId": "src-openrn-infection",
+          "locator": "9.4 Infection"
         }
       ],
       "masteryCheck": {
@@ -4958,13 +4972,15 @@
       ],
       "sources": [
         {
-          "id": "src-med-surg-sepsis",
-          "title": "Medical-Surgical Nursing",
-          "publisher": "OpenStax",
+          "id": "src-openrn-infection",
+          "title": "Nursing Fundamentals, 2nd Edition",
+          "publisher": "WisTech Open (Open RN)",
           "license": "CC BY 4.0",
-          "sourceUri": "https://openstax.org/books/medical-surgical-nursing/pages/1-introduction",
-          "locator": "Systemic infection, sepsis, and shock",
-          "approvalStatus": "approved"
+          "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+          "sourceUri": "https://wtcs.pressbooks.pub/nursingfundamentals/chapter/9-4-infection/",
+          "locator": "9.4 Infection",
+          "approvalStatus": "approved",
+          "verifiedOn": "2026-10-13"
         }
       ],
       "accessibility": {
