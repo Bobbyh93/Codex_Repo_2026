@@ -67,6 +67,7 @@ import {
   type GovernanceRecordV1,
 } from "@shared/lesson-governance";
 import { buildOpenRnSourceRows } from "@shared/open-rn-sources";
+import { isFullLessonCompletion, isSmokeLearnerEvent } from "@shared/lesson-learner-signals";
 
 type EvidenceChunk = {
   sourceId?: string | null;
@@ -9617,28 +9618,28 @@ async function lessonBuilderHealth() {
     || (latestPublishedPackage?.taxonomySnapshot as any)?.assessmentBridge
     || null;
   const assessmentBridgeReady = Boolean(latestAssessmentBridge?.weakTopic);
-  const [latestReview, latestPackageEventCountRow, latestPackageFeedbackCountRow, latestActiveAssignmentCountRow, latestPackageCompletionCountRow] = latestPublishedPackage
+  const [latestReview, latestPackageEventRows, latestActiveAssignmentCountRow] = latestPublishedPackage
     ? await Promise.all([
       db.select().from(lessonPackageReviews)
         .where(eq(lessonPackageReviews.packageId, latestPublishedPackage.id))
         .orderBy(desc(lessonPackageReviews.createdAt))
         .limit(1)
         .then((rows) => rows[0] || null),
-      db.select({ count: sql<number>`count(*)::int` }).from(lessonLearnerEvents)
+      db.select({ eventType: lessonLearnerEvents.eventType, payload: lessonLearnerEvents.payload }).from(lessonLearnerEvents)
         .where(eq(lessonLearnerEvents.packageId, latestPublishedPackage.id)),
-      db.select({ count: sql<number>`count(*)::int` }).from(lessonLearnerEvents)
-        .where(and(eq(lessonLearnerEvents.packageId, latestPublishedPackage.id), eq(lessonLearnerEvents.eventType, "feedback_submitted"))),
       db.select({ count: sql<number>`count(*)::int` }).from(lessonAssignments)
         .where(and(eq(lessonAssignments.packageId, latestPublishedPackage.id), eq(lessonAssignments.status, "active"))),
-      db.select({ count: sql<number>`count(*)::int` }).from(lessonLearnerEvents)
-        .where(and(eq(lessonLearnerEvents.packageId, latestPublishedPackage.id), eq(lessonLearnerEvents.eventType, "lesson_completed"))),
     ])
-    : [null, [{ count: 0 }], [{ count: 0 }], [{ count: 0 }], [{ count: 0 }]];
+    : [null, [] as { eventType: string; payload: unknown }[], [{ count: 0 }]];
+  // Smoke-script traffic proves a pathway works but is not learner evidence,
+  // and a completion counts only when every slide was viewed.
+  const learnerEvents = latestPackageEventRows.filter((event) => !isSmokeLearnerEvent(event.payload as any));
   const latestReviewDecision = latestReview?.decision || "awaiting_review";
-  const latestPackageLearnerEventCount = latestPackageEventCountRow[0]?.count || 0;
-  const latestPackageFeedbackCount = latestPackageFeedbackCountRow[0]?.count || 0;
+  const latestPackageLearnerEventCount = learnerEvents.length;
+  const latestPackageFeedbackCount = learnerEvents.filter((event) => event.eventType === "feedback_submitted").length;
   const latestPackageActiveAssignmentCount = latestActiveAssignmentCountRow[0]?.count || 0;
-  const latestPackageCompletionCount = latestPackageCompletionCountRow[0]?.count || 0;
+  const latestPackageCompletionCount = learnerEvents
+    .filter((event) => event.eventType === "lesson_completed" && isFullLessonCompletion(event.payload as any)).length;
   const reviewApproved = latestReviewDecision === "approved_for_pilot" || latestReviewDecision === "approved_for_release";
   const latestReviewMetadata = (latestReview?.metadata || {}) as Record<string, any>;
   const latestReviewIdentity = `${latestReview?.reviewerName || ""} ${latestReview?.reviewerRole || ""}`;
