@@ -13,7 +13,7 @@ from flask import Flask, abort, jsonify, redirect, request, send_from_directory,
 from psycopg.rows import dict_row
 
 VIEWS = {'status', 'today', 'manuscripts', 'activity', 'decisions', 'criteria', 'files', 'runs',
-         'inbox', 'rules', 'backlog', 'process', 'vocabulary', 'sources', 'products', 'routes'}
+         'inbox', 'rules', 'backlog', 'process', 'vocabulary', 'sources', 'products', 'routes', 'claims', 'search_sources'}
 
 app = Flask(__name__, static_folder=None)
 # Without SECRET_KEY, derive a stable signing key from the two configured secrets so

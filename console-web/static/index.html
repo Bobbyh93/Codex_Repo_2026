@@ -131,8 +131,8 @@ const TOOLS = {
 };
 const DB = { project_id: 'billowing-field-85279667', database_name: 'pubpipe' };
 const PIPE_FOLDER = '164DgtisV4EkG1agrmUHQXk5113QzxjbJ';
-const VIEWS = ['status','today','manuscripts','activity','decisions','criteria','files','runs','inbox','rules','backlog','process','vocabulary','sources','products','routes'];
-const VIEW_RE = /^SELECT \* FROM pp\.v_console_(status|today|manuscripts|activity|decisions|criteria|files|runs|inbox|rules|backlog|process|vocabulary|sources|products|routes)( \/\* r:[a-z0-9]+ \*\/)?$/;
+const VIEWS = ['status','today','manuscripts','activity','decisions','criteria','files','runs','inbox','rules','backlog','process','vocabulary','sources','products','routes','claims','search_sources'];
+const VIEW_RE = /^SELECT \* FROM pp\.v_console_(status|today|manuscripts|activity|decisions|criteria|files|runs|inbox|rules|backlog|process|vocabulary|sources|products|routes|claims|search_sources)( \/\* r:[a-z0-9]+ \*\/)?$/;
 const WRITE_RE = /^SELECT pp\.console_(queue_run|record_decision|register_product|set_route)\(/;
 const TZ = 'America/Los_Angeles';
 const SERVERS = { '64f63ef9-427c-46c7-b1b5-59c2e955e245': 'Neon', '533b96f2-6462-4667-9fe0-0a3d9f05acf4': 'Google Drive', '0cd1c5e9-6850-4502-8ee2-e751aa79d94c': 'Jotform' };
@@ -339,7 +339,7 @@ function friendly(msg) {
 }
 
 // ---------- navigation ----------
-const TAB_OF = { home: 'home', today: 'home', holds: 'home', products: 'home', product: 'home', inbox: 'runs', runlist: 'runs', events: 'runs', budget: 'runs', wbs: 'runs', fviews: 'files', forms: 'files', drive: 'files', sources: 'files', process: 'rules', hardstops: 'rules', rulespage: 'rules', terms: 'rules', ms: 'ms', msd: 'ms', crit: 'ms', decisions: 'decisions', decision: 'decisions', files: 'files', runs: 'runs', rules: 'rules', flow: null };
+const TAB_OF = { home: 'home', today: 'home', holds: 'home', products: 'home', product: 'home', claims: 'home', claim: 'home', search_sources: 'files', inbox: 'runs', runlist: 'runs', events: 'runs', budget: 'runs', wbs: 'runs', fviews: 'files', forms: 'files', drive: 'files', sources: 'files', process: 'rules', hardstops: 'rules', rulespage: 'rules', terms: 'rules', ms: 'ms', msd: 'ms', crit: 'ms', decisions: 'decisions', decision: 'decisions', files: 'files', runs: 'runs', rules: 'rules', flow: null };
 function cur() { const r = S.stack[S.stack.length - 1]; const i = r.indexOf('/'); return i < 0 ? { name: r, arg: null } : { name: r.slice(0, i), arg: r.slice(i + 1) }; }
 function go(r) { S.stack.push(r); render(true); }
 function back() { if (S.stack.length > 1) S.stack.pop(); if (cur().name === 'flow' && !S.flow) S.stack.pop(); render(true); }
@@ -843,6 +843,45 @@ function viewRules() {
 
 
 
+
+// ---------- Evidence claims and search tools ----------
+const STRENGTH_TONE = { strong: 'ok', moderate: 'info', limited: 'warn', insufficient: 'bad' };
+const asList = v => Array.isArray(v) ? v : (typeof v === 'string' ? (() => { try { return JSON.parse(v) || []; } catch (e) { return []; } })() : []);
+function auditChip(v) { return !v ? null : /FAIL/.test(v) ? chip('audit: fail', 'bad') : chip('audit: pass', 'ok'); }
+function claimRow(c) {
+  return h('button', { class: 'item', onclick: () => go('claim/' + c.claim_key) },
+    h('div', { class: 'item-top' }, h('b', null, c.claim_key), c.strength ? chip(c.strength, STRENGTH_TONE[c.strength] || 'outline') : null,
+      c.evidence_regime ? chip(c.evidence_regime, 'info') : chip('not screened', 'muted'), auditChip(c.audit_verdicts)),
+    h('div', { class: 'item-title clamp2', style: 'font-weight:500' }, c.claim_text),
+    h('div', { class: 'item-sub' }, [c.ms_id, c.n_sources + (c.n_sources === 1 ? ' source' : ' sources'), c.n_lesson_uses ? c.n_lesson_uses + ' in lessons' : null].filter(Boolean).join(' · ')));
+}
+function viewClaims() {
+  if (!ready('claims')) return waitFor('claims');
+  const all = D('claims');
+  return all.length ? [h('div', { class: 'list' }, all.map(claimRow))] : [card(h('p', { class: 'empty' }, 'No claims registered yet.'))];
+}
+function viewClaim(key) {
+  const c = (D('claims') || []).find(x => x.claim_key === key);
+  if (!c) return ready('claims') ? [h('p', null, 'Not found: ' + key)] : waitFor('claims');
+  const src = asList(c.sources), uses = asList(c.uses);
+  return [
+    h('div', { class: 'head' }, h('div', { class: 'eyebrow' }, [c.ms_id, c.concept].filter(Boolean).join(' · ')),
+      h('div', { class: 'chips' }, c.strength ? chip(c.strength, STRENGTH_TONE[c.strength] || 'outline') : null, c.direction ? chip(c.direction, 'outline') : null,
+        c.evidence_regime ? chip(c.evidence_regime, 'info') : chip('not screened', 'muted'), auditChip(c.audit_verdicts), c.teachable ? chip('teachable', 'ok') : null)),
+    card(h('p', { style: 'font-size:17px;line-height:1.5' }, c.claim_text)),
+    section('Sources · ' + src.length, src.length ? h('div', { class: 'list' }, src.map(x => card(h('div', { class: 'item-title', style: 'margin-top:0' }, x.label || 'Source'),
+      x.locator ? h('div', { class: 'item-sub' }, x.locator) : null, x.excerpt ? h('blockquote', { style: 'margin-top:8px;font-size:14.5px' }, x.excerpt) : null))) : card(h('p', { class: 'empty' }, 'No sources attached.'))),
+    section('Used in · ' + uses.length, uses.length ? card(uses.map(u => kv(u.kind || u.pipeline || 'use', u.ref || ''))) : card(h('p', { class: 'empty' }, 'Not used yet.'))),
+    c.screening_method ? section('Screening', card(kv('Regime', c.evidence_regime || '—'), kv('Method', c.screening_method), kv('Tool', c.screening_tool || '—'), kv('Standard', c.standard || '—'), kv('Primary record checked', c.primary_record_verified ? 'yes' : 'no'))) : null];
+}
+function viewSearchSources() {
+  if (!ready('search_sources')) return waitFor('search_sources');
+  return [h('div', { class: 'list' }, D('search_sources').map(x => h('div', { class: 'item', style: 'cursor:default' },
+    h('div', { class: 'item-top' }, chip(String(x.role || '').replace(/_/g, ' '), x.role === 'database_of_record' ? 'ok' : 'outline'), x.automated_ok ? null : chip('manual only', 'warn')),
+    h('div', { class: 'item-title' }, x.display_name),
+    x.terms_constraint ? h('div', { class: 'item-sub clamp2' }, x.terms_constraint) : null)))];
+}
+
 // ---------- Products and routes ----------
 const ROUTE_LABEL = { rigor_profile: 'Rigor', review_purpose: 'Purpose', search_route: 'Search tools', screening_route: 'Screening' };
 const ROUTE_ORDER = ['rigor_profile', 'review_purpose', 'search_route', 'screening_route'];
@@ -934,7 +973,8 @@ function viewHome() {
     tile('Manuscripts', cnt('manuscripts'), () => go('ms')),
     tile('Decisions', cnt('decisions', a => a.filter(d => d.effective_status !== 'superseded').length), () => go('decisions')),
     tile('Products', cnt('products'), () => go('products')),
-    tile('Holds', cnt('today', a => a.filter(r => r.kind === 'hold' || r.kind === 'park' || r.kind === 'contact').length), () => go('holds')),
+    tile('Evidence claims', cnt('claims'), () => go('claims')),
+    tile('Holds', cnt('today', a => a.filter(r => r.kind === 'hold' || r.kind === 'park' || r.kind === 'contact').length), () => go('holds'), 'wide'),
     g('Runs'),
     tile('Inbox', cnt('inbox', a => a.filter(i => i.pickup === 'waiting').length) + ' waiting', () => go('inbox')),
     tile('Stage runs', st ? st.runs_queued + ' queued' : '', () => go('runlist')),
@@ -946,6 +986,7 @@ function viewHome() {
     tile('Forms', '', () => go('forms')),
     tile('Drive', '', () => go('drive')),
     tile('Sources', cnt('sources'), () => go('sources')),
+    tile('Search tools', cnt('search_sources'), () => go('search_sources'), 'wide'),
     g('Rules'),
     tile('Hard stops', '', () => go('hardstops')),
     tile('Communication', '', () => go('rulespage')),
@@ -986,13 +1027,13 @@ function viewRulesHub() {
     tile('Process map', '', () => go('process')),
     tile('Terms', cnt('vocabulary'), () => go('terms')))];
 }
-const VIEWFN = { home: viewHome, products: sub('Products', viewProducts), product: viewProduct, holds: sub('Holds', viewHolds), today: sub('Waiting on you', viewToday),
+const VIEWFN = { home: viewHome, claims: sub('Evidence claims', viewClaims), claim: viewClaim, search_sources: sub('Search tools', viewSearchSources), products: sub('Products', viewProducts), product: viewProduct, holds: sub('Holds', viewHolds), today: sub('Waiting on you', viewToday),
   inbox: sub('Inbox', viaRuns('inbox')), runlist: sub('Stage runs', viaRuns('runs')), events: sub('Events', viaRuns('events')), budget: sub('Budget', viewBudget), wbs: sub('Work items', viewWbs),
   fviews: sub('Live views', viaFiles('views', 1)), forms: sub('Forms', viaFiles('views', 2)), drive: sub('Drive', viaFiles('views', 3)), sources: sub('Sources', viaFiles('sources', null)),
   hardstops: sub('Hard stops', viaRules([2])), rulespage: sub('Communication', viaRules([0, 1])), process: sub('Process map', viaRules([3])), terms: sub('Terms', viewTerms), ms: viewMs, msd: viewMsDetail, crit: viewCriteria, decisions: viewDecisions, decision: viewDecision, files: viewFiles, runs: viewRuns, rules: viewRulesHub, flow: viewFlow };
 const TITLES = { home: 'Pipeline Console', today: 'Waiting on you', ms: 'Manuscripts', decisions: 'Decisions', decision: 'Decision', files: 'Files', runs: 'Runs', rules: 'Rules', holds: 'Holds' };
 function pageTitle(r) {
-  if (r.name === 'msd' || r.name === 'product') return r.arg;
+  if (r.name === 'msd' || r.name === 'product' || r.name === 'claim') return r.arg;
   if (r.name === 'crit') return r.arg + ' criteria';
   if (r.name === 'flow') return S.flow ? (S.flow.type === 'run' ? 'Queue a stage run' : S.flow.type === 'change' ? 'Change decision' : S.flow.type === 'route' ? 'Change route' : S.flow.type === 'product' ? 'New product' : 'New decision') : 'Flow';
   const f = VIEWFN[r.name];
