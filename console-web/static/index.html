@@ -871,7 +871,8 @@ function viewClaim(key) {
     card(h('p', { style: 'font-size:17px;line-height:1.5' }, c.claim_text)),
     section('Sources · ' + src.length, src.length ? h('div', { class: 'list' }, src.map(x => card(h('div', { class: 'item-title', style: 'margin-top:0' }, x.label || 'Source'),
       x.locator ? h('div', { class: 'item-sub' }, x.locator) : null, x.excerpt ? h('blockquote', { style: 'margin-top:8px;font-size:14.5px' }, x.excerpt) : null))) : card(h('p', { class: 'empty' }, 'No sources attached.'))),
-    section('Used in · ' + uses.length, uses.length ? card(uses.map(u => kv(u.kind || u.pipeline || 'use', u.ref || ''))) : card(h('p', { class: 'empty' }, 'Not used yet.'))),
+    section('Used in · ' + uses.length, uses.length ? h('div', { class: 'list' }, uses.map(u => card(h('div', { class: 'item-top' }, chip(u.pipeline || 'use', 'outline'), u.verdict ? chip(u.verdict === 'FAIL' ? 'not allowed here' : 'allowed', u.verdict === 'FAIL' ? 'bad' : 'ok') : null),
+      h('div', { class: 'item-title' }, u.ref || ''), u.reason ? h('div', { class: 'item-sub' }, u.reason) : null))) : card(h('p', { class: 'empty' }, 'Not used yet.'))),
     c.screening_method ? section('Screening', card(kv('Regime', c.evidence_regime || '—'), kv('Method', c.screening_method), kv('Tool', c.screening_tool || '—'), kv('Standard', c.standard || '—'), kv('Primary record checked', c.primary_record_verified ? 'yes' : 'no'))) : null];
 }
 function viewSearchSources() {
@@ -973,7 +974,7 @@ function viewHome() {
     tile('Manuscripts', cnt('manuscripts'), () => go('ms')),
     tile('Decisions', cnt('decisions', a => a.filter(d => d.effective_status !== 'superseded').length), () => go('decisions')),
     tile('Products', cnt('products'), () => go('products')),
-    tile('Evidence claims', cnt('claims'), () => go('claims')),
+    tile('Evidence claims', (() => { const n = cnt('claims'), f = cnt('claims', a => a.reduce((t, c) => t + (c.n_audit_fail || 0), 0)); return n === '' ? '' : n + (f && f !== '0' ? ' · ' + f + ' misuse' : ''); })(), () => go('claims')),
     tile('Holds', cnt('today', a => a.filter(r => r.kind === 'hold' || r.kind === 'park' || r.kind === 'contact').length), () => go('holds'), 'wide'),
     g('Runs'),
     tile('Inbox', cnt('inbox', a => a.filter(i => i.pickup === 'waiting').length) + ' waiting', () => go('inbox')),
