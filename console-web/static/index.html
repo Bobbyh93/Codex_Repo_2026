@@ -874,14 +874,17 @@ function viewProducts() {
 function viewProduct(id) {
   const p = (D('products') || []).find(x => x.product_id === id);
   if (!p) return ready('products') ? [h('p', null, 'Not found: ' + id)] : waitFor('products', 'routes');
-  const jbi = p.review_purpose === 'jbi_review';
+  const pipe = p.routes_source === 'pipeline';
+  const val = r => pipe && r !== 'rigor_profile' ? p['effective_' + r] : p[r];
+  const jbi = val('review_purpose') === 'jbi_review';
   const fixed = r => (r === 'rigor_profile' && (p.rigor_fixed || jbi)) || (r === 'screening_route' && jbi);
   return [
     h('div', { class: 'head' }, h('div', { class: 'eyebrow' }, p.product_id + ' · ' + p.type_label + (p.ms_id ? ' · ' + p.ms_id : '')), h('h2', { class: 'title' }, p.title)),
     section('Routes', h('div', { class: 'list' }, ROUTE_ORDER.map(r => h('div', { class: 'item', style: 'cursor:default' },
       h('div', { class: 'line', style: 'align-items:center' },
-        h('div', { style: 'min-width:0' }, h('div', { class: 'item-sub', style: 'margin-top:0' }, ROUTE_LABEL[r]), h('div', { class: 'item-title', style: 'margin-top:2px' }, optLabel(r, p[r]))),
-        fixed(r) ? chip('fixed', 'muted') : h('button', { class: 'btn', disabled: LIVE ? null : true, onclick: () => startRoute(p.product_id, r) }, 'Change')))))),
+        h('div', { style: 'min-width:0' }, h('div', { class: 'item-sub', style: 'margin-top:0' }, ROUTE_LABEL[r]), h('div', { class: 'item-title', style: 'margin-top:2px' }, optLabel(r, val(r)))),
+        (pipe && r !== 'rigor_profile') ? chip('set by pipeline', 'muted') : fixed(r) ? chip('fixed', 'muted') : h('button', { class: 'btn', disabled: LIVE ? null : true, onclick: () => startRoute(p.product_id, r) }, 'Change')))))),
+    pipe ? h('p', { class: 'note' }, 'For manuscripts these come from the manuscript record the pipeline reads (purpose: ' + (p.agent_purpose || 'manuscript') + '). Elicit is used when available; otherwise the open tools.') : null,
     p.open_waivers ? section('Relaxed from the full standard', card(h('p', null, p.waiver_reason || ''))) : null,
     p.ms_id ? h('button', { class: 'btn block', onclick: () => go('msd/' + p.ms_id) }, 'Open ' + p.ms_id) : null];
 }
