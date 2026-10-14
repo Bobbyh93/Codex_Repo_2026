@@ -1960,7 +1960,7 @@ export const textbookChapters = pgTable("textbook_chapters", {
   title: text("title").notNull(),
   subjectTag: text("subject_tag"), // e.g., 'Med-Surg', 'Pharmacology'
   nclexCategoryTag: text("nclex_category_tag"), // e.g., 'Physiological Adaptation'
-  url: text("url"), // e.g., 'https://wtcs.pressbooks.pub/populationhealth/chapter/...'
+  url: text("url"), // e.g., 'https://wtcs.pressbooks.pub/healthpromo/chapter/chapter-1/'
   pageStart: integer("page_start"),
   pageEnd: integer("page_end"),
   createdAt: timestamp("created_at").defaultNow(),
