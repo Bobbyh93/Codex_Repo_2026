@@ -47,8 +47,15 @@ export interface EvidenceSource {
   license: string;
   sourceUri: string;
   locator: string;
-  approvalStatus: "approved" | "pending";
+  approvalStatus: "approved" | "pending" | "blocked_license_review";
+  /** Licence URL, edition and read date: CC BY requires attribution to travel with the evidence. */
+  licenseUrl?: string;
+  edition?: string;
+  verifiedOn?: string;
 }
+
+/** Licence terms that bar use as generated-lesson evidence (NonCommercial / ShareAlike). */
+export const RESTRICTED_LICENSE_PATTERN = /(^|[\s-])(NC|SA)([\s-]|$)|non-?commercial|share-?alike/i;
 
 export interface ClinicalFact {
   cue: string;
@@ -77,14 +84,20 @@ export interface ExemplarTopic {
   releaseStage: ReleaseStage;
 }
 
-const openStax = (id: string, title: string, slug: string, locator: string): EvidenceSource => ({
+// Evidence is Open RN (WisTech Open), CC BY 4.0, read from the publisher's pages on 2026-10-13.
+// Locators are section titles matched to the topic; fact-level support has not been re-read and
+// the packages stay in licensed clinical review. OpenStax nursing titles are CC BY-NC-SA with no
+// generative-AI use without permission (OPENSTAX_NURSING_SOURCE_AUDIT.md), so they are not used.
+const openRn = (id: string, title: string, slug: string, section: string, locator: string): EvidenceSource => ({
   id,
   title,
-  publisher: "OpenStax",
+  publisher: "WisTech Open (Open RN)",
   license: "CC BY 4.0",
-  sourceUri: `https://openstax.org/books/${slug}/pages/1-introduction`,
+  licenseUrl: "https://creativecommons.org/licenses/by/4.0/",
+  sourceUri: `https://wtcs.pressbooks.pub/${slug}/chapter/${section}/`,
   locator,
   approvalStatus: "approved",
+  verifiedOn: "2026-10-13",
 });
 
 const sharedDistractors: [string, string, string] = [
@@ -115,13 +128,13 @@ export const EXEMPLAR_TOPICS: ExemplarTopic[] = [
     ],
     guidedNotes: ["Patient stability:", "Task predictability:", "Required nursing judgment:", "Directions and report-back criteria:", "Evaluation completed:"],
     focusedReview: ["Assess before delegating.", "Do not delegate nursing judgment.", "Give explicit report-back parameters.", "Evaluate the patient outcome."],
-    sources: [openStax("src-fundamentals-delegation", "Fundamentals of Nursing", "fundamentals-nursing", "Leadership, delegation, and care coordination")],
+    sources: [openRn("src-openrn-delegation", "Nursing Management & Professional Concepts, 2nd Edition", "nursingmpc", "3-4-delegation", "3.4 Delegation")],
     facts: [
-      { cue: "A newly admitted patient has changing neurologic findings.", action: "The registered nurse performs the focused assessment and determines the next intervention.", rationale: "An unstable or changing condition requires licensed nursing assessment and judgment.", distractors: sharedDistractors, sourceId: "src-fundamentals-delegation", locator: "Delegation and patient stability" },
-      { cue: "A stable patient needs routine intake and output recorded.", action: "Delegate measurement with clear reporting parameters and review the result.", rationale: "A predictable task may be delegated when direction and supervision are provided.", distractors: sharedDistractors, sourceId: "src-fundamentals-delegation", locator: "Delegation communication" },
-      { cue: "A patient requires initial teaching for a new diagnosis.", action: "The registered nurse performs and evaluates the initial teaching.", rationale: "Initial teaching and evaluation require nursing judgment.", distractors: sharedDistractors, sourceId: "src-fundamentals-delegation", locator: "Responsibilities retained by the nurse" },
-      { cue: "A delegatee reports a value outside the stated parameters.", action: "Assess the patient and determine the appropriate nursing response.", rationale: "The nurse must interpret abnormal findings and act on the patient response.", distractors: sharedDistractors, sourceId: "src-fundamentals-delegation", locator: "Supervision and evaluation" },
-      { cue: "The task is permitted by policy but the delegatee has not demonstrated competence.", action: "Assign the task to a competent team member or complete it as the nurse.", rationale: "Permitted scope does not replace validation of individual competence.", distractors: sharedDistractors, sourceId: "src-fundamentals-delegation", locator: "Delegatee competence" },
+      { cue: "A newly admitted patient has changing neurologic findings.", action: "The registered nurse performs the focused assessment and determines the next intervention.", rationale: "An unstable or changing condition requires licensed nursing assessment and judgment.", distractors: sharedDistractors, sourceId: "src-openrn-delegation", locator: "3.4 Delegation" },
+      { cue: "A stable patient needs routine intake and output recorded.", action: "Delegate measurement with clear reporting parameters and review the result.", rationale: "A predictable task may be delegated when direction and supervision are provided.", distractors: sharedDistractors, sourceId: "src-openrn-delegation", locator: "3.4 Delegation" },
+      { cue: "A patient requires initial teaching for a new diagnosis.", action: "The registered nurse performs and evaluates the initial teaching.", rationale: "Initial teaching and evaluation require nursing judgment.", distractors: sharedDistractors, sourceId: "src-openrn-delegation", locator: "3.4 Delegation" },
+      { cue: "A delegatee reports a value outside the stated parameters.", action: "Assess the patient and determine the appropriate nursing response.", rationale: "The nurse must interpret abnormal findings and act on the patient response.", distractors: sharedDistractors, sourceId: "src-openrn-delegation", locator: "3.4 Delegation" },
+      { cue: "The task is permitted by policy but the delegatee has not demonstrated competence.", action: "Assign the task to a competent team member or complete it as the nurse.", rationale: "Permitted scope does not replace validation of individual competence.", distractors: sharedDistractors, sourceId: "src-openrn-delegation", locator: "3.4 Delegation" },
     ],
     releaseStage: "clinical_review",
   },
@@ -142,13 +155,13 @@ export const EXEMPLAR_TOPICS: ExemplarTopic[] = [
     ],
     guidedNotes: ["Expected exposure:", "Required PPE:", "Clean-to-dirty sequence:", "Hand-hygiene moment:", "Exposure follow-up:"],
     focusedReview: ["Standard precautions apply to all patients.", "Match PPE to exposure risk.", "Remove PPE to prevent self-contamination.", "Report occupational exposures immediately."],
-    sources: [openStax("src-clinical-skills-precautions", "Clinical Nursing Skills", "clinical-nursing-skills", "Infection control and personal protective equipment")],
+    sources: [openRn("src-openrn-preventing-infection", "Nursing Fundamentals, 2nd Edition", "nursingfundamentals", "9-6-preventing-infection", "9.6 Preventing Infection")],
     facts: [
-      { cue: "A procedure may splash body fluid toward the face.", action: "Use gloves plus facial and eye protection appropriate to the splash risk.", rationale: "PPE selection is based on the anticipated route and extent of exposure.", distractors: sharedDistractors, sourceId: "src-clinical-skills-precautions", locator: "PPE selection" },
-      { cue: "Gloves are removed after contact with contaminated material.", action: "Perform hand hygiene immediately after glove removal.", rationale: "Gloves can have defects and hands can be contaminated during removal.", distractors: sharedDistractors, sourceId: "src-clinical-skills-precautions", locator: "Hand hygiene" },
-      { cue: "A nurse sustains a needlestick injury.", action: "Wash the area, report promptly, and begin the exposure protocol.", rationale: "Immediate cleansing and timely evaluation reduce preventable harm and enable indicated prophylaxis.", distractors: sharedDistractors, sourceId: "src-clinical-skills-precautions", locator: "Occupational exposure" },
-      { cue: "Clean supplies are placed near used wound-care materials.", action: "Separate clean and contaminated fields before continuing care.", rationale: "Maintaining separation limits indirect transmission.", distractors: sharedDistractors, sourceId: "src-clinical-skills-precautions", locator: "Aseptic work areas" },
-      { cue: "A nurse plans to recap a used needle by hand.", action: "Activate the safety device and place the needle directly in an approved sharps container.", rationale: "Avoiding manipulation of used sharps reduces percutaneous injury risk.", distractors: sharedDistractors, sourceId: "src-clinical-skills-precautions", locator: "Sharps safety" },
+      { cue: "A procedure may splash body fluid toward the face.", action: "Use gloves plus facial and eye protection appropriate to the splash risk.", rationale: "PPE selection is based on the anticipated route and extent of exposure.", distractors: sharedDistractors, sourceId: "src-openrn-preventing-infection", locator: "9.6 Preventing Infection" },
+      { cue: "Gloves are removed after contact with contaminated material.", action: "Perform hand hygiene immediately after glove removal.", rationale: "Gloves can have defects and hands can be contaminated during removal.", distractors: sharedDistractors, sourceId: "src-openrn-preventing-infection", locator: "9.6 Preventing Infection" },
+      { cue: "A nurse sustains a needlestick injury.", action: "Wash the area, report promptly, and begin the exposure protocol.", rationale: "Immediate cleansing and timely evaluation reduce preventable harm and enable indicated prophylaxis.", distractors: sharedDistractors, sourceId: "src-openrn-preventing-infection", locator: "9.6 Preventing Infection" },
+      { cue: "Clean supplies are placed near used wound-care materials.", action: "Separate clean and contaminated fields before continuing care.", rationale: "Maintaining separation limits indirect transmission.", distractors: sharedDistractors, sourceId: "src-openrn-preventing-infection", locator: "9.6 Preventing Infection" },
+      { cue: "A nurse plans to recap a used needle by hand.", action: "Activate the safety device and place the needle directly in an approved sharps container.", rationale: "Avoiding manipulation of used sharps reduces percutaneous injury risk.", distractors: sharedDistractors, sourceId: "src-openrn-preventing-infection", locator: "9.6 Preventing Infection" },
     ],
     releaseStage: "clinical_review",
   },
@@ -169,13 +182,13 @@ export const EXEMPLAR_TOPICS: ExemplarTopic[] = [
     ],
     guidedNotes: ["Expected finding:", "Urgent warning sign:", "Who to call:", "Follow-up appointment:", "Teach-back response:"],
     focusedReview: ["Pair self-care with escalation instructions.", "Heavy bleeding and cardiopulmonary symptoms require urgent action.", "Include mental-health safety.", "Verify learning with teach-back."],
-    sources: [openStax("src-maternal-postpartum", "Maternal-Newborn Nursing", "maternal-newborn-nursing", "Postpartum care and discharge education")],
+    sources: [openRn("src-openrn-postpartum-complications", "Nursing Health Promotion", "healthpromo", "11-4-postpartum-complications", "11.4 Postpartum Complications")],
     facts: [
-      { cue: "The patient reports soaking a pad rapidly with ongoing heavy bleeding.", action: "Direct the patient to obtain urgent evaluation for possible postpartum hemorrhage.", rationale: "Heavy postpartum bleeding can represent a time-sensitive maternal emergency.", distractors: sharedDistractors, sourceId: "src-maternal-postpartum", locator: "Postpartum warning signs" },
-      { cue: "The patient reports sudden shortness of breath and chest pain.", action: "Instruct the patient to activate emergency services immediately.", rationale: "Acute cardiopulmonary symptoms may indicate a life-threatening complication.", distractors: sharedDistractors, sourceId: "src-maternal-postpartum", locator: "Emergency symptoms" },
-      { cue: "The patient expresses thoughts of harming themself or the infant.", action: "Maintain safety and arrange immediate emergency mental-health evaluation.", rationale: "Thoughts of harm require immediate safety intervention, not routine follow-up.", distractors: sharedDistractors, sourceId: "src-maternal-postpartum", locator: "Postpartum mental-health emergency" },
-      { cue: "The patient cannot state whom to contact for worsening symptoms.", action: "Repeat the escalation plan and use teach-back before discharge.", rationale: "Teach-back identifies and corrects gaps in actionable discharge knowledge.", distractors: sharedDistractors, sourceId: "src-maternal-postpartum", locator: "Discharge teaching" },
-      { cue: "The patient reports unilateral leg swelling and pain.", action: "Arrange prompt evaluation for a possible thromboembolic complication.", rationale: "Unilateral pain and swelling can signal venous thrombosis and require timely assessment.", distractors: sharedDistractors, sourceId: "src-maternal-postpartum", locator: "Thromboembolic warning signs" },
+      { cue: "The patient reports soaking a pad rapidly with ongoing heavy bleeding.", action: "Direct the patient to obtain urgent evaluation for possible postpartum hemorrhage.", rationale: "Heavy postpartum bleeding can represent a time-sensitive maternal emergency.", distractors: sharedDistractors, sourceId: "src-openrn-postpartum-complications", locator: "11.4 Postpartum Complications" },
+      { cue: "The patient reports sudden shortness of breath and chest pain.", action: "Instruct the patient to activate emergency services immediately.", rationale: "Acute cardiopulmonary symptoms may indicate a life-threatening complication.", distractors: sharedDistractors, sourceId: "src-openrn-postpartum-complications", locator: "11.4 Postpartum Complications" },
+      { cue: "The patient expresses thoughts of harming themself or the infant.", action: "Maintain safety and arrange immediate emergency mental-health evaluation.", rationale: "Thoughts of harm require immediate safety intervention, not routine follow-up.", distractors: sharedDistractors, sourceId: "src-openrn-postpartum-complications", locator: "11.4 Postpartum Complications" },
+      { cue: "The patient cannot state whom to contact for worsening symptoms.", action: "Repeat the escalation plan and use teach-back before discharge.", rationale: "Teach-back identifies and corrects gaps in actionable discharge knowledge.", distractors: sharedDistractors, sourceId: "src-openrn-postpartum-complications", locator: "11.4 Postpartum Complications" },
+      { cue: "The patient reports unilateral leg swelling and pain.", action: "Arrange prompt evaluation for a possible thromboembolic complication.", rationale: "Unilateral pain and swelling can signal venous thrombosis and require timely assessment.", distractors: sharedDistractors, sourceId: "src-openrn-postpartum-complications", locator: "11.4 Postpartum Complications" },
     ],
     releaseStage: "clinical_review",
   },
@@ -196,13 +209,13 @@ export const EXEMPLAR_TOPICS: ExemplarTopic[] = [
     ],
     guidedNotes: ["Observed cue:", "Therapeutic response:", "Nontherapeutic trap:", "Safety question:", "Follow-up action:"],
     focusedReview: ["Acknowledge emotion before problem-solving.", "Avoid advice and false reassurance.", "Silence can be therapeutic.", "Ask directly about self-harm when indicated."],
-    sources: [openStax("src-psych-communication", "Psychiatric-Mental Health Nursing", "psychiatric-mental-health", "Therapeutic communication and suicide safety assessment")],
+    sources: [openRn("src-openrn-communicating-with-patients", "Nursing Fundamentals, 2nd Edition", "nursingfundamentals", "2-3-communicating-with-patients", "2.3 Communicating With Patients")],
     facts: [
-      { cue: "A patient says, “Nothing will ever get better.”", action: "Acknowledge the distress and ask directly about thoughts of self-harm.", rationale: "Hopeless statements warrant therapeutic exploration and direct safety assessment.", distractors: sharedDistractors, sourceId: "src-psych-communication", locator: "Suicide safety assessment" },
-      { cue: "A grieving patient becomes silent and tearful.", action: "Remain present and allow silence while offering the patient time to speak.", rationale: "Therapeutic silence communicates presence without forcing conversation.", distractors: sharedDistractors, sourceId: "src-psych-communication", locator: "Use of silence" },
-      { cue: "A patient says, “Everyone is judging me.”", action: "Respond, “It sounds as though you feel judged; tell me more about that.”", rationale: "Reflection validates the expressed feeling and invites clarification.", distractors: sharedDistractors, sourceId: "src-psych-communication", locator: "Reflection" },
-      { cue: "A patient is anxious about a procedure.", action: "Ask what concerns them most and provide information responsive to that concern.", rationale: "Open exploration identifies the patient's need before teaching.", distractors: sharedDistractors, sourceId: "src-psych-communication", locator: "Open-ended communication" },
-      { cue: "The nurse is tempted to say, “Everything will be fine.”", action: "Acknowledge uncertainty and explore the patient's specific concern instead.", rationale: "False reassurance can close communication and minimize distress.", distractors: sharedDistractors, sourceId: "src-psych-communication", locator: "Communication barriers" },
+      { cue: "A patient says, “Nothing will ever get better.”", action: "Acknowledge the distress and ask directly about thoughts of self-harm.", rationale: "Hopeless statements warrant therapeutic exploration and direct safety assessment.", distractors: sharedDistractors, sourceId: "src-openrn-communicating-with-patients", locator: "2.3 Communicating With Patients" },
+      { cue: "A grieving patient becomes silent and tearful.", action: "Remain present and allow silence while offering the patient time to speak.", rationale: "Therapeutic silence communicates presence without forcing conversation.", distractors: sharedDistractors, sourceId: "src-openrn-communicating-with-patients", locator: "2.3 Communicating With Patients" },
+      { cue: "A patient says, “Everyone is judging me.”", action: "Respond, “It sounds as though you feel judged; tell me more about that.”", rationale: "Reflection validates the expressed feeling and invites clarification.", distractors: sharedDistractors, sourceId: "src-openrn-communicating-with-patients", locator: "2.3 Communicating With Patients" },
+      { cue: "A patient is anxious about a procedure.", action: "Ask what concerns them most and provide information responsive to that concern.", rationale: "Open exploration identifies the patient's need before teaching.", distractors: sharedDistractors, sourceId: "src-openrn-communicating-with-patients", locator: "2.3 Communicating With Patients" },
+      { cue: "The nurse is tempted to say, “Everything will be fine.”", action: "Acknowledge uncertainty and explore the patient's specific concern instead.", rationale: "False reassurance can close communication and minimize distress.", distractors: sharedDistractors, sourceId: "src-openrn-communicating-with-patients", locator: "2.3 Communicating With Patients" },
     ],
     releaseStage: "clinical_review",
   },
@@ -223,13 +236,13 @@ export const EXEMPLAR_TOPICS: ExemplarTopic[] = [
     ],
     guidedNotes: ["Mobility risk:", "Moisture risk:", "Pressure point/device:", "Prevention intervention:", "Reassessment finding:"],
     focusedReview: ["Prevention is individualized.", "Avoid friction and shear.", "Check beneath devices.", "Escalate new nonblanching or worsening skin changes."],
-    sources: [openStax("src-fundamentals-skin", "Fundamentals of Nursing", "fundamentals-nursing", "Skin integrity and pressure injury prevention")],
+    sources: [openRn("src-openrn-pressure-injuries", "Nursing Fundamentals, 2nd Edition", "nursingfundamentals", "10-4-pressure-injuries", "10.4 Pressure Injuries")],
     facts: [
-      { cue: "An immobile patient slides down repeatedly in bed.", action: "Reposition with lift assistance and reduce shear while supporting alignment.", rationale: "Dragging and sliding increase shear forces that damage tissue.", distractors: sharedDistractors, sourceId: "src-fundamentals-skin", locator: "Friction and shear" },
-      { cue: "Moisture is trapped against the sacral skin.", action: "Cleanse gently, manage the moisture source, and apply an appropriate moisture barrier.", rationale: "Persistent moisture weakens the skin barrier and increases injury risk.", distractors: sharedDistractors, sourceId: "src-fundamentals-skin", locator: "Moisture management" },
-      { cue: "A medical device rests tightly against the patient's skin.", action: "Inspect beneath and around the device and relieve avoidable pressure.", rationale: "Medical devices can concentrate pressure and conceal evolving injury.", distractors: sharedDistractors, sourceId: "src-fundamentals-skin", locator: "Device-related pressure" },
-      { cue: "The patient has limited mobility and poor nutritional intake.", action: "Initiate a coordinated prevention plan including mobility and nutrition interventions.", rationale: "Multiple risks require a bundled, interdisciplinary approach.", distractors: sharedDistractors, sourceId: "src-fundamentals-skin", locator: "Risk-based prevention" },
-      { cue: "A high-risk area shows a new persistent color change.", action: "Relieve pressure, reassess the area, document the finding, and escalate per policy.", rationale: "Early recognition and pressure relief help prevent progression.", distractors: sharedDistractors, sourceId: "src-fundamentals-skin", locator: "Skin reassessment" },
+      { cue: "An immobile patient slides down repeatedly in bed.", action: "Reposition with lift assistance and reduce shear while supporting alignment.", rationale: "Dragging and sliding increase shear forces that damage tissue.", distractors: sharedDistractors, sourceId: "src-openrn-pressure-injuries", locator: "10.4 Pressure Injuries" },
+      { cue: "Moisture is trapped against the sacral skin.", action: "Cleanse gently, manage the moisture source, and apply an appropriate moisture barrier.", rationale: "Persistent moisture weakens the skin barrier and increases injury risk.", distractors: sharedDistractors, sourceId: "src-openrn-pressure-injuries", locator: "10.4 Pressure Injuries" },
+      { cue: "A medical device rests tightly against the patient's skin.", action: "Inspect beneath and around the device and relieve avoidable pressure.", rationale: "Medical devices can concentrate pressure and conceal evolving injury.", distractors: sharedDistractors, sourceId: "src-openrn-pressure-injuries", locator: "10.4 Pressure Injuries" },
+      { cue: "The patient has limited mobility and poor nutritional intake.", action: "Initiate a coordinated prevention plan including mobility and nutrition interventions.", rationale: "Multiple risks require a bundled, interdisciplinary approach.", distractors: sharedDistractors, sourceId: "src-openrn-pressure-injuries", locator: "10.4 Pressure Injuries" },
+      { cue: "A high-risk area shows a new persistent color change.", action: "Relieve pressure, reassess the area, document the finding, and escalate per policy.", rationale: "Early recognition and pressure relief help prevent progression.", distractors: sharedDistractors, sourceId: "src-openrn-pressure-injuries", locator: "10.4 Pressure Injuries" },
     ],
     releaseStage: "clinical_review",
   },
@@ -250,13 +263,13 @@ export const EXEMPLAR_TOPICS: ExemplarTopic[] = [
     ],
     guidedNotes: ["Medication and indication:", "Patient-specific parameter:", "Independent check:", "Monitoring plan:", "Adverse-response action:"],
     focusedReview: ["Know why the patient is receiving the medication.", "Resolve incomplete or inconsistent orders.", "Use required independent checks.", "Monitoring is part of administration."],
-    sources: [openStax("src-pharmacology-safety", "Pharmacology for Nurses", "pharmacology", "Medication safety and administration")],
+    sources: [openRn("src-openrn-medication-errors", "Nursing Pharmacology, 2nd Edition", "pharmacology2e", "2-5-preventing-medication-errors", "2.5 Preventing Medication Errors")],
     facts: [
-      { cue: "The prescribed dose is inconsistent with the available concentration and usual range.", action: "Hold administration and clarify the order before preparing the dose.", rationale: "A dose discrepancy must be resolved before medication reaches the patient.", distractors: sharedDistractors, sourceId: "src-pharmacology-safety", locator: "Order verification" },
-      { cue: "A required patient-specific laboratory result is unavailable.", action: "Obtain or verify the required result before administering the medication.", rationale: "Relevant laboratory data can determine whether administration is safe.", distractors: sharedDistractors, sourceId: "src-pharmacology-safety", locator: "Pre-administration assessment" },
-      { cue: "Barcode scanning produces a mismatch alert.", action: "Stop and resolve the patient, medication, and order mismatch.", rationale: "A mismatch alert is a safety signal and should not be bypassed for convenience.", distractors: sharedDistractors, sourceId: "src-pharmacology-safety", locator: "Barcode safeguards" },
-      { cue: "Policy requires an independent double check for this medication.", action: "Have the qualified second clinician independently verify the required elements.", rationale: "An independent check is performed separately to reduce shared-error bias.", distractors: sharedDistractors, sourceId: "src-pharmacology-safety", locator: "Independent verification" },
-      { cue: "The patient develops signs of an acute adverse reaction during administration.", action: "Stop the medication when appropriate, assess the patient, and activate the emergency response pathway.", rationale: "Immediate assessment and response limit ongoing exposure and address instability.", distractors: sharedDistractors, sourceId: "src-pharmacology-safety", locator: "Adverse drug response" },
+      { cue: "The prescribed dose is inconsistent with the available concentration and usual range.", action: "Hold administration and clarify the order before preparing the dose.", rationale: "A dose discrepancy must be resolved before medication reaches the patient.", distractors: sharedDistractors, sourceId: "src-openrn-medication-errors", locator: "2.5 Preventing Medication Errors" },
+      { cue: "A required patient-specific laboratory result is unavailable.", action: "Obtain or verify the required result before administering the medication.", rationale: "Relevant laboratory data can determine whether administration is safe.", distractors: sharedDistractors, sourceId: "src-openrn-medication-errors", locator: "2.5 Preventing Medication Errors" },
+      { cue: "Barcode scanning produces a mismatch alert.", action: "Stop and resolve the patient, medication, and order mismatch.", rationale: "A mismatch alert is a safety signal and should not be bypassed for convenience.", distractors: sharedDistractors, sourceId: "src-openrn-medication-errors", locator: "2.5 Preventing Medication Errors" },
+      { cue: "Policy requires an independent double check for this medication.", action: "Have the qualified second clinician independently verify the required elements.", rationale: "An independent check is performed separately to reduce shared-error bias.", distractors: sharedDistractors, sourceId: "src-openrn-medication-errors", locator: "2.5 Preventing Medication Errors" },
+      { cue: "The patient develops signs of an acute adverse reaction during administration.", action: "Stop the medication when appropriate, assess the patient, and activate the emergency response pathway.", rationale: "Immediate assessment and response limit ongoing exposure and address instability.", distractors: sharedDistractors, sourceId: "src-openrn-medication-errors", locator: "2.5 Preventing Medication Errors" },
     ],
     releaseStage: "clinical_review",
   },
@@ -277,13 +290,13 @@ export const EXEMPLAR_TOPICS: ExemplarTopic[] = [
     ],
     guidedNotes: ["New cue during transfusion:", "First action:", "Access maintained with:", "Notifications:", "Required follow-up:"],
     focusedReview: ["Stop the transfusion first.", "Assess airway, breathing, circulation, and vital signs.", "Do not restart the implicated unit.", "Follow the transfusion-reaction protocol."],
-    sources: [openStax("src-med-surg-transfusion", "Medical-Surgical Nursing", "medical-surgical-nursing", "Blood product administration and transfusion reactions")],
+    sources: [openRn("src-openrn-hypersensitivity-reactions", "Nursing Health Alterations", "healthalts", "4-5-autoimmune-and-hypersensitivity-reactions", "4.5 Autoimmune and Hypersensitivity Reactions")],
     facts: [
-      { cue: "The patient develops chills and dyspnea shortly after a transfusion begins.", action: "Stop the transfusion immediately and assess the patient.", rationale: "Stopping exposure and assessing stability are the immediate priorities for a suspected reaction.", distractors: sharedDistractors, sourceId: "src-med-surg-transfusion", locator: "Suspected transfusion reaction" },
-      { cue: "The transfusion has been stopped for a suspected reaction.", action: "Maintain venous access with new tubing and compatible solution according to policy.", rationale: "Separate tubing avoids infusing residual blood while preserving access for treatment.", distractors: sharedDistractors, sourceId: "src-med-surg-transfusion", locator: "Immediate response sequence" },
-      { cue: "The patient's blood pressure is falling during the reaction.", action: "Activate urgent assistance and support airway, breathing, and circulation while following emergency orders.", rationale: "Hemodynamic instability requires immediate escalation and resuscitative priorities.", distractors: sharedDistractors, sourceId: "src-med-surg-transfusion", locator: "Unstable transfusion reaction" },
-      { cue: "Symptoms improve after the unit is stopped.", action: "Continue the reaction protocol and do not restart the implicated blood product.", rationale: "Improvement does not establish that the product is safe to resume.", distractors: sharedDistractors, sourceId: "src-med-surg-transfusion", locator: "Product handling" },
-      { cue: "A possible reaction has been stabilized.", action: "Notify the provider and transfusion service and complete required specimens and documentation.", rationale: "Investigation and reporting support diagnosis, treatment, and prevention of further harm.", distractors: sharedDistractors, sourceId: "src-med-surg-transfusion", locator: "Notification and investigation" },
+      { cue: "The patient develops chills and dyspnea shortly after a transfusion begins.", action: "Stop the transfusion immediately and assess the patient.", rationale: "Stopping exposure and assessing stability are the immediate priorities for a suspected reaction.", distractors: sharedDistractors, sourceId: "src-openrn-hypersensitivity-reactions", locator: "4.5 Autoimmune and Hypersensitivity Reactions" },
+      { cue: "The transfusion has been stopped for a suspected reaction.", action: "Maintain venous access with new tubing and compatible solution according to policy.", rationale: "Separate tubing avoids infusing residual blood while preserving access for treatment.", distractors: sharedDistractors, sourceId: "src-openrn-hypersensitivity-reactions", locator: "4.5 Autoimmune and Hypersensitivity Reactions" },
+      { cue: "The patient's blood pressure is falling during the reaction.", action: "Activate urgent assistance and support airway, breathing, and circulation while following emergency orders.", rationale: "Hemodynamic instability requires immediate escalation and resuscitative priorities.", distractors: sharedDistractors, sourceId: "src-openrn-hypersensitivity-reactions", locator: "4.5 Autoimmune and Hypersensitivity Reactions" },
+      { cue: "Symptoms improve after the unit is stopped.", action: "Continue the reaction protocol and do not restart the implicated blood product.", rationale: "Improvement does not establish that the product is safe to resume.", distractors: sharedDistractors, sourceId: "src-openrn-hypersensitivity-reactions", locator: "4.5 Autoimmune and Hypersensitivity Reactions" },
+      { cue: "A possible reaction has been stabilized.", action: "Notify the provider and transfusion service and complete required specimens and documentation.", rationale: "Investigation and reporting support diagnosis, treatment, and prevention of further harm.", distractors: sharedDistractors, sourceId: "src-openrn-hypersensitivity-reactions", locator: "4.5 Autoimmune and Hypersensitivity Reactions" },
     ],
     releaseStage: "clinical_review",
   },
@@ -304,13 +317,13 @@ export const EXEMPLAR_TOPICS: ExemplarTopic[] = [
     ],
     guidedNotes: ["Suspected infection source:", "Organ dysfunction cue:", "Perfusion finding:", "Escalation pathway:", "Response trend:"],
     focusedReview: ["Trend changes rather than relying on one value.", "New organ dysfunction raises urgency.", "Escalation and stabilization occur together.", "Reassess response continuously."],
-    sources: [openStax("src-med-surg-sepsis", "Medical-Surgical Nursing", "medical-surgical-nursing", "Systemic infection, sepsis, and shock")],
+    sources: [openRn("src-openrn-infection", "Nursing Fundamentals, 2nd Edition", "nursingfundamentals", "9-4-infection", "9.4 Infection")],
     facts: [
-      { cue: "A patient with suspected infection develops new confusion and hypotension.", action: "Activate urgent sepsis evaluation and assess airway, breathing, circulation, and perfusion.", rationale: "Possible infection with new organ dysfunction and hypotension requires immediate escalation.", distractors: sharedDistractors, sourceId: "src-med-surg-sepsis", locator: "Recognition of sepsis" },
-      { cue: "Urine output is falling while heart rate and respiratory rate rise.", action: "Report the deterioration promptly and reassess perfusion and the full vital-sign trend.", rationale: "The combined trend can signal worsening organ perfusion.", distractors: sharedDistractors, sourceId: "src-med-surg-sepsis", locator: "Perfusion assessment" },
-      { cue: "The patient has a possible infection but a normal temperature.", action: "Continue evaluating for sepsis using the complete clinical picture and organ-function findings.", rationale: "A normal temperature does not exclude serious infection or sepsis.", distractors: sharedDistractors, sourceId: "src-med-surg-sepsis", locator: "Variable presentation" },
-      { cue: "Ordered cultures and treatment are pending while the patient deteriorates.", action: "Coordinate time-sensitive diagnostics and treatment while continuing stabilization and escalation.", rationale: "Deterioration requires parallel action rather than waiting passively for one step to finish.", distractors: sharedDistractors, sourceId: "src-med-surg-sepsis", locator: "Time-sensitive response" },
-      { cue: "Blood pressure remains low after initial interventions.", action: "Escalate immediately and continue reassessing perfusion and treatment response.", rationale: "Persistent hypotension indicates ongoing instability and need for higher-level support.", distractors: sharedDistractors, sourceId: "src-med-surg-sepsis", locator: "Reassessment and escalation" },
+      { cue: "A patient with suspected infection develops new confusion and hypotension.", action: "Activate urgent sepsis evaluation and assess airway, breathing, circulation, and perfusion.", rationale: "Possible infection with new organ dysfunction and hypotension requires immediate escalation.", distractors: sharedDistractors, sourceId: "src-openrn-infection", locator: "9.4 Infection" },
+      { cue: "Urine output is falling while heart rate and respiratory rate rise.", action: "Report the deterioration promptly and reassess perfusion and the full vital-sign trend.", rationale: "The combined trend can signal worsening organ perfusion.", distractors: sharedDistractors, sourceId: "src-openrn-infection", locator: "9.4 Infection" },
+      { cue: "The patient has a possible infection but a normal temperature.", action: "Continue evaluating for sepsis using the complete clinical picture and organ-function findings.", rationale: "A normal temperature does not exclude serious infection or sepsis.", distractors: sharedDistractors, sourceId: "src-openrn-infection", locator: "9.4 Infection" },
+      { cue: "Ordered cultures and treatment are pending while the patient deteriorates.", action: "Coordinate time-sensitive diagnostics and treatment while continuing stabilization and escalation.", rationale: "Deterioration requires parallel action rather than waiting passively for one step to finish.", distractors: sharedDistractors, sourceId: "src-openrn-infection", locator: "9.4 Infection" },
+      { cue: "Blood pressure remains low after initial interventions.", action: "Escalate immediately and continue reassessing perfusion and treatment response.", rationale: "Persistent hypotension indicates ongoing instability and need for higher-level support.", distractors: sharedDistractors, sourceId: "src-openrn-infection", locator: "9.4 Infection" },
     ],
     releaseStage: "clinical_review",
   },
@@ -407,6 +420,7 @@ export function validateExemplarPackage(pkg: ReturnType<typeof buildExemplarPack
   if (!pkg.focusedReview.length || !pkg.guidedNotes.length || pkg.remediationBlocks.length !== pkg.objectives.length) issues.push("Focused review, guided notes, and objective remediation blocks are required.");
   if (!pkg.sources.length || pkg.sources.some((source) => !source.license || !source.sourceUri || !source.locator)) issues.push("All sources require licensing, provenance, and a locator.");
   if (pkg.sources.some((source) => source.approvalStatus !== "approved")) issues.push("Pending evidence sources cannot support a clinical-review package.");
+  if (pkg.sources.some((source) => RESTRICTED_LICENSE_PATTERN.test(source.license))) issues.push("Sources under NonCommercial or ShareAlike terms cannot be used as lesson evidence.");
   if (pkg.sources.some((source) => !/^https:\/\//.test(source.sourceUri))) issues.push("Evidence sources must use an HTTPS provenance URI.");
   if (sourceIds.size !== pkg.sources.length) issues.push("Evidence source identifiers must be unique within a package.");
   if (pkg.assessmentItems.some((item) => !item.sourceId || !item.locator || !item.rationale)) issues.push("Every assessment item requires a rationale and source locator.");

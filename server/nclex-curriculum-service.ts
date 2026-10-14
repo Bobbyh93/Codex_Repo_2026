@@ -7,6 +7,7 @@ import {
   NCLEX_FRAMEWORK_ID,
   buildExemplarPackage,
   validateExemplarPackage,
+  RESTRICTED_LICENSE_PATTERN,
 } from "../shared/nclex-rn-2026";
 
 const xmlEscape = (value: unknown) => String(value ?? "")
@@ -157,7 +158,9 @@ export async function commonCartridgeArchive() {
 export function executionStatus() {
   const validation = validateCurriculum();
   const manifest = curriculumManifest();
-  const sourceCount = new Set(manifest.packages.flatMap((pkg) => pkg.sources.map((source) => source.id))).size;
+  const allSources = new Map(manifest.packages.flatMap((pkg) => pkg.sources.map((source) => [source.id, source] as const)));
+  const sourceCount = allSources.size;
+  const usableSources = [...allSources.values()].filter((source) => source.approvalStatus === "approved" && !RESTRICTED_LICENSE_PATTERN.test(source.license));
   return {
     schemaVersion: "1.0.0",
     generatedAt: new Date().toISOString(),
@@ -177,8 +180,8 @@ export function executionStatus() {
       evidenceSources: sourceCount,
     },
     sourceReadiness: {
-      approvedOerSources: sourceCount,
-      blockedSources: 0,
+      approvedOerSources: usableSources.length,
+      blockedSources: sourceCount - usableSources.length,
       proprietaryPolicy: manifest.compatibility.atiPolicy,
     },
     quality: { automatedValidation: validation.valid ? "pass" : "fail", issues: validation.issues },
