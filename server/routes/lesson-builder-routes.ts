@@ -1318,6 +1318,12 @@ async function ensureLessonBuilderTables() {
     )
   `);
   await db.execute(sql`ALTER TABLE lesson_packages ADD COLUMN IF NOT EXISTS release_stage text NOT NULL DEFAULT 'draft'`);
+  // Curriculum link (WP2): set only for lessons generated from a graph node.
+  await db.execute(sql`ALTER TABLE lesson_packages ADD COLUMN IF NOT EXISTS framework_id varchar`);
+  await db.execute(sql`ALTER TABLE lesson_packages ADD COLUMN IF NOT EXISTS primary_node_id varchar`);
+  await db.execute(sql`ALTER TABLE lesson_packages ADD COLUMN IF NOT EXISTS generation_mode text`);
+  await db.execute(sql`ALTER TABLE lesson_packages ADD COLUMN IF NOT EXISTS curriculum_context jsonb DEFAULT '{}'::jsonb`);
+  await db.execute(sql`CREATE INDEX IF NOT EXISTS lesson_packages_primary_node_idx ON lesson_packages(primary_node_id)`);
 
   await db.execute(sql`
     CREATE TABLE IF NOT EXISTS lesson_slides (
@@ -1410,6 +1416,22 @@ async function ensureLessonBuilderTables() {
       created_at timestamp DEFAULT now()
     )
   `);
+  // Objective mapping targets (WP2). The table has no writer yet, so it is empty and these
+  // changes are metadata-only. The FK is NOT VALID so a boot can never fail on old rows.
+  await db.execute(sql`ALTER TABLE curriculum_objective_mappings ADD COLUMN IF NOT EXISTS framework_id varchar`);
+  await db.execute(sql`ALTER TABLE curriculum_objective_mappings ADD COLUMN IF NOT EXISTS target_kind text NOT NULL DEFAULT 'package'`);
+  await db.execute(sql`ALTER TABLE curriculum_objective_mappings ADD COLUMN IF NOT EXISTS target_id varchar NOT NULL DEFAULT ''`);
+  await db.execute(sql`
+    DO $$ BEGIN
+      IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'curriculum_objective_mappings_package_id_fk') THEN
+        ALTER TABLE curriculum_objective_mappings
+          ADD CONSTRAINT curriculum_objective_mappings_package_id_fk
+          FOREIGN KEY (package_id) REFERENCES lesson_packages(id) ON DELETE CASCADE NOT VALID;
+      END IF;
+    END $$
+  `);
+  await db.execute(sql`CREATE UNIQUE INDEX IF NOT EXISTS curriculum_objective_mappings_target_uniq ON curriculum_objective_mappings(objective_node_id, package_id, target_kind, target_id, mapping_type)`);
+  await db.execute(sql`CREATE INDEX IF NOT EXISTS curriculum_objective_mappings_package_idx ON curriculum_objective_mappings(package_id)`);
   await db.execute(sql`
     CREATE TABLE IF NOT EXISTS curriculum_evidence_sources (
       id varchar PRIMARY KEY,
