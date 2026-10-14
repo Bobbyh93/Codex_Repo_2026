@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, integer, decimal, timestamp, jsonb, boolean, customType, type AnyPgColumn } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, integer, decimal, timestamp, jsonb, boolean, customType, uniqueIndex, index, type AnyPgColumn } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
 // Custom Drizzle type for pgvector's native vector(dimensions) column
@@ -979,17 +979,27 @@ export const curriculumEdges = pgTable("curriculum_edges", {
 export const curriculumObjectiveMappings = pgTable("curriculum_objective_mappings", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   objectiveNodeId: varchar("objective_node_id").references(() => curriculumNodes.id, { onDelete: "cascade" }).notNull(),
-  // These IDs intentionally remain compatibility references because legacy package/item
-  // records can be imported before the curriculum graph is installed.
-  packageId: varchar("package_id"),
+  frameworkId: varchar("framework_id"),
+  // Deleting a package deletes its mappings. item_id stays a plain reference: legacy item
+  // records can be imported before the graph is installed, and slides/items are cleaned up
+  // by the writer, which replaces a package's mappings in one transaction.
+  packageId: varchar("package_id").references(() => lessonPackages.id, { onDelete: "cascade" }),
   itemId: varchar("item_id"),
+  // What the mapping points at: the package as a whole, one slide, or one assessment item.
+  // target_id is the slide or item id, or '' for package-level; it is the uniqueness key.
+  targetKind: text("target_kind").notNull().default("package"), // package, slide, item
+  targetId: varchar("target_id").notNull().default(""),
   mappingType: text("mapping_type").notNull().default("primary"),
   confidence: decimal("confidence", { precision: 5, scale: 4 }).notNull().default("1"),
   verifiedBy: text("verified_by"),
   verifiedAt: timestamp("verified_at"),
   metadata: jsonb("metadata").$type<Record<string, any>>().default({}),
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (table) => ({
+  targetUnique: uniqueIndex("curriculum_objective_mappings_target_uniq")
+    .on(table.objectiveNodeId, table.packageId, table.targetKind, table.targetId, table.mappingType),
+  packageIdx: index("curriculum_objective_mappings_package_idx").on(table.packageId),
+}));
 
 export const curriculumEvidenceSources = pgTable("curriculum_evidence_sources", {
   id: varchar("id").primaryKey(),
@@ -1066,11 +1076,19 @@ export const lessonPackages = pgTable("lesson_packages", {
   deckModel: jsonb("deck_model").$type<Record<string, any>>().default({}),
   manifest: jsonb("manifest").$type<Record<string, any>>().default({}),
   qaSummary: jsonb("qa_summary").$type<Record<string, any>>().default({}),
+  // Curriculum link, set only for lessons generated from a graph node. Plain references:
+  // lesson_packages is large and its DDL runs at boot, so no hard FK is added here.
+  frameworkId: varchar("framework_id"),
+  primaryNodeId: varchar("primary_node_id"),
+  generationMode: text("generation_mode"), // template, agent, imported
+  curriculumContext: jsonb("curriculum_context").$type<Record<string, any>>().default({}),
   createdBy: varchar("created_by").references(() => users.id),
   publishedAt: timestamp("published_at"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-});
+}, (table) => ({
+  primaryNodeIdx: index("lesson_packages_primary_node_idx").on(table.primaryNodeId),
+}));
 
 export const lessonSlides = pgTable("lesson_slides", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
