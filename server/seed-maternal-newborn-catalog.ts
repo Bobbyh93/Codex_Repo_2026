@@ -19,7 +19,7 @@ const MATERNAL_NEWBORN_CHAPTERS: MaternalNewbornChapter[] = [
     title: "Antepartum Nursing Care",
     nclexCategory: "Health Promotion and Maintenance",
     subjectTag: "OB/Maternal",
-    url: "https://wtcs.pressbooks.pub/maternalnewborn/chapter/chapter-1/",
+    url: "https://www.wistechopen.org/textook-categories/nursing",
     keywords: [
       "antepartum", "prenatal care", "pregnancy", "prenatal", "antenatal",
       "gestational age", "fetal development", "obstetric history", "gravida", "para",
@@ -31,7 +31,7 @@ const MATERNAL_NEWBORN_CHAPTERS: MaternalNewbornChapter[] = [
     title: "High-Risk Antepartum Nursing Care",
     nclexCategory: "Reduction of Risk Potential",
     subjectTag: "OB/Maternal",
-    url: "https://wtcs.pressbooks.pub/maternalnewborn/chapter/chapter-2/",
+    url: "https://www.wistechopen.org/textook-categories/nursing",
     keywords: [
       "high-risk pregnancy", "preeclampsia", "eclampsia", "gestational diabetes",
       "gestational hypertension", "HELLP syndrome", "placenta previa", "placental abruption",
@@ -44,7 +44,7 @@ const MATERNAL_NEWBORN_CHAPTERS: MaternalNewbornChapter[] = [
     title: "Intrapartum Nursing Care",
     nclexCategory: "Physiological Adaptation",
     subjectTag: "OB/Maternal",
-    url: "https://wtcs.pressbooks.pub/maternalnewborn/chapter/chapter-3/",
+    url: "https://www.wistechopen.org/textook-categories/nursing",
     keywords: [
       "intrapartum", "labor", "delivery", "labor and delivery", "labor stages",
       "cervical dilation", "effacement", "fetal station", "contractions", "active labor",
@@ -57,7 +57,7 @@ const MATERNAL_NEWBORN_CHAPTERS: MaternalNewbornChapter[] = [
     title: "High-Risk Intrapartum Nursing Care",
     nclexCategory: "Physiological Adaptation",
     subjectTag: "OB/Maternal",
-    url: "https://wtcs.pressbooks.pub/maternalnewborn/chapter/chapter-4/",
+    url: "https://www.wistechopen.org/textook-categories/nursing",
     keywords: [
       "dystocia", "prolonged labor", "fetal distress", "fetal monitoring", "electronic fetal monitoring",
       "late decelerations", "variable decelerations", "oxytocin", "Pitocin",
@@ -70,7 +70,7 @@ const MATERNAL_NEWBORN_CHAPTERS: MaternalNewbornChapter[] = [
     title: "Postpartum Nursing Care",
     nclexCategory: "Health Promotion and Maintenance",
     subjectTag: "OB/Maternal",
-    url: "https://wtcs.pressbooks.pub/maternalnewborn/chapter/chapter-5/",
+    url: "https://www.wistechopen.org/textook-categories/nursing",
     keywords: [
       "postpartum", "postnatal", "fourth trimester", "lochia", "uterine involution",
       "fundal assessment", "breastfeeding", "lactation", "breast engorgement",
@@ -83,7 +83,7 @@ const MATERNAL_NEWBORN_CHAPTERS: MaternalNewbornChapter[] = [
     title: "High-Risk Postpartum Nursing Care",
     nclexCategory: "Reduction of Risk Potential",
     subjectTag: "OB/Maternal",
-    url: "https://wtcs.pressbooks.pub/maternalnewborn/chapter/chapter-6/",
+    url: "https://www.wistechopen.org/textook-categories/nursing",
     keywords: [
       "postpartum hemorrhage", "postpartum infection", "postpartum depression",
       "postpartum psychosis", "endometritis", "mastitis", "thromboembolic disease",
@@ -96,7 +96,7 @@ const MATERNAL_NEWBORN_CHAPTERS: MaternalNewbornChapter[] = [
     title: "Newborn Nursing Care",
     nclexCategory: "Health Promotion and Maintenance",
     subjectTag: "OB/Maternal",
-    url: "https://wtcs.pressbooks.pub/maternalnewborn/chapter/chapter-7/",
+    url: "https://www.wistechopen.org/textook-categories/nursing",
     keywords: [
       "newborn", "neonate", "neonatal", "APGAR score", "newborn assessment",
       "newborn transition", "thermoregulation newborn", "neonatal care",
@@ -110,7 +110,7 @@ const MATERNAL_NEWBORN_CHAPTERS: MaternalNewbornChapter[] = [
     title: "High-Risk Newborn Nursing Care",
     nclexCategory: "Physiological Adaptation",
     subjectTag: "OB/Maternal",
-    url: "https://wtcs.pressbooks.pub/maternalnewborn/chapter/chapter-8/",
+    url: "https://www.wistechopen.org/textook-categories/nursing",
     keywords: [
       "premature infant", "preterm infant", "prematurity", "respiratory distress syndrome",
       "neonatal RDS", "NICU", "neonatal intensive care", "neonatal sepsis",

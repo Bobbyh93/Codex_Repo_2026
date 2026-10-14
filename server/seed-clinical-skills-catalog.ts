@@ -19,7 +19,7 @@ const CLINICAL_SKILLS_CHAPTERS: ClinicalSkillsChapter[] = [
     title: "Foundations of Nursing Practice",
     subjectTag: "Fundamentals",
     nclexCategory: "Management of Care",
-    url: "https://wtcs.pressbooks.pub/nursingskills/chapter/chapter-1/",
+    url: "https://wtcs.pressbooks.pub/nursingskills/",
     keywords: [
       "nursing process", "clinical judgment", "professional nursing", "scope of practice",
       "documentation", "nursing theory", "standards of care",
@@ -30,7 +30,7 @@ const CLINICAL_SKILLS_CHAPTERS: ClinicalSkillsChapter[] = [
     title: "Safe and Clean Environment",
     subjectTag: "Fundamentals",
     nclexCategory: "Safety and Infection Control",
-    url: "https://wtcs.pressbooks.pub/nursingskills/chapter/chapter-2/",
+    url: "https://wtcs.pressbooks.pub/nursingskills/",
     keywords: [
       "patient safety", "fall prevention", "safe environment", "restraints",
       "bed safety", "call light", "safety device",
@@ -41,7 +41,7 @@ const CLINICAL_SKILLS_CHAPTERS: ClinicalSkillsChapter[] = [
     title: "Infection Control",
     subjectTag: "Fundamentals",
     nclexCategory: "Safety and Infection Control",
-    url: "https://wtcs.pressbooks.pub/nursingskills/chapter/chapter-3/",
+    url: "https://wtcs.pressbooks.pub/nursingskills/",
     keywords: [
       "infection control", "hand hygiene", "standard precautions", "PPE",
       "asepsis", "sterile technique", "transmission-based precautions",
@@ -53,7 +53,7 @@ const CLINICAL_SKILLS_CHAPTERS: ClinicalSkillsChapter[] = [
     title: "Vital Signs",
     subjectTag: "Fundamentals",
     nclexCategory: "Reduction of Risk Potential",
-    url: "https://wtcs.pressbooks.pub/nursingskills/chapter/chapter-4/",
+    url: "https://wtcs.pressbooks.pub/nursingskills/",
     keywords: [
       "vital signs", "blood pressure", "temperature", "pulse", "respiratory rate",
       "oxygen saturation", "SpO2", "vital sign assessment", "hypertension",
@@ -64,7 +64,7 @@ const CLINICAL_SKILLS_CHAPTERS: ClinicalSkillsChapter[] = [
     title: "Admission, Transfer, and Discharge",
     subjectTag: "Fundamentals",
     nclexCategory: "Management of Care",
-    url: "https://wtcs.pressbooks.pub/nursingskills/chapter/chapter-5/",
+    url: "https://wtcs.pressbooks.pub/nursingskills/",
     keywords: [
       "admission", "transfer", "discharge", "continuity of care", "discharge planning",
       "referral", "case management", "patient handoff",
@@ -75,7 +75,7 @@ const CLINICAL_SKILLS_CHAPTERS: ClinicalSkillsChapter[] = [
     title: "Patient Assessment",
     subjectTag: "Fundamentals",
     nclexCategory: "Reduction of Risk Potential",
-    url: "https://wtcs.pressbooks.pub/nursingskills/chapter/chapter-6/",
+    url: "https://wtcs.pressbooks.pub/nursingskills/",
     keywords: [
       "patient assessment", "physical assessment", "head-to-toe assessment",
       "health history", "auscultation", "inspection", "palpation", "percussion",
@@ -87,7 +87,7 @@ const CLINICAL_SKILLS_CHAPTERS: ClinicalSkillsChapter[] = [
     title: "Oxygen Therapy",
     subjectTag: "Medical-Surgical",
     nclexCategory: "Physiological Adaptation",
-    url: "https://wtcs.pressbooks.pub/nursingskills/chapter/chapter-7/",
+    url: "https://wtcs.pressbooks.pub/nursingskills/",
     keywords: [
       "oxygen therapy", "oxygen", "nasal cannula", "face mask", "hypoxia",
       "hypoxemia", "oxygenation", "COPD", "respiratory therapy",
@@ -98,7 +98,7 @@ const CLINICAL_SKILLS_CHAPTERS: ClinicalSkillsChapter[] = [
     title: "Suctioning",
     subjectTag: "Medical-Surgical",
     nclexCategory: "Physiological Adaptation",
-    url: "https://wtcs.pressbooks.pub/nursingskills/chapter/chapter-8/",
+    url: "https://wtcs.pressbooks.pub/nursingskills/",
     keywords: [
       "suctioning", "airway clearance", "nasopharyngeal suction", "oropharyngeal suction",
       "tracheobronchial suction", "secretions", "airway management",
@@ -109,7 +109,7 @@ const CLINICAL_SKILLS_CHAPTERS: ClinicalSkillsChapter[] = [
     title: "Chest Tubes",
     subjectTag: "Medical-Surgical",
     nclexCategory: "Reduction of Risk Potential",
-    url: "https://wtcs.pressbooks.pub/nursingskills/chapter/chapter-9/",
+    url: "https://wtcs.pressbooks.pub/nursingskills/",
     keywords: [
       "chest tube", "pleural drainage", "pneumothorax", "hemothorax", "pleural effusion",
       "water seal", "thoracic drainage",
@@ -120,7 +120,7 @@ const CLINICAL_SKILLS_CHAPTERS: ClinicalSkillsChapter[] = [
     title: "Neurological Assessment",
     subjectTag: "Medical-Surgical",
     nclexCategory: "Reduction of Risk Potential",
-    url: "https://wtcs.pressbooks.pub/nursingskills/chapter/chapter-10/",
+    url: "https://wtcs.pressbooks.pub/nursingskills/",
     keywords: [
       "neurological assessment", "Glasgow Coma Scale", "pupil assessment",
       "level of consciousness", "neuro check", "cranial nerves", "stroke assessment",
@@ -132,7 +132,7 @@ const CLINICAL_SKILLS_CHAPTERS: ClinicalSkillsChapter[] = [
     title: "IV Therapy Management",
     subjectTag: "Fundamentals",
     nclexCategory: "Pharmacological and Parenteral Therapies",
-    url: "https://wtcs.pressbooks.pub/nursingskills/chapter/chapter-11/",
+    url: "https://wtcs.pressbooks.pub/nursingskills/",
     keywords: [
       "IV therapy", "intravenous therapy", "IV access", "peripheral IV", "IV insertion",
       "infusion", "IV site care", "phlebitis", "infiltration", "parenteral",
@@ -144,7 +144,7 @@ const CLINICAL_SKILLS_CHAPTERS: ClinicalSkillsChapter[] = [
     title: "Blood Administration",
     subjectTag: "Medical-Surgical",
     nclexCategory: "Pharmacological and Parenteral Therapies",
-    url: "https://wtcs.pressbooks.pub/nursingskills/chapter/chapter-12/",
+    url: "https://wtcs.pressbooks.pub/nursingskills/",
     keywords: [
       "blood transfusion", "blood administration", "packed red blood cells", "PRBC",
       "blood products", "transfusion reaction", "type and crossmatch",
@@ -155,7 +155,7 @@ const CLINICAL_SKILLS_CHAPTERS: ClinicalSkillsChapter[] = [
     title: "Enteral Tube Management",
     subjectTag: "Fundamentals",
     nclexCategory: "Basic Care and Comfort",
-    url: "https://wtcs.pressbooks.pub/nursingskills/chapter/chapter-13/",
+    url: "https://wtcs.pressbooks.pub/nursingskills/",
     keywords: [
       "enteral nutrition", "nasogastric tube", "NG tube", "feeding tube", "tube feeding",
       "gastrostomy", "PEG tube", "enteral feeding", "tube placement verification",
@@ -166,7 +166,7 @@ const CLINICAL_SKILLS_CHAPTERS: ClinicalSkillsChapter[] = [
     title: "Ostomy Care",
     subjectTag: "Medical-Surgical",
     nclexCategory: "Basic Care and Comfort",
-    url: "https://wtcs.pressbooks.pub/nursingskills/chapter/chapter-14/",
+    url: "https://wtcs.pressbooks.pub/nursingskills/",
     keywords: [
       "ostomy", "colostomy", "ileostomy", "urostomy", "ostomy care", "stoma",
       "ostomy appliance", "bowel diversion",
@@ -177,7 +177,7 @@ const CLINICAL_SKILLS_CHAPTERS: ClinicalSkillsChapter[] = [
     title: "Wound Care",
     subjectTag: "Fundamentals",
     nclexCategory: "Reduction of Risk Potential",
-    url: "https://wtcs.pressbooks.pub/nursingskills/chapter/chapter-15/",
+    url: "https://wtcs.pressbooks.pub/nursingskills/",
     keywords: [
       "wound care", "wound assessment", "wound healing", "dressing change",
       "pressure injury", "pressure ulcer", "skin integrity", "dehiscence",
@@ -189,7 +189,7 @@ const CLINICAL_SKILLS_CHAPTERS: ClinicalSkillsChapter[] = [
     title: "Preoperative and Postoperative Care",
     subjectTag: "Medical-Surgical",
     nclexCategory: "Reduction of Risk Potential",
-    url: "https://wtcs.pressbooks.pub/nursingskills/chapter/chapter-16/",
+    url: "https://wtcs.pressbooks.pub/nursingskills/",
     keywords: [
       "preoperative", "postoperative", "perioperative", "surgical care", "PACU",
       "anesthesia", "consent", "surgical safety checklist", "post-op assessment",
@@ -200,7 +200,7 @@ const CLINICAL_SKILLS_CHAPTERS: ClinicalSkillsChapter[] = [
     title: "Isolation Precautions",
     subjectTag: "Fundamentals",
     nclexCategory: "Safety and Infection Control",
-    url: "https://wtcs.pressbooks.pub/nursingskills/chapter/chapter-17/",
+    url: "https://wtcs.pressbooks.pub/nursingskills/",
     keywords: [
       "isolation precautions", "contact precautions", "droplet precautions",
       "airborne precautions", "neutropenic precautions", "protective isolation",
@@ -212,7 +212,7 @@ const CLINICAL_SKILLS_CHAPTERS: ClinicalSkillsChapter[] = [
     title: "Specimen Collection",
     subjectTag: "Fundamentals",
     nclexCategory: "Reduction of Risk Potential",
-    url: "https://wtcs.pressbooks.pub/nursingskills/chapter/chapter-18/",
+    url: "https://wtcs.pressbooks.pub/nursingskills/",
     keywords: [
       "specimen collection", "blood draw", "venipuncture", "urine culture", "wound culture",
       "sputum culture", "stool specimen", "throat swab", "laboratory specimen",
@@ -223,7 +223,7 @@ const CLINICAL_SKILLS_CHAPTERS: ClinicalSkillsChapter[] = [
     title: "Point-of-Care Testing",
     subjectTag: "Fundamentals",
     nclexCategory: "Reduction of Risk Potential",
-    url: "https://wtcs.pressbooks.pub/nursingskills/chapter/chapter-19/",
+    url: "https://wtcs.pressbooks.pub/nursingskills/",
     keywords: [
       "point-of-care testing", "glucometer", "blood glucose monitoring", "rapid test",
       "bedside testing", "capillary blood glucose", "POCT",
@@ -234,7 +234,7 @@ const CLINICAL_SKILLS_CHAPTERS: ClinicalSkillsChapter[] = [
     title: "Urinary Catheterization",
     subjectTag: "Fundamentals",
     nclexCategory: "Basic Care and Comfort",
-    url: "https://wtcs.pressbooks.pub/nursingskills/chapter/chapter-20/",
+    url: "https://wtcs.pressbooks.pub/nursingskills/",
     keywords: [
       "urinary catheterization", "Foley catheter", "indwelling catheter", "intermittent catheter",
       "straight catheter", "CAUTI", "urinary retention", "catheter care",
@@ -245,7 +245,7 @@ const CLINICAL_SKILLS_CHAPTERS: ClinicalSkillsChapter[] = [
     title: "Bowel Elimination",
     subjectTag: "Fundamentals",
     nclexCategory: "Basic Care and Comfort",
-    url: "https://wtcs.pressbooks.pub/nursingskills/chapter/chapter-21/",
+    url: "https://wtcs.pressbooks.pub/nursingskills/",
     keywords: [
       "bowel elimination", "constipation", "diarrhea", "enema", "bowel assessment",
       "fecal impaction", "elimination", "bowel sounds", "digital rectal",
@@ -256,7 +256,7 @@ const CLINICAL_SKILLS_CHAPTERS: ClinicalSkillsChapter[] = [
     title: "Tracheostomy Care",
     subjectTag: "Medical-Surgical",
     nclexCategory: "Physiological Adaptation",
-    url: "https://wtcs.pressbooks.pub/nursingskills/chapter/chapter-22/",
+    url: "https://wtcs.pressbooks.pub/nursingskills/",
     keywords: [
       "tracheostomy", "tracheostomy care", "trach care", "trach tube", "inner cannula",
       "tracheostomy suctioning", "airway", "mechanical ventilation",
@@ -267,7 +267,7 @@ const CLINICAL_SKILLS_CHAPTERS: ClinicalSkillsChapter[] = [
     title: "End-of-Life Care",
     subjectTag: "Fundamentals",
     nclexCategory: "Psychosocial Integrity",
-    url: "https://wtcs.pressbooks.pub/nursingskills/chapter/chapter-23/",
+    url: "https://wtcs.pressbooks.pub/nursingskills/",
     keywords: [
       "end-of-life", "palliative care", "hospice", "dying patient", "grief",
       "advance directive", "DNR", "comfort care", "death and dying",
@@ -278,7 +278,7 @@ const CLINICAL_SKILLS_CHAPTERS: ClinicalSkillsChapter[] = [
     title: "Documentation",
     subjectTag: "Fundamentals",
     nclexCategory: "Management of Care",
-    url: "https://wtcs.pressbooks.pub/nursingskills/chapter/chapter-24/",
+    url: "https://wtcs.pressbooks.pub/nursingskills/",
     keywords: [
       "documentation", "charting", "electronic health record", "EHR", "SBAR",
       "incident report", "nursing notes", "medical record",
