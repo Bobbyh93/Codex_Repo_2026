@@ -126,14 +126,21 @@ describe('curriculum graph read side', () => {
 
 describe('curriculum graph routes', () => {
   const source = readFileSync(resolve(__dirname, '../routes/curriculum-graph-routes.ts'), 'utf8');
+  const registrations = [...source.matchAll(/app\.(get|post|put|patch|delete)\(\s*"([^"]+)"([^)]*)/g)];
 
-  it('guards every route with the admin session and registers no write method', () => {
-    const registrations = [...source.matchAll(/app\.(get|post|put|patch|delete)\(\s*"([^"]+)"([^)]*)/g)];
-    expect(registrations.length).toBe(3);
-    for (const [, method, path, rest] of registrations) {
-      expect(method, path).toBe('get');
+  it('guards every route with the admin session', () => {
+    expect(registrations.length).toBe(5);
+    for (const [, , path, rest] of registrations) {
       expect(path.startsWith('/api/admin/curriculum/'), path).toBe(true);
       expect(rest, path).toContain('requireAdminSession');
     }
+  });
+
+  it('requires a CSRF token on every route that writes, and only those', () => {
+    for (const [, method, path, rest] of registrations) {
+      if (method === 'get') expect(rest, path).not.toContain('validateCSRFToken');
+      else expect(rest, `${method} ${path}`).toContain('validateCSRFToken');
+    }
+    expect(registrations.filter(([, method]) => method !== 'get')).toHaveLength(2);
   });
 });

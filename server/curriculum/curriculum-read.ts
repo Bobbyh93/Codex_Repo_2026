@@ -147,6 +147,12 @@ export async function getNodeLinks(db: CurriculumDb, id: string) {
   };
 }
 
+/** Objectives of a topic that a lesson may cite: only those approved. */
+export async function getApprovedObjectives(db: CurriculumDb, topicNodeId: string): Promise<NodeRow[]> {
+  const { objectives } = await getNodeLinks(db, topicNodeId);
+  return objectives.filter((objective) => objective.releaseStage === "approved");
+}
+
 /**
  * Evidence source ids a node cites (`metadata.evidenceSourceIds`), as written. Callers decide
  * which of them are approved and licence-clean; nothing is filtered here.
