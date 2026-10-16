@@ -111,8 +111,8 @@ export function mount(canvas, opts) {
     rhythm = id; extra = {};
     if (o.clamp !== undefined) clamp = o.clamp;
     src = createRhythm(id, Object.assign({}, o, { clamp }));
-    if (o.ratio) { src.setExtra('ratio', o.ratio); extra.ratio = o.ratio; }
-    if (o.atrialRate) { src.setExtra('atrialRate', o.atrialRate); extra.atrialRate = o.atrialRate; }
+    if (o.ratio && src.getExtra('ratio') !== undefined) { src.setExtra('ratio', o.ratio); extra.ratio = src.getExtra('ratio'); }
+    if (o.atrialRate && src.getExtra('atrialRate') !== undefined) { src.setExtra('atrialRate', o.atrialRate); extra.atrialRate = src.getExtra('atrialRate'); }
     if (o.ectopy && o.ectopy.kind) extra.ectopy = { kind: o.ectopy.kind, every: o.ectopy.every };   // keeps automatic ectopy in the broadcast state
     const meta = BY_ID[id];
     pulse = o.pulse != null ? !!o.pulse : (meta.pulse !== false);
