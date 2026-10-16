@@ -10,6 +10,7 @@ import { fileURLToPath } from 'node:url';
 import { WebSocketServer } from 'ws';
 import { scenario, studentView } from './scenario.js';
 import { aiReply, aiConfigured } from './patientBrain.js';
+import { RHYTHMS } from '../src/ecg/rhythms.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const dataDir = process.env.DATA_DIR || path.join(root, 'data');
@@ -70,7 +71,7 @@ function instructor(req, res, next) { if (req.actor.role !== 'instructor') retur
 function cookie(res, actorId) { const token = randomBytes(32).toString('hex'); db.prepare('INSERT INTO tokens VALUES(?,?,?)').run(token, actorId, Date.now() + 12 * 3600000); res.cookie('cs_auth', token, { httpOnly: true, sameSite: 'strict', secure: !!tls || process.env.COOKIE_SECURE === '1', maxAge: 12 * 3600000 }); }
 const latest = () => db.prepare('SELECT * FROM sessions ORDER BY rowid DESC LIMIT 1').get();
 const roster = sid => db.prepare("SELECT id,name FROM actors WHERE session_id=? AND role='student'").all(sid);
-const RHYTHMS = { nsr: 'Normal sinus rhythm', sinus_brady: 'Sinus bradycardia', sinus_tach: 'Sinus tachycardia', sinus_tach_pvc: 'Sinus tachycardia with PVCs', svt: 'Supraventricular tachycardia', afib: 'Atrial fibrillation', vtach: 'Ventricular tachycardia', vfib: 'Ventricular fibrillation', asystole: 'Asystole' };
+// Rhythm ids and display names come from the shared table so the client select, the trace generator and the server validate the same list.
 const VITAL_KEYS = ['hr','rr','spo2','sbp','dbp','temp'], VITAL_RANGES = { hr: [0, 300], rr: [0, 80], spo2: [0, 100], sbp: [0, 300], dbp: [0, 200], temp: [25, 45] };
 const currentVitals = sid => db.prepare('SELECT * FROM vitals WHERE session_id=? ORDER BY id DESC LIMIT 1').get(sid) || null;
 function effectiveVitals(v, now = Date.now()) {

@@ -1,10 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { api, submissionId } from './api';
 import { Icon } from './components';
+import { mount as mountMonitor } from './ecg/ecg-monitor';
+import { RHYTHM_GROUPS, bandLabel, sourceOptions } from './ecg/rhythms';
 
 export const VITAL_FIELDS = [['hr', 'HR', 'bpm'], ['rr', 'RR', '/min'], ['spo2', 'SpO₂', '%'], ['sbp', 'SBP', 'mmHg'], ['dbp', 'DBP', 'mmHg'], ['temp', 'Temp', '°C']];
 const LIMITS = { hr: [50, 120], rr: [8, 24], spo2: [90, 101], sbp: [90, 160], dbp: [40, 100], temp: [35, 38.5] };
-const PERFUSING = r => !['vfib', 'asystole'].includes(r);
 const DEFAULTS = { hr: 80, rr: 16, spo2: 97, sbp: 120, dbp: 78, temp: 37, rhythm: 'nsr', transitionSeconds: 0, monitorOn: true };
 
 export function effective(v, now) {
@@ -22,49 +23,24 @@ function useServerClock(serverNow) {
   return Date.now() + offset.current;
 }
 
-// Synthetic waveforms. These are illustrative teaching traces, not physiologic models.
-const g = (p, c, w, a) => a * Math.exp(-(((p - c) / w) ** 2));
-const narrow = p => -g(p, 0.26, 0.006, 0.1) + g(p, 0.28, 0.009, 1) - g(p, 0.305, 0.008, 0.25) + g(p, 0.5, 0.05, 0.28);
-const wide = p => g(p, 0.3, 0.07, 0.85) - g(p, 0.45, 0.07, 0.5);
-function ecg(rhythm, p, beat, noise) {
-  switch (rhythm) {
-    case 'asystole': return noise * 0.02;
-    case 'vfib': return 0.35 * Math.sin(p * 31 + beat) * Math.sin(p * 17.3 + beat * 2) + noise * 0.08;
-    case 'vtach': return wide(p);
-    case 'afib': return narrow(p) + 0.05 * Math.sin(p * 40 + beat * 3);
-    case 'svt': return narrow(p);
-    case 'sinus_tach_pvc': return beat % 5 === 4 ? wide(p) : g(p, 0.12, 0.025, 0.15) + narrow(p);
-    default: return g(p, 0.12, 0.025, 0.15) + narrow(p);
-  }
-}
-const pleth = (rhythm, p) => PERFUSING(rhythm) ? g(p, 0.2, 0.08, 1) + g(p, 0.42, 0.1, 0.35) : 0;
-function Trace({ kind, hr, rhythm, on, color }) {
-  const canvas = useRef(null), params = useRef({ hr, rhythm, on });
-  useEffect(() => { params.current = { hr, rhythm, on }; }, [hr, rhythm, on]);
+// ECG and plethysmograph traces, generated from the rhythm criteria (src/ecg) and swept
+// like a bedside monitor: 25 mm/s, 6 s across the canvas. The trace runs at the HR shown on
+// the readout; the rhythm's morphology, ectopy and conduction pattern come from the criteria row.
+const MONITOR_THEME = { bg: '#0b1a14', minor: '#10271c', major: '#163628', trace: '#49e07a', beam: '#c8ffd9', text: '#49e07a', pleth: '#5fd3ff' };
+function Traces({ hr, rhythm, on }) {
+  const ecgCanvas = useRef(null), plethCanvas = useRef(null), mon = useRef(null);
   useEffect(() => {
-    const el = canvas.current, ctx = el.getContext('2d');
-    let frame, x = 0, last = performance.now(), beatStart = last, beat = 0, beatLen = 750, prevY = null;
-    const fit = () => { const w = Math.max(200, Math.floor(el.clientWidth)); if (el.width !== w) { el.width = w; el.height = 110; ctx.fillStyle = '#0b1a14'; ctx.fillRect(0, 0, w, el.height); x = 0; prevY = null; } };
-    const nextBeat = (rate, r) => { const base = 60000 / Math.max(20, rate); beatLen = r === 'afib' ? base * (0.7 + Math.random() * 0.6) : r === 'sinus_tach_pvc' && beat % 5 === 3 ? base * 0.75 : base; };
-    const draw = now => {
-      fit();
-      const { hr: rate, rhythm: r, on: live } = params.current, dt = Math.min(100, now - last); last = now;
-      const speed = el.width / 6, step = speed * dt / 1000, h = el.height, mid = h * 0.6;
-      if (!live) { ctx.fillStyle = '#0b1a14'; ctx.fillRect(0, 0, el.width, h); x = 0; prevY = null; frame = requestAnimationFrame(draw); return; }
-      if (r === 'asystole' || r === 'vfib') { if (now - beatStart > 1000) { beatStart = now; beat++; } }
-      else if (now - beatStart >= beatLen) { beatStart = now; beat++; nextBeat(rate, r); }
-      const p = r === 'asystole' || r === 'vfib' ? ((now - beatStart) / 1000) % 1 : (now - beatStart) / beatLen;
-      const v = kind === 'ecg' ? ecg(r, p, beat, Math.random() * 2 - 1) : pleth(r, p);
-      const y = mid - v * (kind === 'ecg' ? h * 0.42 : h * 0.5);
-      ctx.fillStyle = '#0b1a14'; ctx.fillRect(x, 0, step + 22, h);
-      ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x, prevY ?? y); ctx.lineTo(x + step, y); ctx.stroke();
-      prevY = y; x += step; if (x >= el.width) { x = 0; prevY = null; }
-      frame = requestAnimationFrame(draw);
-    };
-    frame = requestAnimationFrame(draw); window.addEventListener('resize', fit);
-    return () => { cancelAnimationFrame(frame); window.removeEventListener('resize', fit); };
-  }, [kind, color]);
-  return <canvas ref={canvas} className="trace" aria-hidden="true"/>;
+    mon.current = mountMonitor(ecgCanvas.current, { ...sourceOptions(rhythm, hr), pleth: plethCanvas.current, theme: MONITOR_THEME, seconds: 6 });
+    return () => { mon.current.destroy(); mon.current = null; };
+  }, []);
+  useEffect(() => {
+    const m = mon.current; if (!m) return;
+    const o = sourceOptions(rhythm, hr);
+    if (m.getRhythm() !== o.rhythm || JSON.stringify(m.getState().extra.ectopy || null) !== JSON.stringify(o.ectopy || null)) m.setRhythm(o.rhythm, o);
+    else { m.setRate(o.rate); if (o.ratio && o.ratio !== m.getExtra('ratio')) m.setExtra('ratio', o.ratio); }
+  }, [hr, rhythm]);
+  useEffect(() => { mon.current?.setBlank(!on); }, [on]);
+  return <><canvas ref={ecgCanvas} className="trace" aria-hidden="true"/><canvas ref={plethCanvas} className="trace" aria-hidden="true"/></>;
 }
 
 function Readout({ k, label, unit, value, cls }) {
@@ -76,7 +52,7 @@ export function MonitorDisplay({ vitals, rhythms, now, compact = false }) {
   return <div className={`monitor${compact ? ' compact' : ''}${on ? '' : ' off'}`} role="group" aria-label="Patient monitor">
     <div className="monitor-head"><span>{on ? rhythms[v.rhythm] : 'Leads off'}</span>{v && v.progress < 1 && on && <span className="trend">Trending…</span>}<span className="monitor-brand">Code Shift · Simulation monitor</span></div>
     <div className="monitor-body">
-      <div className="traces"><Trace kind="ecg" hr={v?.hr || 60} rhythm={v?.rhythm || 'nsr'} on={on} color="#49e07a"/><Trace kind="pleth" hr={v?.hr || 60} rhythm={v?.rhythm || 'nsr'} on={on} color="#5fd3ff"/></div>
+      <div className="traces"><Traces hr={v?.hr || 60} rhythm={v?.rhythm || 'nsr'} on={on}/></div>
       <div className="readouts">
         <Readout k="hr" label="HR" unit="bpm" value={on ? v.hr : null} cls="c-hr"/>
         <Readout k="spo2" label={'SpO₂'} unit="%" value={on ? v.spo2 : null} cls="c-spo2"/>
@@ -137,7 +113,7 @@ function Controls({ vitals, rhythms, presets, session, connected, refresh }) {
     <button type="button" className="text-button" onClick={() => setShowForm(f => !f)}>{showForm ? 'Hide manual vitals' : 'Adjust vitals manually'}</button>
     {showForm && <>
     <div className="vital-inputs">{VITAL_FIELDS.map(([k, label, unit]) => <div className="vital-input" key={k}><label htmlFor={`vital-${k}`}>{label}</label><input id={`vital-${k}`} type="number" inputMode="decimal" step={k === 'temp' ? 0.1 : 1} value={form[k]} onChange={e => set(k, e.target.value)} required aria-describedby={`unit-${k}`}/><small id={`unit-${k}`}>{unit}</small></div>)}</div>
-    <label>Rhythm<select value={form.rhythm} onChange={e => set('rhythm', e.target.value)}>{Object.entries(rhythms).map(([k, name]) => <option key={k} value={k}>{name}</option>)}</select></label>
+    <label>Rhythm<select value={form.rhythm} onChange={e => set('rhythm', e.target.value)}>{RHYTHM_GROUPS.map(group => <optgroup key={group.node} label={group.node}>{group.items.filter(([k]) => rhythms[k]).map(([k]) => <option key={k} value={k}>{rhythms[k]}{bandLabel(k) ? ` · ${bandLabel(k)}` : ''}</option>)}</optgroup>)}</select></label>
     <label>Trend to these values over<select value={form.transitionSeconds} onChange={e => set('transitionSeconds', Number(e.target.value))}><option value={0}>Immediately</option><option value={30}>30 seconds</option><option value={60}>1 minute</option><option value={120}>2 minutes</option><option value={300}>5 minutes</option></select></label>
     </>}
     <button className="primary wide" disabled={busy || !connected || ended}>{busy ? 'Applying…' : 'Apply to monitor'}<Icon name="arrow"/></button>
