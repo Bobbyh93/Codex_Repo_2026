@@ -1,0 +1,18 @@
+[Unit]
+Description=Code Shift room monitor display (kiosk on the Pi's HDMI screen)
+After=code-shift.service
+Wants=code-shift.service
+
+[Service]
+User=display
+Group=display
+PAMName=login
+TTYPath=/dev/tty7
+Environment=XDG_RUNTIME_DIR=/run/user/1001
+ExecStartPre=/bin/sleep 5
+ExecStart=/usr/bin/cage -- /usr/bin/chromium --kiosk --noerrdialogs --disable-infobars --ignore-certificate-errors --autoplay-policy=no-user-gesture-required --app=https://127.0.0.1:4317/display
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=graphical.target
