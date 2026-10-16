@@ -93,6 +93,7 @@
       src = EcgRhythms.create(id, o);
       if (o.ratio) { src.setExtra('ratio', o.ratio); extra.ratio = o.ratio; }
       if (o.atrialRate) { src.setExtra('atrialRate', o.atrialRate); extra.atrialRate = o.atrialRate; }
+      if (o.ectopy && o.ectopy.kind) extra.ectopy = { kind: o.ectopy.kind, every: o.ectopy.every };   // keeps automatic ectopy in the broadcast state
       const meta = EcgRhythms.BY_ID[id];
       pulse = o.pulse != null ? !!o.pulse : (meta.pulse !== false);
       simT = 0; lastSimT = 0; lastX = null; hrLast = -1;

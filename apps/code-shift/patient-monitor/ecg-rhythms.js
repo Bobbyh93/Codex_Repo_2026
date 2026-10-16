@@ -110,6 +110,7 @@
       id: meta.id, meta, complexes: [], tNext: 0.4, rate: meta.band ? clamp(opts.rate || meta.band[2], meta.band[0], meta.band[1]) : 0,
       pending: null, cont: () => 0, fill: () => {}, qrsTimes: [], beatCount: 0, ectopy: opts.ectopy || null
     };
+    S.vrate = () => S.rate;   // conducted (ventricular) rate; schedulers that drop or divide beats override this
     S.push = c => { S.complexes.push(c); if (VENTRICULAR[c.kind]) S.qrsTimes.push(c.t); };
     S.prune = t => { S.complexes = S.complexes.filter(c => c.t > t - 1.2); S.qrsTimes = S.qrsTimes.filter(x => x > t - 12); };
     return S;
@@ -168,12 +169,14 @@
       const S = base(m, o); const prs = [0.16, 0.26, 0.36, null]; let i = 0;
       S.fill = until => { while (S.tNext < until) { const P = S.tNext, pr = prs[i % 4]; S.push({ kind: 'p', t: P });
         if (pr !== null) S.push({ kind: 'qrs', t: P + pr + 0.06 }); i++; S.tNext = P + 60 / S.rate; } };
+      S.vrate = () => S.rate * 3 / 4;   // 4:3 conduction
       return S;
     },
     mobitz2: (m, o) => {                 // constant PR, every third P not conducted
       const S = base(m, o); let i = 0;
       S.fill = until => { while (S.tNext < until) { const P = S.tNext; S.push({ kind: 'p', t: P });
         if (i % 3 !== 2) S.push({ kind: 'qrs', t: P + 0.20 }); i++; S.tNext = P + 60 / S.rate; } };
+      S.vrate = () => S.rate * 2 / 3;   // 3:2 conduction
       return S;
     },
     chb: (m, o) => {                     // independent atrial and ventricular trains
@@ -188,6 +191,7 @@
       const S = base(m, o); S.ratio = clamp(o.ratio || 4, 2, 6);
       S.cont = t => { const f = S.rate / 60, ph = (t * f) % 1; return 0.18 * (2 * Math.abs(2 * ph - 1) - 1); };
       S.fill = until => { while (S.tNext < until) { S.push({ kind: 'qrs', t: S.tNext, ta: 0.10 }); S.tNext += S.ratio * 60 / S.rate; } };
+      S.vrate = () => S.rate / S.ratio;
       return S;
     },
     afib: (m, o) => {                    // chaotic f waves, irregularly irregular R-R
@@ -238,8 +242,8 @@
       inject(kind) { if (S.fill && 'pending' in S) S.pending = kind; },
       hr(t) {  // the way a monitor counts: QRS complexes in the last 6 seconds × 10
         if (S.hrOverride) return S.hrOverride();
-        const n = S.qrsTimes.filter(x => x > t - 6 && x <= t).length;
-        return t < 6 ? Math.round(S.rate) : n * 10;
+        if (t < 6) return Math.round(S.vrate());   // warming up: the conducted rate the scheduler is producing, not the atrial rate
+        return S.qrsTimes.filter(x => x > t - 6 && x <= t).length * 10;
       }
     };
     return api;
