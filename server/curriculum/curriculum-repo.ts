@@ -1,3 +1,4 @@
+import { sql } from "drizzle-orm";
 import type { PgDatabase } from "drizzle-orm/pg-core";
 import {
   curriculumEdges,
@@ -89,7 +90,13 @@ export async function ensureNclexGraphInstalled(db: CurriculumDb) {
   for (const node of [...categoryNodes, ...processNodes, ...judgmentNodes, ...topicNodes, ...objectiveNodes]) {
     await db.insert(curriculumNodes).values(node).onConflictDoUpdate({
       target: curriculumNodes.id,
-      set: { label: node.label, releaseStage: node.releaseStage, updatedAt: new Date() },
+      // A human decision outranks the constant: once a node has been approved (or exported)
+      // through the admin endpoint, re-running the install must not move it back.
+      set: {
+        label: node.label,
+        releaseStage: sql`CASE WHEN ${curriculumNodes.releaseStage} IN ('approved', 'export_ready') THEN ${curriculumNodes.releaseStage} ELSE ${node.releaseStage} END`,
+        updatedAt: new Date(),
+      },
     });
   }
 
