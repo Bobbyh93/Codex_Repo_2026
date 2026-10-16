@@ -11,6 +11,11 @@ describe("isSmokeLearnerEvent", () => {
     expect(isSmokeLearnerEvent(payload)).toBe(true);
   });
 
+  it("flags unmarked payloads from a smoke session", () => {
+    expect(isSmokeLearnerEvent({ isCorrect: true }, "student-smoke-1760000000000")).toBe(true);
+    expect(isSmokeLearnerEvent({ isCorrect: true }, "student-abc")).toBe(false);
+  });
+
   it("keeps ordinary learner events", () => {
     expect(isSmokeLearnerEvent({ rating: "confusing", slideNumber: 4 })).toBe(false);
     expect(isSmokeLearnerEvent(null)).toBe(false);

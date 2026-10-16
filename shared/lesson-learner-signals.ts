@@ -6,7 +6,13 @@
  * live_smoke, live_smoke_retry, student_home_smoke, ...). Those events prove a
  * pathway works; they are not learner evidence.
  */
-export function isSmokeLearnerEvent(payload: Record<string, any> | null | undefined): boolean {
+export function isSmokeLearnerEvent(
+  payload: Record<string, any> | null | undefined,
+  sessionId?: string | null,
+): boolean {
+  // Some smoke events (e.g. practice_attempted) carry no marker in the payload
+  // but always run under a `student-smoke-*` session.
+  if (sessionId && /smoke/i.test(sessionId)) return true;
   if (!payload || typeof payload !== "object") return false;
   if (payload.smoke === true || payload.smoke === "true") return true;
   return /smoke/i.test(String(payload.source || ""));

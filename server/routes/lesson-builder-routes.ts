@@ -67,7 +67,6 @@ import {
   type GovernanceRecordV1,
 } from "@shared/lesson-governance";
 import { buildOpenRnSourceRows } from "@shared/open-rn-sources";
-import { isFullLessonCompletion, isSmokeLearnerEvent } from "@shared/lesson-learner-signals";
 
 type EvidenceChunk = {
   sourceId?: string | null;
@@ -9618,28 +9617,55 @@ async function lessonBuilderHealth() {
     || (latestPublishedPackage?.taxonomySnapshot as any)?.assessmentBridge
     || null;
   const assessmentBridgeReady = Boolean(latestAssessmentBridge?.weakTopic);
-  const [latestReview, latestPackageEventRows, latestActiveAssignmentCountRow] = latestPublishedPackage
+  // Smoke-script traffic proves a pathway works but is not learner evidence
+  // (mirrors isSmokeLearnerEvent: smoke session id, smoke payload marker, or
+  // source containing "smoke"). Counted in SQL so memory stays bounded.
+  const notSmokeEvent = sql`NOT (
+    ${lessonLearnerEvents.sessionId} ILIKE '%smoke%'
+    OR COALESCE(${lessonLearnerEvents.payload}->>'source', '') ILIKE '%smoke%'
+    OR COALESCE(${lessonLearnerEvents.payload}->>'smoke', '') = 'true'
+  )`;
+  const [latestReview, latestPackageEventCounts, latestActiveAssignmentCountRow] = latestPublishedPackage
     ? await Promise.all([
       db.select().from(lessonPackageReviews)
         .where(eq(lessonPackageReviews.packageId, latestPublishedPackage.id))
         .orderBy(desc(lessonPackageReviews.createdAt))
         .limit(1)
         .then((rows) => rows[0] || null),
-      db.select({ eventType: lessonLearnerEvents.eventType, payload: lessonLearnerEvents.payload }).from(lessonLearnerEvents)
-        .where(eq(lessonLearnerEvents.packageId, latestPublishedPackage.id)),
+      db.select({
+        total: sql<number>`count(*)::int`,
+        feedback: sql<number>`(count(*) FILTER (WHERE ${lessonLearnerEvents.eventType} = 'feedback_submitted'))::int`,
+        // A completion counts as full only when every slide was viewed,
+        // judged from the session's accumulated slide_viewed events (so a
+        // reload, or a completion tapped early, does not lose the lesson) or
+        // from the completion payload's own counts.
+        completions: sql<number>`(count(*) FILTER (WHERE ${lessonLearnerEvents.eventType} = 'lesson_completed' AND (
+          CASE
+            WHEN ${lessonLearnerEvents.payload}->>'viewedSlideCount' ~ '^[0-9]+$'
+              AND ${lessonLearnerEvents.payload}->>'slideCount' ~ '^[0-9]+$'
+              AND (${lessonLearnerEvents.payload}->>'slideCount')::int > 0
+            THEN (${lessonLearnerEvents.payload}->>'viewedSlideCount')::int >= (${lessonLearnerEvents.payload}->>'slideCount')::int
+            ELSE false
+          END
+          OR (
+            SELECT count(DISTINCT v.slide_id) FROM lesson_learner_events v
+            WHERE v.package_id = ${lessonLearnerEvents.packageId}
+              AND v.session_id = ${lessonLearnerEvents.sessionId}
+              AND v.event_type = 'slide_viewed'
+              AND v.slide_id IS NOT NULL
+          ) >= GREATEST(1, (SELECT count(*) FROM lesson_slides s WHERE s.package_id = ${lessonLearnerEvents.packageId}))
+        )))::int`,
+      }).from(lessonLearnerEvents)
+        .where(and(eq(lessonLearnerEvents.packageId, latestPublishedPackage.id), notSmokeEvent)),
       db.select({ count: sql<number>`count(*)::int` }).from(lessonAssignments)
         .where(and(eq(lessonAssignments.packageId, latestPublishedPackage.id), eq(lessonAssignments.status, "active"))),
     ])
-    : [null, [] as { eventType: string; payload: unknown }[], [{ count: 0 }]];
-  // Smoke-script traffic proves a pathway works but is not learner evidence,
-  // and a completion counts only when every slide was viewed.
-  const learnerEvents = latestPackageEventRows.filter((event) => !isSmokeLearnerEvent(event.payload as any));
+    : [null, [{ total: 0, feedback: 0, completions: 0 }], [{ count: 0 }]];
   const latestReviewDecision = latestReview?.decision || "awaiting_review";
-  const latestPackageLearnerEventCount = learnerEvents.length;
-  const latestPackageFeedbackCount = learnerEvents.filter((event) => event.eventType === "feedback_submitted").length;
+  const latestPackageLearnerEventCount = latestPackageEventCounts[0]?.total || 0;
+  const latestPackageFeedbackCount = latestPackageEventCounts[0]?.feedback || 0;
   const latestPackageActiveAssignmentCount = latestActiveAssignmentCountRow[0]?.count || 0;
-  const latestPackageCompletionCount = learnerEvents
-    .filter((event) => event.eventType === "lesson_completed" && isFullLessonCompletion(event.payload as any)).length;
+  const latestPackageCompletionCount = latestPackageEventCounts[0]?.completions || 0;
   const reviewApproved = latestReviewDecision === "approved_for_pilot" || latestReviewDecision === "approved_for_release";
   const latestReviewMetadata = (latestReview?.metadata || {}) as Record<string, any>;
   const latestReviewIdentity = `${latestReview?.reviewerName || ""} ${latestReview?.reviewerRole || ""}`;
