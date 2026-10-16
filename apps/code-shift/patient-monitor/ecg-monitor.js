@@ -70,19 +70,19 @@
       simT += dt;
       const step = 1 / 300;
       ctx.lineWidth = 1.6; ctx.lineJoin = 'round'; ctx.lineCap = 'round'; ctx.strokeStyle = theme.trace;
+      const gap = Math.max(10, 0.25 * W / seconds);     // a quarter second of blank ahead of the beam
       for (let t = lastSimT + step; t <= simT; t += step) {
         const x = xOf(t), y = yOf(src.sample(t));
         if (lastX !== null && x < lastX) lastX = null;   // wrapped
-        // erase bar just ahead of the beam
-        const gap = Math.max(10, 0.25 * W / seconds);   // a quarter second of blank ahead of the beam
-        const ex = x + 2, ew = Math.min(gap, W - ex);
+        // erase from just past the previous point (clears the old beam) to a gap ahead of the new one
+        const ex = lastX === null ? x : lastX + 1, ew = Math.min(x + gap, W) - ex;
         if (ew > 0) ctx.drawImage(grid, ex * dpr, 0, ew * dpr, H * dpr, ex, 0, ew, H);
         if (lastX !== null) { ctx.beginPath(); ctx.moveTo(lastX, lastY); ctx.lineTo(x, y); ctx.stroke(); }
         lastX = x; lastY = y;
       }
       lastSimT = simT;
-      // beam marker
-      ctx.fillStyle = theme.beam; ctx.fillRect(Math.min(W - 2, lastX + 1), 0, 2, H);
+      // beam marker, inside the zone the next frame erases
+      if (lastX !== null) { ctx.fillStyle = theme.beam; ctx.fillRect(Math.min(W - 2, lastX + 1), 0, 2, H); }
       hrTimer += dt;
       if (hrTimer > 0.5 && hrCb) { hrTimer = 0; const hr = src.hr(simT); if (hr !== hrLast) { hrLast = hr; hrCb(hr, pulse); } }
     }
