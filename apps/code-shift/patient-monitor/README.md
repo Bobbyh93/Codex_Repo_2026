@@ -7,6 +7,8 @@ Drop-in, dependency-free ECG for the Code Shift patient monitor. Two classic scr
 | `ecg-rhythms.js` | Procedural waveform sources for 24 rhythms, grouped by pacing node, with rate bands per the LLUMC Quick Look table (BART Table 2014). Exposes `window.EcgRhythms`. |
 | `ecg-monitor.js` | Sweeping monitor trace on a `<canvas>` (25 mm/s, 1 mV = 10 mm, beam + erase bar, wraps at the edge). Exposes `window.EcgMonitor`. |
 | `index.html` | Demo: monitor + instructor controls (rhythm, rate, conduction ratio, ectopy, pulse, freeze, theme) and the JSON state the instructor station would broadcast. |
+| `package.json` | Marks this folder `"type": "commonjs"`, so `require('./ecg-rhythms')` works under Node inside this ESM repository. The browser loads the same files as classic scripts. |
+| `test.js` | Checks: HR readout (conducted rate during warm-up, QRS count × 10 after 6 s), no rate for V-Fib/asystole, ectopy carried through `getState`/`setState`. Run `node apps/code-shift/patient-monitor/test.js`. |
 
 ## Use
 
