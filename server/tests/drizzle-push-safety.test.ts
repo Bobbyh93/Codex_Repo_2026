@@ -32,6 +32,17 @@ import { resolve } from 'path';
  * four names shared/schema.ts owns, and listing it would break invariant 2.
  * Rule 1 is scoped to what the app actually loads, which is what push must know
  * about.
+ *
+ *   3. Every table a db/manual migration CREATEs is either defined in a
+ *      configured schema file or excluded in tablesFilter -- and never both.
+ *      Invariants 1 and 2 only see tables that some schema file declares, so
+ *      neither catches a table created by hand-written SQL and declared
+ *      nowhere: push proposes DROP TABLE for it with nothing to flag. That is
+ *      how the 14 compliance-layer tables of 0003 (147 requirement atoms, 481
+ *      topic mappings, 156 form fields) came to sit unprotected in the
+ *      database. "Never both" is the inverse hazard: a table that is defined
+ *      AND excluded is silently never synced by push, so the schema file and
+ *      the database drift with no error.
  */
 
 const repoRoot = resolve(__dirname, '../..');
@@ -53,6 +64,32 @@ function configuredSchemaFiles(): string[] {
 /** Table names a schema file declares, e.g. pgTable("review_topics", ...). */
 function tableNames(file: string): string[] {
   return [...stripComments(read(file)).matchAll(/pgTable\(\s*["'`]([^"'`]+)["'`]/g)].map((m) => m[1]);
+}
+
+/** Strips -- line comments so a commented-out CREATE TABLE never counts. */
+function stripSqlComments(source: string): string {
+  return source.replace(/^\s*--.*$/gm, '');
+}
+
+/** Tables CREATEd by the hand-applied db/manual migrations. */
+function migrationTables(): Map<string, string> {
+  const dir = 'db/manual';
+  const found = new Map<string, string>();
+  for (const file of readdirSync(resolve(repoRoot, dir)).filter((f) => f.endsWith('.sql')).sort()) {
+    const sql = stripSqlComments(read(`${dir}/${file}`));
+    for (const m of sql.matchAll(/CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?"?([A-Za-z_][A-Za-z0-9_]*)"?/gi)) {
+      if (!found.has(m[1])) found.set(m[1], `${dir}/${file}`);
+    }
+  }
+  return found;
+}
+
+/** Table names drizzle.config.ts excludes, i.e. tablesFilter entries starting "!". */
+function excludedTables(): string[] {
+  const config = stripComments(read('drizzle.config.ts'));
+  const block = config.match(/tablesFilter:\s*\[([\s\S]*?)\]/);
+  if (!block) throw new Error('drizzle.config.ts: no tablesFilter array found');
+  return [...block[1].matchAll(/["'`]!([^"'`]+)["'`]/g)].map((m) => m[1]);
 }
 
 const SHARED_SCHEMA_FILES = readdirSync(resolve(repoRoot, 'shared'))
@@ -113,5 +150,45 @@ describe('drizzle.config.ts covers the schema the app uses', () => {
       `drizzle-kit rejects a schema set defining a table twice, which breaks db:push:\n  ${duplicates.join('\n  ')}`,
     ).toEqual([]);
     expect(seen.size).toBeGreaterThan(50);
+  });
+});
+
+describe('tables created outside Drizzle are accounted for', () => {
+  it('parses the migrations and the filter non-vacuously', () => {
+    // Guard: the assertions below pass trivially if either parse finds nothing.
+    expect(migrationTables().size).toBeGreaterThan(0);
+    expect(excludedTables()).toContain('user_sessions');
+  });
+
+  it('defines or excludes every table a db/manual migration creates', () => {
+    const defined = new Set(configuredSchemaFiles().flatMap(tableNames));
+    const excluded = new Set(excludedTables());
+    const unprotected: string[] = [];
+
+    for (const [table, migration] of migrationTables()) {
+      if (defined.has(table) || excluded.has(table)) continue;
+      unprotected.push(`"${table}" created by ${migration}`);
+    }
+
+    expect(
+      unprotected,
+      'These tables exist in the database but are neither defined in a configured ' +
+        'schema file nor excluded in tablesFilter, so db:push proposes DROP TABLE ' +
+        `for them:\n  ${unprotected.join('\n  ')}\n` +
+        'Fix by adding a pgTable definition to a listed schema file, or a "!name" ' +
+        'entry to tablesFilter -- not both.',
+    ).toEqual([]);
+  });
+
+  it('never both defines and excludes the same table', () => {
+    const defined = new Set(configuredSchemaFiles().flatMap(tableNames));
+    const both = excludedTables().filter((t) => defined.has(t));
+
+    expect(
+      both,
+      'A table that is both defined in a configured schema file and excluded in ' +
+        'tablesFilter is silently never synced by push, so the schema file and the ' +
+        `database drift with no error:\n  ${both.join('\n  ')}`,
+    ).toEqual([]);
   });
 });

@@ -41,11 +41,40 @@ export default defineConfig({
     "./shared/simplified-schema.ts",
   ],
 
-  // user_sessions is the 10th orphan. It is created and owned by
-  // connect-pg-simple (`createTableIfMissing: true`, server/index.ts), not by
-  // Drizzle, so it must be excluded rather than defined -- otherwise push
-  // proposes dropping the live session table and logs everyone out.
-  tablesFilter: ["!user_sessions"],
+  // Tables the database has that Drizzle does NOT own. Each must be excluded
+  // rather than defined, or push proposes dropping it.
+  //
+  // user_sessions is created and owned by connect-pg-simple
+  // (`createTableIfMissing: true`, server/index.ts) -- dropping it logs
+  // everyone out.
+  //
+  // The 14 compliance-layer tables below are created and owned by
+  // db/manual/0003_curriculum_compliance_schema.sql: the California BRN/BVNPT
+  // requirement registry, the concept-to-topic crosswalk, instructional_blocks
+  // (the atomic delivery record), and the board form catalogue. They hold real
+  // reference data -- 147 cited requirement atoms, 481 topic mappings, 156 form
+  // fields -- and no server module imports them yet, so they are listed here
+  // instead of in a shared/ schema file. Move a table out of this list only in
+  // the same change that adds its pgTable definition to a configured schema
+  // file; doing one without the other re-arms the DROP TABLE hazard this
+  // filter exists to prevent.
+  tablesFilter: [
+    "!user_sessions",
+    "!program_frameworks",
+    "!program_requirements",
+    "!requirement_topic_map",
+    "!framework_crosswalk",
+    "!program_offerings",
+    "!instructional_blocks",
+    "!requirement_content_gaps",
+    "!evidence_citations",
+    "!curriculum_glossary",
+    "!form_definitions",
+    "!form_sections",
+    "!form_fields",
+    "!form_field_options",
+    "!form_submissions",
+  ],
 
   dialect: "postgresql",
   dbCredentials: {
