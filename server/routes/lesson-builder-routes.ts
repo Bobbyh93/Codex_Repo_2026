@@ -10282,7 +10282,16 @@ async function studentStudyPackPayload(sessionId: string) {
   };
 }
 
-async function generateLessonPackageFromData(data: z.infer<typeof generateSchema>, createdBy?: string) {
+/** A request the generator refuses before drafting; callers map it to its HTTP status. */
+export class LessonGenerationInputError extends Error {
+  constructor(message: string, readonly status = 400) {
+    super(message);
+    this.name = "LessonGenerationInputError";
+  }
+}
+
+/** The single lesson generation path, shared by /generate and /packages/:id/duplicate. */
+export async function generateLessonPackageFromData(data: z.infer<typeof generateSchema>, createdBy?: string) {
   let generationRunId: string | undefined;
   try {
     await ensureLessonBuilderTables();
@@ -10305,7 +10314,7 @@ async function generateLessonPackageFromData(data: z.infer<typeof generateSchema
         errorMessage: "At least one approved source is required",
         completedAt: new Date(),
       }).where(eq(lessonGenerationRuns.id, generationRunId));
-      throw new Error("At least one approved source is required");
+      throw new LessonGenerationInputError("At least one approved source is required");
     }
 
     const taxonomySnapshot = await buildTaxonomySnapshot(data.sourceIds);
@@ -13249,191 +13258,12 @@ export function registerLessonBuilderRoutes(app: Express) {
   });
 
   app.post("/api/admin/lesson-builder/generate", requireAdminSession, async (req: AdminAuthRequest, res: Response) => {
-    let generationRunId: string | undefined;
     try {
-      await ensureLessonBuilderTables();
       const data = generateSchema.parse(req.body);
-      const [generationRun] = await db.insert(lessonGenerationRuns).values({
-        status: "running",
-        generationMode: data.settings.generationMode,
-        topic: data.topic,
-        audience: data.audience,
-        sourceIds: data.sourceIds,
-        settings: data.settings,
-        createdBy: req.session.adminUser?.userId,
-      }).returning();
-      generationRunId = generationRun.id;
-
-      const sources = await getSourcesByIds(data.sourceIds);
-
-      if (sources.length === 0) {
-        await db.update(lessonGenerationRuns).set({
-          status: "failed",
-          errorMessage: "At least one approved source is required",
-          completedAt: new Date(),
-        }).where(eq(lessonGenerationRuns.id, generationRunId));
-        return res.status(400).json({ error: "At least one approved source is required" });
-      }
-
-      const taxonomySnapshot = await buildTaxonomySnapshot(data.sourceIds);
-      const evidence = await fetchEvidence(data.topic, sources);
-      const templateSlideDrafts = buildSlideDrafts(data.topic, data.audience, evidence, taxonomySnapshot, data.settings.slideCount);
-      const generation = await buildGenerationDrafts({
-        data,
-        sources,
-        taxonomySnapshot,
-        evidence,
-        templateSlideDrafts,
-      });
-      const slideDrafts = generation.slideDrafts;
-
-      const [pkg] = await db.insert(lessonPackages).values({
-        title: data.title,
-        topic: data.topic,
-        audience: data.audience,
-        status: "draft",
-        sourceIds: data.sourceIds,
-        taxonomySnapshot,
-        deckModel: {},
-        manifest: {},
-        qaSummary: {},
-        createdBy: req.session.adminUser?.userId,
-      }).returning();
-
-      const createdSlides = [];
-      for (const slide of slideDrafts) {
-        const [createdSlide] = await db.insert(lessonSlides).values({
-          packageId: pkg.id,
-          slideNumber: slide.slideNumber,
-          slideType: slide.slideType,
-          title: slide.title,
-          visibleContent: slide.visibleContent,
-          speakerNotes: slide.speakerNotes,
-          guidedNotes: slide.guidedNotes,
-          retrievalPrompt: slide.retrievalPrompt,
-          nclexCategory: slide.nclexCategory,
-          cjmStep: slide.cjmStep,
-          nursingProcess: slide.nursingProcess,
-          bloomLevel: slide.bloomLevel,
-        }).returning();
-        createdSlides.push({ createdSlide, evidence: slide.evidence });
-      }
-
-      const practiceSlide = createdSlides.find(({ createdSlide }) => createdSlide.slideType === "practice_item")?.createdSlide || createdSlides[0]?.createdSlide;
-      const generatedItem = generation.practiceItem;
-      const itemOptions = generatedItem?.options?.length ? generatedItem.options : [
-        { id: "A", text: "Collect another relevant assessment cue before acting." },
-        { id: "B", text: "Ignore the cue because it may be expected." },
-        { id: "C", text: "Delegate follow-up without reviewing the patient." },
-        { id: "D", text: "Document the finding at the end of the shift only." },
-      ];
-      const [item] = await db.insert(lessonItems).values({
-        packageId: pkg.id,
-        slideId: practiceSlide?.id,
-        itemType: generatedItem?.itemType || "multiple_choice",
-        stem: generatedItem?.stem || `A nurse is caring for a patient with a cue related to ${data.topic}. Which action best supports safe clinical judgment?`,
-        options: itemOptions,
-        correctAnswer: generatedItem?.correctAnswer || "A",
-        rationale: generatedItem?.rationale || `Collecting a relevant assessment cue keeps the nurse aligned with the clinical judgment process and supports safe prioritization for ${data.topic}.`,
-        tags: {
-          nclexCategory: slideDrafts[0]?.nclexCategory,
-          cjmStep: "Analyze Cues",
-          nursingProcess: slideDrafts[0]?.nursingProcess,
-          bloomLevel: slideDrafts[0]?.bloomLevel,
-        },
-        difficulty: data.settings.difficulty,
-      }).returning();
-
-      for (const { createdSlide, evidence: citationEvidence } of createdSlides) {
-        await db.insert(lessonCitations).values({
-          packageId: pkg.id,
-          slideId: createdSlide.id,
-          sourceId: citationEvidence.sourceId,
-          documentId: citationEvidence.documentId,
-          chunkId: citationEvidence.chunkId,
-          citationLabel: citationEvidence.citationLabel,
-          pageStart: citationEvidence.pageStart,
-          pageEnd: citationEvidence.pageEnd,
-          excerpt: textSnippet(citationEvidence.text, 320),
-          relevanceScore: "0.8500",
-        });
-      }
-
-      if (practiceSlide) {
-        const itemEvidence = generatedItem?.evidence || evidence[0];
-        await db.insert(lessonCitations).values({
-          packageId: pkg.id,
-          slideId: practiceSlide.id,
-          itemId: item.id,
-          sourceId: itemEvidence.sourceId,
-          documentId: itemEvidence.documentId,
-          chunkId: itemEvidence.chunkId,
-          citationLabel: itemEvidence.citationLabel,
-          pageStart: itemEvidence.pageStart,
-          pageEnd: itemEvidence.pageEnd,
-          excerpt: textSnippet(itemEvidence.text, 320),
-          relevanceScore: "0.8500",
-        });
-      }
-
-      const deckModel = {
-        ...buildDeckModel(pkg.id, data.title, data.topic, data.audience, slideDrafts, taxonomySnapshot),
-        generation: generation.metadata,
-        supervisorNotes: generation.supervisorNotes,
-        risks: generation.risks,
-      };
-      const manifest = {
-        ...buildManifest(pkg.id, data.title, data.topic, data.sourceIds),
-        generation: generation.metadata,
-        supervisorNotes: generation.supervisorNotes,
-        risks: generation.risks,
-      };
-      await db.update(lessonPackages).set({
-        deckModel,
-        manifest,
-        updatedAt: new Date(),
-      }).where(eq(lessonPackages.id, pkg.id));
-
-      const qa = await runQaForPackage(pkg.id);
-      const validation = await validateLessonContract(pkg.id, "harrity");
-      await db.update(lessonGenerationRuns).set({
-        packageId: pkg.id,
-        status: "completed",
-        evidenceSnapshot: {
-          topic: data.topic,
-          refs: evidenceRefs(evidence),
-        },
-        taxonomySnapshot,
-        validationSummary: {
-          qa: qa.qaSummary,
-          contract: validation.validationSummary,
-        },
-        completedAt: new Date(),
-      }).where(eq(lessonGenerationRuns.id, generationRunId));
-
-      const bundle = await findPackageBundle(pkg.id);
-
-      res.json({
-        package: bundle?.package,
-        slides: bundle?.slides,
-        items: bundle?.items,
-        citations: bundle?.citations,
-        qa,
-        validation,
-        generationRun: { id: generationRunId, status: "completed" },
-        generation: generation.metadata,
-      });
+      res.json(await generateLessonPackageFromData(data, req.session.adminUser?.userId));
     } catch (error) {
-      if (generationRunId) {
-        try {
-          await db.update(lessonGenerationRuns).set({
-            status: "failed",
-            errorMessage: error instanceof Error ? error.message : "Lesson generation failed",
-            completedAt: new Date(),
-          }).where(eq(lessonGenerationRuns.id, generationRunId));
-        } catch {
-          // Preserve the original generation error for the response.
-        }
+      if (error instanceof LessonGenerationInputError) {
+        return res.status(error.status).json({ error: error.message });
       }
       if (error instanceof z.ZodError) {
         return res.status(400).json({ error: "Invalid lesson generation request", details: error.errors });
