@@ -98,3 +98,7 @@ A subsystem review with adversarial verification, plus the Codex review on PR #3
 - **Deploy:**
   - Physical barcode registrations live in `config.sqlite`, which the new-group reset keeps and `backup.sh` copies. Both databases run in WAL mode, so a power cut during a registration's COMMIT can keep the registration without its timeline entry, or the reverse. This is accepted: the registration table, not the entry, is what scanning uses.
   - `install.sh` restarts the service on update. The deploy checks use https.
+
+## Checkpoint 9 (2026-10-17): hosted test copy
+
+`TRUST_PROXY=1` makes the server honour `X-Forwarded-Proto` behind a TLS-terminating proxy, so the same-origin check accepts the browser's https Origin. With `COOKIE_SECURE=1` this runs the unchanged app as a web test copy (Render, from `main`) for reviewers without the Pi. The Pi, which terminates TLS itself, does not set it.

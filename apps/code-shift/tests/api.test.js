@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import { mkdtempSync, mkdirSync, readdirSync, renameSync } from 'node:fs';
 import { connect } from 'node:net';
+import { request } from 'node:http';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
@@ -243,4 +244,20 @@ test('medication logic: NTG dose series, provider-ordered meds, held doses, med-
     assert.equal((await instructor('events/release',{eventId:'ev-improving',submissionId:'ev-nsr'})).status,201); v=await vit(); assert.deepEqual([v.rhythm,v.hr,v.from_hr,v.transition_seconds],['nsr',88,100,120]); assert.ok(v.from_sbp>140);
     assert.equal((await instructor('vitals',{hr:70,rr:16,spo2:97,sbp:120,dbp:78,temp:37,rhythm:'nsr',transitionSeconds:60,submissionId:'v-nsr-70'})).status,201); assert.ok((await vit()).from_hr>=99);
     assert.equal((await instructor('vitals',{hr:130,rr:16,spo2:97,sbp:120,dbp:78,temp:37,rhythm:'sinus_tach',transitionSeconds:60,submissionId:'v-st-130'})).status,201); assert.equal((await vit()).from_hr,101); }
+});
+
+test('behind a TLS-terminating proxy, TRUST_PROXY=1 keeps the same-origin check working', async t => {
+  const data = mkdtempSync(path.join(tmpdir(), 'code-shift-proxy-')), port = 44331;
+  const start = env => { const child = spawn(process.execPath, ['server/index.js'], { env: { ...process.env, DATA_DIR: data, PORT: String(port), INSTRUCTOR_PASSWORD: 'test-only-key', ...env }, stdio: 'pipe' }); t.after(() => new Promise(resolve => { if (child.exitCode !== null || child.signalCode !== null) return resolve(); child.once('exit',resolve); child.kill(); })); return new Promise((resolve,reject) => { child.stdout.once('data',() => resolve(child)); child.once('error',reject); child.once('exit', code => reject(new Error(`Server exited ${code}`))); }); };
+  // node:http, not fetch: fetch will not send a custom Host header, and the check compares Origin against Host
+  const login = headers => new Promise((resolve, reject) => { const req = request({ host: '127.0.0.1', port, path: '/api/login', method: 'POST', headers: { 'content-type': 'application/json', ...headers } }, res => { res.resume(); res.on('end', () => resolve(res.statusCode)); }); req.on('error', reject); req.end(JSON.stringify({ password: 'test-only-key' })); });
+  // the proxy forwards Host and X-Forwarded-Proto; the browser sends an https Origin
+  const proxied = { host: 'code-shift.example', origin: 'https://code-shift.example', 'x-forwarded-proto': 'https' };
+  let child = await start({});
+  assert.equal(await login(proxied), 403);                                   // default: the https Origin does not match http
+  await new Promise(resolve => { child.once('exit', resolve); child.kill(); });
+  child = await start({ TRUST_PROXY: '1' });
+  assert.equal(await login(proxied), 200);
+  assert.equal(await login({ ...proxied, origin: 'https://evil.example' }), 403);   // a foreign Origin is still refused
+  assert.equal(await login({ host: 'code-shift.example', origin: 'http://code-shift.example' }), 200);   // direct http, no proxy header
 });
