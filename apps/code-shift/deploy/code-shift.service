@@ -1,0 +1,28 @@
+[Unit]
+Description=Code Shift simulation workspace (offline, single-group)
+After=network.target
+
+[Service]
+Type=simple
+User=code-shift
+Group=code-shift
+WorkingDirectory=/opt/code-shift
+Environment=NODE_ENV=production
+Environment=HOST=0.0.0.0
+Environment=PORT=4317
+Environment=HTTP_HELPER_PORT=8080
+Environment=DATA_DIR=/var/lib/code-shift
+Environment=TLS_CERT=/var/lib/code-shift/tls/code-shift.crt
+Environment=TLS_KEY=/var/lib/code-shift/tls/code-shift.key
+EnvironmentFile=-/etc/code-shift.env
+ExecStart=/usr/bin/node server/index.js
+Restart=always
+RestartSec=2
+ProtectSystem=strict
+ReadWritePaths=/var/lib/code-shift
+ProtectHome=true
+PrivateTmp=true
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target
