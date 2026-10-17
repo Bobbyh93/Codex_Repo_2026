@@ -4,6 +4,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { create, CATALOG, BY_ID } from '../src/ecg/ecg-rhythms.js';
 import { RHYTHMS, RHYTHM_SPECS, sourceOptions, bandLabel } from '../src/ecg/rhythms.js';
+import { scenario } from '../server/scenario.js';
 
 const run = (src, secs) => { for (let t = 0; t <= secs; t += 1 / 300) src.sample(t); };
 
@@ -56,6 +57,11 @@ test('sourceOptions runs the trace at the instructor HR', () => {
   assert.equal(create('chb', { ...sourceOptions('avb3', 32) }).hr(0), 32);
 });
 
+test('a 6-second count of the trace averages the readout HR for pauses, early beats and flutter', () => {
+  const counted = (id, hr) => { const o = sourceOptions(id, hr), s = create(o.rhythm, o); let sum = 0, n = 0; for (let t = 0, w = 12; w <= 132; t += 1 / 300) { s.sample(t); if (t >= w) { sum += s.hr(t); n++; w += 6; } } return sum / n; };
+  for (const [id, hr] of [['sinus_arrest', 80], ['sinus_arrest', 120], ['sinus_block', 80], ['nsr_pac', 80], ['nsr_pjc', 120], ['nsr_pvc', 80], ['aflutter', 90], ['aflutter', 120], ['aflutter', 164]]) { const m = counted(id, hr); assert.ok(Math.abs(m - hr) <= 4, `${RHYTHMS[id]} at HR ${hr} draws ${m.toFixed(1)}/min`); }
+});
+
 test('monitor state carries automatic ectopy across getState/setState', async () => {
   globalThis.window = { devicePixelRatio: 1 };
   globalThis.requestAnimationFrame = () => 1; globalThis.cancelAnimationFrame = () => {};
@@ -71,4 +77,8 @@ test('monitor state carries automatic ectopy across getState/setState', async ()
   assert.deepEqual(b.getState(), state);
   assert.equal(state.extra.ectopy.every, 6); assert.equal(b.getRate(), 120);
   a.destroy(); b.destroy();
+});
+
+test('scenario monitor presets and event vitals sit in their rhythm\'s rate band', () => {
+  for (const v of [...scenario.facilitator.monitorPresets.map(p => p.values), ...scenario.events.filter(e => e.vitals).map(e => e.vitals)]) { const [lo, hi] = RHYTHM_SPECS[v.rhythm].band; assert.ok(v.hr >= lo && v.hr <= hi, `${RHYTHMS[v.rhythm]} at HR ${v.hr} is outside ${lo}-${hi}`); }
 });

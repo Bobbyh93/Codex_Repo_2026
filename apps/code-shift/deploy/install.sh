@@ -19,6 +19,8 @@ node --version
 echo "== Service account and directories"
 id -u code-shift >/dev/null 2>&1 || useradd --system --home "$APP_DIR" --shell /usr/sbin/nologin code-shift
 mkdir -p "$APP_DIR" "$DATA_DIR"
+# An update replaces the code and dist under a running server: stop it first (no-op on a first install).
+systemctl stop code-shift 2>/dev/null || true
 rsync -a --delete --exclude node_modules --exclude data --exclude test-results --exclude playwright-report "$SRC_DIR"/ "$APP_DIR"/
 
 echo "== Dependencies and production build"
@@ -42,7 +44,8 @@ chown -R code-shift:code-shift "$DATA_DIR"
 echo "== systemd service"
 install -m 644 deploy/code-shift.service /etc/systemd/system/code-shift.service
 systemctl daemon-reload
-systemctl enable --now code-shift
+systemctl enable code-shift
+systemctl restart code-shift
 sleep 2
 systemctl --no-pager --lines=6 status code-shift || true
 
@@ -54,4 +57,5 @@ echo "  Room monitor display:   https://${IP:-<pi-ip>}:4317/display   (or run de
 echo "  Printable labels:       https://${IP:-<pi-ip>}:4317/labels   (sign in as instructor first)"
 echo "  Instructor key:         sudo cat $DATA_DIR/instructor-key.txt"
 echo "  Logs:                   journalctl -u code-shift -f"
-echo "  Evidence database:      $DATA_DIR/code-shift.sqlite (back this up after each session)"
+echo "  Evidence database:      $DATA_DIR/code-shift.sqlite (back this up after each session: sudo bash deploy/backup.sh)"
+echo "  Barcode registrations:  $DATA_DIR/config.sqlite (kept across groups; backup.sh copies it too)"

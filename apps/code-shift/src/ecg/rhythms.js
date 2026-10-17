@@ -8,7 +8,7 @@
  */
 import { BY_ID } from './ecg-rhythms.js';
 
-const FLUTTER_ATRIAL_RATE = 300;   // the atrial train; the instructor's HR sets the conduction ratio
+const FLUTTER_ATRIAL_RATE = 300;   // the atrial train is near this; the instructor's HR sets the conduction ratio
 
 // [id, display name, criteria row, automatic ectopy]
 export const RHYTHM_GROUPS = [
@@ -72,15 +72,19 @@ export function bandLabel(id) {
 
 /* Options for ecg-monitor.setRhythm / ecg-rhythms.create so the trace runs at the
    instructor's heart rate (the monitor's HR readout): the source rate is the atrial
-   rate for flutter and second degree block, so it is derived from the conducted rate. */
+   rate for flutter and second degree block, so it is derived from the conducted rate;
+   rhythms with pauses or early beats get the source rate whose mean QRS rate is the HR. */
 export function sourceOptions(id, hr) {
   const s = RHYTHM_SPECS[id] || RHYTHM_SPECS.nsr;
   const bpm = Math.max(15, Math.min(300, Math.round(Number(hr) || 0) || 60));
   const o = { rhythm: s.base, rate: bpm, clamp: false };
   if (s.ectopy) o.ectopy = s.ectopy;
-  if (s.base === 'aflutter') { o.rate = FLUTTER_ATRIAL_RATE; o.ratio = Math.max(2, Math.min(6, Math.round(FLUTTER_ATRIAL_RATE / bpm))); }
+  if (s.base === 'aflutter') { o.ratio = Math.max(2, Math.min(6, Math.round(FLUTTER_ATRIAL_RATE / bpm))); o.rate = bpm * o.ratio; o.clamp = true; }   // atrial train HR × ratio, kept in the flutter band (250–350)
   else if (s.base === 'wenck') o.rate = Math.round(bpm * 4 / 3);     // 4:3 conduction
   else if (s.base === 'mobitz2') o.rate = Math.round(bpm * 3 / 2);   // 3:2 conduction
+  else if (s.base === 'sarrest') o.rate = Math.round(bpm * 6.6 / 5); // 5 beats, then a 2.6 R-R pause: 5 beats per 6.6 R-R
+  else if (s.base === 'sblock') o.rate = Math.round(bpm * 7 / 5);    // 5 beats, then a 3 R-R pause: 5 beats per 7 R-R
+  if (s.ectopy?.kind === 'pac' || s.ectopy?.kind === 'pjc') o.rate = Math.round(bpm * (s.ectopy.every - 0.4) / s.ectopy.every);   // the early beat resets the sinus node: `every` beats per every − 0.4 R-R
   return o;
 }
 

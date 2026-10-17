@@ -15,8 +15,9 @@ export function effective(v, now) {
   if (t < 1) for (const [k] of VITAL_FIELDS) { const x = v['from_' + k] + (v[k] - v['from_' + k]) * t; out[k] = k === 'temp' ? Math.round(x * 10) / 10 : Math.round(x); }
   return out;
 }
-function useServerClock(serverNow) {
-  const offset = useRef(0);
+// Pi time: the device clock plus the offset to the snapshot's server_now (phones and the offline Pi can disagree).
+export function useServerClock(serverNow) {
+  const offset = useRef(serverNow ? Date.parse(serverNow) - Date.now() : 0);
   useEffect(() => { if (serverNow) offset.current = Date.parse(serverNow) - Date.now(); }, [serverNow]);
   const [, tick] = useState(0);
   useEffect(() => { const t = setInterval(() => tick(n => n + 1), 500); return () => clearInterval(t); }, []);
@@ -77,13 +78,13 @@ export function Monitor({ state, refresh, connected }) {
   const panel = useRef(null);
   return <><div className="page-heading heading-row"><div><h1>Patient monitor</h1><p>Release scenario events and set what the group sees on the room display. Every change is recorded.</p></div><div className="preset-row"><a className="secondary link-button" href="/display" target="_blank" rel="noopener">Open room display <Icon name="arrow"/></a><button className="secondary" onClick={() => panel.current?.requestFullscreen?.()}>Fullscreen here</button></div></div>
     <div className="monitor-grid"><div className="monitor-panel" ref={panel}><MonitorDisplay vitals={vitals} rhythms={rhythms} now={now}/></div>
-    <aside className="monitor-side"><Events state={state} refresh={refresh} connected={connected}/><Controls vitals={vitals} rhythms={rhythms} presets={scenario.facilitator?.monitorPresets || []} session={session} connected={connected} refresh={refresh}/></aside></div></>;
+    <aside className="monitor-side"><Events state={state} refresh={refresh} connected={connected} now={now}/><Controls vitals={vitals} rhythms={rhythms} presets={scenario.facilitator?.monitorPresets || []} session={session} connected={connected} refresh={refresh}/></aside></div></>;
 }
 
-function Events({ state, refresh, connected }) {
+function Events({ state, refresh, connected, now }) {
   const { scenario, session, released = [] } = state, [busy, setBusy] = useState(''), [msg, setMsg] = useState(''), [open, setOpen] = useState(null);
   const releasedAt = title => released.filter(e => e.text.startsWith(title + ' \u00B7 '));
-  const elapsed = Math.round((Date.now() - Date.parse(session.started_at)) / 60000);
+  const elapsed = Math.round((now - Date.parse(session.started_at)) / 60000);
   async function release(ev) { setBusy(ev.id); setMsg(''); try { await api('events/release', { eventId: ev.id, submissionId: submissionId() }); setOpen(null); refresh(); } catch (e) { setMsg(e.message); } finally { setBusy(''); } }
   if (!scenario.events?.length) return null;
   return <section className="panel events"><div className="section-heading"><h3>Scenario events</h3><small>{elapsed} min elapsed</small></div><p className="muted">Release in order as the team progresses. Students see the result on the chart; the cue is for you. Events with vitals change the monitor.</p>
@@ -93,10 +94,11 @@ function Events({ state, refresh, connected }) {
     {msg && <p className="error" role="alert">{msg}</p>}
   </section>;
 }
+const formFrom = v => v ? { hr: v.hr, rr: v.rr, spo2: v.spo2, sbp: v.sbp, dbp: v.dbp, temp: v.temp, rhythm: v.rhythm, transitionSeconds: 0, monitorOn: !!v.monitor_on } : DEFAULTS;
 function Controls({ vitals, rhythms, presets, session, connected, refresh }) {
-  const seed = vitals ? { hr: vitals.hr, rr: vitals.rr, spo2: vitals.spo2, sbp: vitals.sbp, dbp: vitals.dbp, temp: vitals.temp, rhythm: vitals.rhythm, transitionSeconds: 0, monitorOn: !!vitals.monitor_on } : DEFAULTS;
-  const [form, setForm] = useState(seed), [busy, setBusy] = useState(false), [msg, setMsg] = useState('');
+  const [form, setForm] = useState(() => formFrom(vitals)), [busy, setBusy] = useState(false), [msg, setMsg] = useState('');
   const pending = useRef(null);
+  useEffect(() => { if (!vitals) return; if (pending.current && vitals.submission_id === pending.current.submissionId) { pending.current = null; setMsg('Monitor updated.'); } setForm(formFrom(vitals)); }, [vitals?.id]);   // a new monitor row (event release, another device) resyncs the form, so the next Apply does not post stale values; our own lost-response row counts as applied
   const set = (k, value) => setForm(f => ({ ...f, [k]: value }));
   async function apply(e) {
     e.preventDefault(); setBusy(true); setMsg('');

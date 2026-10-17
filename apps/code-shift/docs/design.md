@@ -12,7 +12,7 @@ The engineering fixture is replaced by `server/scenario.js`: the N115C CAD / Che
 
 ## Checkpoint 3 (2026-10-14): patient monitor
 
-Instructor-controlled bedside monitor, Laerdal-style. `POST /api/vitals` (instructor only) stores HR, RR, SpO2, NIBP, temperature, rhythm, monitor on/off, and an optional trend time; the row also stores the "from" values captured server-side so every client interpolates the same trend. Rows are append-only (`vitals` table, user_version 2) and each change writes a public VITALS_SET evidence entry. Students get a "Document vitals" action (VITALS_RECORDED): the server composes the text from the values currently displayed, ignores any client text, and links the entry to the instructor's monitor change. Monitor page shows synthesized ECG and pleth traces (illustrative, not physiologic), colored readouts with alarm highlighting, and a wall-display fullscreen mode. Scenario presets live in the instructor-only facilitator block; the packet gives rhythm and lab events but no numeric vitals, so preset numbers are suggested teaching values for faculty to confirm. Clock skew between phones and the Pi is handled with a server-time offset. Tests cover role enforcement, validation, idempotent retry, trend capture, monitor-off behavior, forged-text rejection, and student visibility; the browser test applies a preset as instructor and verifies a student sees it and can document it.
+Instructor-controlled bedside monitor, Laerdal-style. `POST /api/vitals` (instructor only) stores HR, RR, SpO2, NIBP, temperature, rhythm, monitor on/off, and an optional trend time; the row also stores the "from" values captured server-side so every client interpolates the same trend. A rhythm change shows at once, so its HR trend starts inside the new rhythm's rate band (SVT 164 converting to NSR trends from 100). Rows are append-only (`vitals` table, user_version 2) and each change writes a public VITALS_SET evidence entry. Students get a "Document vitals" action (VITALS_RECORDED): the server composes the text from the values currently displayed, ignores any client text, and links the entry to the instructor's monitor change. Monitor page shows synthesized ECG and pleth traces (illustrative, not physiologic), colored readouts with alarm highlighting, and a wall-display fullscreen mode. Scenario presets live in the instructor-only facilitator block; the packet gives rhythm and lab events but no numeric vitals, so preset numbers are suggested teaching values for faculty to confirm. Clock skew between phones and the Pi is handled with a server-time offset. Tests cover role enforcement, validation, idempotent retry, trend capture, monitor-off behavior, forged-text rejection, and student visibility; the browser test applies a preset as instructor and verifies a student sees it and can document it.
 
 
 ## Checkpoint 4 (2026-10-14): eMAR with barcode verification, room display, provider messaging
@@ -73,3 +73,28 @@ Checkpoint 17 (2026-10-15): pilot release candidate. Voice and speech interactio
 ## Checkpoint 7 (2026-10-16): criteria-based monitor traces
 
 The monitor's ECG and pleth traces are generated from rhythm criteria (`src/ecg/`, see `ecg-monitor.md`) and swept like a bedside monitor: 25 mm/s, 6 s across the canvas, beam and erase bar. The rhythm list grows from 9 to 27 instructor-facing rhythms covering the LLUMC Quick Look table (BART Table 2014) by pacing node, with the rate band shown in the select; one table (`src/ecg/rhythms.js`) serves the server's validation and display names and the client's select and trace. Existing ids, scenario events, presets, stored vitals and the VITALS_SET evidence text are unchanged. The trace runs at the HR on the readout (the instructor's number, trending as before); morphology, ectopy and conduction pattern come from the criteria row, so a PVC shows its compensatory pause and a weaker pulse wave, flutter conducts at the ratio implied by the HR, and V-Fib, asystole and torsades show no pulse wave. Vite's PostCSS lookup is pinned inline so the app builds inside the Codex_Repo_2026 tree.
+
+## Checkpoint 8 (2026-10-17): pre-release review fixes
+
+A subsystem review with adversarial verification, plus the Codex review on PR #39, confirmed defects that are fixed here:
+- **Room stays up:** a websocket upgrade whose Origin header is not a URL, or a malformed frame, can no longer crash the server.
+- **Roles:** an instructor device that signed in before the session existed now resolves to the session's instructor. Task Done and order acknowledgement are student-only.
+- **Ended sessions:** order acknowledgement and provider replies are refused after the session ends. A second provider reply to the same call is refused.
+- **What students receive:**
+  - no scenario events and no scenario task list (the worklist delivers created tasks)
+  - SBAR situations that name an event's findings (`afterEvent`) only once that event is released
+  - no raw barcode values: BARCODE_REGISTERED is an instructor-only entry, and the MED_BLOCKED text names what a code resolved to, not the code itself
+- **MAR:**
+  - NTG MAX_DOSES counts the current dose series.
+  - Provider-ordered morphine is 2 mg IV push once. The heparin reply no longer activates SQ heparin.
+  - A held or refused dose closes that dose.
+  - STAT and provider-activated medications appear on the worklist. A conditional STAT order, such as the NS bolus for SBP below 100, does not.
+  - Reassessment tasks are created after each dose, not only the first.
+- **Monitor:**
+  - The controls resync to the live row.
+  - A rhythm change trends HR from inside the new rhythm's band.
+  - The trace rate matches the readout for sinus arrest/block, ectopy and flutter. Flutter HR is limited to 42-175, its conductible range.
+  - Device-clock views use the server offset.
+- **Deploy:**
+  - Physical barcode registrations live in `config.sqlite`, which the new-group reset keeps and `backup.sh` copies. Both databases run in WAL mode, so a power cut during a registration's COMMIT can keep the registration without its timeline entry, or the reverse. This is accepted: the registration table, not the entry, is what scanning uses.
+  - `install.sh` restarts the service on update. The deploy checks use https.

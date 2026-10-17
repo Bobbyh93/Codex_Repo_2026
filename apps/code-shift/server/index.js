@@ -10,7 +10,7 @@ import { fileURLToPath } from 'node:url';
 import { WebSocketServer } from 'ws';
 import { scenario, studentView } from './scenario.js';
 import { aiReply, aiConfigured } from './patientBrain.js';
-import { RHYTHMS } from '../src/ecg/rhythms.js';
+import { RHYTHMS, RHYTHM_SPECS, bandLabel } from '../src/ecg/rhythms.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const dataDir = process.env.DATA_DIR || path.join(root, 'data');
@@ -20,6 +20,8 @@ if (!process.env.INSTRUCTOR_PASSWORD && !existsSync(credentialFile)) writeFileSy
 const password = process.env.INSTRUCTOR_PASSWORD || readFileSync(credentialFile, 'utf8').trim();
 const salt = randomBytes(16), passwordHash = scryptSync(password, salt, 32);
 const db = new DatabaseSync(path.join(dataDir, 'code-shift.sqlite'));
+// Physical barcode registrations are device configuration: config.sqlite keeps them when a new group moves code-shift.sqlite* aside.
+db.prepare('ATTACH DATABASE ? AS config').run(path.join(dataDir, 'config.sqlite'));
 db.exec(`PRAGMA journal_mode=WAL; PRAGMA foreign_keys=ON;
 CREATE TABLE IF NOT EXISTS sessions(id TEXT PRIMARY KEY, group_name TEXT NOT NULL, status TEXT NOT NULL, started_at TEXT NOT NULL, scenario_id TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS actors(id TEXT PRIMARY KEY, session_id TEXT NOT NULL REFERENCES sessions(id), name TEXT NOT NULL, role TEXT NOT NULL);
@@ -33,7 +35,7 @@ CREATE TRIGGER IF NOT EXISTS vitals_immutable_update BEFORE UPDATE ON vitals BEG
 CREATE TRIGGER IF NOT EXISTS vitals_immutable_delete BEFORE DELETE ON vitals BEGIN SELECT RAISE(ABORT, 'Evidence is append-only'); END;
 CREATE TRIGGER IF NOT EXISTS immutable_update BEFORE UPDATE ON entries BEGIN SELECT RAISE(ABORT, 'Evidence is append-only'); END;
 CREATE TRIGGER IF NOT EXISTS immutable_delete BEFORE DELETE ON entries BEGIN SELECT RAISE(ABORT, 'Evidence is append-only'); END;
-CREATE TABLE IF NOT EXISTS barcode_aliases(id INTEGER PRIMARY KEY AUTOINCREMENT, code TEXT NOT NULL UNIQUE, target_type TEXT NOT NULL CHECK(target_type IN ('patient','med')), target_id TEXT NOT NULL, label TEXT, registered_by TEXT, registered_at TEXT NOT NULL, active INTEGER NOT NULL DEFAULT 1);
+CREATE TABLE IF NOT EXISTS config.barcode_aliases(id INTEGER PRIMARY KEY AUTOINCREMENT, code TEXT NOT NULL UNIQUE, target_type TEXT NOT NULL CHECK(target_type IN ('patient','med')), target_id TEXT NOT NULL, label TEXT, registered_by TEXT, registered_at TEXT NOT NULL, active INTEGER NOT NULL DEFAULT 1);
 CREATE TABLE IF NOT EXISTS med_scans(id INTEGER PRIMARY KEY AUTOINCREMENT, session_id TEXT NOT NULL REFERENCES sessions(id), actor_id TEXT NOT NULL REFERENCES actors(id), attempt_id TEXT NOT NULL, med_id TEXT NOT NULL, kind TEXT NOT NULL CHECK(kind IN ('patient','med')), code TEXT NOT NULL, format TEXT, source TEXT NOT NULL CHECK(source IN ('camera','manual')), matched INTEGER NOT NULL, resolved TEXT, scanned_at TEXT NOT NULL, entry_id INTEGER REFERENCES entries(id));
 CREATE TRIGGER IF NOT EXISTS scans_immutable_update BEFORE UPDATE ON med_scans BEGIN SELECT RAISE(ABORT, 'Evidence is append-only'); END;
 CREATE TRIGGER IF NOT EXISTS scans_immutable_delete BEFORE DELETE ON med_scans BEGIN SELECT RAISE(ABORT, 'Evidence is append-only'); END;
@@ -45,6 +47,8 @@ CREATE TABLE IF NOT EXISTS tasks(id INTEGER PRIMARY KEY AUTOINCREMENT, session_i
 PRAGMA user_version=8;`);
 for (const [table, column, ddl] of [['sessions', 'scan_required', "INTEGER NOT NULL DEFAULT 1"], ['med_events', 'patient_scanned_at', 'TEXT'], ['med_events', 'med_scanned_at', 'TEXT'], ['med_events', 'scan_order', 'TEXT'], ['med_events', 'attempt_id', 'TEXT'], ['med_events', 'patient_match', 'INTEGER'], ['med_events', 'alerts', 'TEXT'], ['med_events', 'override_reason', 'TEXT'], ['med_events', 'indication', 'TEXT'], ['med_events', 'indication_value', 'TEXT']]) if (!db.prepare(`SELECT 1 FROM pragma_table_info('${table}') WHERE name='${column}'`).get()) db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${ddl}`);
 if (!db.prepare("SELECT 1 FROM pragma_table_info('sessions') WHERE name='active_meds'").get()) db.exec("ALTER TABLE sessions ADD COLUMN active_meds TEXT NOT NULL DEFAULT '[]'");
+// Registrations made while the table lived in code-shift.sqlite are copied over once.
+if (db.prepare("SELECT 1 FROM main.sqlite_master WHERE type='table' AND name='barcode_aliases'").get() && !db.prepare('SELECT 1 FROM config.barcode_aliases').get()) db.exec('INSERT INTO config.barcode_aliases SELECT * FROM main.barcode_aliases');
 const app = express();
 app.disable('x-powered-by');
 app.use(express.json({ limit: '20kb' }));
@@ -63,11 +67,13 @@ const getToken = req => (req.headers.cookie || '').split(';').map(s => s.trim())
 function identity(req) {
   const row = db.prepare('SELECT * FROM tokens WHERE token=? AND expires_at>?').get(getToken(req) || '', Date.now());
   if (!row) return null;
-  if (!row.actor_id) return { role: 'instructor', id: null, name: 'Instructor' };
+  // An instructor who signed in before the session existed acts as that session's instructor once it does.
+  if (!row.actor_id) { const s = latest(); return (s && db.prepare("SELECT * FROM actors WHERE session_id=? AND role='instructor'").get(s.id)) || { role: 'instructor', id: null, name: 'Instructor' }; }
   return db.prepare('SELECT * FROM actors WHERE id=?').get(row.actor_id);
 }
 function auth(req, res, next) { req.actor = identity(req); if (!req.actor) return res.status(401).json({ error: 'Join or sign in to continue.' }); next(); }
 function instructor(req, res, next) { if (req.actor.role !== 'instructor') return res.status(403).json({ error: 'Instructor access required.' }); next(); }
+function student(req, res, next) { if (req.actor.role !== 'student') return res.status(403).json({ error: 'Student access required; instructors confirm or flag.' }); next(); }
 function cookie(res, actorId) { const token = randomBytes(32).toString('hex'); db.prepare('INSERT INTO tokens VALUES(?,?,?)').run(token, actorId, Date.now() + 12 * 3600000); res.cookie('cs_auth', token, { httpOnly: true, sameSite: 'strict', secure: !!tls || process.env.COOKIE_SECURE === '1', maxAge: 12 * 3600000 }); }
 const latest = () => db.prepare('SELECT * FROM sessions ORDER BY rowid DESC LIMIT 1').get();
 const roster = sid => db.prepare("SELECT id,name FROM actors WHERE session_id=? AND role='student'").all(sid);
@@ -81,20 +87,29 @@ function effectiveVitals(v, now = Date.now()) {
   if (t < 1) for (const k of VITAL_KEYS) { const x = v['from_' + k] + (v[k] - v['from_' + k]) * t; out[k] = k === 'temp' ? Math.round(x * 10) / 10 : Math.round(x); }
   return out;
 }
+// Where a new monitor setting trends from. A rhythm change shows at once, so its HR trend starts inside the new rhythm's rate band
+// (SVT 164 converting to NSR trends from 100, not 164). Rhythms with no band, or an atrial one (flutter, 2nd degree blocks), start at the new HR.
+function trendFrom(sid, values, rhythm) {
+  const from = effectiveVitals(currentVitals(sid)) || values; if (from.rhythm === rhythm) return from;
+  const [lo, hi] = RHYTHM_SPECS[rhythm].band && !bandLabel(rhythm).startsWith('atrial') ? RHYTHM_SPECS[rhythm].band : [values.hr, values.hr];
+  return { ...from, hr: Math.max(Math.min(lo, values.hr), Math.min(Math.max(hi, values.hr), from.hr)) };
+}
 const medById = id => scenario.medications.find(m => m.id === id);
 const activeMedIds = session => { let extra = []; try { extra = JSON.parse(session.active_meds || '[]'); } catch {} return scenario.medications.filter(m => m.kind !== 'assignable' || extra.includes(m.id)).map(m => m.id); };
 const medLabel = m => `${m.name} ${m.dose} ${m.route}`;
 const normalizeCode = c => String(c ?? '').trim().toUpperCase().replace(/\s+/g, '');
-const aliases = () => db.prepare('SELECT * FROM barcode_aliases WHERE active=1 ORDER BY id').all();
+const aliases = () => db.prepare('SELECT * FROM config.barcode_aliases WHERE active=1 ORDER BY id').all();
 function resolveCode(raw) {
   const code = normalizeCode(raw); if (!code) return null;
   if (code === normalizeCode(scenario.patient.wristband)) return { type: 'patient', code, source: 'scenario' };
   for (const m of scenario.medications) if ([m.barcode, ...(m.barcodes || [])].some(b => normalizeCode(b) === code)) return { type: 'med', med: m, code, source: 'scenario' };
-  const a = db.prepare('SELECT * FROM barcode_aliases WHERE code=? AND active=1').get(code);
+  const a = db.prepare('SELECT * FROM config.barcode_aliases WHERE code=? AND active=1').get(code);
   if (a) return a.target_type === 'patient' ? { type: 'patient', code, source: 'registered' } : { type: 'med', med: medById(a.target_id), code, source: 'registered' };
   return null;
 }
-const stripCues = sc => ({ ...sc, events: (sc.events || []).map(({ cue, ...e }) => e) });
+// Students get no scenario events (text, timing, upcoming vitals); released ones reach them as EVENT_RELEASED entries.
+const releasedEventIds = sid => { const rel = db.prepare("SELECT text FROM entries WHERE session_id=? AND action='EVENT_RELEASED'").all(sid); return scenario.events.filter(ev => rel.some(e => e.text.startsWith(ev.title + ' \u00B7 '))).map(ev => ev.id); };
+const stripEvents = ({ events, tasks, ...sc }, releasedIds = []) => ({ ...sc, providerScript: sc.providerScript && { ...sc.providerScript, situations: sc.providerScript.situations.filter(x => !x.afterEvent || releasedIds.includes(x.afterEvent)) } });   // SBAR situations that name an event's findings appear once it is released; task titles reach students through the worklist
 const stripCodes = sc => ({ ...sc, patient: (({ wristband, ...p }) => p)(sc.patient), medications: sc.medications.map(({ barcode, barcodes, ...m }) => m) });
 const minutesAgo = iso => (Date.now() - Date.parse(iso)) / 60000;
 function medAlerts(med, givenEvents, vitals) {
@@ -102,7 +117,8 @@ function medAlerts(med, givenEvents, vitals) {
   if (med.once && givenEvents.length) alerts.push({ code: 'ALREADY_GIVEN', text: 'Already given at ' + fmt(last.recorded_at) + ' (order: once).' });
   if (med.intervalMin && last && minutesAgo(last.recorded_at) < med.intervalMin) alerts.push({ code: 'TOO_EARLY', text: 'Given ' + Math.round(minutesAgo(last.recorded_at)) + ' min ago; order interval is ' + (med.intervalMin >= 60 ? (med.intervalMin / 60) + ' h' : med.intervalMin + ' min') + '.' });
   if (med.prn?.minIntervalMin && last && minutesAgo(last.recorded_at) < med.prn.minIntervalMin) alerts.push({ code: 'TOO_EARLY', text: 'Last dose ' + Math.round(minutesAgo(last.recorded_at)) + ' min ago; order allows q' + med.prn.minIntervalMin + ' min.' });
-  if (med.prn?.maxDoses && med.prn.windowMin) { const inWindow = givenEvents.filter(e => minutesAgo(e.recorded_at) < med.prn.windowMin).length; if (inWindow >= med.prn.maxDoses) alerts.push({ code: 'MAX_DOSES', text: inWindow + ' doses in the last ' + med.prn.windowMin + ' min; order maximum is ' + med.prn.maxDoses + '. Notify the provider.' }); }
+  // Count the current series (each dose within windowMin of the next, the last within windowMin of now): a strict sliding window lets q5 min doses run past the maximum.
+  if (med.prn?.maxDoses && med.prn.windowMin) { let n = 0; for (let i = givenEvents.length - 1, t = Date.now(); i >= 0 && (t - Date.parse(givenEvents[i].recorded_at)) / 60000 < med.prn.windowMin; t = Date.parse(givenEvents[i--].recorded_at)) n++; if (n >= med.prn.maxDoses) alerts.push({ code: 'MAX_DOSES', text: n + ' doses since ' + fmt(givenEvents.at(-n).recorded_at) + ', each within ' + med.prn.windowMin + ' min of the last; order maximum is ' + med.prn.maxDoses + '. Notify the provider.' }); }
   if (med.holdRule?.sbpBelow && vitals && vitals.monitor_on && Math.round(vitals.sbp) < med.holdRule.sbpBelow) alerts.push({ code: 'HOLD_RULE', text: 'SBP ' + Math.round(vitals.sbp) + ' is below ' + med.holdRule.sbpBelow + ': the order says hold.' });
   return alerts;
 }
@@ -111,11 +127,12 @@ function ensureTask(sid, key, kind, title, category, dueAt) { if (!db.prepare('S
 function syncTasks(session) {
   const sid = session.id, start = Date.parse(session.started_at), iso = ms => new Date(ms).toISOString();
   const events = db.prepare("SELECT * FROM entries WHERE session_id=? AND action='EVENT_RELEASED' ORDER BY id").all(sid);
-  const givenByMed = {}; for (const e of db.prepare("SELECT med_id, MIN(recorded_at) AS first FROM med_events WHERE session_id=? AND action='given' GROUP BY med_id").all(sid)) givenByMed[e.med_id] = e.first;
+  const givenByMed = {}; for (const e of db.prepare("SELECT id, med_id, recorded_at FROM med_events WHERE session_id=? AND action='given' ORDER BY id").all(sid)) (givenByMed[e.med_id] ||= []).push(e);
   for (const t of scenario.tasks || []) {
     const tr = t.trigger || {};
     if (tr.atMinutes != null) ensureTask(sid, t.id, 'nursing', t.title, t.category, iso(start + tr.atMinutes * 60000));
-    else if (tr.afterMedGiven && givenByMed[tr.afterMedGiven]) ensureTask(sid, t.id, 'reassess', t.title, t.category, iso(Date.parse(givenByMed[tr.afterMedGiven]) + (tr.minutes || 0) * 60000));
+    // One task per dose; the first dose keeps the plain task id.
+    else if (tr.afterMedGiven) (givenByMed[tr.afterMedGiven] || []).forEach((g, i) => ensureTask(sid, i ? t.id + '-' + g.id : t.id, 'reassess', t.title, t.category, iso(Date.parse(g.recorded_at) + (tr.minutes || 0) * 60000)));
     else if (tr.afterEvent) { const ev = (scenario.events || []).find(e => e.id === tr.afterEvent), rel = ev && events.find(e => e.text.startsWith(ev.title + ' \u00B7 ')); if (rel) ensureTask(sid, t.id, 'nursing', t.title, t.category, iso(Date.parse(rel.recorded_at) + (tr.minutes || 0) * 60000)); }
   }
   for (const e of events) ensureTask(sid, 'review-' + e.id, 'result', 'Review new result: ' + e.text.split(' \u00B7 ')[0], 'Results', e.recorded_at);
@@ -125,7 +142,9 @@ function syncTasks(session) {
 function worklist(session) {
   syncTasks(session);
   const rows = db.prepare('SELECT t.*, d.name AS done_name, r.name AS reviewed_name FROM tasks t LEFT JOIN actors d ON d.id=t.done_by LEFT JOIN actors r ON r.id=t.reviewed_by WHERE t.session_id=? ORDER BY t.due_at, t.id').all(session.id);
-  const meds = mar(session).filter(m => ['overdue', 'due', 'upcoming'].includes(m.window) && m.next_due).map(m => ({ key: 'med-' + m.id, kind: 'med', title: 'Give ' + m.name + ' ' + m.dose + ' ' + m.route, category: 'Medications', due_at: m.next_due, status: 'open', med_id: m.id }));
+  // STAT and activated meds the MAR shows as Due now have no scheduled time: due since activation (latest MED_ORDER_CHANGED), else session start.
+  const activated = db.prepare("SELECT text, recorded_at FROM entries WHERE session_id=? AND action='MED_ORDER_CHANGED' ORDER BY id DESC").all(session.id), activatedAt = m => activated.find(e => e.text === 'Order activated: ' + medLabel(m) || e.text.startsWith('Order activated: ' + medLabel(m) + ' · '))?.recorded_at;
+  const meds = mar(session).filter(m => ['overdue', 'due', 'upcoming'].includes(m.window)).map(m => ({ key: 'med-' + m.id, kind: 'med', title: 'Give ' + m.name + ' ' + m.dose + ' ' + m.route, category: 'Medications', due_at: m.next_due || activatedAt(m) || (m.kind === 'stat' && m.prn?.indication ? null : session.started_at), status: 'open', med_id: m.id })).filter(t => t.due_at);   // a conditional STAT order (NS bolus for SBP below 100) has no task until it is given or activated
   const orders = activeOrders(session).filter(o => o.source !== 'standing' && !o.acknowledged).map(o => ({ key: 'ack-' + o.id, kind: 'order', title: 'Acknowledge new order: ' + o.text, category: o.category, due_at: o.placed_at, status: 'open', order_id: o.id }));
   return [...rows, ...meds, ...orders].sort((a, b) => a.due_at.localeCompare(b.due_at));
 }
@@ -147,33 +166,36 @@ function mar(session) {
     const mine = events.filter(e => e.med_id === m.id), last = mine.filter(e => e.action !== 'blocked').at(-1) || null, given = mine.filter(e => e.action === 'given').length;
     const givenList = mine.filter(e => e.action === 'given'), lastGiven = givenList.at(-1);
     let due_at = m.dueMinutes != null ? new Date(Date.parse(session.started_at) + m.dueMinutes * 60000).toISOString() : null;
-    if (lastGiven && m.intervalMin) due_at = new Date(Date.parse(lastGiven.recorded_at) + m.intervalMin * 60000).toISOString();
-    if (lastGiven && m.once) due_at = null;
+    // A held or refused dose closes the pending dose the same way a given one does (last is the latest given/held/refused).
+    if (last && m.intervalMin) due_at = new Date(Date.parse(last.recorded_at) + m.intervalMin * 60000).toISOString();
+    if (last && m.once) due_at = null;
     const minsToDue = due_at ? (Date.parse(due_at) - Date.now()) / 60000 : null;
-    const window = m.kind === 'prn' ? 'prn' : (m.kind === 'stat' || m.kind === 'assignable') && !lastGiven ? 'due' : (m.frequency || '').toLowerCase().includes('continuous') && lastGiven ? 'continuous' : minsToDue == null ? 'complete' : minsToDue < -30 ? 'overdue' : minsToDue <= 30 ? 'due' : 'upcoming';
+    const window = m.kind === 'prn' ? 'prn' : (m.kind === 'stat' || m.kind === 'assignable') && !last ? 'due' : (m.frequency || '').toLowerCase().includes('continuous') && lastGiven ? 'continuous' : minsToDue == null ? 'complete' : minsToDue < -30 ? 'overdue' : minsToDue <= 30 ? 'due' : 'upcoming';
     return { ...m, due_at, window, last_given_at: lastGiven ? lastGiven.recorded_at : null, next_due: due_at, order_source: m.kind === 'assignable' ? 'Provider order' : (scenario.ordersMeta?.placedBy || 'Standing orders'), alerts: medAlerts(m, mine.filter(e => e.action === 'given'), vitalsNow), mismatchCount: mismatches.find(x => x.med_id === m.id)?.n || 0, givenCount: given, blockedCount: mine.filter(e => e.action === 'blocked').length, manualCount: mine.filter(e => e.action !== 'blocked' && e.verification === 'manual').length, last: last && { action: last.action, actor_name: last.actor_name, recorded_at: last.recorded_at, verification: last.verification, reason: last.reason, scan_order: last.scan_order }, status: last ? last.action : (m.kind === 'prn' ? 'available' : 'due') };
   });
 }
 const vitalsText = v => `HR ${v.hr} · RR ${v.rr} · SpO₂ ${v.spo2}% · BP ${v.sbp}/${v.dbp} · T ${v.temp} °C · ${RHYTHMS[v.rhythm]}`;
 function snapshot(actor) {
   const session = actor.session_id ? db.prepare('SELECT * FROM sessions WHERE id=?').get(actor.session_id) : latest();
-  if (!session) return { actor, session: null, scenario: actor.role === 'instructor' ? scenario : stripCodes(studentView(scenario)), rhythms: RHYTHMS, server_now: new Date().toISOString(), barcodes: actor.role === 'instructor' ? aliases() : undefined };
+  if (!session) return { actor, session: null, scenario: actor.role === 'instructor' ? scenario : stripEvents(stripCodes(studentView(scenario))), rhythms: RHYTHMS, server_now: new Date().toISOString(), barcodes: actor.role === 'instructor' ? aliases() : undefined };
   const entries = db.prepare(`SELECT e.*, a.name AS actor_name FROM entries e JOIN actors a ON a.id=e.actor_id WHERE e.session_id=? ${actor.role === 'student' ? 'AND e.private=0' : ''} ORDER BY e.id`).all(session.id);
-  return { actor, session, scenario: actor.role === 'instructor' ? scenario : stripCues(stripCodes(studentView(scenario))), rhythms: RHYTHMS, server_now: new Date().toISOString(), vitals: currentVitals(session.id), released: db.prepare("SELECT e.*, a.name AS actor_name FROM entries e JOIN actors a ON a.id=e.actor_id WHERE e.session_id=? AND e.action='EVENT_RELEASED' ORDER BY e.id").all(session.id), medications: actor.role === 'instructor' ? mar(session) : mar(session).map(({ barcode, barcodes, ...m }) => m), orders: activeOrders(session), worklist: worklist(session), barcodes: actor.role === 'instructor' ? aliases() : undefined, med_events: actor.role === 'instructor' ? db.prepare('SELECT e.*, a.name AS actor_name FROM med_events e JOIN actors a ON a.id=e.actor_id WHERE e.session_id=? ORDER BY e.id').all(session.id) : undefined, med_scans: actor.role === 'instructor' ? db.prepare('SELECT s.*, a.name AS actor_name FROM med_scans s JOIN actors a ON a.id=s.actor_id WHERE s.session_id=? ORDER BY s.id').all(session.id) : undefined, assessments: actor.role === 'instructor' ? db.prepare('SELECT x.*, a.name AS actor_name FROM assessments x JOIN actors a ON a.id=x.actor_id WHERE x.session_id=? ORDER BY x.id').all(session.id) : undefined, entries, roster: roster(session.id).map(a => ({ ...a, joined: !!db.prepare("SELECT id FROM entries WHERE actor_id=? AND action='STUDENT_JOINED' LIMIT 1").get(a.id) })) };
+  return { actor, session, scenario: actor.role === 'instructor' ? scenario : stripEvents(stripCodes(studentView(scenario)), releasedEventIds(session.id)), rhythms: RHYTHMS, server_now: new Date().toISOString(), vitals: currentVitals(session.id), released: db.prepare("SELECT e.*, a.name AS actor_name FROM entries e JOIN actors a ON a.id=e.actor_id WHERE e.session_id=? AND e.action='EVENT_RELEASED' ORDER BY e.id").all(session.id), medications: actor.role === 'instructor' ? mar(session) : mar(session).map(({ barcode, barcodes, ...m }) => m), orders: activeOrders(session), worklist: worklist(session), barcodes: actor.role === 'instructor' ? aliases() : undefined, med_events: actor.role === 'instructor' ? db.prepare('SELECT e.*, a.name AS actor_name FROM med_events e JOIN actors a ON a.id=e.actor_id WHERE e.session_id=? ORDER BY e.id').all(session.id) : undefined, med_scans: actor.role === 'instructor' ? db.prepare('SELECT s.*, a.name AS actor_name FROM med_scans s JOIN actors a ON a.id=s.actor_id WHERE s.session_id=? ORDER BY s.id').all(session.id) : undefined, assessments: actor.role === 'instructor' ? db.prepare('SELECT x.*, a.name AS actor_name FROM assessments x JOIN actors a ON a.id=x.actor_id WHERE x.session_id=? ORDER BY x.id').all(session.id) : undefined, entries, roster: roster(session.id).map(a => ({ ...a, joined: !!db.prepare("SELECT id FROM entries WHERE actor_id=? AND action='STUDENT_JOINED' LIMIT 1").get(a.id) })) };
 }
 function broadcast() { for (const ws of live.clients) if (ws.readyState === 1) ws.send('refresh'); }
 http.on('upgrade', (req, socket, head) => {
-  if (req.url !== '/live' || !identity(req) || (req.headers.origin && new URL(req.headers.origin).host !== req.headers.host)) return socket.destroy();
-  live.handleUpgrade(req, socket, head, ws => live.emit('connection', ws, req));
+  let sameOrigin = true; try { sameOrigin = !req.headers.origin || new URL(req.headers.origin).host === req.headers.host; } catch { sameOrigin = false; }
+  if (req.url !== '/live' || !identity(req) || !sameOrigin) return socket.destroy();
+  // A malformed frame emits 'error' on the socket; without a listener it would crash the process.
+  live.handleUpgrade(req, socket, head, ws => { ws.on('error', () => ws.terminate()); live.emit('connection', ws, req); });
 });
 const required = (v, max = 4000) => typeof v === 'string' && v.trim().length > 0 && v.trim().length <= max;
-function append(actor, action, body, privacy = false) {
+function append(actor, action, body, privacy = false, observed = privacy) {
   const prior = db.prepare('SELECT * FROM entries WHERE actor_id=? AND submission_id=?').get(actor.id, body.submissionId);
   if (prior) {
     if (prior.action !== action || prior.text !== (body.text || '').trim() || prior.linked_id !== (body.linkedId || null)) throw Object.assign(new Error('Submission ID already used for different content.'), { status: 409 });
     return prior;
   }
-  const result = db.prepare('INSERT INTO entries(session_id,actor_id,action,source,text,recorded_at,observed_at,linked_id,submission_id,private) VALUES(?,?,?,?,?,?,?,?,?,?)').run(actor.session_id, actor.id, action, privacy ? 'instructor_observed' : 'system_logged', (body.text || '').trim(), new Date().toISOString(), privacy ? (body.observedAt || new Date().toISOString()) : null, body.linkedId || null, body.submissionId, privacy ? 1 : 0);
+  const result = db.prepare('INSERT INTO entries(session_id,actor_id,action,source,text,recorded_at,observed_at,linked_id,submission_id,private) VALUES(?,?,?,?,?,?,?,?,?,?)').run(actor.session_id, actor.id, action, observed ? 'instructor_observed' : 'system_logged', (body.text || '').trim(), new Date().toISOString(), observed ? (body.observedAt || new Date().toISOString()) : null, body.linkedId || null, body.submissionId, privacy ? 1 : 0);
   return db.prepare('SELECT * FROM entries WHERE id=?').get(result.lastInsertRowid);
 }
 app.get('/api/lobby', (req, res) => { const s = latest(); res.json({ session: s ? { id: s.id, group_name: s.group_name, status: s.status } : null, roster: s ? roster(s.id) : [] }); });
@@ -239,9 +261,10 @@ app.post('/api/vitals', auth, instructor, (req, res) => {
   const values = {};
   for (const k of VITAL_KEYS) { const n = Number(b[k]); const [lo, hi] = VITAL_RANGES[k]; if (!Number.isFinite(n) || n < lo || n > hi) return res.status(400).json({ error: `${k.toUpperCase()} must be a number between ${lo} and ${hi}.` }); values[k] = k === 'temp' ? Math.round(n * 10) / 10 : Math.round(n); }
   if (values.sbp > 0 && values.dbp >= values.sbp) return res.status(400).json({ error: 'Diastolic must be below systolic.' });
-  if (!RHYTHMS[b.rhythm]) return res.status(400).json({ error: 'Choose a rhythm from the list.' });
+  if (typeof b.rhythm !== 'string' || !Object.hasOwn(RHYTHMS, b.rhythm)) return res.status(400).json({ error: 'Choose a rhythm from the list.' });
+  if (b.rhythm === 'aflutter' && (values.hr < 42 || values.hr > 175)) return res.status(400).json({ error: 'Atrial flutter conducts 2:1 to 6:1 from an atrial rate of 250-350, so HR must be 42-175.' });
   const transition = Math.round(Number(b.transitionSeconds) || 0); if (transition < 0 || transition > 900) return res.status(400).json({ error: 'Trend time must be 0-900 seconds.' });
-  const monitorOn = b.monitorOn !== false ? 1 : 0, from = effectiveVitals(currentVitals(sid)) || values;
+  const monitorOn = b.monitorOn !== false ? 1 : 0, from = trendFrom(sid, values, b.rhythm);
   db.exec('BEGIN IMMEDIATE');
   try {
     const entry = append(req.actor, 'VITALS_SET', { submissionId: b.submissionId, text: `${monitorOn ? 'Monitor set: ' : 'Monitor off (leads off). Stored values: '}${vitalsText({ ...values, rhythm: b.rhythm })}${transition ? ` · trend over ${transition} s` : ''}` });
@@ -288,7 +311,8 @@ app.post('/api/meds', auth, (req, res) => {
   const patientIdText = action === 'held' || action === 'refused' ? (patientMatch ? ' \u00B7 patient identified by wristband ' + (verification === 'camera' ? 'scan' : 'entry') : ' \u00B7 patient not scanned') : '';
   const seqFlag = scanOrder === 'med_first' ? ' \u00B7 SEQUENCE: medication scanned before patient' : scanOrder === 'patient_first' ? ' \u00B7 wristband then label, ' + Math.abs(scanGap) + ' s apart' : '';
   const howVerified = verification === 'camera' ? 'camera scan' : 'MANUAL ENTRY (' + reason + ')';
-  const text = action === 'blocked' ? 'Administration blocked \u00B7 ' + medLabel(med) + ' \u00B7 ' + blockReason + ' \u00B7 ' + howVerified + seqFlag
+  // The entry is public, so it names what the code resolved to but not the code itself (kept on med_events for instructors).
+  const text = action === 'blocked' ? 'Administration blocked \u00B7 ' + medLabel(med) + ' \u00B7 ' + blockReason.replace(' "' + (patientMatch === 0 ? patientCode : medCode) + '"', '') + ' \u00B7 ' + howVerified + seqFlag
     : action === 'given' ? 'Given: ' + medLabel(med) + ' \u00B7 patient + medication verified by ' + howVerified + seqFlag + (indication ? ' \u00B7 indication: ' + indication + (indicationValue ? ' ' + indicationValue : '') : '') + (sbp != null ? ' \u00B7 SBP ' + sbp : '') + holdFlag + holdState
     : (action === 'held' ? 'Held: ' : 'Refused: ') + medLabel(med) + ' \u00B7 ' + reason + patientIdText + (sbp != null ? ' \u00B7 SBP ' + sbp : '') + holdFlag + holdState;
   const entryAction = { given: 'MED_GIVEN', held: 'MED_HELD', refused: 'MED_REFUSED', blocked: 'MED_BLOCKED' }[action];
@@ -302,7 +326,7 @@ app.post('/api/meds', auth, (req, res) => {
 });
 const SYSTEM_NAMES = { neuro: 'Neuro', cardiac: 'Cardiovascular', resp: 'Respiratory', gi: 'GI', gu: 'GU', skin: 'Skin', msk: 'Musculoskeletal', pain: 'Pain', psych: 'Psychosocial/safety' };
 function applyVitals(actor, sid, values, transition, submissionId) {
-  const from = effectiveVitals(currentVitals(sid)) || values, monitorOn = 1;
+  const from = trendFrom(sid, values, values.rhythm), monitorOn = 1;
   const entry = append(actor, 'VITALS_SET', { submissionId, text: 'Monitor set: ' + vitalsText(values) + (transition ? ' \u00B7 trend over ' + transition + ' s' : '') });
   db.prepare('INSERT INTO vitals(session_id,actor_id,entry_id,hr,rr,spo2,sbp,dbp,temp,rhythm,monitor_on,transition_seconds,from_hr,from_rr,from_spo2,from_sbp,from_dbp,from_temp,applied_at,submission_id) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)').run(sid, actor.id, entry.id, values.hr, values.rr, values.spo2, values.sbp, values.dbp, values.temp, values.rhythm, monitorOn, transition, from.hr, from.rr, from.spo2, from.sbp, from.dbp, from.temp, new Date().toISOString(), submissionId);
   return entry;
@@ -322,8 +346,10 @@ app.post('/api/provider/reply', auth, instructor, (req, res) => {
   const m = db.prepare("SELECT * FROM entries WHERE id=? AND session_id=? AND action='PROVIDER_MESSAGE'").get(req.body.messageId, sid);
   if (!m || !r || !required(req.body.submissionId, 100)) return res.status(400).json({ error: 'Choose a reply for a message in this session.' });
   const prior = db.prepare('SELECT * FROM entries WHERE actor_id=? AND submission_id=?').get(req.actor.id, req.body.submissionId); if (prior) return res.json({ entry: prior });
+  if (db.prepare('SELECT status FROM sessions WHERE id=?').get(sid).status === 'ended') return res.status(409).json({ error: 'The session has ended.' });
   db.exec('BEGIN IMMEDIATE');
-  let entry; try { entry = append(req.actor, 'PROVIDER_REPLY', { submissionId: req.body.submissionId, text: 'Provider: ' + r.title + (r.text ? ' \u00B7 ' + r.text : ''), linkedId: m.id }); placeOrders(req.actor, sid, r.orders, 'Provider (telephone order, read back)', 'provider_reply', r.activateMeds); db.exec('COMMIT'); } catch (e) { db.exec('ROLLBACK'); throw e; }
+  // One reply per call: a second tap or a second facilitator device must not place the orders again.
+  let entry; try { if (db.prepare("SELECT 1 FROM entries WHERE linked_id=? AND action='PROVIDER_REPLY'").get(m.id)) throw Object.assign(new Error('This call already has a provider reply.'), { status: 409 }); entry = append(req.actor, 'PROVIDER_REPLY', { submissionId: req.body.submissionId, text: 'Provider: ' + r.title + (r.text ? ' \u00B7 ' + r.text : ''), linkedId: m.id }); placeOrders(req.actor, sid, r.orders, 'Provider (telephone order, read back)', 'provider_reply', r.activateMeds); db.exec('COMMIT'); } catch (e) { db.exec('ROLLBACK'); throw e; }
   broadcast(); res.status(201).json({ entry });
 });
 function patientPhase(sid) {
@@ -372,7 +398,7 @@ app.post('/api/patient/ask', auth, async (req, res, next) => { try {
   broadcast(); res.status(201).json({ heard: transcript, reply, intent: intent ? intent.id : null, cues: exam ? [exam.label] : intent ? intent.cues : [], phase, brain, exam: exam ? { id: exam.id, label: exam.label, system: exam.system, finding, sound: exam.sound } : null });
   } catch (e) { next(e); }
 });
-app.post('/api/tasks/done', auth, (req, res) => {
+app.post('/api/tasks/done', auth, student, (req, res) => {
   const sid = req.actor.session_id; if (!sid) return res.status(400).json({ error: 'Create a session first.' });
   const s = db.prepare('SELECT * FROM sessions WHERE id=?').get(sid); if (s.status !== 'active') return res.status(409).json({ error: 'The session is paused or ended.' });
   syncTasks(s); const t = db.prepare('SELECT * FROM tasks WHERE session_id=? AND key=?').get(sid, String(req.body.key || ''));
@@ -392,9 +418,10 @@ app.post('/api/tasks/review', auth, instructor, (req, res) => {
   try { const entry = append(req.actor, status === 'confirmed' ? 'TASK_CONFIRMED' : 'TASK_FLAGGED', { submissionId: 'review-' + t.id + '-' + randomUUID().slice(0, 8), text: (status === 'confirmed' ? 'Confirmed: ' : 'Flagged: ') + t.title + (note ? ' \u00B7 ' + note : ''), linkedId: t.done_entry_id }); db.prepare('UPDATE tasks SET status=?, reviewed_by=?, reviewed_at=?, review_entry_id=? WHERE id=?').run(status, req.actor.id, entry.recorded_at, entry.id, t.id); db.exec('COMMIT'); } catch (e) { db.exec('ROLLBACK'); throw e; }
   broadcast(); res.json({ ok: true });
 });
-app.post('/api/orders/ack', auth, (req, res) => {
+app.post('/api/orders/ack', auth, student, (req, res) => {
   const sid = req.actor.session_id, id = Number(String(req.body.orderId || '').replace(/^ord-/, ''));
   if (!sid) return res.status(400).json({ error: 'Create a session first.' });
+  const s = db.prepare('SELECT * FROM sessions WHERE id=?').get(sid); if (s.status !== 'active') return res.status(409).json({ error: 'The session is paused or ended.' });
   const o = db.prepare('SELECT * FROM session_orders WHERE id=? AND session_id=?').get(id, sid);
   if (!o) return res.status(400).json({ error: 'Unknown order.' });
   if (o.acknowledged_at) return res.json({ ok: true, already: true });
@@ -443,7 +470,8 @@ app.post('/api/meds/scan', auth, (req, res) => {
   if (!sid) return res.status(400).json({ error: 'Create a session first.' });
   const s = db.prepare('SELECT * FROM sessions WHERE id=?').get(sid);
   if (s.status !== 'active') return res.status(409).json({ error: 'The session is paused or ended.' });
-  const med = medById(b.medId); if (!med || !activeMedIds(s).includes(med.id)) return res.status(400).json({ error: 'That medication is not an active order in this session.' });
+  // A wristband scan with no medication is the MAR's med-pass identification; it is stored under 'med-pass', not against a medication.
+  const med = medById(b.medId), pass = !b.medId && b.kind === 'patient'; if (!pass && (!med || !activeMedIds(s).includes(med.id))) return res.status(400).json({ error: 'That medication is not an active order in this session.' });
   if (!['patient', 'med'].includes(b.kind) || !required(b.attemptId, 100)) return res.status(400).json({ error: 'Invalid scan.' });
   const source = b.source === 'camera' ? 'camera' : 'manual', code = normalizeCode(b.code);
   if (!code) return res.status(400).json({ error: 'Empty code.' });
@@ -455,8 +483,8 @@ app.post('/api/meds/scan', auth, (req, res) => {
   db.exec('BEGIN IMMEDIATE');
   try {
     let entry = null;
-    if (!matched) entry = append(actor, 'MED_SCAN_MISMATCH', { submissionId: 'scan-' + b.attemptId + '-' + randomUUID().slice(0, 8), text: 'Scan alert while preparing ' + medLabel(med) + ' \u00B7 ' + alert + ' \u00B7 ' + (source === 'camera' ? 'camera scan' : 'MANUAL ENTRY') });
-    const ins = db.prepare('INSERT INTO med_scans(session_id,actor_id,attempt_id,med_id,kind,code,format,source,matched,resolved,scanned_at,entry_id) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)').run(sid, actor.id, b.attemptId, med.id, b.kind, code, typeof b.format === 'string' ? b.format.slice(0, 40) : null, source, matched ? 1 : 0, resolved, new Date().toISOString(), entry ? entry.id : null);
+    if (!matched) entry = append(actor, 'MED_SCAN_MISMATCH', { submissionId: 'scan-' + b.attemptId + '-' + randomUUID().slice(0, 8), text: (pass ? 'Scan alert during med-pass patient identification' : 'Scan alert while preparing ' + medLabel(med)) + ' \u00B7 ' + alert + ' \u00B7 ' + (source === 'camera' ? 'camera scan' : 'MANUAL ENTRY') });
+    const ins = db.prepare('INSERT INTO med_scans(session_id,actor_id,attempt_id,med_id,kind,code,format,source,matched,resolved,scanned_at,entry_id) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)').run(sid, actor.id, b.attemptId, pass ? 'med-pass' : med.id, b.kind, code, typeof b.format === 'string' ? b.format.slice(0, 40) : null, source, matched ? 1 : 0, resolved, new Date().toISOString(), entry ? entry.id : null);
     db.exec('COMMIT'); if (!matched) broadcast();
     res.status(201).json({ matched, alert, resolved: matched ? resolved : null, scanId: ins.lastInsertRowid, patient: matched && b.kind === 'patient' ? { name: scenario.patient.name, dob: scenario.patient.dob, mrn: scenario.patient.mrn } : undefined });
   } catch (e) { db.exec('ROLLBACK'); throw e; }
@@ -480,10 +508,11 @@ app.post('/api/barcodes', auth, instructor, (req, res) => {
   const active = req.body.active !== false ? 1 : 0, target = type === 'patient' ? 'the patient wristband' : medLabel(medById(id));
   db.exec('BEGIN IMMEDIATE');
   try {
-    const existing = db.prepare('SELECT * FROM barcode_aliases WHERE code=?').get(code);
-    if (existing) db.prepare('UPDATE barcode_aliases SET target_type=?, target_id=?, label=?, registered_by=?, registered_at=?, active=? WHERE code=?').run(type, type === 'patient' ? 'patient' : id, label, req.actor.id, new Date().toISOString(), active, code);
-    else db.prepare('INSERT INTO barcode_aliases(code,target_type,target_id,label,registered_by,registered_at,active) VALUES(?,?,?,?,?,?,?)').run(code, type, type === 'patient' ? 'patient' : id, label, req.actor.id, new Date().toISOString(), active);
-    if (req.actor.session_id) append(req.actor, 'BARCODE_REGISTERED', { submissionId: randomUUID(), text: (active ? 'Physical barcode registered: ' : 'Physical barcode removed: ') + code + ' \u2192 ' + target + (label ? ' (' + label + ')' : '') });
+    const existing = db.prepare('SELECT * FROM config.barcode_aliases WHERE code=?').get(code);
+    if (existing) db.prepare('UPDATE config.barcode_aliases SET target_type=?, target_id=?, label=?, registered_by=?, registered_at=?, active=? WHERE code=?').run(type, type === 'patient' ? 'patient' : id, label, req.actor.id, new Date().toISOString(), active, code);
+    else db.prepare('INSERT INTO config.barcode_aliases(code,target_type,target_id,label,registered_by,registered_at,active) VALUES(?,?,?,?,?,?,?)').run(code, type, type === 'patient' ? 'patient' : id, label, req.actor.id, new Date().toISOString(), active);
+    // Instructor-only (private, still system logged): the text carries the raw code, and students never receive barcode values.
+    if (req.actor.session_id) append(req.actor, 'BARCODE_REGISTERED', { submissionId: randomUUID(), text: (active ? 'Physical barcode registered: ' : 'Physical barcode removed: ') + code + ' \u2192 ' + target + (label ? ' (' + label + ')' : '') }, true, false);
     db.exec('COMMIT');
   } catch (e) { db.exec('ROLLBACK'); throw e; }
   broadcast(); res.status(201).json({ ok: true, barcodes: aliases() });

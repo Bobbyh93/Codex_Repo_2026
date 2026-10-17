@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { api, formatTime } from './api';
 import { Icon } from './components';
+import { useServerClock } from './Monitor';
 
 // The "Brain": one timeline of everything due in the visit. Students tap a task done; the instructor confirms or flags.
 const KIND_ICON = { med: 'pill', order: 'setup', result: 'chart', nursing: 'user', reassess: 'monitor' };
@@ -8,13 +9,14 @@ const hhmm = iso => new Date(iso).toLocaleTimeString([], { hour: 'numeric', minu
 export function Worklist({ state, refresh, connected, setPage }) {
   const { worklist = [], session, actor } = state, instructor = actor.role === 'instructor';
   const [busy, setBusy] = useState(''), [msg, setMsg] = useState(''), [showDone, setShowDone] = useState(instructor);
-  const active = session.status === 'active' && connected, now = Date.now();
+  const active = session.status === 'active' && connected, now = useServerClock(state.server_now);   // due times are Pi time
   async function post(url, body, key) { setBusy(key); setMsg(''); try { await api(url, body); refresh(); } catch (e) { setMsg(e.message); } finally { setBusy(''); } }
   const open = worklist.filter(t => t.status === 'open'), done = worklist.filter(t => t.status !== 'open');
   const bucket = t => { const m = (Date.parse(t.due_at) - now) / 60000; return m < -15 ? 'overdue' : m <= 15 ? 'now' : m <= 60 ? 'soon' : 'later'; };
   const groups = [['overdue', 'Overdue'], ['now', 'Now'], ['soon', 'Next hour'], ['later', 'Later']];
   const action = t => {
     if (t.kind === 'med') return <button className="primary small" disabled={!active} onClick={() => setPage('meds')}>Open MAR<Icon name="arrow"/></button>;
+    if (instructor) return null; // students complete and acknowledge; the instructor confirms or flags what they did
     if (t.kind === 'order') return <button className="primary small" disabled={!active || busy === t.key} onClick={() => post('orders/ack', { orderId: t.order_id }, t.key)}>Acknowledge</button>;
     return <button className="primary small" disabled={!active || busy === t.key} onClick={() => post('tasks/done', { key: t.key }, t.key)}>{busy === t.key ? 'Saving…' : t.kind === 'result' ? 'Reviewed' : 'Done'}</button>;
   };

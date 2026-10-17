@@ -14,7 +14,7 @@ Slate settings (admin UI, usually http://192.168.8.1):
 - Wi-Fi: WPA2/WPA3, long passphrase, SSID e.g. `CodeShift-Sim`, both 2.4 and 5 GHz on. Guest network **off** (guest clients cannot reach LAN devices, so they could not reach the Pi).
 - Wireless: **Isolate clients** on. Phones cannot see each other but still reach the Pi on the wired LAN port.
 - System: change the admin password; GoodCloud, DDNS, and remote access off.
-- LAN > DHCP: static lease for the Pi, e.g. `192.168.8.10`, so the URL is stable: `http://192.168.8.10:4317`. Optionally add a custom DNS/hosts entry such as `codeshift.lan` → 192.168.8.10 for a whiteboard-friendly address.
+- LAN > DHCP: static lease for the Pi, e.g. `192.168.8.10`, so the URL is stable: `https://192.168.8.10:4317` (`http://192.168.8.10:8080` redirects there). Optionally add a custom DNS/hosts entry such as `codeshift.lan` → 192.168.8.10 for a whiteboard-friendly address.
 - Check campus policy on personal access points; register the SSID/MAC with IT if required.
 
 ## 2. Copy the project and install
@@ -52,13 +52,13 @@ Each session is created with **Require scanning** on. Students must scan the wri
 | # | Check | Pass criterion |
 |---|-------|----------------|
 | 1 | `sudo reboot`, wait 60 s, `systemctl status code-shift` | `active (running)` without any login |
-| 2 | Pi wired to Slate LAN, Slate WAN unplugged; phone on `CodeShift-Sim` opens `http://192.168.8.10:4317` | Welcome page loads; no mixed-content or certificate prompts |
+| 2 | Pi wired to Slate LAN, Slate WAN unplugged; phone on `CodeShift-Sim` with the certificate installed (2b) opens `https://192.168.8.10:4317` | Welcome page loads; no mixed-content or certificate prompts |
 | 2b | From a phone, try to open any internet site and try to ping another phone | Both fail (WAN unplugged; client isolation on); the app still loads |
 | 3 | Instructor logs in on a laptop, creates the session; three phones join as Student 01–03 | Roster shows three "Joined" |
 | 4 | Each phone adds a note; instructor saves a private observation | Notes appear on all devices within a few seconds; observation never appears on a phone; `curl -b` from a student cookie to `/api/state` contains no observation text |
 | 5 | **Offline**: with the Slate WAN unplugged (normal operation), repeat step 4 | Identical behavior; no page stalls on external assets |
 | 6 | Pull the Pi's power mid-session, power on, reopen | Service restarts; all prior entries present (append-only store on disk) |
-| 7 | Load: from a laptop run `node tests/load.mjs http://<pi-ip>:4317 <instructor-key> 10 60` | `errors=0`, p95 under 500 ms |
+| 7 | Load: on a laptop on `CodeShift-Sim`, download the certificate (`curl -o code-shift-ca.crt http://192.168.8.10:8080/cert`), then run `NODE_EXTRA_CA_CERTS=code-shift-ca.crt node tests/load.mjs https://192.168.8.10:4317 <instructor-key> 10 60` | `errors=0`, p95 under 500 ms |
 | 7b | Instructor opens Patient monitor, applies a preset with a 60 s trend | HDMI display and instructor view both trend; VITALS_SET entry appears in the timeline |
 | 7c | Student phone (certificate installed) opens Chart > eMAR > Give on Aspirin; camera opens; scan the wristband, then the label; Document given | Entry says "camera scan" and "wristband then label, N s apart"; scanning the wrong label is blocked and recorded |
 | 7c2 | Scan the label first, then the wristband (use Rescan) | Entry carries "SEQUENCE: medication scanned before patient"; eMAR row shows "Scanned out of order" |
@@ -69,7 +69,7 @@ Each session is created with **Require scanning** on. Students must scan the wri
 | 7d | Same on a phone without the certificate, session set to Require scanning | Camera is refused and no manual entry is offered. Instructor switches to manual allowed: student types codes with a reason; entry says "MANUAL ENTRY (reason)" and the row shows "1 manual" |
 | 7e | Student sends a provider message; instructor replies | Both appear on the Provider page on all devices and in the timeline |
 | 8 | Phone layout at 390 px wide | No horizontal scroll; eMAR, Give dialog, and note form usable |
-| 9 | `sudo bash deploy/backup.sh` after the session | Backup file created; opens with `sqlite3` |
+| 9 | `sudo bash deploy/backup.sh` after the session | Two backup files created (`code-shift-<stamp>.sqlite` evidence, `code-shift-config-<stamp>.sqlite` barcode registrations); both open with `sqlite3` |
 
 Step 5 is the Release 1 "no internet" requirement; step 1 and 6 cover WBS 1.1 service auto-start.
 
@@ -77,8 +77,8 @@ Step 5 is the Release 1 "no internet" requirement; step 1 and 6 cover WBS 1.1 se
 - Pi address on the Slate LAN is fixed by DHCP lease (192.168.8.10). If the Pi shows a different address at startup, fix the lease on the Slate rather than the Pi.
 - Instructor key: `sudo cat /var/lib/code-shift/instructor-key.txt`. To set your own, add `Environment=INSTRUCTOR_PASSWORD=...` to the unit (`sudo systemctl edit code-shift`), then restart.
 - Logs: `journalctl -u code-shift -f`. Restart: `sudo systemctl restart code-shift`.
-- New session: this checkpoint keeps one persistent session. To start fresh, stop the service, move `/var/lib/code-shift/code-shift.sqlite*` into a dated folder (keep it as evidence), start the service.
-- Update the app: re-run `sudo bash deploy/install.sh` from a newer source folder; data is untouched.
+- New session: this checkpoint keeps one persistent session. To start fresh, stop the service, move `/var/lib/code-shift/code-shift.sqlite*` into a dated folder (keep it as evidence), start the service. Move only those files: leave `tls/` (the certificate the phones trust), `instructor-key.txt` and `config.sqlite` (physical barcode registrations) in place.
+- Update the app between sessions: re-run `sudo bash deploy/install.sh` from a newer source folder. It stops the service, installs and builds the new version, then restarts the service; data is untouched.
 - The service runs as a locked-down system user; only `/var/lib/code-shift` is writable.
 - Traffic is HTTPS with the self-signed certificate (section 2b). Port 8080 is the http helper for certificate download and redirect only.
 

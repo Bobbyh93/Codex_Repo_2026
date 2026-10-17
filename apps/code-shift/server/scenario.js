@@ -42,12 +42,12 @@ export const scenario = {
     situations: [
       { id: 's-chest-pain', title: 'Chest pain', text: 'Dull, aching chest pain 8/10 radiating to the left arm, diaphoretic, short of breath. History of CAD and hypertension.' },
       { id: 's-ntg-unrelieved', title: 'Chest pain unrelieved by nitroglycerin', text: 'Sublingual nitroglycerin given x3 over 15 minutes with no relief; 12-lead obtained.' },
-      { id: 's-hypotension', title: 'Hypotension', text: 'Systolic blood pressure below 100 after nitroglycerin; patient light-headed. Nitroglycerin held.' },
-      { id: 's-labs', title: 'Critical lab results', text: 'Troponin I 1.00 ng/dL (expected below 0.04). Potassium 2.2 mEq/L.' },
-      { id: 's-rhythm', title: 'Rhythm change', text: 'Monitor shows supraventricular tachycardia with a run of ventricular tachycardia; 12-lead obtained.' },
+      { id: 's-hypotension', afterEvent: 'ev-hypotension', title: 'Hypotension', text: 'Systolic blood pressure below 100 after nitroglycerin; patient light-headed. Nitroglycerin held.' },
+      { id: 's-labs', afterEvent: 'ev-labs', title: 'Critical lab results', text: 'Troponin I 1.00 ng/dL (expected below 0.04). Potassium 2.2 mEq/L.' },
+      { id: 's-rhythm', afterEvent: 'ev-ecg-2', title: 'Rhythm change', text: 'Monitor shows supraventricular tachycardia with a run of ventricular tachycardia; 12-lead obtained.' },
       { id: 's-spo2', title: 'Low oxygen saturation', text: 'SpO2 below 90% with increased work of breathing; oxygen applied per standing orders.' },
       { id: 's-refusal', title: 'Patient refusing medication', text: 'Patient declines an ordered medication after education.' },
-      { id: 's-update', title: 'Status update', text: 'Patient improving: chest pain 2/10, easier breathing, vitals trending toward baseline.' }
+      { id: 's-update', afterEvent: 'ev-improving', title: 'Status update', text: 'Patient improving: chest pain 2/10, easier breathing, vitals trending toward baseline.' }
     ],
     recommendations: [
       { id: 'r-evaluate', title: 'Request bedside evaluation now' },
@@ -59,7 +59,7 @@ export const scenario = {
     ],
     replies: [
       { id: 'p-morphine', title: 'Give morphine 2 mg IV push once; repeat 12-lead', text: 'Call back if pain persists.', activateMeds: ['morphine'], orders: [{ category: 'Medications', text: 'Morphine 2 mg IV push once for chest pain unrelieved by nitroglycerin' }, { category: 'Diagnostics', text: 'Repeat 12-lead ECG now' }] },
-      { id: 'p-heparin', title: 'Start heparin per protocol; potassium chloride 20 mEq PO', text: 'PTT q6h. Hold low-molecular-weight heparin.', activateMeds: ['heparin-gtt', 'heparin-sq'], orders: [{ category: 'Medications', text: 'Heparin per weight-based protocol: loading dose IVP then continuous infusion' }, { category: 'Labs', text: 'aPTT every 6 hours while on heparin' }, { category: 'Medications', text: 'Potassium chloride 20 mEq PO now for K 2.2' }] },
+      { id: 'p-heparin', title: 'Start heparin per protocol; potassium chloride 20 mEq PO', text: 'PTT q6h. Hold low-molecular-weight heparin.', activateMeds: ['heparin-gtt'], orders: [{ category: 'Medications', text: 'Heparin per weight-based protocol: loading dose IVP then continuous infusion' }, { category: 'Labs', text: 'aPTT every 6 hours while on heparin' }, { category: 'Medications', text: 'Potassium chloride 20 mEq PO now for K 2.2' }] },
       { id: 'p-bolus', title: 'Normal saline 500 mL bolus; hold nitroglycerin', text: 'Repeat bolus x1 if SBP still below 100, then call back.', orders: [{ category: 'Medications', text: 'Normal saline 500 mL IV bolus now; may repeat x1 for SBP below 100' }, { category: 'Nursing', text: 'Hold nitroglycerin while SBP below 100; notify provider after bolus' }] },
       { id: 'p-oxygen', title: 'Titrate oxygen to SpO2 90-96%; chest X-ray', text: 'Elevate head of bed.', orders: [{ category: 'Diagnostics', text: 'Portable chest X-ray now' }, { category: 'Nursing', text: 'Head of bed elevated; titrate oxygen to SpO2 90-96%' }] },
       { id: 'p-rapid', title: 'Call rapid response; I am on my way', text: 'Prepare for transfer to ICU.', orders: [{ category: 'Nursing', text: 'Rapid response called; prepare for transfer to ICU' }] },
@@ -156,8 +156,8 @@ export const scenario = {
     { id: 'kcl-iv', name: 'Potassium chloride in 0.9% NaCl', dose: 'per order', route: 'IVPB', frequency: 'PRN K <3', kind: 'prn', barcode: 'MED-KCLIV' },
     { id: 'ns-bolus', name: 'Normal saline bolus', dose: '500 mL', route: 'IV', frequency: 'STAT; may repeat x1 for SBP <100, notify provider', kind: 'stat', prn: { maxDoses: 2, windowMin: 1440, indication: 'SBP below 100' }, barcode: 'MED-NS500' },
     { id: 'heparin-sq', name: 'Heparin', dose: '5,000 units', route: 'Subcutaneous', frequency: 'Per order', kind: 'assignable', barcode: 'MED-HEPSQ5K' },
-    { id: 'heparin-gtt', name: 'Heparin infusion', dose: 'per protocol, weight-based', route: 'IV continuous', frequency: 'Per protocol; PTT q6h', kind: 'assignable', barcode: 'MED-HEPGTT' },
-    { id: 'morphine', name: 'Morphine', dose: 'per order', route: 'IV', frequency: 'PRN chest pain unrelieved by NTG', kind: 'assignable', barcode: 'MED-MORPH' }
+    { id: 'heparin-gtt', name: 'Heparin infusion', dose: 'per protocol, weight-based', route: 'IV continuous', frequency: 'Continuous; per protocol, PTT q6h', kind: 'assignable', barcode: 'MED-HEPGTT' },
+    { id: 'morphine', name: 'Morphine', dose: '2 mg', route: 'IV push', frequency: 'Once for chest pain unrelieved by NTG', kind: 'assignable', once: true, barcode: 'MED-MORPH' }
   ],
   ordersMeta: { placedBy: 'ED attending (standing orders)', placedAt: 'On admission' },
   orders: [
@@ -188,7 +188,7 @@ export const scenario = {
       { group: 5, focus: 'Titrate heparin gtt', meds: ['Metoprolol 25 mg', 'Nitroglycerin 1-inch transdermal', 'Aspirin 325 mg chew', 'Heparin 5,000 U SQ'] }
     ],
     monitorPresets: [
-      { name: 'Baseline', values: { hr: 98, rr: 20, spo2: 94, sbp: 148, dbp: 88, temp: 37.0, rhythm: 'sinus_tach_pvc' } },
+      { name: 'Baseline', values: { hr: 104, rr: 20, spo2: 94, sbp: 148, dbp: 88, temp: 37.0, rhythm: 'sinus_tach_pvc' } },
       { name: 'Chest pain episode', values: { hr: 112, rr: 24, spo2: 92, sbp: 168, dbp: 96, temp: 37.1, rhythm: 'sinus_tach_pvc' } },
       { name: 'Hypotension (SBP <90)', values: { hr: 118, rr: 24, spo2: 93, sbp: 86, dbp: 52, temp: 37.0, rhythm: 'sinus_tach' } },
       { name: 'SVT', values: { hr: 160, rr: 26, spo2: 91, sbp: 98, dbp: 60, temp: 37.0, rhythm: 'svt' } },

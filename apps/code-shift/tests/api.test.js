@@ -1,7 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
-import { mkdtempSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, readdirSync, renameSync } from 'node:fs';
+import { connect } from 'node:net';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
@@ -13,14 +14,21 @@ test('shared record, authorization, idempotency, corrections and restart recover
   async function stop() { if (!child || child.exitCode !== null || child.signalCode !== null) return; await new Promise(resolve => { child.once('exit',resolve); child.kill(); }); }
   t.after(stop); await start();
   function client() { let cookie=''; return async (url, body, method) => { const r=await fetch(`http://127.0.0.1:${port}/api/${url}`, { method: method || (body ? 'POST' : 'GET'), headers: { cookie, ...(body ? { 'Content-Type':'application/json' } : {}) }, ...(body ? { body:JSON.stringify(body) } : {}) }); if (r.headers.get('set-cookie')) cookie=r.headers.get('set-cookie').split(';')[0]; return { status:r.status, body:await r.json() }; }; }
-  const instructor=client(), guest=client(), students=[client(),client(),client()];
+  const instructor=client(), early=client(), guest=client(), students=[client(),client(),client()];
   assert.equal((await guest('state')).status,401);
   assert.equal((await instructor('login',{password:'wrong'})).status,401);
   assert.equal((await instructor('login',{password:'test-only-key'})).status,200);
+  assert.equal((await early('login',{password:'test-only-key'})).status,200);
   assert.equal((await instructor('sessions',{groupName:'Test Group',names:['A','B','C'],activeMeds:['heparin-sq','asa','bogus']})).status,201);
   assert.equal((await instructor('sessions',{groupName:'Second',names:['D','E','F']})).status,409);
+  // a second instructor device signed in before the session existed acts as that session's instructor
+  { const es=(await early('state')).body; assert.equal(es.actor.session_id,es.session.id); assert.equal((await early('status',{status:'paused'})).status,200); assert.equal((await early('status',{status:'active'})).status,200); }
   const lobby=(await guest('lobby')).body;
   for(let i=0;i<3;i++) assert.equal((await students[i]('join',{actorId:lobby.roster[i].id,role:'instructor'})).status,200);
+  // a joined device sending a non-URL Origin or a malformed websocket frame must not take the server down
+  { const cookie=(await fetch(`http://127.0.0.1:${port}/api/join`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({actorId:lobby.roster[0].id})})).headers.get('set-cookie').split(';')[0];
+    const upgrade=(origin,frame)=>new Promise(resolve=>{ let out=''; const s=connect(port,'127.0.0.1',()=>s.write(`GET /live HTTP/1.1\r\nHost: 127.0.0.1:${port}\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\nSec-WebSocket-Version: 13\r\nCookie: ${cookie}\r\n${origin?`Origin: ${origin}\r\n`:''}\r\n`)), timer=setTimeout(()=>s.destroy(),3000); s.on('data',d=>{ out+=d; if(frame&&out.includes(' 101 ')){ s.write(Buffer.from(frame)); frame=null; } }); s.on('error',()=>{}); s.on('close',()=>{ clearTimeout(timer); resolve(out); }); });
+    assert.equal(await upgrade('null'),''); assert.match(await upgrade(null,[0x81,0x02,0x68,0x69]),/ 101 /); assert.equal((await students[0]('state')).status,200); assert.equal(child.exitCode,null); }
   const payloads=students.map((_,i)=>({action:'NOTE_RECORDED',text:`Test note ${i}`,submissionId:`note-${i}`,actor_id:'forged',recorded_at:'1900-01-01'}));
   const notes=await Promise.all(students.map((c,i)=>c('entries',payloads[i])));
   for(let i=0;i<3;i++) { assert.equal(notes[i].status,201); assert.equal(notes[i].body.entry.actor_id,lobby.roster[i].id); assert.ok(Date.parse(notes[i].body.entry.recorded_at)>Date.now()-10000); }
@@ -42,6 +50,8 @@ test('shared record, authorization, idempotency, corrections and restart recover
   assert.equal((await instructor('vitals',{...v,hr:400,submissionId:'v-bad'})).status,400);
   assert.equal((await instructor('vitals',{...v,dbp:170,submissionId:'v-bad2'})).status,400);
   assert.equal((await instructor('vitals',{...v,rhythm:'made-up',submissionId:'v-bad3'})).status,400);
+  for(const rhythm of ['constructor','__proto__','toString',['nsr']]) assert.equal((await instructor('vitals',{...v,rhythm,submissionId:'v-proto'})).status,400);
+  for(const hr of [40,200]) assert.equal((await instructor('vitals',{...v,hr,rhythm:'aflutter',submissionId:'v-flutter'})).status,400);   // flutter conducts 2:1-6:1 from 250-350, so HR 42-175
   const vset=await instructor('vitals',{...v,submissionId:'v-1'}); assert.equal(vset.status,201); assert.equal(vset.body.vitals.hr,112);
   const vretry=await instructor('vitals',{...v,submissionId:'v-1'}); assert.equal(vretry.status,200); assert.equal(vretry.body.vitals.id,vset.body.vitals.id);
   const sv=(await students[0]('state')).body; assert.equal(sv.vitals.hr,112); assert.equal(sv.vitals.rhythm,'sinus_tach_pvc'); assert.ok(sv.rhythms.nsr); assert.ok(sv.entries.some(e=>e.action==='VITALS_SET' && e.text.includes('HR 112')));
@@ -104,6 +114,8 @@ test('shared record, authorization, idempotency, corrections and restart recover
   assert.equal((await instructor('barcodes',{code:'0312345678901',targetType:'med',targetId:'ntg-sl',active:false})).status,201);
   const removed=await students[0]('meds',{medId:'ntg-sl',action:'given',patientCode:'WB-REAL-001',medCode:'0312345678901',verification:'camera',indication:'chest pain',submissionId:'m-ntg-2'}); assert.equal(removed.body.blocked,true); assert.match(removed.body.entry.text,/not a known medication/);
   assert.ok((await instructor('state')).body.entries.filter(e=>e.action==='BARCODE_REGISTERED').length===3);
+  // after registrations and blocked attempts, students still receive no barcode values; instructors keep them
+  { const sj=JSON.stringify((await students[1]('state')).body); for(const code of ['0312345678901','WB-REAL-001','CS-12049023','CS-000','MED-ASA325','MED-METO25']) assert.ok(!sj.includes(code),code); const ist2=(await instructor('state')).body; assert.ok(ist2.entries.some(e=>e.action==='BARCODE_REGISTERED' && e.text.includes('0312345678901') && e.source==='system_logged')); assert.ok(ist2.med_events.some(e=>e.action==='blocked' && e.reason.includes('"CS-000"'))); }
   assert.equal((await students[0]('meds',{medId:'ntg-td',action:'held',reason:'SBP 86',submissionId:'m-hold-noscan'})).status,400);
   const held=await students[0]('meds',{medId:'ntg-td',action:'held',reason:'SBP 86',patientCode:'WB-REAL-001',verification:'camera',submissionId:'m-hold'}); assert.equal(held.status,201); assert.equal(held.body.entry.action,'MED_HELD'); assert.match(held.body.entry.text,/patient identified by wristband scan/); assert.match(held.body.entry.text,/alerts at the time: SBP 86 is below 100/); assert.equal(held.body.event.patient_match,1);
   const heldWrong=await students[0]('meds',{medId:'ntg-td',action:'held',reason:'x',patientCode:'MED-ASA325',verification:'camera',submissionId:'m-hold-wrong'}); assert.equal(heldWrong.body.blocked,true); assert.match(heldWrong.body.entry.text,/WRONG PATIENT/);
@@ -115,7 +127,7 @@ test('shared record, authorization, idempotency, corrections and restart recover
   assert.equal((await instructor('vitals',{...v,sbp:86,dbp:50,submissionId:'v-low-again'})).status,201);
   assert.equal((await students[0]('events/release',{eventId:'ev-labs',submissionId:'ev-x'})).status,403);
   assert.equal((await instructor('events/release',{eventId:'nope',submissionId:'ev-x'})).status,400);
-  { const before=(await instructor('state')).body.vitals.id; const rel=await instructor('events/release',{eventId:'ev-chest-pain',submissionId:'ev-1'}); assert.equal(rel.status,201); assert.match(rel.body.entry.text,/Chest pain episode .* 8\/10/); const st=(await students[0]('state')).body; assert.ok(st.vitals.id>before); assert.equal(st.vitals.hr,118); assert.equal(st.vitals.transition_seconds,45); assert.equal(st.released.length,1); assert.ok(!JSON.stringify(st.scenario.events).includes('Patient voice')); assert.ok(JSON.stringify((await instructor('state')).body.scenario.events).includes('Patient voice')); assert.equal((await instructor('events/release',{eventId:'ev-chest-pain',submissionId:'ev-1'})).status,200); }
+  { const before=(await instructor('state')).body.vitals.id; const rel=await instructor('events/release',{eventId:'ev-chest-pain',submissionId:'ev-1'}); assert.equal(rel.status,201); assert.match(rel.body.entry.text,/Chest pain episode .* 8\/10/); const st=(await students[0]('state')).body; assert.ok(st.vitals.id>before); assert.equal(st.vitals.hr,118); assert.equal(st.vitals.transition_seconds,45); assert.equal(st.released.length,1); assert.equal(st.scenario.events,undefined); assert.ok(!JSON.stringify(st).includes('Patient voice') && !JSON.stringify(st).includes('STAT labs resulted')); assert.ok(!['Troponin I 1.00','supraventricular','light-headed','chest pain 2/10','potassium 2.2'].some(x=>JSON.stringify(st).includes(x))); assert.deepEqual(st.scenario.providerScript.situations.map(x=>x.id).filter(x=>['s-chest-pain','s-labs','s-rhythm'].includes(x)),['s-chest-pain']); assert.equal(st.scenario.tasks,undefined); assert.ok(JSON.stringify((await instructor('state')).body.scenario.events).includes('Patient voice')); assert.equal((await instructor('events/release',{eventId:'ev-chest-pain',submissionId:'ev-1'})).status,200); }
   assert.equal((await instructor('vitals',{...v,sbp:148,dbp:88,submissionId:'v-148b'})).status,201);
   assert.equal((await students[0]('assessments',{type:'head_to_toe',systems:[],submissionId:'as-0'})).status,400);
   assert.equal((await students[0]('assessments',{type:'head_to_toe',systems:[{system:'cardiac',wdl:false,findings:''}],submissionId:'as-1'})).status,400);
@@ -134,7 +146,7 @@ test('shared record, authorization, idempotency, corrections and restart recover
     const ents=(await students[1]('state')).body.entries; assert.equal(ents.filter(e=>e.action==='PATIENT_ASKED').length,6); assert.equal(ents.filter(e=>e.action==='PATIENT_SAID').length,6); assert.match(ents.find(e=>e.action==='PATIENT_ASKED').text,/cue: identity|not understood/);
     const disp=await fetch(`http://127.0.0.1:${port}/api/display`).then(r=>r.json()); assert.equal(disp.conversation.length,2); assert.equal(disp.conversation[1].who,'patient'); }
   { const wl=(await students[0]('state')).body.worklist; assert.ok(wl.some(t=>t.key==='t-monitor') && wl.some(t=>t.kind==='med') && wl.some(t=>t.kind==='result') && wl.some(t=>t.key==='t-reassess-ntg'), JSON.stringify(wl.map(t=>t.key)));
-    assert.equal((await students[0]('tasks/done',{key:'nope'})).status,400); assert.equal((await students[0]('tasks/done',{key:'t-monitor'})).status,200); assert.equal((await students[0]('tasks/done',{key:'t-monitor'})).body.already,true);
+    assert.equal((await instructor('tasks/done',{key:'t-monitor'})).status,403); assert.equal((await students[0]('tasks/done',{key:'nope'})).status,400); assert.equal((await students[0]('tasks/done',{key:'t-monitor'})).status,200); assert.equal((await students[0]('tasks/done',{key:'t-monitor'})).body.already,true);
     assert.equal((await students[0]('tasks/review',{key:'t-monitor',status:'confirmed'})).status,403); assert.equal((await instructor('tasks/review',{key:'t-ecg-1',status:'confirmed'})).status,400); assert.equal((await instructor('tasks/review',{key:'t-monitor',status:'confirmed'})).status,200);
     const wl2=(await instructor('state')).body.worklist; const tm=wl2.find(t=>t.key==='t-monitor'); assert.equal(tm.status,'confirmed'); assert.equal(tm.done_name,'A'); assert.ok((await instructor('state')).body.entries.some(e=>e.action==='TASK_CONFIRMED')); }
   { const ist2=(await instructor('state')).body; assert.equal(ist2.assessments.length,2); assert.equal((await students[0]('state')).body.assessments,undefined); }
@@ -150,9 +162,9 @@ test('shared record, authorization, idempotency, corrections and restart recover
   assert.equal((await instructor('provider/reply',{messageId:pm.body.entry.id,replyId:'nope',submissionId:'pr-bad'})).status,400);
   const pr=await instructor('provider/reply',{messageId:pm.body.entry.id,replyId:'p-morphine',submissionId:'pr-1'}); assert.equal(pr.status,201); assert.equal(pr.body.entry.linked_id,pm.body.entry.id); assert.match(pr.body.entry.text,/^Provider: Give morphine/);
   { const st2=(await students[0]('state')).body; const fresh=st2.orders.filter(o=>o.source==='provider_reply'); assert.equal(fresh.length,2); assert.ok(fresh.every(o=>!o.acknowledged)); assert.ok(st2.medications.some(m=>m.id==='morphine')); assert.ok(st2.orders.some(o=>o.source==='standing' && o.category==='Protocols')); assert.ok(['overdue','due','upcoming','prn','continuous','complete'].includes(st2.medications[0].window));
-    assert.equal((await students[0]('orders/ack',{orderId:'ord-999'})).status,400);
+    assert.equal((await instructor('orders/ack',{orderId:fresh[0].id})).status,403); assert.equal((await students[0]('orders/ack',{orderId:'ord-999'})).status,400);
     assert.equal((await students[0]('orders/ack',{orderId:fresh[0].id})).status,200); const st3=(await students[1]('state')).body; const acked=st3.orders.find(o=>o.id===fresh[0].id); assert.equal(acked.acknowledged,true); assert.equal(acked.acknowledged_name,'A'); assert.ok(st3.entries.some(e=>e.action==='ORDER_ACKNOWLEDGED')); assert.ok(st3.entries.filter(e=>e.action==='ORDER_PLACED').length===2);
-    assert.equal((await instructor('provider/reply',{messageId:pm.body.entry.id,replyId:'p-morphine',submissionId:'pr-1'})).status,200); assert.equal((await students[1]('state')).body.orders.filter(o=>o.source==='provider_reply').length,2); }
+    assert.equal((await instructor('provider/reply',{messageId:pm.body.entry.id,replyId:'p-morphine',submissionId:'pr-1'})).status,200); assert.equal((await instructor('provider/reply',{messageId:pm.body.entry.id,replyId:'p-morphine',submissionId:'pr-2'})).status,409); assert.equal((await students[1]('state')).body.orders.filter(o=>o.source==='provider_reply').length,2); }
   const disp=await fetch(`http://127.0.0.1:${port}/api/display`).then(r=>r.json()); assert.equal(disp.vitals.sbp,148); assert.equal(disp.patient.name,'Carl Shapiro'); assert.ok(!JSON.stringify(disp).includes('PRIVATE'));
   const before=(await instructor('state')).body;
   assert.ok(before.entries.every(e=>e.actor_name && e.recorded_at && ['system_logged','instructor_observed'].includes(e.source)));
@@ -164,12 +176,71 @@ test('shared record, authorization, idempotency, corrections and restart recover
   assert.equal((await instructor('status',{status:'paused'})).status,200);
   assert.equal((await students[0]('entries',{...payloads[0],submissionId:'paused-new'})).status,409);
   assert.equal((await students[0]('entries',payloads[0])).status,200);
+  const pendingOrder=(await students[0]('state')).body.orders.find(o=>o.source==='provider_reply' && !o.acknowledged); assert.equal((await students[0]('orders/ack',{orderId:pendingOrder.id})).status,409);
   assert.equal((await instructor('status',{status:'active'})).status,200);
+  const pm2=await students[0]('provider',{situationId:'s-update',recommendationId:'r-fyi',submissionId:'pm-2'}); assert.equal(pm2.status,201);
   assert.equal((await instructor('status',{status:'ended'})).status,200);
+  { const late=await instructor('provider/reply',{messageId:pm2.body.entry.id,replyId:'p-morphine',submissionId:'pr-late'}); assert.equal(late.status,409); assert.match(late.body.error,/ended/); assert.equal((await students[0]('orders/ack',{orderId:pendingOrder.id})).status,409); assert.equal((await instructor('state')).body.entries.at(-1).action,'SESSION_STATUS_CHANGED'); }
   assert.equal((await instructor('status',{status:'active'})).status,409);
   { const ex=(await instructor('export')).body; assert.equal(ex.format,'code-shift-evidence-v2'); assert.ok(ex.med_events.length && ex.med_scans.length); }
   await stop();
   const db=new DatabaseSync(path.join(data,'code-shift.sqlite'));
-  assert.throws(()=>db.exec('DELETE FROM entries'),/append-only/); assert.throws(()=>db.exec('DELETE FROM vitals'),/append-only/); assert.throws(()=>db.exec('DELETE FROM med_events'),/append-only/); assert.throws(()=>db.exec('DELETE FROM med_scans'),/append-only/); assert.throws(()=>db.exec('DELETE FROM assessments'),/append-only/); assert.equal(db.prepare('SELECT COUNT(*) AS n FROM barcode_aliases').get().n,2); assert.throws(()=>db.exec('UPDATE vitals SET hr=1'),/append-only/);
+  assert.throws(()=>db.exec('DELETE FROM entries'),/append-only/); assert.throws(()=>db.exec('DELETE FROM vitals'),/append-only/); assert.throws(()=>db.exec('DELETE FROM med_events'),/append-only/); assert.throws(()=>db.exec('DELETE FROM med_scans'),/append-only/); assert.throws(()=>db.exec('DELETE FROM assessments'),/append-only/); assert.equal(db.prepare("SELECT COUNT(*) AS n FROM sqlite_master WHERE name='barcode_aliases'").get().n,0); assert.throws(()=>db.exec('UPDATE vitals SET hr=1'),/append-only/);
   assert.throws(()=>db.exec("UPDATE entries SET text='tampered'"),/append-only/); db.close();
+  { const cfg=new DatabaseSync(path.join(data,'config.sqlite')); assert.equal(cfg.prepare('SELECT COUNT(*) AS n FROM barcode_aliases').get().n,2); cfg.close(); }
+  // a new group (code-shift.sqlite* moved aside, pi-deploy.md section 4) keeps the physical barcode registrations: a correct scan of a registered item still matches
+  { const old=path.join(data,'old-group'); mkdirSync(old); for(const f of readdirSync(data).filter(f=>f.startsWith('code-shift.sqlite'))) renameSync(path.join(data,f),path.join(old,f));
+    await start(); const next=client(), s=client(); assert.equal((await next('login',{password:'test-only-key'})).status,200); assert.equal((await next('sessions',{groupName:'Next group',names:['G','H','I']})).status,201);
+    assert.deepEqual((await next('state')).body.barcodes.map(b=>b.code),['WB-REAL-001']); assert.equal((await next('barcodes/lookup?code=WB-REAL-001')).body.match.source,'registered'); assert.ok(!(await next('state')).body.entries.some(e=>e.action==='NOTE_RECORDED'));
+    assert.equal((await s('join',{actorId:(await s('lobby')).body.roster[0].id})).status,200); const scan=await s('meds/scan',{attemptId:'next-1',kind:'patient',code:'WB-REAL-001',source:'camera'}); assert.equal(scan.status,201); assert.equal(scan.body.matched,true); }
+});
+
+test('medication logic: NTG dose series, provider-ordered meds, held doses, med-pass scans and the worklist', async t => {
+  const data = mkdtempSync(path.join(tmpdir(), 'code-shift-meds-')), port = 44327, file = path.join(data, 'code-shift.sqlite');
+  const child = spawn(process.execPath, ['server/index.js'], { env: { ...process.env, DATA_DIR: data, PORT: String(port), INSTRUCTOR_PASSWORD: 'test-only-key' }, stdio: 'pipe' });
+  t.after(() => new Promise(resolve => { if (child.exitCode !== null || child.signalCode !== null) return resolve(); child.once('exit',resolve); child.kill(); }));
+  await new Promise((resolve,reject) => { child.stdout.once('data',resolve); child.once('error',reject); child.once('exit', code => reject(new Error(`Server exited ${code}`))); });
+  function client() { let cookie=''; return async (url, body) => { const r=await fetch(`http://127.0.0.1:${port}/api/${url}`, { method: body ? 'POST' : 'GET', headers: { cookie, ...(body ? { 'Content-Type':'application/json' } : {}) }, ...(body ? { body:JSON.stringify(body) } : {}) }); if (r.headers.get('set-cookie')) cookie=r.headers.get('set-cookie').split(';')[0]; return { status:r.status, body:await r.json() }; }; }
+  // moves a medication's administrations back in time; the append-only trigger is lifted for this test database only
+  const back=(medId,ms)=>{ const d=new DatabaseSync(file); d.exec('DROP TRIGGER med_immutable_update'); for(const r of d.prepare('SELECT id,recorded_at FROM med_events WHERE med_id=?').all(medId)) d.prepare('UPDATE med_events SET recorded_at=? WHERE id=?').run(new Date(Date.parse(r.recorded_at)-ms).toISOString(),r.id); d.exec("CREATE TRIGGER med_immutable_update BEFORE UPDATE ON med_events BEGIN SELECT RAISE(ABORT, 'Evidence is append-only'); END;"); d.close(); };
+  const instructor=client(), a=client(), b=client(), wb={patientCode:'CS-12049023',verification:'camera'}, state=async()=>(await a('state')).body;
+  assert.equal((await instructor('login',{password:'test-only-key'})).status,200);
+  assert.equal((await instructor('sessions',{groupName:'Meds',names:['A','B','C']})).status,201);
+  const lobby=(await a('lobby')).body; assert.equal((await a('join',{actorId:lobby.roster[0].id})).status,200); assert.equal((await b('join',{actorId:lobby.roster[1].id})).status,200);
+  assert.equal((await instructor('vitals',{hr:104,rr:20,spo2:94,sbp:148,dbp:88,temp:37,rhythm:'sinus_tach_pvc',transitionSeconds:0,submissionId:'v-1'})).status,201);
+  // a STAT med the MAR shows as Due now is on the worklist, due from session start
+  { const st=await state(); assert.equal(st.medications.find(m=>m.id==='ns-bolus').window,'due'); assert.equal(st.worklist.find(x=>x.key==='med-ns-bolus'),undefined); }   // the conditional STAT bolus (SBP below 100) is not a task at baseline
+  // the med-pass wristband scan names no medication; its mismatch is not counted against the first MAR row
+  { assert.equal((await a('meds/scan',{attemptId:'x-1',kind:'med',code:'MED-ASA325',source:'camera'})).status,400);
+    const bad=await a('meds/scan',{attemptId:'pass-1',kind:'patient',code:'CS-000',source:'camera'}); assert.equal(bad.status,201); assert.equal(bad.body.matched,false); assert.match(bad.body.alert,/UNRECOGNIZED WRISTBAND/);
+    const ok=await a('meds/scan',{attemptId:'pass-2',kind:'patient',code:'CS-12049023',source:'camera'}); assert.equal(ok.body.matched,true); assert.equal(ok.body.patient.name,'Carl Shapiro');
+    const st=await state(); assert.ok(st.medications.every(m=>m.mismatchCount===0)); assert.match(st.entries.find(e=>e.action==='MED_SCAN_MISMATCH').text,/^Scan alert during med-pass patient identification/); assert.deepEqual((await instructor('state')).body.med_scans.map(s=>s.med_id),['med-pass','med-pass']); }
+  // a held or refused dose closes the pending dose: off Due/Overdue, next dose one interval after the hold
+  { const held=await a('meds',{medId:'metoprolol',action:'held',reason:'HR 52',...wb,submissionId:'h-meto'}); assert.equal(held.status,201);
+    assert.equal((await a('meds',{medId:'asa',action:'refused',reason:'declined after education',...wb,submissionId:'r-asa'})).status,201);
+    const st=await state(), meto=st.medications.find(m=>m.id==='metoprolol'); assert.equal(meto.window,'upcoming'); assert.equal(meto.next_due,new Date(Date.parse(held.body.event.recorded_at)+720*60000).toISOString());
+    assert.equal(st.worklist.find(x=>x.key==='med-metoprolol').due_at,meto.next_due); assert.equal(st.medications.find(m=>m.id==='asa').window,'complete'); assert.ok(!st.worklist.some(x=>x.key==='med-asa')); }
+  // provider-ordered morphine is the ordered 2 mg IV push once: on the worklist from activation, a second dose alerts
+  const pm=await a('provider',{situationId:'s-ntg-unrelieved',recommendationId:'r-orders',submissionId:'pm-1'}); assert.equal((await instructor('provider/reply',{messageId:pm.body.entry.id,replyId:'p-morphine',submissionId:'pr-1'})).status,201);
+  { const st=await state(), m=st.medications.find(x=>x.id==='morphine'), act=st.entries.find(e=>e.action==='MED_ORDER_CHANGED'); assert.equal(m.dose+' '+m.route,'2 mg IV push'); assert.equal(m.window,'due'); assert.match(act.text,/^Order activated: Morphine 2 mg IV push/); assert.equal(st.worklist.find(x=>x.key==='med-morphine').due_at,act.recorded_at); }
+  { const g=await a('meds',{medId:'morphine',action:'given',...wb,medCode:'MED-MORPH',submissionId:'g-morph'}); assert.equal(g.status,201); assert.match(g.body.entry.text,/^Given: Morphine 2 mg IV push/);
+    const again=await b('meds',{medId:'morphine',action:'given',...wb,medCode:'MED-MORPH',submissionId:'g-morph-2'}); assert.equal(again.status,409); assert.equal(again.body.alerts[0].code,'ALREADY_GIVEN');
+    const st=await state(); assert.equal(st.medications.find(x=>x.id==='morphine').window,'complete'); assert.ok(!st.worklist.some(x=>x.key==='med-morphine')); }
+  // the heparin reply starts the infusion only (no placed order mentions SQ heparin); once started it is listed as infusing
+  const pm2=await a('provider',{situationId:'s-labs',recommendationId:'r-orders',submissionId:'pm-2'}); assert.equal((await instructor('provider/reply',{messageId:pm2.body.entry.id,replyId:'p-heparin',submissionId:'pr-2'})).status,201);
+  { const ids=(await state()).medications.map(m=>m.id); assert.ok(ids.includes('heparin-gtt') && !ids.includes('heparin-sq'));
+    assert.equal((await a('meds',{medId:'heparin-gtt',action:'given',...wb,medCode:'MED-HEPGTT',submissionId:'g-hep'})).status,201); assert.equal((await state()).medications.find(m=>m.id==='heparin-gtt').window,'continuous'); }
+  // NTG SL q5 min, max 3 in 15 min: a 4th dose 5 min after the 3rd raises MAX_DOSES; each dose gets its own reassessment task
+  const ntg=id=>a('meds',{medId:'ntg-sl',action:'given',...wb,medCode:'MED-NTGSL04',indication:'chest pain',submissionId:id}), reassess=async()=>(await state()).worklist.filter(x=>x.title.startsWith('Reassess chest pain'));
+  assert.equal((await ntg('ntg-1')).status,201); assert.deepEqual((await reassess()).map(x=>x.key),['t-reassess-ntg']); assert.equal((await a('tasks/done',{key:'t-reassess-ntg'})).status,200);
+  back('ntg-sl',301200); const d2=await ntg('ntg-2'); assert.equal(d2.status,201); assert.deepEqual((await reassess()).filter(x=>x.status==='open').map(x=>x.key),['t-reassess-ntg-'+d2.body.event.id]);
+  back('ntg-sl',301200); assert.equal((await ntg('ntg-3')).status,201);
+  back('ntg-sl',301200); const d4=await ntg('ntg-4'); assert.equal(d4.status,409); assert.deepEqual(d4.body.alerts.map(x=>x.code),['MAX_DOSES']); assert.match(d4.body.error,/3 doses since .* order maximum is 3/);
+  assert.deepEqual((await state()).medications.find(m=>m.id==='ntg-sl').alerts.map(x=>x.code),['MAX_DOSES']); assert.equal((await reassess()).length,3);
+  // a rhythm change shows at once, so its HR trend starts inside the new rhythm's band; the other vitals and a same-rhythm HR keep their trend
+  { const vit=async()=>(await instructor('state')).body.vitals;
+    assert.equal((await instructor('events/release',{eventId:'ev-ecg-2',submissionId:'ev-svt'})).status,201); assert.ok((await state()).scenario.providerScript.situations.some(x=>x.id==='s-rhythm')); let v=await vit(); assert.deepEqual([v.rhythm,v.hr,v.from_hr],['svt',164,151]); assert.ok(v.from_sbp>140);
+    assert.equal((await instructor('events/release',{eventId:'ev-improving',submissionId:'ev-nsr'})).status,201); v=await vit(); assert.deepEqual([v.rhythm,v.hr,v.from_hr,v.transition_seconds],['nsr',88,100,120]); assert.ok(v.from_sbp>140);
+    assert.equal((await instructor('vitals',{hr:70,rr:16,spo2:97,sbp:120,dbp:78,temp:37,rhythm:'nsr',transitionSeconds:60,submissionId:'v-nsr-70'})).status,201); assert.ok((await vit()).from_hr>=99);
+    assert.equal((await instructor('vitals',{hr:130,rr:16,spo2:97,sbp:120,dbp:78,temp:37,rhythm:'sinus_tach',transitionSeconds:60,submissionId:'v-st-130'})).status,201); assert.equal((await vit()).from_hr,101); }
 });

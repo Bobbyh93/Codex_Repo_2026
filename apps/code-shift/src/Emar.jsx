@@ -5,6 +5,8 @@ import { Scanner, cameraAvailable } from './Scanner';
 
 const STATUS = { due: 'Due', available: 'Available', given: 'Given', held: 'Held', refused: 'Refused' };
 const ALERT = { ALREADY_GIVEN: 'Already given', TOO_EARLY: 'Too early', MAX_DOSES: 'Max doses', HOLD_RULE: 'Hold rule' };
+// Scan times are stamped on the server clock (offset from server_now, as the monitor does): the Pi drops stamps more than 60 s ahead of it.
+const serverTime = skew => new Date(Date.now() + skew.current).toISOString();
 
 export function Emar({ state, refresh, connected }) {
   const { medications, scenario, session, actor } = state, instructor = actor.role === 'instructor';
@@ -13,8 +15,10 @@ export function Emar({ state, refresh, connected }) {
   const WINDOWS = [['overdue', 'Overdue'], ['due', 'Due now'], ['upcoming', 'Upcoming'], ['prn', 'PRN'], ['continuous', 'Continuous'], ['complete', 'Completed']];
   const GLYPH = { overdue: '\u26A0', due: '\u23F0', upcoming: '\u25CB', prn: '\u2605', continuous: '\u221E', complete: '\u2713' };
   const [pass, setPass] = useState(null), [passScanning, setPassScanning] = useState(false), [passMsg, setPassMsg] = useState(''), [open, setOpen] = useState(null);
-  const passFresh = pass && Date.now() - Date.parse(pass.at) < 10 * 60000;
-  const identify = useCallback(async text => { setPassScanning(false); setPassMsg(''); try { const r = await api('meds/scan', { attemptId: 'pass-' + submissionId(), medId: medications[0]?.id, kind: 'patient', code: text, source: 'camera' }); if (r.matched) setPass({ code: text, at: new Date().toISOString(), patient: r.patient }); else setPassMsg(r.alert); } catch (e) { setPassMsg(e.message); } }, [medications]);
+  const skew = useRef(0); useEffect(() => { if (state.server_now) skew.current = Date.parse(state.server_now) - Date.now(); }, [state.server_now]);
+  const passFresh = pass && Date.now() + skew.current - Date.parse(pass.at) < 10 * 60000;
+  // The med-pass wristband scan is not tied to a medication (no medId), so a mismatch is not counted against one.
+  const identify = useCallback(async text => { setPassScanning(false); setPassMsg(''); try { const r = await api('meds/scan', { attemptId: 'pass-' + submissionId(), kind: 'patient', code: text, source: 'camera' }); if (r.matched) setPass({ code: text, at: serverTime(skew), patient: r.patient }); else setPassMsg(r.alert); } catch (e) { setPassMsg(e.message); } }, []);
   async function post(url, body) { setMsg(''); try { await api(url, body); refresh(); } catch (e) { setMsg(e.message); } }
   const live = giving && medications.find(m => m.id === giving.id);
   const windowOf = m => m.window || (m.kind === 'prn' ? 'prn' : 'due');
@@ -40,14 +44,16 @@ export function Emar({ state, refresh, connected }) {
     {instructor && <BarcodeRegistry state={state} refresh={refresh} connected={connected}/>}
     {msg && <p className="error" role="alert">{msg}</p>}
     {!canDocument && <p className="muted">Medication documentation is available while the session is active and connected.</p>}
-    {giving && <GiveDialog med={live || giving} patient={scenario.patient} scanRequired={scanRequired} pass={passFresh ? pass : null} onClose={() => setGiving(null)} onDone={() => { setGiving(null); refresh(); }}/>}
+    {giving && <GiveDialog med={live || giving} patient={scenario.patient} scanRequired={scanRequired} pass={passFresh ? pass : null} skew={skew} onClose={() => setGiving(null)} onDone={() => { setGiving(null); refresh(); }}/>}
   </div>;
 }
 
 // Scan-first flow with immediate verification: each read is checked by the server as it happens,
 // a wrong item alerts right away (and is recorded), alerts are reviewed before the decision.
-function GiveDialog({ med, patient, scanRequired, pass, onClose, onDone }) {
+function GiveDialog({ med, patient, scanRequired, pass, skew, onClose, onDone }) {
   const camera = cameraAvailable(), attemptId = useRef(submissionId()).current, [serverAlerts, setServerAlerts] = useState([]);
+  // One submission ID per decision (outcome, codes, acknowledgement): retrying after a lost response returns the committed record instead of documenting the dose twice.
+  const pending = useRef(null), decisionId = key => { const k = JSON.stringify(key); if (!pending.current || pending.current.key !== k) pending.current = { key: k, id: submissionId() }; return pending.current.id; };
   const alerts = [...(med.alerts || []), ...serverAlerts.filter(a => !(med.alerts || []).some(m => m.code === a.code))];
   const [outcome, setOutcome] = useState('given'), [step, setStep] = useState(pass ? 'med' : 'patient');
   const [codes, setCodes] = useState({ patient: pass ? pass.code : '', med: '' }), [stamps, setStamps] = useState(pass ? { patient: pass.at } : {}), [source, setSource] = useState({ patient: pass ? 'camera' : '', med: '' }), [verified, setVerified] = useState(pass ? { patient: { patient: pass.patient } } : {});
@@ -59,7 +65,7 @@ function GiveDialog({ med, patient, scanRequired, pass, onClose, onDone }) {
   const advance = useCallback(kind => { if (kind === 'patient' && needsMed) { setStep('med'); setScanning(camera && !manual); } else { setStep('confirm'); setScanning(false); } }, [needsMed, camera, manual]);
   async function autoDocument(medCode, medAt) {
     setBusy(true); setStep('confirm'); setScanning(false);
-    try { setResult(await api('meds', { medId: med.id, action: 'given', patientCode: codes.patient, medCode, verification: 'camera', patientScannedAt: stamps.patient, medScannedAt: medAt, attemptId, indication: med.prn?.indication || (med.kind === 'stat' ? med.frequency : undefined), submissionId: submissionId() })); }
+    try { setResult(await api('meds', { medId: med.id, action: 'given', patientCode: codes.patient, medCode, verification: 'camera', patientScannedAt: stamps.patient, medScannedAt: medAt, attemptId, indication: med.prn?.indication || (med.kind === 'stat' ? med.frequency : undefined), submissionId: decisionId(['given', codes.patient, medCode, false]) })); }
     catch (e) { if (e.status === 409 && Array.isArray(e.data?.alerts)) { setServerAlerts(e.data.alerts); setAck(false); setResult(null); setCodes(c => ({ ...c, med: medCode })); setStamps(t => ({ ...t, med: medAt })); setSource(s => ({ ...s, med: 'camera' })); } else setResult({ error: e.message }); }
     finally { setBusy(false); }
   }
@@ -67,7 +73,7 @@ function GiveDialog({ med, patient, scanRequired, pass, onClose, onDone }) {
     setChecking(true); setScanAlert('');
     try {
       const r = await api('meds/scan', { attemptId, medId: med.id, kind, code: text, source: src, format: format != null ? String(format) : undefined });
-      if (r.matched) { const at = new Date().toISOString(); setCodes(c => ({ ...c, [kind]: text })); setStamps(t => ({ ...t, [kind]: at })); setSource(s => ({ ...s, [kind]: src })); setVerified(v => ({ ...v, [kind]: r })); setDraft(''); if (kind === 'med' && src === 'camera' && source.patient === 'camera' && needsMed && !alerts.length) { autoDocument(text, at); } else advance(kind); }
+      if (r.matched) { const at = serverTime(skew); setCodes(c => ({ ...c, [kind]: text })); setStamps(t => ({ ...t, [kind]: at })); setSource(s => ({ ...s, [kind]: src })); setVerified(v => ({ ...v, [kind]: r })); setDraft(''); if (kind === 'med' && src === 'camera' && source.patient === 'camera' && needsMed && !alerts.length) { autoDocument(text, at); } else advance(kind); }
       else { try { navigator.vibrate?.([120, 60, 120]); } catch {} setScanAlert(r.alert); setScanning(false); }
     } catch (e) { setScanAlert(e.message); setScanning(false); } finally { setChecking(false); }
   }, [attemptId, med.id, advance, source.patient, needsMed, alerts.length, codes.patient, stamps.patient]); // eslint-disable-line
@@ -76,7 +82,7 @@ function GiveDialog({ med, patient, scanRequired, pass, onClose, onDone }) {
   const verification = needsMed ? (source.patient === 'camera' && source.med === 'camera' ? 'camera' : 'manual') : (source.patient === 'camera' ? 'camera' : source.patient ? 'manual' : 'camera');
   async function submit(e) {
     e.preventDefault(); setBusy(true); setResult(null);
-    try { setResult(await api('meds', { medId: med.id, action: outcome, patientCode: codes.patient, medCode: codes.med, verification, patientScannedAt: stamps.patient, medScannedAt: stamps.med, reason: needsMed ? manualReason : reason, attemptId, acknowledgeAlerts: ack, overrideReason, indication: needsMed && prnLike ? indication : undefined, indicationValue: needsMed && prnLike ? indicationValue : undefined, submissionId: submissionId() })); }
+    try { setResult(await api('meds', { medId: med.id, action: outcome, patientCode: codes.patient, medCode: codes.med, verification, patientScannedAt: stamps.patient, medScannedAt: stamps.med, reason: needsMed ? manualReason : reason, attemptId, acknowledgeAlerts: ack, overrideReason, indication: needsMed && prnLike ? indication : undefined, indicationValue: needsMed && prnLike ? indicationValue : undefined, submissionId: decisionId([outcome, codes.patient, needsMed ? codes.med : '', ack]) })); }
     catch (e) { if (e.status === 409 && Array.isArray(e.data?.alerts)) { setServerAlerts(e.data.alerts); setAck(false); setResult(null); } else setResult({ error: e.message }); } finally { setBusy(false); }
   }
   const stepTitle = pass && step === 'med' ? 'Scan the medication label' : step === 'patient' ? (needsMed ? '1 of 3' : '1 of 2') + ' · Scan the patient wristband' : step === 'med' ? '2 of 3 · Scan the medication label' : needsMed ? '3 of 3 · Confirm and document' : outcome === 'held' ? '2 of 2 · Document held' : '2 of 2 · Document refused';
