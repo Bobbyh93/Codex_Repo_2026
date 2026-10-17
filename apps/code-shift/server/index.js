@@ -50,6 +50,9 @@ if (!db.prepare("SELECT 1 FROM pragma_table_info('sessions') WHERE name='active_
 // Registrations made while the table lived in code-shift.sqlite are copied over once.
 if (db.prepare("SELECT 1 FROM main.sqlite_master WHERE type='table' AND name='barcode_aliases'").get() && !db.prepare('SELECT 1 FROM config.barcode_aliases').get()) db.exec('INSERT INTO config.barcode_aliases SELECT * FROM main.barcode_aliases');
 const app = express();
+// Behind a TLS-terminating proxy (the hosted test copy) the browser's Origin is https while this process speaks http:
+// TRUST_PROXY=1 lets req.protocol follow X-Forwarded-Proto so the same-origin check below still holds.
+if (process.env.TRUST_PROXY === '1') app.set('trust proxy', 1);
 app.disable('x-powered-by');
 app.use(express.json({ limit: '20kb' }));
 app.use((req, res, next) => {
